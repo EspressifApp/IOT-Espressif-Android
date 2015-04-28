@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/light_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <View
+        android:id="@+id/light_color_display"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_marginBottom="15dip"
+        android:layout_marginLeft="30dip"
+        android:layout_marginRight="30dip"
+        android:layout_marginTop="15dip" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:layout_marginTop="10dip"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dip"
+            android:layout_marginRight="15dip"
+            android:minWidth="40dip"
+            android:text="@string/esp_device_light_freq"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/light_freq_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dip"
+            android:layout_marginRight="30dip" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:layout_marginTop="10dip"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dip"
+            android:layout_marginRight="15dip"
+            android:minWidth="40dip"
+            android:text="@string/esp_device_light_red"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/light_red_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dip"
+            android:layout_marginRight="30dip" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:layout_marginTop="10dip"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dip"
+            android:layout_marginRight="15dip"
+            android:minWidth="40dip"
+            android:text="@string/esp_device_light_green"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/light_green_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dip"
+            android:layout_marginRight="30dip" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:layout_marginTop="10dip"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dip"
+            android:layout_marginRight="15dip"
+            android:minWidth="40dip"
+            android:text="@string/esp_device_light_blue"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/light_blue_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dip"
+            android:layout_marginRight="30dip" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/control_child_cb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dip"
+        android:text="@string/esp_device_control_child"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dip"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/light_confirm_btn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="15dip"
+            android:layout_weight="1"
+            android:text="@string/esp_device_light_confirm" />
+
+        <CheckBox
+            android:id="@+id/light_switch"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:background="@drawable/esp_plug"
+            android:button="@null" />
+    </LinearLayout>
+
+</LinearLayout>

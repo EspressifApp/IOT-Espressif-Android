@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="esp_login_email">Enter Email</string>
+    <string name="esp_login_password">Enter Password</string>
+    <string name="esp_login_auto_login">Auto Login</string>
+    <string name="esp_login_skip">Skip</string>
+    <string name="esp_login_login">Login</string>
+    <string name="esp_login_register">Register</string>
+    <string name="esp_login_local">Local</string>
+    <string name="esp_login_progress_message">Log in&#8230;</string>
+    <string name="esp_login_result_success">Login Success</string>
+    <string name="esp_login_result_network_unaccessible">Network is unaccassible</string>
+    <string name="esp_login_result_not_register">This email is not register</string>
+    <string name="esp_login_result_password_error">Password error</string>
+
+    <string name="esp_register_account">User Name</string>
+    <string name="esp_register_email">Email</string>
+    <string name="esp_register_input_password">Enter at least 6 words password</string>
+    <string name="esp_register_input_password_again">Enter password again</string>
+    <string name="esp_register_register">Register</string>
+    <string name="esp_register_next">Next</string>
+    <string name="esp_register_prev">Prev</string>
+    <string name="esp_register_account_email_toast">Please enter User name and Email</string>
+    <string name="esp_register_same_password_toast">Please enter same password</string>
+    <string name="esp_register_progress_message">Register&#8230;</string>
+    <string name="esp_register_result_success">Register success</string>
+    <string name="esp_register_result_network_unaccessible">Network is unaccassible</string>
+    <string name="esp_register_result_account_format_error">User Name or Email format error</string>
+    <string name="esp_register_result_account_exist">User Name or Email is existed</string>
+
+    <string name="esp_skip_wifi_toast">The first skip, please open Wifi</string>
+    <string name="esp_skip_result_failed">Skip failed</string>
+
+    <string name="esp_qrcode_capture_device">Capture device</string>
+    <string name="esp_qrcode_capturing_message">Capturing device&#8230;</string>
+    <string name="esp_qrcode_capture_result_success">Capture device success</string>
+    <string name="esp_qrcode_capture_result_failed">Capture device failed</string>
+
+    <string name="esp_ui_menu_get_share">Get Share</string>
+    <string name="esp_ui_menu_configure">Device configure</string>
+    <string name="esp_ui_menu_settings">Settings</string>
+    <string name="esp_ui_menu_logout">Logout</string>
+    <string name="esp_ui_menu_edit">Edit</string>
+    <string name="esp_ui_menu_wifi">Wifi Setting</string>
+    <string name="esp_ui_status_upgrading_local">Upgrading local&#8230;</string>
+    <string name="esp_ui_status_upgrading_online">Upgrading online&#8230;</string>
+    <string name="esp_ui_status_offline">Offline</string>
+    <string name="esp_ui_status_activating">Activating&#8230;</string>
+    <string name="esp_ui_status_local">Local</string>
+    <string name="esp_ui_status_online">Online</string>
+    <string name="esp_ui_delete_message">Do you want to delete this device?</string>
+    <string name="esp_ui_edit_select_all">Select all</string>
+    <string name="esp_ui_edit_delete_selected">Delete</string>
+    <string name="esp_ui_edit_delete_sellected_message">Do you want to delete all selected devices?</string>
+    <string name="esp_ui_edit_has_eneditable_device_message">Some devices can\'t delete</string>
+    <string name="esp_ui_edit_forbidden_toast">This device can\'t edit now</string>
+    <string name="esp_ui_exit_message">\nDo you want to exit?\n</string>
+
+    <string name="esp_settings">Settings</string>
+    <string name="esp_settings_account">Account %1$s</string>
+    <string name="esp_settings_account_auto_login">Auto login</string>
+    <string name="esp_settings_device">Device</string>
+    <string name="esp_settings_device_auto_refresh">Auto refresh device information</string>
+    <string name="esp_settings_device_auto_configure">Auto configure device</string>
+    <string name="esp_settings_version">Version</string>
+    <string name="esp_settings_version_upgrade">Version upgrade</string>
+    <string name="esp_settings_version_name">Version</string>
+    <string name="esp_settings_version_log">Version update log</string>
+
+    <string name="esp_upgrade_apk_downloading">Downloading %1$d %%</string>
+    <string name="esp_upgrade_apk_status_complete">Download complete</string>
+    <string name="esp_upgrade_apk_status_not_found">Not found</string>
+    <string name="esp_upgrade_apk_status_download_failed">Download failed</string>
+    <string name="esp_upgrade_apk_status_lower_version">Your application is newest</string>
+    <string name="esp_upgrade_apk_mobile_data_title">Warning</string>
+    <string name="esp_upgrade_apk_mobile_data_msg">You are using mobile data. Do you want upgrade?</string>
+
+    <string name="pull_to_refresh_pull_label">Pull to refresh…</string>
+    <string name="pull_to_refresh_release_label">Release to refresh…</string>
+    <string name="pull_to_refresh_refreshing_label">Loading…</string>
+    <string name="pull_to_refresh_from_bottom_pull_label">Pull up to refresh…</string>
+    <string name="pull_to_refresh_from_bottom_release_label">Release to refresh…</string>
+    <string name="pull_to_refresh_from_bottom_refreshing_label">Loading…</string>
+
+    <string name="esp_configure_title">Device Configure</string>
+    <string name="esp_configure_wifi_select_hint">Please select Wifi</string>
+    <string name="esp_configure_wifi_password_hint">Input Wifi password</string>
+    <string name="esp_configure_wifi_show_password">Show password</string>
+    <string name="esp_configure_wifi_hint">Please open Wifi first</string>
+    <string name="esp_configure_start">Start configure</string>
+    <string name="esp_configure_configuring">Configuring&#8230;</string>
+    <string name="esp_configure_result_success">Configure success</string>
+    <string name="esp_configure_result_failed">Configure failed</string>
+    <string name="esp_configure_softap_connect_message">Do you want connect to this device?</string>
+    <string name="esp_configure_softap_version">Version: %1$s</string>
+    <string name="esp_configure_softap_type">Type: %1$s</string>
+    <string name="esp_configure_softap_authorized">Authorize: %1$s</string>
+    <string name="esp_configure_softap_authorized_yes">Authorized</string>
+    <string name="esp_configure_softap_authorized_no">Not Authorized</string>
+    <string name="esp_configure_softap_getinfo_failed">Get failed</string>
+    <string name="esp_configure_softap_close">Close SoftAP</string>
+
+    <string name="esp_device_task_dialog_message">Please wait&#8230;</string>
+
+    <string name="esp_device_menu_share">Share</string>
+    <string name="esp_device_menu_timer">Timer</string>
+    <string name="esp_device_menu_upgrade_local">Upgrade local</string>
+    <string name="esp_device_menu_upgrade_online">Upgrade online</string>
+    <string name="esp_device_menu_change_password">Change password</string>
+    <string name="esp_device_dialog_upgrade_apk_message">You need upgrade apk to control the device</string>
+    <string name="esp_device_dialog_upgrade_device_message">The device need upgrade to use</string>
+    <string name="esp_device_dialog_upgrading_local_message">The device is upgrading local</string>
+    <string name="esp_device_dialog_upgrading_online_message">The device is upgrading online</string>
+    <string name="esp_device_dialog_upgrade_device_local">Upgrade local</string>
+    <string name="esp_device_dialog_upgrade_device_online">Upgrade online</string>
+
+    <string name="esp_device_share_progress_message">Creating QR code&#8230;</string>
+    <string name="esp_device_share_result_failed">Create QR code failed</string>
+
+    <string name="esp_device_timer">Timer</string>
+    <string name="esp_device_timer_menu_add">Add</string>
+    <string name="esp_device_timer_menu_save">Save</string>
+    <string name="esp_device_timer_week_sunday">7</string>
+    <string name="esp_device_timer_week_monday">1</string>
+    <string name="esp_device_timer_week_tuesday">2</string>
+    <string name="esp_device_timer_week_wednesday">3</string>
+    <string name="esp_device_timer_week_thursday">4</string>
+    <string name="esp_device_timer_week_friday">5</string>
+    <string name="esp_device_timer_week_saturday">6</string>
+    <string name="esp_device_timer_enter_time_message">Please enter time</string>
+    <string name="esp_device_timer_save_result_success">Save complete</string>
+    <string name="esp_device_timer_save_result_failed">Save failed</string>
+    <string name="esp_device_timer_delete_result_success">Delete complete</string>
+    <string name="esp_device_timer_delete_result_failed">Delete failed</string>
+
+    <string name="esp_device_light_freq">Frequency</string>
+    <string name="esp_device_light_red">Red</string>
+    <string name="esp_device_light_green">Green</string>
+    <string name="esp_device_light_blue">Blue</string>
+    <string name="esp_device_light_confirm">Confirm</string>
+
+    <string name="esp_device_remote_address_hint">Please input address</string>
+    <string name="esp_device_remote_command_hint">Please input command</string>
+    <string name="esp_device_remote_repeat_hint">Please input repeat times</string>
+    <string name="esp_device_remote_post_success">Post Success</string>
+    <string name="esp_device_remote_post_failed">Post failed</string>
+
+    <string name="esp_device_chartview_menu_select_date">Select date</string>
+
+    <string name="esp_device_humiture_temperature">Temperature</string>
+    <string name="esp_device_humiture_humidity">Humidity</string>
+
+    <string name="esp_device_flammable">Flammable</string>
+    <string name="esp_device_voltage">Voltage</string>
+
+    <string name="esp_device_plugs">Plug Base</string>
+    <string name="esp_device_plugs_get_status_failed">Get status failed</string>
+
+    <string name="esp_device_data_network_not_found_message">Please check the status of your network</string>
+
+    <string name="esp_device_control_child">Control the child devices as well</string>
+    <string name="esp_device_control_all_mesh_plug">Control all mesh plugs</string>
+    <string name="esp_device_control_all_mesh_light">Control all mesh lightes</string>
+    <string name="esp_device_control_all_mesh_remote">Control all mesh remotes</string>
+    <string name="esp_device_change_router">Change the connected router of %1$s</string>
+    <string name="esp_device_change_router_select">Select a new router</string>
+    <string name="esp_device_change_router_password_hint">Please enter password</string>
+    <string name="esp_device_change_router_progress">Changing the device router&#8230;</string>
+
+    <string name="esp_sss_actiontab_device">Device</string>
+    <string name="esp_sss_actiontab_configure">Configure</string>
+    <string name="esp_sss_configure_wifi_hint">Please open Wifi first</string>
+    <string name="esp_sss_configure_direct_connect_message">Connecting&#8230;</string>
+    <string name="esp_sss_configure_direct_connect_failed">Connect failed</string>
+    <string name="esp_sss_configure_direct_connect_success">Connect success</string>
+    <string name="esp_sss_configure_not_support">The device don\'t support local use</string>
+    <string name="esp_sss_device_dialog_exit">Exit</string>
+    <string name="esp_sss_device_upgrading_message">Upgrading device&#8230;</string>
+    <string name="esp_sss_device_upgrade_result_not_support">Device don\'t support upgrade</string>
+    <string name="esp_sss_device_upgrade_result_file_not_found">Upgrade files not found, please set the files in root/Espressif/local_bin/</string>
+    <string name="esp_sss_device_upgrade_result_push_bin_failed">Push upgrade files failed</string>
+    <string name="esp_sss_device_upgrade_result_success">Upgrade success</string>
+    <string name="esp_sss_device_reset">Reset</string>
+    <string name="esp_sss_scan_sta_text">Scanning devices&#8230;</string>
+
+    <string name="esp_help">Help</string>
+    <string name="esp_help_exit_message">Exit help mode?</string>
+    <string name="esp_help_configure_device">Device configure help</string>
+    <string name="esp_help_configure">Configure help</string>
+    <string name="esp_help_hint_exit">Exit</string>
+    <string name="esp_help_hint_retry">Retry</string>
+    <string name="esp_help_hint_next">Next</string>
+    <string name="esp_help_configure_discover_softap_msg">Comfirm to open Wifi and your IOT device, then pull to refresh</string>
+    <string name="esp_help_configure_select_softap_msg">Please select your IOT device</string>
+    <string name="esp_help_configure_discover_wifi_msg">Comfirm Wifi is available, then select your IOT device</string>
+    <string name="esp_help_configure_connect_device_failed_msg">Connect device failed</string>
+    <string name="esp_help_configure_device_activating_msg">Device is activating, pleast wait for a moment</string>
+    <string name="esp_help_configure_connect_ap_failed_msg">Connect AP failed</string>
+    <string name="esp_help_configure_device_activate_failed_msg">Activate device failed</string>
+    <string name="esp_help_configure_success_msg">Congratulation, you have configured the device complete! Press Back button to exit help mode.</string>
+    <string name="esp_help_use_device">Device use help</string>
+    <string name="esp_help_use_plug">Plug use help</string>
+    <string name="esp_help_use_plug_fail_found_msg">There are not any plugs in your device list, please configure a plug first</string>
+    <string name="esp_help_use_plug_no_online_msg">There are not any online plugs, please keep a plug online and pull down to refresh the devices list, then click the retry button</string>
+    <string name="esp_help_use_plug_selcet_msg">Please click the plug</string>
+    <string name="esp_help_use_plug_tap_icon_msg">Please tap the plug icon</string>
+    <string name="esp_help_use_plug_control_failed_msg">Post command failed, please check you network and plug, then click OK again</string>
+    <string name="esp_help_use_plug_success_msg">You have learned to use plug, please click exit.</string>
+    <string name="esp_help_use_plugs">Plugs use help</string>
+    <string name="esp_help_use_plugs_fail_found_msg">There are not any plugs in your device list, please configure a plugs first</string>
+    <string name="esp_help_use_plugs_no_online_msg">There are not any online plugs, please keep a plugs online and pull down to refresh the devices list, then click the retry button</string>
+    <string name="esp_help_use_plugs_selcet_msg">Please click the plugs</string>
+    <string name="esp_help_use_plugs_tap_icon_msg">Please select a plug</string>
+    <string name="esp_help_use_plugs_control_failed_msg">Post command failed, please check you network and plugs, then click OK again</string>
+    <string name="esp_help_use_plugs_success_msg">You have learned to use plugs, please click exit.</string>
+    <string name="esp_help_use_light">Light use help</string>
+    <string name="esp_help_use_light_fail_found_msg">There are not any lights in your device list, please configure a light first</string>
+    <string name="esp_help_use_light_no_online_msg">There are not any online lights, please keep a light online and pull down to refresh the devices list, then click the retry button</string>
+    <string name="esp_help_use_light_select_msg">Please click the light</string>
+    <string name="esp_help_use_light_control_msg">Tap progress bar to change color, then click OK</string>
+    <string name="esp_help_use_light_control_failed_msg">Post command failed, please check you network and light, then click OK again</string>
+    <string name="esp_help_use_light_success_msg">You have learned to use light, please click exit.</string>
+    <string name="esp_help_use_humiture">Humiture use help</string>
+    <string name="esp_help_use_humiture_faile_found_msg">There are not any humiture in your device list, please configure a humiture first</string>
+    <string name="esp_help_use_humiture_select_msg">Please select the humiture</string>
+    <string name="esp_help_use_humiture_pull_down_to_refresh_msg">Pull down to refresh the newest data</string>
+    <string name="esp_help_use_humiture_get_data_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_humiture_select_date_msg">Click menu icon, click Selcet data to get the history data</string>
+    <string name="esp_help_use_humiture_select_date_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_humiture_success_msg">You have learned to use humiture, please click exit.</string>
+    <string name="esp_help_use_flammable">Flammable use help</string>
+    <string name="esp_help_use_flammable_faile_found_msg">There are not any flammable devices in your device list, please configure a flammable device first</string>
+    <string name="esp_help_use_flammable_select_msg">Please select the flammable device</string>
+    <string name="esp_help_use_flammable_pull_down_to_refresh_msg">Pull down to refresh the newest data</string>
+    <string name="esp_help_use_flammable_get_data_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_flammable_select_date_msg">Click menu icon, click Selcet data to get the history data</string>
+    <string name="esp_help_use_flammable_select_date_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_flammable_success_msg">You have learned to use flammable device, please click exit.</string>
+    <string name="esp_help_use_voltage">Voltage use help</string>
+    <string name="esp_help_use_voltage_faile_found_msg">There are not any voltage devices in your device list, please configure a voltage device first</string>
+    <string name="esp_help_use_voltage_select_msg">Please select the voltage device</string>
+    <string name="esp_help_use_voltage_pull_down_to_refresh_msg">Pull down to refresh the newest data</string>
+    <string name="esp_help_use_voltage_get_data_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_voltage_select_date_msg">Click menu icon, click Selcet data to get the history data</string>
+    <string name="esp_help_use_voltage_select_date_failed_msg">Get data failed, please check your network, then pull down to refresh</string>
+    <string name="esp_help_use_voltage_success_msg">You have learned to use voltage device, please click exit.</string>
+    <string name="esp_help_use_remote">Remote use help</string>
+    <string name="esp_help_use_remote_fail_found_msg">There are not any remotes in your device list, please configure a remote first</string>
+    <string name="esp_help_use_remote_no_online_msg">There are not any online remotes, please keep a remote online and pull down to refresh the devices list, then click the retry button</string>
+    <string name="esp_help_use_remote_select_msg">Please click the remote</string>
+    <string name="esp_help_use_remote_control_msg">Enter all the commands and click OK</string>
+    <string name="esp_help_use_remote_control_failed_msg">Post command failed, please check you network and remote, then click OK again</string>
+    <string name="esp_help_use_remote_success_msg">You have learned to use remote, please click exit.</string>
+    <string name="esp_help_upgrade_device">Device upgrade help</string>
+    <string name="esp_help_upgrade_local">Upgrade local help</string>
+    <string name="esp_help_upgrade_local_no_device_need_upgrade_msg">There are not any devices need upgrade in your device list</string>
+    <string name="esp_help_upgrade_local_no_device_local_msg">There are not any local devices can upgrade in your device list</string>
+    <string name="esp_help_upgrade_local_click_upgrade_msg">Click the menu button and select Upgrade local</string>
+    <string name="esp_help_upgrade_local_failed_msg">Upgrade failed</string>
+    <string name="esp_help_upgrade_local_success_msg">Start upgrade</string>
+    <string name="esp_help_upgrade_online">Upgrade online help</string>
+    <string name="esp_help_upgrade_online_no_device_need_upgrade_msg">There are not any devices need upgrade in your device list</string>
+    <string name="esp_help_upgrade_online_no_device_local_msg">There are not any online devices can upgrade in your device list</string>
+    <string name="esp_help_upgrade_online_click_upgrade_msg">Click the menu button and select Upgrade online</string>
+    <string name="esp_help_upgrade_online_failed_msg">Upgrade failed</string>
+    <string name="esp_help_upgrade_online_success_msg">Start upgrade</string>
+    
+    <string name="esp_sss_help_use_device">Local device use help</string>
+    <string name="esp_sss_help_use_device_find_device_msg">Pull down to refresh device list</string>
+    <string name="esp_sss_help_use_device_found_device_failed_msg">Not found any devices, pull down again or click Next to connect a new device</string>
+    <string name="esp_sss_help_use_device_click_configure_msg">Please click configure button</string>
+    <string name="esp_sss_help_use_device_find_softap_msg">Pull down to find devices</string>
+    <string name="esp_sss_help_use_device_found_softap_failed_msg">Not found any devices, please check you device and pull down again</string>
+    <string name="esp_sss_help_use_device_select_softap_msg">Please click the device you want connect</string>
+    <string name="esp_sss_help_use_device_connect_softap_failed_msg">Connect device failed, please try again</string>
+    <string name="esp_sss_help_use_device_not_support_msg">This device don\'t support to local use, please use another</string>
+    <string name="esp_sss_help_use_device_select_msg">Please click the device you want use</string>
+    <string name="esp_sss_help_use_device_control_msg">You can use the device now</string>
+    <string name="esp_sss_help_use_device_success_msg">You have learned use local device</string>
+    <string name="esp_sss_help_upgrade">Local device upgrade help</string>
+    <string name="esp_sss_help_upgrade_find_device_msg">Pull down to refresh device list</string>
+    <string name="esp_sss_help_upgrade_found_device_failed_msg">Not found any devices, please pull down again or click exit</string>
+    <string name="esp_sss_help_upgrade_select_device_msg">Please long click the device and select Upgrade device</string>
+    <string name="esp_sss_help_upgrade_success_msg">You have learned how to upgrade device</string>
+    
+    <string name="esp_esptouch">Esp Touch</string>
+    <string name="esp_esptouch_current_ssid">Current SSID: %1$s</string>
+    <string name="esp_esptouch_configure_ssid">Select configure wifi</string>
+    <string name="esp_esptouch_ssid_pwd_hint">Please enter password</string>
+    <string name="esp_esptouch_show_pwd">Show password</string>
+    <string name="esp_esptouch_delete_pwd">Delete password</string>
+    <string name="esp_esptouch_connection_hint">Please connect Wifi first</string>
+    <string name="esp_esptouch_configure_message">Configuring to %1$s</string>
+    <string name="esp_esptouch_result_suc">Configure successfully</string>
+    <string name="esp_esptouch_result_failed">Configure failed</string>
+    <string name="esp_esptouch_result_over">Configure over, current connected Wifi isn\'t the same as the configred Wifi, please check the result by yourself</string>
+    <string name="esp_esptouch_result_cancel">Cancel configure</string>
+    
+    <string name="esp_wifi_pwd_edit">Edit</string>
+    <string name="esp_wifi_pwd_edit_title">Edit wifi password</string>
+    <string name="esp_wifi_pwd_delete">Delete</string>
+    <string name="esp_wifi_pwd_delete_sellected_message">Do you want to delete the wifi password?</string>
+    
+    <string name="esp_device_mesh_children_title">Mesh children node</string>
+</resources>
+<!-- 
+&#8230;   =   ...
+%%        =   %
+\'        =   '
+-->

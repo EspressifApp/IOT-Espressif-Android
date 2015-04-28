@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/remote_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="15dip" >
+
+    <EditText
+        android:id="@+id/remote_address_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/esp_device_remote_address_hint"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/remote_command_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:hint="@string/esp_device_remote_command_hint"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/remote_repeat_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:hint="@string/esp_device_remote_repeat_hint"
+        android:inputType="number" />
+
+    <CheckBox
+        android:id="@+id/control_child_cb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:text="@string/esp_device_control_child"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/remote_confirm_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:text="@android:string/ok" />
+
+</LinearLayout>

@@ -1,0 +1,26 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="chart_title_margin">20dip</dimen>
+    <dimen name="qr_image_width">200dip</dimen>
+    <dimen name="qr_image_height">200dip</dimen>
+
+    <!-- Just for supporting Progurad of Pull Refresh -->
+    <dimen name="indicator_right_padding">10dp</dimen>
+    <dimen name="indicator_corner_radius">12dp</dimen>
+    <dimen name="indicator_internal_padding">4dp</dimen>
+    <dimen name="header_footer_left_right_padding">24dp</dimen>
+    <dimen name="header_footer_top_bottom_padding">12dp</dimen>
+
+    <dimen name="esp_activity_bottom_bar_height">50dip</dimen>
+    <dimen name="esp_activity_bottom_item_padding">5dip</dimen>
+    <dimen name="esp_activity_title_min_height">50dip</dimen>
+
+    <dimen name="esp_activity_ui_progress_padding">5dip</dimen>
+
+    <dimen name="esp_treeview_icon_base_padding">15dip</dimen>
+    <dimen name="esp_treeview_icon_vertical_padding">10dip</dimen>
+    <dimen name="esp_treeview_text_size">20sp</dimen>
+</resources>

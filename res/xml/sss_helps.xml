@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+        <Preference
+            android:key="esp_sss_help_use_device"
+            android:title="@string/esp_sss_help_use_device" />
+
+        <Preference
+            android:key="esp_sss_help_upgrade"
+            android:title="@string/esp_sss_help_upgrade" />
+</PreferenceScreen>

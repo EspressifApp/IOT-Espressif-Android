@@ -1,0 +1,24 @@
+package com.espressif.iot.ui.settings;
+
+import com.espressif.iot.R;
+
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.os.Bundle;
+
+public class SettingsActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.fragment_container);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, new SettingsFragment())
+                .commit();
+
+        setTitle(R.string.esp_settings);
+    }
+}

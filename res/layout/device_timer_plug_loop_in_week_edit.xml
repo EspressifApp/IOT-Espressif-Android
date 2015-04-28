@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_margin="10dip"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/week_sunday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_sunday" />
+
+        <CheckBox
+            android:id="@+id/week_monday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_monday" />
+
+        <CheckBox
+            android:id="@+id/week_tuesday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_tuesday" />
+
+        <CheckBox
+            android:id="@+id/week_wednesday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_wednesday" />
+
+        <CheckBox
+            android:id="@+id/week_thursday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_thursday" />
+
+        <CheckBox
+            android:id="@+id/week_friday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_friday" />
+
+        <CheckBox
+            android:id="@+id/week_saturday"
+            style="@style/WeekCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_device_timer_week_saturday" />
+    </LinearLayout>
+
+    <TimePicker
+        android:id="@+id/time_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Spinner
+        android:id="@+id/timer_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip" />
+
+</LinearLayout>

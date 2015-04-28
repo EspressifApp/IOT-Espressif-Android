@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- About account -->
+    <PreferenceCategory
+         android:key="esp_settings_account_category" />
+
+    <CheckBoxPreference
+        android:key="account_auto_login"
+        android:title="@string/esp_settings_account_auto_login" />
+
+    <!-- About device -->
+    <PreferenceCategory android:title="@string/esp_settings_device" />
+
+    <ListPreference
+        android:key="device_auto_refresh"
+        android:title="@string/esp_settings_device_auto_refresh"
+        android:entries="@array/esp_settings_device_auto_refresh_entries"
+        android:entryValues="@array/esp_settings_device_auto_refresh_values" />
+    <ListPreference
+        android:key="device_auto_configure"
+        android:title="@string/esp_settings_device_auto_configure"
+        android:entries="@array/esp_settings_auto_config_device_entries"
+        android:entryValues="@array/esp_settings_auto_config_device_values" />
+
+    <!-- About version -->
+    <PreferenceCategory android:title="@string/esp_settings_version" />
+
+    <Preference
+        android:key="version_upgrade"
+        android:title="@string/esp_settings_version_upgrade" />
+    <Preference
+        android:key="version_name"
+        android:title="@string/esp_settings_version_name" />
+    <Preference
+        android:key="version_log"
+        android:title="@string/esp_settings_version_log" />
+
+</PreferenceScreen>

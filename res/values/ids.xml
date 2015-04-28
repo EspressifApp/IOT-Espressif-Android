@@ -1,0 +1,8 @@
+<resources>
+
+    <!-- library -->
+    <item name="gridview" type="id"/>
+    <item name="webview" type="id"/>
+    <item name="scrollview" type="id"/>
+
+</resources>

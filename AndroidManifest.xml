@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.espressif.iot"
+    android:versionCode="4"
+    android:versionName="v0.9.2" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="17" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:name="com.espressif.iot.base.application.EspApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/app_icon"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.espressif.iot.ui.welcome.WelcomeActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreen" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.espressif.iot.ui.welcome.LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreen" />
+        <activity
+            android:name="com.espressif.iot.ui.welcome.RegisterActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreen" />
+        <activity
+            android:name="com.espressif.iot.ui.EspUIActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.google.zxing.qrcode.ui.ShareCaptureActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullScreen" />
+        <activity
+            android:name="com.espressif.iot.ui.settings.SettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.DeviceConfigureActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.WifiConfigureActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DevicePlugActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceLightActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceFlammableActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeDark" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceHumitureActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeDark" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceVoltageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeDark" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceRemoteActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DevicePlugsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.DeviceRootRouterActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DeviceTimersActivity"
+            android:label="@string/esp_device_timer"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugFixedTimeTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugLoopInWeekTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugLoopPeriodTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugsFixedTimeTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugsLoopInWeekTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.timer.DevicePlugsLoopPeriodTimerEditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.softap_sta_support.SSSDeviceRootActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.help.HelpActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.softap_sta_support.help.SSSHelpActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.esptouch.EspTouchActivity"
+            android:screenOrientation="portrait" />
+    </application>
+
+</manifest>

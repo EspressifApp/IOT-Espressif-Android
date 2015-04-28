@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="java/UI"/>
+	<classpathentry kind="src" path="java/INTERFACE"/>
+	<classpathentry kind="src" path="java/TYPE"/>
+	<classpathentry kind="src" path="java/MODEL"/>
+	<classpathentry kind="src" path="java/ACTION"/>
+	<classpathentry kind="src" path="java/COMMAND"/>
+	<classpathentry kind="src" path="java/BASE"/>
+	<classpathentry kind="src" path="java/OPEN"/>
+	<classpathentry kind="src" path="java/DB"/>
+	<classpathentry kind="src" path="java/DB-gen"/>
+	<classpathentry kind="src" path="java/UTIL"/>
+	<classpathentry kind="src" path="java/LOG"/>
+	<classpathentry kind="src" path="java/ESPTOUCH"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>

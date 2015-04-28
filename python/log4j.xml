@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<log4j level="OFF">
+    <layer content="java/COMMAND" level="IGNORE">
+        <package content="com.espressif.iot.command.device.light" level="IGNORE">
+            <class content="EspCommandLightPostStatusLocal" level="IGNORE"/>
+            <class content="EspCommandLightGetStatusInternet" level="IGNORE"/>
+            <class content="EspCommandLightGetStatusLocal" level="IGNORE"/>
+            <class content="EspCommandLightPostStatusInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.humiture" level="IGNORE">
+            <class content="EspCommandHumitureGetStatusListInternet" level="IGNORE"/>
+            <class content="EspCommandHumitureGetStatusInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.plug" level="IGNORE">
+            <class content="EspCommandPlugPostStatusInternet" level="IGNORE"/>
+            <class content="EspCommandPlugGetStatusInternet" level="IGNORE"/>
+            <class content="EspCommandPlugGetStatusLocal" level="IGNORE"/>
+            <class content="EspCommandPlugPostStatusLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.user" level="IGNORE">
+            <class content="EspCommandUserRegisterInternet" level="IGNORE"/>
+            <class content="EspCommandUserLoginInternet" level="IGNORE"/>
+            <class content="EspCommandUserLoginDB" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.voltage" level="IGNORE">
+            <class content="EspCommandVoltageGetStatusInternet" level="IGNORE"/>
+            <class content="EspCommandVoltageGetStatusListInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.sensor" level="IGNORE">
+            <class content="EspCommandSensorGetStatusListInternet" level="IGNORE"/>
+            <class content="EspCommandSensorGetStatusInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.New" level="IGNORE">
+            <class content="EspCommandDeviceNewConfigureLocal" level="IGNORE"/>
+            <class content="EspCommandDeviceNewActivateInternet" level="IGNORE"/>
+            <class content="EspCommandDeviceNewGetInfoLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.common" level="IGNORE">
+            <class content="EspCommandDeviceDeleteInternet" level="IGNORE"/>
+            <class content="EspCommandDeviceDiscoverLocal" level="IGNORE"/>
+            <class content="EspCommandDeviceReconnectLocal" level="IGNORE"/>
+            <class content="EspCommandDeviceSynchronizeInternet" level="IGNORE"/>
+            <class content="EspCommandDeviceTimerInternet" level="IGNORE"/>
+            <class content="EspCommandDeviceRenameInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.remote" level="IGNORE">
+            <class content="EspCommandRemoteGetStatusLocal" level="IGNORE"/>
+            <class content="EspCommandRemotePostStatusInternet" level="IGNORE"/>
+            <class content="EspCommandRemotePostStatusLocal" level="IGNORE"/>
+            <class content="EspCommandRemoteGetStatusInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.flammable" level="IGNORE">
+            <class content="EspCommandFlammableGetStatusListInternet" level="IGNORE"/>
+            <class content="EspCommandFlammableGetStatusInternet" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/UI" level="IGNORE">
+        <package content="com.espressif.iot.ui.device.timer" level="IGNORE">
+            <class content="DeviceTimersActivity" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui.device" level="IGNORE">
+            <class content="DeviceActivityAbs" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui.softap_sta_support" level="IGNORE">
+            <class content="SSSFragmentDevices" level="IGNORE"/>
+            <class content="SSSFragmentConfigure" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui.welcome" level="IGNORE">
+            <class content="RegisterActivity" level="IGNORE"/>
+            <class content="LoginActivity" level="IGNORE"/>
+            <class content="WelcomeActivity" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui" level="IGNORE">
+            <class content="EspUIActivity" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui.configure" level="IGNORE">
+            <class content="DeviceConfigureActivity" level="IGNORE"/>
+            <class content="WifiConfigureActivity" level="IGNORE"/>
+            <class content="DeviceConfigureProgressDialog" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/BASE" level="IGNORE">
+        <package content="com.espressif.iot.base.net.rest.mesh" level="IGNORE">
+            <class content="EspSocketUtil" level="IGNORE"/>
+            <class content="EspMeshDiscoverUtil" level="IGNORE"/>
+            <class content="EspSocketClient" level="IGNORE"/>
+            <class content="EspMeshNetUtil" level="IGNORE"/>
+            <class content="EspPureSocketServer" level="IGNORE"/>
+            <class content="EspSocketReaderUtil" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.upgrade.apk" level="IGNORE">
+            <class content="UpgradeManagerApkOnline" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.upgrade.abs" level="IGNORE">
+            <class content="UpgradeManagerAbs" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.net.rest" level="IGNORE">
+            <class content="MeshEspHttpUtil" level="IGNORE"/>
+            <class content="EspHttpUtil" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.net.wifi" level="IGNORE">
+            <class content="WifiAdmin" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.time" level="IGNORE">
+            <class content="EspTimeManager" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.threadpool" level="IGNORE">
+            <class content="CachedThreadPool" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.net.udp" level="IGNORE">
+            <class content="UdpBroadcastUtil" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/LOG" level="IGNORE">
+        <package content="com.espressif.iot.log" level="IGNORE">
+            <class content="InitLogger" level="IGNORE"/>
+            <class content="LogConfigurator" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/ACTION" level="IGNORE">
+        <package content="com.espressif.iot.action.device.New" level="IGNORE">
+            <class content="EspActionDeviceNewActivateInternet" level="IGNORE"/>
+            <class content="EspActionDeviceNewGetInfoLocal" level="IGNORE"/>
+            <class content="EspActionDeviceNewConfigureLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.device.common" level="IGNORE">
+            <class content="EspActionDeviceSynchronizeInterentDiscoverLocal" level="IGNORE"/>
+            <class content="EspActionDeviceReconnectLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.user" level="IGNORE">
+            <class content="EspActionUserLoginDB" level="IGNORE"/>
+            <class content="EspActionUserDevicesUpdated" level="IGNORE"/>
+            <class content="EspActionUserRegisterInternet" level="IGNORE"/>
+            <class content="EspActionUserLoginInternet" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.softap_sta_support" level="IGNORE">
+            <class content="SSSActionDeviceUpgradeLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.device.sensor" level="IGNORE">
+            <class content="EspActionSensorGetStatusListInternetDB" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/MODEL" level="IGNORE">
+        <package content="com.espressif.iot.model.user" level="IGNORE">
+            <class content="EspUser" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.model.help.statemachine" level="IGNORE">
+            <class content="EspHelpStateMachine" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.model.device.statemachine" level="IGNORE">
+            <class content="EspDeviceStateMachine" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.model.device.upgrade" level="IGNORE">
+            <class content="EspDeviceCheckCompatibility" level="IGNORE"/>
+            <class content="EspDeviceDoUpgradeOnline" level="IGNORE"/>
+            <class content="EspDeviceDoUpgradeLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.model.device" level="IGNORE">
+            <class content="EspDeviceNew" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.model.device.cache" level="IGNORE">
+            <class content="EspDeviceCache" level="IGNORE"/>
+            <class content="EspDeviceCacheHandler" level="IGNORE"/>
+        </package>
+    </layer>
+    <layer content="java/DB" level="IGNORE">
+        <package content="com.espressif.iot.db" level="IGNORE">
+            <class content="IOTDownloadIdValueDBManager" level="IGNORE"/>
+            <class content="IOTUserDBManager" level="IGNORE"/>
+            <class content="IOTGenericDataDBManager" level="IGNORE"/>
+            <class content="IOTGenericDataDirectoryDBManager" level="IGNORE"/>
+            <class content="IOTApDBManager" level="IGNORE"/>
+            <class content="IOTDeviceDBManager" level="IGNORE"/>
+        </package>
+    </layer>
+</log4j>

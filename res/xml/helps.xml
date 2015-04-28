@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="@string/esp_help_configure_device" />
+
+    <Preference
+        android:key="esp_help_configure"
+        android:title="@string/esp_help_configure" />
+
+    <PreferenceCategory android:title="@string/esp_help_use_device" />
+
+    <Preference
+        android:key="esp_help_use_plug"
+        android:title="@string/esp_help_use_plug" />
+    <Preference
+        android:key="esp_help_use_plugs"
+        android:title="@string/esp_help_use_plugs" />
+    <Preference
+        android:key="esp_help_use_light"
+        android:title="@string/esp_help_use_light" />
+    <Preference
+        android:key="esp_help_use_humiture"
+        android:title="@string/esp_help_use_humiture" />
+    <Preference
+        android:key="esp_help_use_flammable"
+        android:title="@string/esp_help_use_flammable" />
+    <Preference
+        android:key="esp_help_use_voltage"
+        android:title="@string/esp_help_use_voltage" />
+    <Preference
+        android:key="esp_help_use_remote"
+        android:title="@string/esp_help_use_remote" />
+
+    <PreferenceCategory android:title="@string/esp_help_upgrade_device" />
+
+    <Preference
+        android:key="esp_help_upgrade_local"
+        android:title="@string/esp_help_upgrade_local" />
+    <Preference
+        android:key="esp_help_upgrade_online"
+        android:title="@string/esp_help_upgrade_online" />
+</PreferenceScreen>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/esp_activity_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingLeft="50dip"
+    android:paddingRight="50dip"
+    tools:context="com.espressif.iot.ui.login.LoginActivity" >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dip"
+        android:background="@drawable/esp_login_head" />
+
+    <EditText
+        android:id="@+id/login_edt_account"
+        style="@style/LoginEditText"
+        android:layout_marginTop="35dip"
+        android:drawableLeft="@drawable/esp_login_icon_email"
+        android:hint="@string/esp_login_email"
+        android:inputType="textEmailAddress" />
+
+    <EditText
+        android:id="@+id/login_edt_password"
+        style="@style/LoginEditText"
+        android:drawableLeft="@drawable/esp_login_icon_password"
+        android:hint="@string/esp_login_password"
+        android:inputType="textPassword" />
+
+    <CheckBox
+        android:id="@+id/login_cb_auto_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dip"
+        android:layout_marginTop="15dip"
+        android:background="@drawable/esp_checkbox"
+        android:button="@null"
+        android:text="@string/esp_login_auto_login"
+        android:textSize="18sp" />
+
+    <include layout="@layout/login_buttons" />
+
+</LinearLayout>

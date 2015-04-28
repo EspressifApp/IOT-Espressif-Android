@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/ActionBarStyle</item>
+    </style>
+
+    <style name="AppThemeDark" parent="android:Theme.Holo">
+        <item name="android:actionBarStyle">@style/ActionBarStyle</item>
+    </style>
+
+    <style name="ActionBarStyle" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/esp_actionbar_color</item>
+        <item name="android:titleTextStyle">@style/ActionBarTitleStyle</item>
+    </style>
+
+    <style name="ActionBarTitleStyle">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    
+    <style name="LoginFormContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="FullScreen" parent="android:Theme.Holo.NoActionBar.Fullscreen"></style>
+
+    <style name="LoginEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">15dip</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:textColorHint">@color/esp_text_hint_color</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:drawablePadding">15dip</item>
+        <item name="android:background">@drawable/esp_edit_underline_bg</item>
+    </style>
+
+    <style name="YellowButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">75dip</item>
+        <item name="android:minHeight">40dip</item>
+        <item name="android:background">@drawable/esp_button_yellow</item>
+        <item name="android:textSize">22sp</item>
+    </style>
+
+    <style name="RegisterEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">15dip</item>
+        <item name="android:drawablePadding">15dip</item>
+        <item name="android:background">@drawable/esp_edit_round_bg</item>
+        <item name="android:textColorHint">@color/esp_text_hint_color</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="BlueButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">75dip</item>
+        <item name="android:minHeight">40dip</item>
+        <item name="android:background">@drawable/esp_button_blue</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="WeekCheckBox">
+        <item name="android:layout_margin">5dip</item>
+        <item name="android:padding">5dip</item>
+        <item name="android:background">@drawable/esp_week_checked_background</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/esp_week_text_color</item>
+    </style>
+
+    <style name="EspTab">
+        <item name="android:button">@null</item>
+        <item name="android:background">@drawable/esp_tab_bg</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
+        <item name="android:minHeight">50dip</item>
+    </style>
+</resources>

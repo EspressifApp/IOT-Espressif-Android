@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="esp_settings_device_auto_refresh_entries">
+        <item>从不</item>
+        <item>30秒</item>
+        <item>1分钟</item>
+        <item>2分钟</item>
+        <item>5分钟</item>
+    </string-array>
+    <string-array name="esp_settings_device_auto_refresh_values">
+        <item>0</item>
+        <item>30000</item>
+        <item>60000</item>
+        <item>120000</item>
+        <item>300000</item>
+    </string-array>
+
+    <string-array name="esp_settings_auto_config_device_entries">
+        <item>从不</item>
+        <item>-20 dbm</item>
+        <item>-30 dbm</item>
+        <item>-40 dbm</item>
+        <item>-50 dbm</item>
+        <item>-60 dbm</item>
+    </string-array>
+    <string-array name="esp_settings_auto_config_device_values">
+        <item>0</item>
+        <item>-20</item>
+        <item>-30</item>
+        <item>-40</item>
+        <item>-50</item>
+        <item>-60</item>
+    </string-array>
+
+    <string-array name="esp_device_timer_type">
+        <item>定时</item>
+        <item>定时循环</item>
+        <item>周间循环</item>
+    </string-array>
+
+    <string-array name="esp_device_timer_period_units">
+        <item>秒</item>
+        <item>分</item>
+        <item>小时</item>
+        <item>天</item>
+    </string-array>
+
+    <string-array name="esp_device_timer_period_unit_values">
+        <item>second</item>
+        <item>minute</item>
+        <item>hour</item>
+        <item>day</item>
+    </string-array>
+
+    <string-array name="esp_device_plug_timer_actions">
+        <item>关闭</item>
+        <item>打开</item>
+        <item>反向开关</item>
+    </string-array>
+
+    <string-array name="esp_device_plug_timer_action_values">
+        <item>off_switch</item>
+        <item>on_switch</item>
+        <item>on_off_switch</item>
+    </string-array>
+
+    <string-array name="esp_device_plugs_timer_actions">
+        <item>关闭</item>
+        <item>打开</item>
+        <item>反向开关</item>
+    </string-array>
+
+    <string-array name="esp_device_plugs_timer_action_values">
+        <item>off_plug_</item>
+        <item>on_plug_</item>
+        <item>on_off_plug_</item>
+    </string-array>
+
+    <string-array name="esp_device_timer_oprate_options">
+        <item>删除</item>
+    </string-array>
+    
+    <string-array name="esp_ui_device_dialog_items">
+        <item>重命名设备</item>
+        <item>删除设备</item>
+    </string-array>
+
+    <string-array name="esp_sss_device_configure_options">
+        <item>直连</item>
+        <!-- <item>配置到指定路由</item> -->
+    </string-array>
+
+    <string-array name="esp_sss_device_use_options">
+        <item>设备升级</item>
+    </string-array>
+</resources>
