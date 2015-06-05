@@ -6,7 +6,7 @@ import com.espressif.iot.type.device.status.IEspStatusHumiture;
 
 public interface IEspCommandHumitureGetStatusInternet extends IEspCommandInternet, IEspCommandHumiture
 {
-    final String URL = "https://iot.espressif.cn/v1/datastreams/tem_hum/datapoints/";
+    static final String URL = "https://iot.espressif.cn/v1/datastreams/tem_hum/datapoints/";
     
     /**
      * get the statusHumiture to the Humiture by Internet

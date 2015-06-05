@@ -2,20 +2,18 @@ package com.espressif.iot.ui.device;
 
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevicePlug;
-import com.espressif.iot.help.ui.IEspHelpUIUsePlug;
 import com.espressif.iot.type.device.status.EspStatusPlug;
-import com.espressif.iot.type.help.HelpStepUsePlug;
 
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 
-public class DevicePlugActivity extends DeviceActivityAbs implements OnClickListener, IEspHelpUIUsePlug
+public class DevicePlugActivity extends DeviceActivityAbs implements OnClickListener
 {
     private IEspDevicePlug mDevicePlug;
     
-    private CheckBox mPlugSwitch;
+    protected CheckBox mPlugSwitch;
     private CheckBox mControlChildCB;
     
     @Override
@@ -26,11 +24,7 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         mDevicePlug = (IEspDevicePlug)mIEspDevice;
         
         boolean compatibility = isDeviceCompatibility();
-        if (mHelpMachine.isHelpModeUsePlug())
-        {
-            mHelpMachine.transformState(compatibility);
-            onHelpUsePlug();
-        }
+        checkHelpModePlug(compatibility);
         if (compatibility)
         {
             executeGet();
@@ -81,46 +75,14 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         boolean isOn = mDevicePlug.getStatusPlug().isOn();
         mPlugSwitch.setChecked(isOn);
         
-        if (mHelpMachine.isHelpModeUsePlug() && command == COMMAND_POST)
-        {
-            mHelpMachine.transformState(true);
-            onHelpUsePlug();
-        }
+        checkHelpExecuteFinish(command, result);
     }
     
-    @Override
-    public void onHelpUsePlug()
+    protected void checkHelpModePlug(boolean compatibility)
     {
-        clearHelpContainer();
-        
-        HelpStepUsePlug step = HelpStepUsePlug.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch (step)
-        {
-            case START_USE_HELP:
-            case FAIL_FOUND_PLUG:
-            case FIND_ONLINE:
-            case NO_PLUG_ONLINE:
-            case PLUG_SELECT:
-                break;
-                
-            case PLUG_NOT_COMPATIBILITY:
-                mHelpMachine.exit();
-                setResult(RESULT_EXIT_HELP_MODE);
-                break;
-            case PLUG_CONTROL:
-                highlightHelpView(mPlugSwitch);
-                setHelpHintMessage(R.string.esp_help_use_plug_tap_icon_msg);
-                break;
-            case PLUG_CONTROL_FAILED:
-                highlightHelpView(mPlugSwitch);
-                setHelpHintMessage(R.string.esp_help_use_plug_control_failed_msg);
-                mHelpMachine.retry();
-                break;
-            case SUC:
-                setHelpFrameDark();
-                setHelpHintMessage(R.string.esp_help_use_plug_success_msg);
-                setHelpButtonVisible(HELP_BUTTON_EXIT, true);
-                break;
-        }
+    }
+    
+    protected void checkHelpExecuteFinish(int command, boolean result)
+    {
     }
 }

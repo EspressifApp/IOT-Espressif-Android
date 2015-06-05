@@ -61,6 +61,8 @@ public class EspStrings
          */
         public static final String SETTINGS_KEY_DEVICE_AUTO_REFRESH = "settings_device_auto_refresh";
         
+        public static final String SETTINGS_KEY_STORE_LOG = "settings_store_log";
+        
         /**
          * The key of shared value auto configure device
          */

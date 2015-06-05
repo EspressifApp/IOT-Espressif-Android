@@ -44,15 +44,18 @@ public class EspCommandLightGetStatusInternet implements IEspCommandLightGetStat
             if (status == HttpStatus.SC_OK)
             {
                 JSONObject data = result.getJSONObject(Datapoint);
-                int freq = data.getInt(X);
+                int period = data.getInt(X);
                 int red = data.getInt(Y);
                 int green = data.getInt(Z);
                 int blue = data.getInt(K);
+                int white = data.getInt(L);
                 IEspStatusLight statusLight = new EspStatusLight();
-                statusLight.setFreq(freq);
+                statusLight.setPeriod(period);
                 statusLight.setRed(red);
                 statusLight.setGreen(green);
                 statusLight.setBlue(blue);
+                statusLight.setCWhite(white);
+                statusLight.setWWhite(white);
                 return statusLight;
             }
             else

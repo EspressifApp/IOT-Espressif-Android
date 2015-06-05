@@ -83,10 +83,12 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
                 {
                     suc = true;
                     IEspDeviceLight light = (IEspDeviceLight)device;
-                    light.getStatusLight().setFreq(lightStatus.getFreq());
+                    light.getStatusLight().setPeriod(lightStatus.getPeriod());
                     light.getStatusLight().setRed(lightStatus.getRed());
                     light.getStatusLight().setGreen(lightStatus.getGreen());
                     light.getStatusLight().setBlue(lightStatus.getBlue());
+                    light.getStatusLight().setCWhite(lightStatus.getCWhite());
+                    light.getStatusLight().setWWhite(lightStatus.getWWhite());
                 }
                 return suc;
             case PLUG:

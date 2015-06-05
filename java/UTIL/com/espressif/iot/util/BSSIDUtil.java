@@ -60,7 +60,6 @@ public class BSSIDUtil
     }
     
     /**
-     * 
      * generate Device Name By BSSID
      * 
      * @param BSSID

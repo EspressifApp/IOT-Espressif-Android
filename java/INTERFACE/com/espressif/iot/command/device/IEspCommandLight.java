@@ -8,5 +8,17 @@ package com.espressif.iot.command.device;
  */
 public interface IEspCommandLight extends IEspCommandDevice
 {
+    static final String Period = "period";
     
+    static final String Rgb = "rgb";
+    
+    static final String Red = "red";
+    
+    static final String Green = "green";
+    
+    static final String Blue = "blue";
+    
+    static final String CWhite = "cwhite";
+    
+    static final String WWhite = "wwhite";
 }

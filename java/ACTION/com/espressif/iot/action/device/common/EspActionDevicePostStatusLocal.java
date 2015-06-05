@@ -71,10 +71,12 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
                     {
                         statusLight = ((IEspDeviceLight)device).getStatusLight();
                     }
-                    statusLight.setFreq(lightStatus.getFreq());
+                    statusLight.setPeriod(lightStatus.getPeriod());
                     statusLight.setRed(lightStatus.getRed());
                     statusLight.setGreen(lightStatus.getGreen());
                     statusLight.setBlue(lightStatus.getBlue());
+                    statusLight.setCWhite(lightStatus.getCWhite());
+                    statusLight.setWWhite(lightStatus.getWWhite());
                 }
                 return suc;
             case PLUG:
@@ -162,11 +164,10 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
     
     private void doRootRouterCommandLocal(IEspDeviceRoot device, IEspDeviceStatus status)
     {
-        final int firstChildLevel = 2;
         List<IEspDeviceTreeElement> childList = device.getDeviceTreeElementList();
         for (IEspDeviceTreeElement element : childList)
         {
-            if (element.getLevel() == firstChildLevel)
+            if (element.getLevel() == FIRST_CHILD_LEVEL)
             {
                 IEspDevice child = element.getCurrentDevice();
                 EspBaseApiUtil.submit(new RootStatusRunnable(child, status));

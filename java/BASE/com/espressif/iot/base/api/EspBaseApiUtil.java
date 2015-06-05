@@ -10,6 +10,8 @@ import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
 
+import com.espressif.iot.base.net.rest.EspHttpDownloadUtil;
+import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.base.net.rest.EspHttpUtil;
 import com.espressif.iot.base.net.rest.mesh.EspMeshDiscoverUtil;
 import com.espressif.iot.base.net.rest.mesh.EspMeshNetUtil;
@@ -362,14 +364,6 @@ public class EspBaseApiUtil
         return UpgradeAdministrator.getInstance().upgradeApk();
     }
     
-    /**
-     * the download Progress percent listener
-     * 
-     */
-    public interface ProgressUpdateListener
-    {
-        void onProgress(double percent);
-    }
     
     /**
      * Check whether there is a higher version apk on the server and upgrade
@@ -380,5 +374,21 @@ public class EspBaseApiUtil
     public static EspUpgradeApkResult upgradeApk(ProgressUpdateListener listener)
     {
         return UpgradeAdministrator.getInstance().upgradeApk(listener);
+    }
+    
+    /**
+     * download the file from Internet by HTTP protocol
+     * 
+     * @param progressListener the progress update Listener
+     * @param url the url of the file to be downloaded
+     * @param folderPath the folderPath where to save the file
+     * @param saveFileName the filename what the file to be saved
+     * @param headers the head-key and head-value pair
+     * @return whether the file is downloaded suc
+     */
+    public static boolean download(ProgressUpdateListener progressListener, String url, String folderPath,
+        String saveFileName, HeaderPair... headers)
+    {
+        return EspHttpDownloadUtil.download(progressListener, url, folderPath, saveFileName, headers);
     }
 }

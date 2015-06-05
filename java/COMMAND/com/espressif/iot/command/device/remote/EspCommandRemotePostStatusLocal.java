@@ -13,9 +13,10 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
 {
     private final static Logger log = Logger.getLogger(EspCommandRemotePostStatusLocal.class);
     
-    private String getRemoteLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http:/" + inetAddress + "/" + "config?command=remote";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=remote";
     }
     
     private JSONObject getRequestJSONObject(IEspStatusRemote statusRemote)
@@ -36,13 +37,14 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
         return request;
     }
     
-    private boolean postRemoteStatus(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid, String router)
+    private boolean postRemoteStatus(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid,
+        String router)
     {
-        String uriString = getRemoteLocalUrl(inetAddress);
+        String uriString = getLocalUrl(inetAddress);
         JSONObject jsonObject;
         jsonObject = getRequestJSONObject(statusRemote);
         JSONObject result = null;
-        if(deviceBssid==null || router==null)
+        if (deviceBssid == null || router == null)
         {
             EspBaseApiUtil.Post(uriString, jsonObject);
         }
@@ -61,7 +63,7 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
             + "],statusRemote=[" + statusRemote + "]): " + result);
         return result;
     }
-
+    
     @Override
     public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote,
         String deviceBssid, String router)
@@ -72,5 +74,4 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
             + result);
         return result;
     }
-    
 }

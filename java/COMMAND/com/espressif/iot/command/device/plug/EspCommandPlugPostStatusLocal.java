@@ -14,9 +14,10 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     
     private final static Logger log = Logger.getLogger(EspCommandPlugPostStatusLocal.class);
     
-    private String getPlugLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http:/" + inetAddress + "/" + "config?command=switch";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=switch";
     }
     
     private JSONObject getRequestJSONObject(IEspStatusPlug statusPlug)
@@ -42,7 +43,7 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     
     private boolean postPlugStatus(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid, String router)
     {
-        String uriString = getPlugLocalUrl(inetAddress);
+        String uriString = getLocalUrl(inetAddress);
         JSONObject jsonObject;
         jsonObject = getRequestJSONObject(statusPlug);
         if (EspBaseApiUtil.Post(uriString, jsonObject) != null)

@@ -79,7 +79,8 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
     }
     
     // create wifi Configuration used to connect
-    private WifiConfiguration createWifiConfirutaion(String ssid, WifiCipherType type, String password)
+    private WifiConfiguration createWifiConfirutaion(String ssid, WifiCipherType type, boolean isSsidHidden,
+        String password)
     {
         WifiConfiguration config = new WifiConfiguration();
         config.allowedAuthAlgorithms.clear();
@@ -88,6 +89,7 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
         config.allowedPairwiseCiphers.clear();
         config.allowedProtocols.clear();
         config.SSID = "\"" + ssid + "\"";
+        config.hiddenSSID = isSsidHidden;
         switch (type)
         {
             case WIFICIPHER_OPEN:
@@ -353,78 +355,14 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
     @Override
     public boolean enableConnected(String ssid, WifiCipherType type, String... password)
     {
-        if (isWifiConnected(ssid))
-        {
-            log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
-                + "],password=[" + (password == null ? "null" : password[0]) + "]): is connected already,return true");
-            return true;
-        }
-        WifiConfiguration wifiConfiguration = getExistWifiConfiguration(ssid);
-        Context context = EspApplication.sharedInstance().getBaseContext();
-        WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-        // only use the paraters,and remove the exist wifi Configuration
-        if (wifiConfiguration != null)
-        {
-            log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
-                + "],password=[" + (password == null ? "null" : password[0])
-                + "]): removeNetwork already in Android System");
-            mWifiManager.removeNetwork(wifiConfiguration.networkId);
-        }
-        int len = password.length;
-        if (len > 0 && type != WifiCipherType.WIFICIPHER_OPEN)
-        {
-            wifiConfiguration = createWifiConfirutaion(ssid, type, password[0]);
-        }
-        else
-        {
-            wifiConfiguration = createWifiConfirutaion(ssid, type, null);
-        }
-        int netId = mWifiManager.addNetwork(wifiConfiguration);
-        boolean enableConnected = mWifiManager.enableNetwork(netId, true);
-        log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
-            + "],password=[" + (password == null ? "null" : password[0]) + "]): " + enableConnected);
-        return enableConnected;
+        return enableConnected(ssid, type, false, password);
     }
     
     @Override
     public boolean connect(String ssid, WifiCipherType type, String... password)
         throws InterruptedException
     {
-        if (isWifiConnected(ssid))
-        {
-            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],password=["
-                + (password == null ? "null" : password[0]) + "]): is connected already,return true");
-            return true;
-        }
-        // delete wifi Configuration when the WifiCipherType changed
-        WifiConfiguration wifiConfiguration = getExistWifiConfiguration(ssid);
-        if (wifiConfiguration != null && getWifiCipherType(wifiConfiguration) != type)
-        {
-            Context context = EspApplication.sharedInstance().getBaseContext();
-            WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-            mWifiManager.removeNetwork(wifiConfiguration.networkId);
-            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],password=["
-                + (password == null ? "null" : password[0]) + "]): delete the wifiConfiguration changed cipher type");
-        }
-        // try the exist wifi Configuration firstly
-        if (connect(ssid))
-        {
-            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],password=["
-                + (password == null ? "null" : password[0]) + "]): connect(ssid)=true,return true");
-            return true;
-        }
-        boolean enableConnected = enableConnected(ssid, type, password);
-        if (!enableConnected)
-        {
-            log.warn(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],password=["
-                + (password == null ? "null" : password[0])
-                + "]): enableConnected(ssid, type, password)=false,return false");
-            return false;
-        }
-        boolean connect = isConnectSuc(ssid);
-        log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],password=["
-            + (password == null ? "null" : password[0]) + "]): " + connect);
-        return connect;
+        return connect(ssid, type, false, password);
     }
     
     @Override
@@ -477,11 +415,11 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
     {
         WifiInfo mWifiInfo = getConnectionInfo();
         String ssid = null;
-        if (mWifiInfo != null && isWifiConnected())
+        if (mWifiInfo != null && mWifiInfo.getSSID() != null && isWifiConnected())
         {
             int len = mWifiInfo.getSSID().length();
             // mWifiInfo.getBSSID() = "\"" + ssid + "\"";
-            if(mWifiInfo.getSSID().startsWith("\"")&&mWifiInfo.getSSID().endsWith("\""))
+            if (mWifiInfo.getSSID().startsWith("\"") && mWifiInfo.getSSID().endsWith("\""))
             {
                 ssid = mWifiInfo.getSSID().substring(1, len - 1);
             }
@@ -493,6 +431,88 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
         }
         log.info(Thread.currentThread().toString() + "##getWifiConnectedSsid(): " + ssid);
         return ssid;
+    }
+    
+    @Override
+    public boolean enableConnected(String ssid, WifiCipherType type, boolean isSsidHidden, String... password)
+    {
+        if (isWifiConnected(ssid))
+        {
+            log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): is connected already,return true");
+            return true;
+        }
+        WifiConfiguration wifiConfiguration = getExistWifiConfiguration(ssid);
+        Context context = EspApplication.sharedInstance().getBaseContext();
+        WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        // only use the paraters,and remove the exist wifi Configuration
+        if (wifiConfiguration != null)
+        {
+            log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): removeNetwork already in Android System");
+            mWifiManager.removeNetwork(wifiConfiguration.networkId);
+        }
+        int len = password.length;
+        if (len > 0 && type != WifiCipherType.WIFICIPHER_OPEN)
+        {
+            wifiConfiguration = createWifiConfirutaion(ssid, type, isSsidHidden, password[0]);
+        }
+        else
+        {
+            wifiConfiguration = createWifiConfirutaion(ssid, type, isSsidHidden, null);
+        }
+        int netId = mWifiManager.addNetwork(wifiConfiguration);
+        boolean enableConnected = mWifiManager.enableNetwork(netId, true);
+        log.info(Thread.currentThread().toString() + "##enableConnected(ssid=[" + ssid + "],type=[" + type
+            + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0]) + "]): "
+            + enableConnected);
+        return enableConnected;
+    }
+    
+    @Override
+    public boolean connect(String ssid, WifiCipherType type, boolean isSsidHidden, String... password)
+        throws InterruptedException
+    {
+        if (isWifiConnected(ssid))
+        {
+            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): is connected already,return true");
+            return true;
+        }
+        // delete wifi Configuration when the WifiCipherType changed
+        WifiConfiguration wifiConfiguration = getExistWifiConfiguration(ssid);
+        if (wifiConfiguration != null && getWifiCipherType(wifiConfiguration) != type)
+        {
+            Context context = EspApplication.sharedInstance().getBaseContext();
+            WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+            mWifiManager.removeNetwork(wifiConfiguration.networkId);
+            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): delete the wifiConfiguration changed cipher type");
+        }
+        // try the exist wifi Configuration firstly
+        if (connect(ssid))
+        {
+            log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): connect(ssid)=true,return true");
+            return true;
+        }
+        boolean enableConnected = enableConnected(ssid, type, isSsidHidden, password);
+        if (!enableConnected)
+        {
+            log.warn(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type
+                + "],isSsidHidden=[" + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0])
+                + "]): enableConnected(ssid, type, password)=false,return false");
+            return false;
+        }
+        boolean connect = isConnectSuc(ssid);
+        log.info(Thread.currentThread().toString() + "##connect(ssid=[" + ssid + "],type=[" + type + "],isSsidHidden=["
+            + isSsidHidden + "],password=[" + (password.length == 0 ? "null" : password[0]) + "]): " + connect);
+        return connect;
     }
     
 }

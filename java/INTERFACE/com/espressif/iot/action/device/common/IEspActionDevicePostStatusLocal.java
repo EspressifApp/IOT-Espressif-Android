@@ -8,6 +8,7 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 
 public interface IEspActionDevicePostStatusLocal extends IEspActionActivated, IEspActionUnactivated, IEspActionLocal
 {
+    static final int FIRST_CHILD_LEVEL = 2;
     /**
      * post the status to device via local
      * 

@@ -1,5 +1,8 @@
 package com.espressif.iot.command.device.New;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,6 +14,12 @@ import com.espressif.iot.type.net.WifiCipherType;
 public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewConfigureLocal
 {
     private final static Logger log = Logger.getLogger(EspCommandDeviceNewConfigureLocal.class);
+    
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
+    {
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=wifi";
+    }
     
     @Override
     public boolean doCommandDeviceNewConfigureLocal(String deviceSsid, WifiCipherType deviceWifiCipherType,
@@ -44,7 +53,17 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
                 e.printStackTrace();
             }
             String gateWay = EspApplication.sharedInstance().getGateway();
-            JSONObject result = EspBaseApiUtil.Post(URL.replace("192.168.4.1", gateWay), Request);
+            InetAddress inetAddress = null;
+            try
+            {
+                inetAddress = InetAddress.getByName(gateWay);
+            }
+            catch (UnknownHostException e)
+            {
+                e.printStackTrace();
+            }
+            String urlString = getLocalUrl(inetAddress);
+            JSONObject result = EspBaseApiUtil.Post(urlString, Request);
             log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=["
                 + deviceSsid + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=["
                 + devicePassword + "],apSsid=[" + apSsid + "],apWifiCipherType=[" + apWifiCipherType + "],apPassword=["
@@ -77,8 +96,6 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
             JSONObject Connect_Station = new JSONObject();
             JSONObject Station = new JSONObject();
             JSONObject Request = new JSONObject();
-            String gateWay = EspApplication.sharedInstance().getGateway();
-            
             try
             {
                 Content.put("token", randomToken);
@@ -89,12 +106,23 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
                 
                 Request.put("Request", Station);
             }
-            
             catch (JSONException e)
             {
                 e.printStackTrace();
             }
-            JSONObject result = EspBaseApiUtil.Post(URL.replace("192.168.4.1", gateWay), Request);
+            
+            String gateWay = EspApplication.sharedInstance().getGateway();
+            InetAddress inetAddress = null;
+            try
+            {
+                inetAddress = InetAddress.getByName(gateWay);
+            }
+            catch (UnknownHostException e)
+            {
+                e.printStackTrace();
+            }
+            String urlString = getLocalUrl(inetAddress);
+            JSONObject result = EspBaseApiUtil.Post(urlString, Request);
             log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=["
                 + deviceSsid + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=["
                 + devicePassword + "],randomToken=[" + randomToken + "]): " + result);

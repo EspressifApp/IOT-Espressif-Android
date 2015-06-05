@@ -25,18 +25,32 @@
         android:layout_height="wrap_content" />
     
     <EditText
+        android:id="@+id/esptouch_ssid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dip"
+        android:hint="@string/esp_esptouch_ssid_hint"
+        android:inputType="text" />
+    
+    <EditText
         android:id="@+id/esptouch_pwd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dip"
-        android:hint="@string/esp_esptouch_ssid_pwd_hint"
+        android:hint="@string/esp_esptouch_pwd_hint"
         android:inputType="textPassword" />
+    
+    <CheckBox
+            android:id="@+id/esptouch_isSsidHidden"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_esptouch_isSsidHidden" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_margin="5dip"
+        
         android:orientation="horizontal" >
 
         <CheckBox
@@ -64,4 +78,14 @@
         android:layout_margin="5dip"
         android:text="@android:string/ok" />
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/esp_esptouch_version" />
 </LinearLayout>

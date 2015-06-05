@@ -24,11 +24,17 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
     private final static Logger log = Logger.getLogger(EspCommandDeviceSynchronizeInternet.class);
     
     private static final long ONLINE_TIMEOUT_PLUG = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_LIGHT = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_TEMPERATURE = 5 * TimeUtil.ONE_MINUTE_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_GAS_SIREN = 5 * TimeUtil.ONE_MINUTE_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_REMOTE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_PLUGS = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_VOLTAGE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private JSONArray getJSONArrayGroups(String userKey)
@@ -40,11 +46,11 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
         {
             try
             {
-                int status = Integer.parseInt(jsonObjectResult.getString("status"));
+                int status = Integer.parseInt(jsonObjectResult.getString(Status));
                 if (status == HttpStatus.SC_OK)
                 {
                     log.debug("getJSONArrayDeviceInfo() suc");
-                    JSONArray jsonArray = jsonObjectResult.getJSONArray("deviceGroups");
+                    JSONArray jsonArray = jsonObjectResult.getJSONArray(Device_Groups);
                     return jsonArray;
                 }
             }
@@ -120,20 +126,20 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                 // espGroup.saveInDB();
                 // groupList.add(espGroup);
                 
-                JSONArray devicesJsonArray = groupJSON.getJSONArray("devices");
+                JSONArray devicesJsonArray = groupJSON.getJSONArray(Devices);
                 for (int i = 0; i < devicesJsonArray.length(); i++)
                 {
                     JSONObject deviceJsonObject = devicesJsonArray.getJSONObject(i);
                     // bssid
-                    String bssid = deviceJsonObject.getString("bssid");
+                    String bssid = deviceJsonObject.getString(Bssid);
                     if (bssid.equals("") || bssid.equals("12:34:56:78:91"))
                     {
                         continue;
                     }
                     // type
-                    int ptype = deviceJsonObject.getInt("ptype");
+                    int ptype = deviceJsonObject.getInt(Ptype);
                     EspDeviceType deviceType = EspDeviceType.getEspTypeEnumBySerial(ptype);
-                    if(deviceType == null)
+                    if (deviceType == null)
                     {
                         // invalid ptype
                         continue;
@@ -143,7 +149,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     long userId = BEspUser.getBuilder().getInstance().getUserId();
                     
                     // deviceId
-                    long deviceId = Long.parseLong(deviceJsonObject.getString("id"));
+                    long deviceId = Long.parseLong(deviceJsonObject.getString(Id));
                     log.debug("deviceId=" + deviceId);
                     
                     // device name
@@ -178,7 +184,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     
                     // isOwner
                     boolean isOwner = false;
-                    if (Integer.parseInt(keyJsonObject.getString("is_owner_key")) == 1)
+                    if (Integer.parseInt(keyJsonObject.getString(Is_Owner_Key)) == 1)
                     {
                         isOwner = true;
                     }
@@ -186,10 +192,10 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     // deviceKey
                     String deviceKey = keyJsonObject.getString(Token);
                     // rom_version and latest_rom_version
-                    String rom_version = deviceJsonObject.getString("rom_version");
-                    String latest_rom_version = deviceJsonObject.getString("latest_rom_version");
+                    String rom_version = deviceJsonObject.getString(Rom_Version);
+                    String latest_rom_version = deviceJsonObject.getString(Latest_Rom_Version);
                     // check isOnline
-                    long last_active = deviceJsonObject.getLong("last_active") * TimeUtil.ONE_SECOND_LONG_VALUE;
+                    long last_active = deviceJsonObject.getLong(Last_Active) * TimeUtil.ONE_SECOND_LONG_VALUE;
                     boolean isOnline = isDeviceOnline(deviceType, last_active, currentTime);
                     // set state
                     EspDeviceState deviceState = new EspDeviceState();
@@ -229,7 +235,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     {
                         deviceList.add(device);
                     }
-
+                    
                 }
             }
             catch (JSONException e)

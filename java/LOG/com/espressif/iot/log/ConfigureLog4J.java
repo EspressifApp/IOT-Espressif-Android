@@ -15,11 +15,13 @@
  */
 package com.espressif.iot.log;
 
-import java.io.File;
-
 import org.apache.log4j.Level;
 
-import android.os.Environment;
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.util.EspStrings;
 
 /**
  * Example how to to configure Log4J in Android. Call {@link #configure()} from your application's activity.
@@ -28,11 +30,16 @@ import android.os.Environment;
  */
 public class ConfigureLog4J
 {
+    
     public static void configure()
     {
         final LogConfigurator logConfigurator = new LogConfigurator();
         
-        logConfigurator.setFileName(Environment.getExternalStorageDirectory() + File.separator + "myapp.log");
+        SharedPreferences shared =
+            EspApplication.sharedInstance().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        logConfigurator.setUseFileAppender(shared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, false));
+        
+        logConfigurator.setFileName(LogConfigurator.DefaultLogFileDirPath + LogConfigurator.DefaultLogFileName);
         // Set the root log level
         logConfigurator.setRootLevel(Level.ERROR);
         // Set log level of a specific logger

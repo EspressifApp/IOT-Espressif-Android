@@ -8,12 +8,12 @@ import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.EspDeviceType;
-import com.espressif.iot.ui.EspActivityAbs;
 import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
+import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.view.EspPagerAdapter;
 import com.espressif.iot.ui.view.EspViewPager;
-import com.espressif.iot.ui.view.tree.TreeView;
-import com.espressif.iot.ui.view.tree.TreeView.LastLevelItemClickListener;
+import com.espressif.iot.ui.view.TreeView;
+import com.espressif.iot.ui.view.TreeView.LastLevelItemClickListener;
 import com.espressif.iot.user.builder.EspSSSUser;
 
 import android.os.Bundle;

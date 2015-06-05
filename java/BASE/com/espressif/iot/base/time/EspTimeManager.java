@@ -34,12 +34,6 @@ public class EspTimeManager implements IEspTimeManager, IEspSingletonObject
      */
     private static final Logger log = Logger.getLogger(EspTimeManager.class);
     
-    private static final String Status = "status";
-    
-    private static final String epoch = "epoch";
-    
-    private static final String Url = "https://iot.espressif.cn/v1/ping/";
-    
     /**
      * whether the timeStamp is today
      * 

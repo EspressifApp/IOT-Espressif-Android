@@ -14,7 +14,7 @@ import com.espressif.iot.util.RouterUtil;
 
 public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostStatusInternet
 {
-
+    
     @Override
     public boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status, String router)
     {
@@ -43,7 +43,7 @@ public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostSt
                 valueSum += value;
             }
             dataJSON.put(X, valueSum);
-            params.put(KEY_DATA_POINT, dataJSON);
+            params.put(Datapoint, dataJSON);
         }
         catch (JSONException e1)
         {

@@ -254,7 +254,8 @@ public class EspMeshNetUtil
     }
     
     private static JSONObject __executeForJson(EspSocketClient client, String method, String uriStr, String router,
-        String deviceBssid, JSONObject json, HeaderPair... headers)
+        String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
+        int targetPort, HeaderPair... headers)
     {
         log.debug("__executeForJson()");
         boolean isConnectRequired = false;
@@ -278,7 +279,7 @@ public class EspMeshNetUtil
         {
             for (int i = 0; i < CONNECT_RETRY; i++)
             {
-                if (__connect(client, host, MESH_PORT, SO_TIMEOUT))
+                if (__connect(client, host, targetPort, SO_TIMEOUT))
                 {
                     isConnectSuc = true;
                     break;
@@ -318,7 +319,8 @@ public class EspMeshNetUtil
         }
         
         // check whether device is available
-        if (!__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
+        if (checkIsDeviceAvailable
+            && !__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
         {
             __closeClient(client);
             return null;
@@ -352,7 +354,10 @@ public class EspMeshNetUtil
             __closeClient(client);
             return null;
         }
-        __closeClient(client);
+        if (closeClientImmdeiately)
+        {
+            __closeClient(client);
+        }
         // if (responseEntity.getStatus() != HttpStatus.SC_OK) {
         // log.warn("status 400 Bad Request");
         // return null;
@@ -360,8 +365,9 @@ public class EspMeshNetUtil
         return jsonResult;
     }
     
-    private static JSONArray __executeForJsonArray(EspSocketClient client,String method, String uriStr, String router, String deviceBssid,
-        JSONObject json, HeaderPair... headers)
+    private static JSONArray __executeForJsonArray(EspSocketClient client, String method, String uriStr, String router,
+        String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
+        int targetPort, HeaderPair... headers)
     {
         log.debug("__executeForJsonArray()");
         boolean isConnectRequired = false;
@@ -388,7 +394,7 @@ public class EspMeshNetUtil
         {
             for (int i = 0; i < CONNECT_RETRY; i++)
             {
-                if (__connect(client, host, MESH_PORT, SO_TIMEOUT))
+                if (__connect(client, host, targetPort, SO_TIMEOUT))
                 {
                     isConnectSuc = true;
                     break;
@@ -430,7 +436,8 @@ public class EspMeshNetUtil
         }
         
         // check whether device is available
-        if (!__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
+        if (checkIsDeviceAvailable
+            && !__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
         {
             __closeClient(client);
             return null;
@@ -470,7 +477,10 @@ public class EspMeshNetUtil
             }
         }
         log.debug("receive responses end");
-        __closeClient(client);
+        if (closeClientImmdeiately)
+        {
+            __closeClient(client);
+        }
         log.error("jsonArrayResult (end) ip: " + host);
         log.error("jsonArrayResult.length(): " + jsonArrayResult.length());
         log.error("jsonArrayResult: " + jsonArrayResult);
@@ -481,7 +491,7 @@ public class EspMeshNetUtil
     static JSONObject executeForJson(EspSocketClient client,String method, String uriStr, String router, String deviceBssid,
         JSONObject json, HeaderPair... headers)
     {
-        return __executeForJson(client, method, uriStr, router, deviceBssid, json, headers);
+        return __executeForJson(client, method, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
     }
     
     /**
@@ -495,7 +505,7 @@ public class EspMeshNetUtil
      */
     public static JSONObject GetForJson(String uriStr, String router, String deviceBssid, HeaderPair... headers)
     {
-        return __executeForJson(null, METHOD_GET, uriStr, router, deviceBssid, null, headers);
+        return __executeForJson(null, METHOD_GET, uriStr, router, deviceBssid, null, true, true, MESH_PORT, headers);
     }
     
     /**
@@ -509,7 +519,7 @@ public class EspMeshNetUtil
      */
     public static JSONArray GetForJsonArray(String uriStr, String router, String deviceBssid, HeaderPair... headers)
     {
-        return __executeForJsonArray(null, METHOD_GET, uriStr, router, deviceBssid, null, headers);
+        return __executeForJsonArray(null, METHOD_GET, uriStr, router, deviceBssid, null, true, true, MESH_PORT, headers);
     }
     
     /**
@@ -524,7 +534,7 @@ public class EspMeshNetUtil
     public static JSONObject PostForJson(String uriStr, String router, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return __executeForJson(null, METHOD_POST, uriStr, router, deviceBssid, json, headers);
+        return __executeForJson(null, METHOD_POST, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
     }
     
     /**
@@ -539,6 +549,6 @@ public class EspMeshNetUtil
     public static JSONArray PostForJsonArray(String uriStr, String router, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return __executeForJsonArray(null, METHOD_POST, uriStr, router, deviceBssid, json, headers);
+        return __executeForJsonArray(null, METHOD_POST, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
     }
 }

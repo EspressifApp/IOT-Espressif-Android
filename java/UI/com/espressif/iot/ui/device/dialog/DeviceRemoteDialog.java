@@ -15,22 +15,13 @@ import android.widget.Toast;
 
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.EspStatusRemote;
 import com.espressif.iot.type.device.status.IEspStatusRemote;
-import com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity;
-import com.espressif.iot.user.IEspUser;
-import com.espressif.iot.user.builder.BEspUser;
 
-public class DeviceRemoteDialog implements EspDeviceDialogInterface, View.OnClickListener, OnDismissListener
+public class DeviceRemoteDialog extends DeviceDialogAbs implements EspDeviceDialogInterface, View.OnClickListener,
+    OnDismissListener
 {
-    private IEspUser mUser;
-    
-    private Context mContext;
-    
-    private IEspDevice mDevice;
-    
     private AlertDialog mDialog;
     
     private View mProgressContainer;
@@ -44,9 +35,7 @@ public class DeviceRemoteDialog implements EspDeviceDialogInterface, View.OnClic
     
     public DeviceRemoteDialog(Context context, IEspDevice device)
     {
-        mUser = BEspUser.getBuilder().getInstance();
-        mContext = context;
-        mDevice = device;
+        super(context, device);
     }
     
     @Override
@@ -163,15 +152,15 @@ public class DeviceRemoteDialog implements EspDeviceDialogInterface, View.OnClic
             mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(true);
         }
     }
-    
+
     @Override
-    public void onDismiss(DialogInterface dialog)
+    protected void onExecuteEnd(boolean suc)
     {
-        EspHelpStateMachine helpMachine = EspHelpStateMachine.getInstance();
-        if (helpMachine.isHelpModeUseSSSDevice())
-        {
-            helpMachine.transformState(true);
-            ((SoftApStaSupportActivity)mContext).onHelpUseSSSDevice();
-        }
+    }
+
+    @Override
+    protected View getContentView(LayoutInflater inflater)
+    {
+        return null;
     }
 }

@@ -14,8 +14,8 @@ import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.dialog.DeviceLightDialog;
 import com.espressif.iot.ui.device.dialog.DevicePlugDialog;
 import com.espressif.iot.ui.device.dialog.DeviceRemoteDialog;
-import com.espressif.iot.ui.view.tree.TreeView;
-import com.espressif.iot.ui.view.tree.TreeView.LastLevelItemLongClickListener;
+import com.espressif.iot.ui.view.TreeView;
+import com.espressif.iot.ui.view.TreeView.LastLevelItemLongClickListener;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 

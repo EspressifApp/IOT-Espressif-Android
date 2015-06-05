@@ -8,12 +8,6 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
-import com.espressif.iot.help.ui.IEspHelpUIConfigure;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
-import com.espressif.iot.type.help.HelpStepConfigure;
-import com.espressif.iot.user.IEspUser;
-import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
 
@@ -29,40 +23,28 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class DeviceConfigureProgressDialog implements OnDismissListener, OnCancelListener
+public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs implements OnDismissListener,
+    OnCancelListener
 {
     private final Logger log = Logger.getLogger(DeviceConfigureProgressDialog.class);
     
-    private IEspUser mUser;
+    protected ApInfo mApInfo;
     
-    private DeviceConfigureActivity mActivity;
-    
-    private IEspDeviceNew mDevice;
-    
-    private ApInfo mApInfo;
-    
-    private ProgressDialog mDialog;
-    
-    private IEspHelpStateMachine mHelpMachine;
+    protected ProgressDialog mDialog;
     
     private LocalBroadcastManager mBroadcastManager;
     
     public DeviceConfigureProgressDialog(DeviceConfigureActivity activity, IEspDeviceNew device, ApInfo apInfo)
     {
-        mUser = BEspUser.getBuilder().getInstance();
-        mActivity = activity;
-        mDevice = device;
+        super(activity, device);
+        
         mApInfo = apInfo;
-        
         mBroadcastManager = LocalBroadcastManager.getInstance(mActivity);
-        
-        mHelpMachine = EspHelpStateMachine.getInstance();
     }
     
     public void show()
     {
-        mActivity.setIsShowConfigureDialog(true);
-        mActivity.removeRefreshMessage();
+        stopAutoRefresh();
         
         IntentFilter filter = new IntentFilter(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE);
         mBroadcastManager.registerReceiver(mReceiver, filter);
@@ -72,11 +54,8 @@ public class DeviceConfigureProgressDialog implements OnDismissListener, OnCance
         mDialog.setOnDismissListener(this);
         mDialog.setOnCancelListener(this);
         mDialog.show();
-        if (mHelpMachine.isHelpModeConfigure()
-            && mHelpMachine.getCurrentStateOrdinal() == HelpStepConfigure.SELECT_CONFIGURED_DEVICE.ordinal())
-        {
-            mHelpMachine.setConnectedApSsid(mApInfo.ssid);
-        }
+        
+        checkHelpState();
         
         mUser.saveApInfoInDB(mApInfo.bssid, mApInfo.ssid, mApInfo.password, mDevice.getBssid());
         mUser.doActionConfigure(mDevice, mApInfo.ssid, mApInfo.type, mApInfo.password);
@@ -90,8 +69,7 @@ public class DeviceConfigureProgressDialog implements OnDismissListener, OnCance
         
         mBroadcastManager.unregisterReceiver(mReceiver);
         
-        mActivity.setIsShowConfigureDialog(false);
-        mActivity.resetRefreshMessage();
+        resetAutoRefresh();
     }
     
     @Override
@@ -117,10 +95,8 @@ public class DeviceConfigureProgressDialog implements OnDismissListener, OnCance
             if (mDevice.getDeviceState().isStateActivating())
             {
                 log.debug("mDevice.getDeviceState().isStateActivating()");
-                if (mHelpMachine.isHelpModeConfigure())
-                {
-                    mActivity.setResult(IEspHelpUIConfigure.RESULT_HELP_CONFIGURE);
-                }
+                
+                checkHelpActivating();
                 
                 // Configure success
                 mDialog.setMessage(mActivity.getString(R.string.esp_configure_result_success));
@@ -137,20 +113,7 @@ public class DeviceConfigureProgressDialog implements OnDismissListener, OnCance
                 mDialog.setCancelable(true);
                 mDialog.setCanceledOnTouchOutside(true);
                 
-                if (mHelpMachine.isHelpModeConfigure())
-                {
-                    HelpStepConfigure step = HelpStepConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
-                    log.info("Receive help step = " + step);
-                    switch (step)
-                    {
-                        case FAIL_CONNECT_DEVICE:
-                            mDialog.dismiss();
-                            mActivity.onHelpConfigure();
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                checkHelpDeleted();
             }
         }
         
@@ -175,4 +138,16 @@ public class DeviceConfigureProgressDialog implements OnDismissListener, OnCance
         }
     };
     
+    
+    protected void checkHelpState()
+    {
+    }
+    
+    protected void checkHelpActivating()
+    {
+    }
+    
+    protected void checkHelpDeleted()
+    {
+    }
 }

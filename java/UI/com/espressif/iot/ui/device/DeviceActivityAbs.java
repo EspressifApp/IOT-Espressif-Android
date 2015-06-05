@@ -17,14 +17,14 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
-import com.espressif.iot.ui.EspActivityAbs;
 import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
+import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.settings.SettingsActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
 import com.espressif.iot.ui.view.EspViewPager;
-import com.espressif.iot.ui.view.tree.TreeView;
-import com.espressif.iot.ui.view.tree.TreeView.LastLevelItemClickListener;
+import com.espressif.iot.ui.view.TreeView;
+import com.espressif.iot.ui.view.TreeView.LastLevelItemClickListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -91,15 +91,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         setTitleRightIcon(R.drawable.esp_icon_menu_moreoverflow);
         
-        mHelpHandler = new HelpHandler(this);
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_LOCAL, 300);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_ONLINE, 300);
-        }
+        checkHelpHandlerInit();
         
         initViews();
     }
@@ -111,11 +103,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             case COMPATIBILITY:
                 mDeviceCompatibility = true;
                 
-                if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
-                {
-                    mHelpMachine.transformState(true);
-                }
-                
+                checkHelpDeviceCompatibility();
                 break;
             case APK_NEED_UPGRADE:
                 showUpgradeApkHintDialog();
@@ -125,11 +113,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 showUpgradeDeviceHintDialog();
                 mDeviceCompatibility = false;
                 
-                if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
-                {
-                    mHelpMachine.exit();
-                    setResult(RESULT_EXIT_HELP_MODE);
-                }
+                checkHelpDeviceNeedUpgrade();
                 break;
         }
     }
@@ -422,14 +406,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
         AlertDialog dialog = builder.show();
         
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-        }
+        checkHelpShowHintDialog(dialog);
     }
     
     @Override
@@ -491,28 +468,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
         }
         
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            setHelpMenuItem(menu, MENU_ID_UPGRADE_LOCAL);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            setHelpMenuItem(menu, MENU_ID_UPGRADE_ONLINE);
-        }
+        checkHelpOnPreOptionMenu(menu);
         
         return super.onPrepareOptionsMenu(menu);
-    }
-    
-    private void setHelpMenuItem(Menu menu, int itemId)
-    {
-        for (int i = 0; i < menu.size(); i++)
-        {
-            MenuItem item = menu.getItem(i);
-            if (item.getItemId() != itemId)
-            {
-                item.setEnabled(false);
-            }
-        }
     }
     
     @Override
@@ -529,21 +487,13 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 startActivity(timerIntent);
                 return true;
             case MENU_ID_UPGRADE_LOCAL:
-                if (mHelpMachine.isHelpModeUpgradeLocal())
-                {
-                    mHelpMachine.transformState(true);
-                    setResult(RESULT_HELP_UPGRADE_LOCAL);
-                }
+                checkHelpOnSelectUpgradeLocal();
                 
                 mUser.doActionUpgradeLocal(mIEspDevice);
                 finish();
                 return true;
             case MENU_ID_UPGRADE_ONLINE:
-                if (mHelpMachine.isHelpModeUpgradeOnline())
-                {
-                    mHelpMachine.transformState(true);
-                    setResult(RESULT_HELP_UPGRADE_ONLINE);
-                }
+                checkHelpOnSelectUpgradeOnline();
                 
                 mUser.doActionUpgradeInternet(mIEspDevice);
                 finish();
@@ -755,6 +705,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
     }
     
+    //*************About help below***********//
     @Override
     public void onExitHelpMode()
     {
@@ -826,4 +777,90 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             }
         }
     }
+    
+    private void checkHelpHandlerInit()
+    {
+        mHelpHandler = new HelpHandler(this);
+        if (mHelpMachine.isHelpModeUpgradeLocal())
+        {
+            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_LOCAL, 300);
+        }
+        else if (mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_ONLINE, 300);
+        }
+    }
+    
+    private void checkHelpDeviceCompatibility()
+    {
+        if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            mHelpMachine.transformState(true);
+        }
+    }
+    
+    private void checkHelpDeviceNeedUpgrade()
+    {
+        if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            mHelpMachine.exit();
+            setResult(RESULT_EXIT_HELP_MODE);
+        }
+    }
+    
+    private void checkHelpShowHintDialog(AlertDialog dialog)
+    {
+        if (mHelpMachine.isHelpModeUpgradeLocal())
+        {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+        }
+        else if (mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        }
+    }
+    
+    private void checkHelpOnPreOptionMenu(Menu menu)
+    {
+        if (mHelpMachine.isHelpModeUpgradeLocal())
+        {
+            setHelpMenuItem(menu, MENU_ID_UPGRADE_LOCAL);
+        }
+        else if (mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            setHelpMenuItem(menu, MENU_ID_UPGRADE_ONLINE);
+        }
+    }
+
+    private void setHelpMenuItem(Menu menu, int itemId)
+    {
+        for (int i = 0; i < menu.size(); i++)
+        {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() != itemId)
+            {
+                item.setEnabled(false);
+            }
+        }
+    }
+    
+    
+    private void checkHelpOnSelectUpgradeLocal()
+    {
+        if (mHelpMachine.isHelpModeUpgradeLocal())
+        {
+            mHelpMachine.transformState(true);
+            setResult(RESULT_HELP_UPGRADE_LOCAL);
+        }
+    }
+    
+    private void checkHelpOnSelectUpgradeOnline()
+    {
+        if (mHelpMachine.isHelpModeUpgradeOnline())
+        {
+            mHelpMachine.transformState(true);
+            setResult(RESULT_HELP_UPGRADE_ONLINE);
+        }
+    }
+    //*************About help up***********//
 }

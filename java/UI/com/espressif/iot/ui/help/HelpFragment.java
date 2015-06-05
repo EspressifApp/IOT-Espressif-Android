@@ -78,30 +78,37 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         else if (preference == mUseHumitureHelpPre)
         {
             finishForResult(RESULT_HELP_USE_HUMITURE);
+            return true;
         }
         else if (preference == mUseFlammableHelpPre)
         {
             finishForResult(RESULT_HELP_USE_FLAMMABLE);
+            return true;
         }
         else if (preference == mUseVoltageHelpPre)
         {
             finishForResult(RESULT_HELP_USE_VOLTAGE);
+            return true;
         }
         else if (preference == mUseRemoteHelpPre)
         {
             finishForResult(RESULT_HELP_USE_REMOTE);
+            return true;
         }
         else if (preference == mUsePlugsHelpPre)
         {
             finishForResult(RESULT_HELP_USE_PLUGS);
+            return true;
         }
         else if (preference == mUpgradeLocalPre)
         {
             finishForResult(RESULT_HELP_UPGRADE_LOCAL);
+            return true;
         }
         else if (preference == mUpgradeOnlinePre)
         {
             finishForResult(RESULT_HELP_UPGRADE_ONLINE);
+            return true;
         }
         
         return super.onPreferenceTreeClick(preferenceScreen, preference);

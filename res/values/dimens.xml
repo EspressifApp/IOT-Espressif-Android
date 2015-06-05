@@ -23,4 +23,6 @@
     <dimen name="esp_treeview_icon_base_padding">15dip</dimen>
     <dimen name="esp_treeview_icon_vertical_padding">10dip</dimen>
     <dimen name="esp_treeview_text_size">20sp</dimen>
+
+    <dimen name="esp_light_frgb_edit_width">65dip</dimen>
 </resources>

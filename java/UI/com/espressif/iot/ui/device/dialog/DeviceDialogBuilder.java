@@ -19,7 +19,7 @@ public class DeviceDialogBuilder
     public EspDeviceDialogInterface show()
     {
         EspDeviceDialogInterface dialog = create();
-        create().show();
+        dialog.show();
         
         return dialog;
     }

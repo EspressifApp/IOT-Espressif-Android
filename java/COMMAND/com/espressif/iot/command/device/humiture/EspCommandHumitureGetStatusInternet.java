@@ -10,7 +10,8 @@ import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.device.status.IEspStatusSensor;
 import com.espressif.iot.util.TimeUtil;
 
-public class EspCommandHumitureGetStatusInternet extends EspCommandSensorGetStatusInternet implements IEspCommandHumitureGetStatusInternet
+public class EspCommandHumitureGetStatusInternet extends EspCommandSensorGetStatusInternet implements
+    IEspCommandHumitureGetStatusInternet
 {
     
     private final static Logger log = Logger.getLogger(EspCommandHumitureGetStatusInternet.class);
@@ -24,7 +25,7 @@ public class EspCommandHumitureGetStatusInternet extends EspCommandSensorGetStat
             + "]): " + result);
         return result;
     }
-
+    
     @Override
     public IEspStatusSensor parseJson(JSONObject json)
     {
@@ -45,7 +46,7 @@ public class EspCommandHumitureGetStatusInternet extends EspCommandSensorGetStat
         }
         return null;
     }
-
+    
     @Override
     public String getUrl()
     {

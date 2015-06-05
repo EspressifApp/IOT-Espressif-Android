@@ -206,6 +206,7 @@ public class EspHttpUtil
             String resultStr = EntityUtils.toString(entity);
             if (!TextUtils.isEmpty(resultStr))
             {
+                log.info("executeHttpRequest result str = " + resultStr);
                 try
                 {
                     result = new JSONObject(resultStr);
@@ -218,6 +219,7 @@ public class EspHttpUtil
             }
             else
             {
+                log.info("executeHttpRequest result str = null");
                 result = new JSONObject();
             }
             entity.consumeContent();

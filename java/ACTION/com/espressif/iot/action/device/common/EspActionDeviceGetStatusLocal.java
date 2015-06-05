@@ -56,10 +56,12 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
                     {
                         statusLight = ((IEspDeviceLight)device).getStatusLight();
                     }
-                    statusLight.setFreq(lightStatus.getFreq());
+                    statusLight.setPeriod(lightStatus.getPeriod());
                     statusLight.setRed(lightStatus.getRed());
                     statusLight.setGreen(lightStatus.getGreen());
                     statusLight.setBlue(lightStatus.getBlue());
+                    statusLight.setCWhite(lightStatus.getCWhite());
+                    statusLight.setWWhite(lightStatus.getWWhite());
                 }
                 return suc;
             case PLUG:

@@ -10,10 +10,8 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.help.ui.IEspHelpUISSSUseDevice;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.device.DeviceInfo;
-import com.espressif.iot.type.help.HelpStepSSSUseDevice;
+import com.espressif.iot.ui.configure.DeviceMeshConfigureDialog;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
@@ -36,8 +34,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<ListView>, OnItemClickListener,
-    IEspHelpUISSSUseDevice
+public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<ListView>, OnItemClickListener
 {
     private final Logger log = Logger.getLogger(SSSFragmentConfigure.class);
     
@@ -45,13 +42,11 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
     
     private IEspUser mUser;
     
-    private PullToRefreshListView mListView;
+    protected PullToRefreshListView mListView;
     
-    private List<IEspDeviceNew> mSoftApList;
+    protected List<IEspDeviceNew> mSoftApList;
     
-    private SoftAPAdapter mSoftAPAdapter;
-    
-    private EspHelpStateMachine mHelpMachine;
+    protected SoftAPAdapter mSoftAPAdapter;
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -72,15 +67,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
         return view;
     }
     
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
-        
-        mHelpMachine = EspHelpStateMachine.getInstance();
-    }
-    
-    private class SoftAPAdapter extends BaseAdapter
+    protected class SoftAPAdapter extends BaseAdapter
     {
         
         @Override
@@ -113,7 +100,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
             TextView statusTV = (TextView)convertView.findViewById(android.R.id.text2);
             
             IEspDeviceNew device = mSoftApList.get(position);
-            nameTV.setText(device.getName());
+            nameTV.setText(device.getSsid());
             statusTV.setText("rssi: " + device.getRssi());
             
             return convertView;
@@ -141,11 +128,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
             mListView.onRefreshComplete();
             log.debug("scan softap over");
             
-            if (mHelpMachine.isHelpModeUseSSSDevice())
-            {
-                mHelpMachine.transformState(!mSoftApList.isEmpty());
-                onHelpUseSSSDevice();
-            }
+            checkHelpTransformNext(!mSoftApList.isEmpty());
         }
     }
     
@@ -204,7 +187,13 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
                             }
                             break;
                         case OPTION_CONFIGURE:
-                            // TODO configure to AP
+                            if (checkHelpModeUse())
+                            {
+                                log.debug("SSS Device use help, forbidden mesh configure");
+                                return;
+                            }
+                            
+                            showConfigureDialog(device);
                             break;
                     }
                 }
@@ -229,7 +218,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
         protected DeviceInfo doInBackground(IEspDeviceNew... params)
         {
             IEspDeviceNew device = params[0];
-            return BEspUser.getBuilder().getInstance().doActionDeviceNewGetInfo(device);
+            return BEspUser.getBuilder().getInstance().doActionDeviceNewConnect(device);
         }
         
         @Override
@@ -242,11 +231,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
             {
                 Toast.makeText(mActivity, R.string.esp_sss_configure_direct_connect_failed, Toast.LENGTH_LONG).show();
                 
-                if(mHelpMachine.isHelpModeUseSSSDevice())
-                {
-                    mHelpMachine.transformState(false);
-                    onHelpUseSSSDevice();
-                }
+                checkHelpTransformNext(false);
             }
             else
             {
@@ -257,78 +242,33 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
                     Toast.makeText(mActivity, R.string.esp_sss_configure_direct_connect_success, Toast.LENGTH_LONG)
                         .show();
                     
-                    if(mHelpMachine.isHelpModeUseSSSDevice())
-                    {
-                        mHelpMachine.transformState(true);
-                        onHelpUseSSSDevice();
-                    }
+                    checkHelpTransformNext(true);
                 }
                 else
                 {
                     Toast.makeText(mActivity, R.string.esp_sss_configure_not_support, Toast.LENGTH_LONG).show();
                     
-                    if(mHelpMachine.isHelpModeUseSSSDevice())
-                    {
-                        mHelpMachine.transformState(false);
-                        mHelpMachine.transformState(false);
-                        onHelpUseSSSDevice();
-                    }
+                    checkHelpTransformNext(false, 2);
                 }
             }
         }
     }
-
-    @Override
-    public void onHelpUseSSSDevice()
+    
+    private void showConfigureDialog(final IEspDeviceNew device)
     {
-        mActivity.clearHelpContainer();
-        
-        HelpStepSSSUseDevice step = HelpStepSSSUseDevice.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch(step)
-        {
-            case START_USE_HELP:
-                break;
-            case FAIL_FOUND_DEVICE:
-                break;
-            case START_DIRECT_CONNECT:
-                break;
-            case FIND_SOFTAP:
-                mSoftApList.clear();
-                mSoftAPAdapter.notifyDataSetChanged();
-                mActivity.highlightHelpView(mListView);
-                mActivity.gestureAnimHint(R.string.esp_sss_help_use_device_find_softap_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                break;
-            case FOUND_SOFTAP_FAILED:
-                mActivity.highlightHelpView(mListView);
-                mHelpMachine.retry();
-                mActivity.gestureAnimHint(R.string.esp_sss_help_use_device_found_softap_failed_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                break;
-            case SELECT_SOFTAP:
-                mActivity.highlightHelpView(mListView);
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_use_device_select_softap_msg);
-                break;
-            case CONNECT_SOFTAP_FAILED:
-                mHelpMachine.retry();
-                mActivity.highlightHelpView(mListView);
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_use_device_connect_softap_failed_msg);
-                break;
-            case SOFTAP_NOT_SUPPORT:
-                mHelpMachine.retry();
-                mActivity.highlightHelpView(mListView);
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_use_device_not_support_msg);
-                break;
-            case DEVICE_SELECT:
-                mActivity.onHelpUseSSSDevice();
-                break;
-            case DEVICE_CONTROL:
-                break;
-            case DEVICE_CONTROL_FAILED:
-                break;
-            case SUC:
-                break;
-        }
-        
+        new DeviceMeshConfigureDialog(getActivity(), device).show();
+    }
+    
+    protected void checkHelpTransformNext(boolean suc)
+    {
+        checkHelpTransformNext(suc, 1);
+    }
+    
+    protected void checkHelpTransformNext(boolean suc, int transformCount){
+    }
+    
+    protected boolean checkHelpModeUse()
+    {
+        return false;
     }
 }

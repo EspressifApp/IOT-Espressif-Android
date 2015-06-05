@@ -88,7 +88,7 @@
 
     <string-array name="esp_sss_device_configure_options">
         <item>Direct Connect</item>
-        <!-- <item>Configure to the target AP</item> -->
+        <!-- <item>Mesh Configure</item> -->
     </string-array>
 
     <string-array name="esp_sss_device_use_options">

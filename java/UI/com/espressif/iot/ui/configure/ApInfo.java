@@ -24,4 +24,14 @@ public class ApInfo
         password = apPassword;
         type = wifiType;
     }
+    
+    public String getBssid()
+    {
+        return bssid;
+    }
+    
+    public String getSsid()
+    {
+        return ssid;
+    }
 }

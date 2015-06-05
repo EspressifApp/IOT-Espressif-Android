@@ -2,6 +2,12 @@ package com.espressif.iot.base.time;
 
 public interface IEspTimeManager
 {
+    static final String Status = "status";
+    
+    static final String epoch = "epoch";
+    
+    static final String Url = "https://iot.espressif.cn/v1/ping/";
+    
     /**
      * 
      * @param UTCTimeStamp the utc time to be compared

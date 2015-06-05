@@ -3,11 +3,11 @@ package com.espressif.iot.base.upgrade.apk;
 public class UpgradeInfoApk
 {
     
-    public static final int VERSION_BETA = -1;
+    private static final int VERSION_BETA = -1;
     
-    public static final int VERSION_OFFICIAL = 1;
+    private static final int VERSION_OFFICIAL = 1;
     
-    public static final int VERSION_UNKNOW = 0;
+    private static final int VERSION_UNKNOW = 0;
     
     private String mVersion;
     

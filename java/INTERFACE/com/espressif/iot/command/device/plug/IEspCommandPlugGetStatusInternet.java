@@ -6,9 +6,11 @@ import com.espressif.iot.type.device.status.IEspStatusPlug;
 
 public interface IEspCommandPlugGetStatusInternet extends IEspCommandInternet, IEspCommandPlug
 {
-    final String URL = "https://iot.espressif.cn/v1/datastreams/plug-status/datapoint/?deliver_to_device=true";
+    static final String URL = "https://iot.espressif.cn/v1/datastreams/plug-status/datapoint/?deliver_to_device=true";
+    
     /**
      * get the statusPlug to the Plug by Internet
+     * 
      * @param deviceKey the device key
      * @return the status of the Plug or null(if executed fail)
      */

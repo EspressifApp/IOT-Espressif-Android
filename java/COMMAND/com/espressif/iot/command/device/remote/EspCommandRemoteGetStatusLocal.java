@@ -14,14 +14,15 @@ public class EspCommandRemoteGetStatusLocal implements IEspCommandRemoteGetStatu
 {
     private final static Logger log = Logger.getLogger(EspCommandRemoteGetStatusLocal.class);
     
-    private String getRemoteLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http:/" + inetAddress + "/" + "config?command=remote";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=remote";
     }
     
     private IEspStatusRemote getCurrentRemoteStatus(InetAddress inetAddress, String deviceBssid, String router)
     {
-        String uriString = getRemoteLocalUrl(inetAddress);
+        String uriString = getLocalUrl(inetAddress);
         JSONObject jo = null;
         if (deviceBssid == null || router == null)
         {
@@ -62,7 +63,7 @@ public class EspCommandRemoteGetStatusLocal implements IEspCommandRemoteGetStatu
             + "]): " + result);
         return result;
     }
-
+    
     @Override
     public IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router)
     {

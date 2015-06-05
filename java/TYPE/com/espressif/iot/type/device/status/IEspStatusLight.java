@@ -47,16 +47,43 @@ public interface IEspStatusLight extends IEspDeviceStatus
     void setBlue(int blue);
     
     /**
-     * Get frequency value of the light
+     * Get period value of the light
      * 
-     * @return the frequency value of the light
+     * @return the period value of the light
      */
-    int getFreq();
+    int getPeriod();
     
     /**
-     * Set frequency value of the light
+     * Set period value of the light
      * 
-     * @param freq the frequency value of the light
+     * @param period the period value of the light
      */
-    void setFreq(int freq);
+    void setPeriod(int period);
+    
+    /**
+     * Get the cold white value of the light
+     * 
+     * @return the cold white value of the light
+     */
+    int getCWhite();
+    
+    /**
+     * Set the cold white value of the light
+     * 
+     * @param cWhite the cold while value
+     */
+    void setCWhite(int cWhite);
+    
+    /**
+     * Get the warm white value of the light
+     * 
+     * @return the warm white value of the light
+     */
+    int getWWhite();
+    
+    /**
+     * Set the warm white value of the light
+     * @param wWhite the warm value of the light
+     */
+    void setWWhite(int wWhite);
 }

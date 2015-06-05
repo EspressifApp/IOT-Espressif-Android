@@ -11,5 +11,5 @@ import com.espressif.iot.object.IEspObject;
  */
 public interface IEspCommand extends IEspObject
 {
-    
+    static final String Status = "status";
 }

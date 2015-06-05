@@ -410,7 +410,7 @@ public interface IEspUser extends IEspSingletonObject
      * @param device
      * @return the information of the SoftAP
      */
-    DeviceInfo doActionDeviceNewGetInfo(IEspDeviceNew device);
+    DeviceInfo doActionDeviceNewConnect(IEspDeviceNew device);
     
     /**
      * Sleep or Reboot the device

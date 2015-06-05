@@ -102,6 +102,8 @@ public interface IWifiAdmin
         throws InterruptedException;
     
     /**
+     * @deprecated Use {@link ##enableConnected(String, boolean)} instead of it,
+     * and the isSsidHidden=false when you call the method
      * 
      * if the wifi is conneted to AP return true directly, otherwise enable the wifi connect to AP with the parameters
      * 
@@ -114,6 +116,20 @@ public interface IWifiAdmin
     
     /**
      * 
+     * if the wifi is conneted to AP return true directly, otherwise enable the wifi connect to AP with the parameters
+     * 
+     * @param ssid the AP's ssid
+     * @param type the wifi cipher type
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param password the password of the AP,if WifiCipherType isn't OPEN
+     * @return whether the connection is started
+     */
+    boolean enableConnected(final String ssid, WifiCipherType type, boolean isSsidHidden, String... password);
+    
+    /**
+     * @deprecated Use {@link #connect(String, WifiCipherType, boolean, String...)} instead of it,
+     * and the isSsidHidden=false when you call the method
+     * 
      * if the wifi is conneted to AP return true directly, otherwise connect to AP with WifiConfiguration saved by
      * Android System firstly, if the connection is fail, connect to AP with the parameters
      * 
@@ -124,6 +140,21 @@ public interface IWifiAdmin
      * @throws InterruptedException when connect is interrupted
      */
     boolean connect(final String ssid, WifiCipherType type, String... password)
+        throws InterruptedException;
+    
+    /**
+     * 
+     * if the wifi is conneted to AP return true directly, otherwise connect to AP with WifiConfiguration saved by
+     * Android System firstly, if the connection is fail, connect to AP with the parameters
+     * 
+     * @param ssid the AP's ssid
+     * @param type the wifi cipher type
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param password the password of the AP,if WifiCipherType isn't OPEN
+     * @return whether the connection is suc
+     * @throws InterruptedException when connect is interrupted
+     */
+    boolean connect(final String ssid, WifiCipherType type, boolean isSsidHidden, String... password)
         throws InterruptedException;
     
     /**

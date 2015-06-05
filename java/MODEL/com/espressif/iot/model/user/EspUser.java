@@ -686,7 +686,7 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public DeviceInfo doActionDeviceNewGetInfo(IEspDeviceNew device)
+    public DeviceInfo doActionDeviceNewConnect(IEspDeviceNew device)
     {
         IEspActionDeviceNewGetInfoLocal action = new EspActionDeviceNewGetInfoLocal();
         return action.doActionNewGetInfoLocal(device);

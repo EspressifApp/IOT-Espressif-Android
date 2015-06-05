@@ -24,11 +24,11 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
         JSONObject result = null;
         try
         {
-            jsonObjectX.put(X, statusLight.getFreq());
+            jsonObjectX.put(X, statusLight.getPeriod());
             jsonObjectX.put(Y, statusLight.getRed());
             jsonObjectX.put(Z, statusLight.getGreen());
             jsonObjectX.put(K, statusLight.getBlue());
-            jsonObjectX.put(L, 50);
+            jsonObjectX.put(L, statusLight.getCWhite());
             jsonObject.put(Datapoint, jsonObjectX);
         }
         catch (JSONException e)
@@ -77,7 +77,7 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
     {
         return doCommandLightPostStatusInternet(deviceKey, statusLight, null);
     }
-
+    
     @Override
     public boolean doCommandLightPostStatusInternet(String deviceKey, IEspStatusLight statusLight, String router)
     {

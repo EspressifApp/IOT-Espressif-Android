@@ -182,6 +182,11 @@ public class EspSocketReaderUtil
             while (totalLen < contentLength)
             {
                 validLen = reader.read(chars);
+                if (validLen < 0)
+                {
+                    log.warn("__readBody(): validLen = " + validLen);
+                    return null;
+                }
                 result.append(chars, 0, validLen);
                 totalLen += validLen;
             }

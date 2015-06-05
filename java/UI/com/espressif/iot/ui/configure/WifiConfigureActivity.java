@@ -9,6 +9,7 @@ import com.espressif.iot.R;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.type.net.WifiCipherType;
+import com.espressif.iot.ui.main.EspActivityAbs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,7 +27,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class WifiConfigureActivity extends Activity
+public class WifiConfigureActivity extends EspActivityAbs
 {
     private final Logger log = Logger.getLogger(WifiConfigureActivity.class);
     
@@ -43,6 +44,8 @@ public class WifiConfigureActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         __init();
+        
+        setTitle(R.string.esp_wifi_edit);
     }
     
     private void __init()

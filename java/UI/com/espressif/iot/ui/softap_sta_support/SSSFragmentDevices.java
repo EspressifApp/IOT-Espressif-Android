@@ -10,14 +10,8 @@ import com.espressif.iot.action.device.builder.BEspAction;
 import com.espressif.iot.action.softap_sta_support.ISSSActionDeviceUpgradeLocal;
 import com.espressif.iot.action.softap_sta_support.SSSActionDeviceUpgradeLocalResult;
 import com.espressif.iot.device.IEspDeviceSSS;
-import com.espressif.iot.help.ui.IEspHelpUISSSUpgrade;
-import com.espressif.iot.help.ui.IEspHelpUISSSUseDevice;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.device.EspDeviceType;
-import com.espressif.iot.type.help.HelpStepSSSUpgrade;
-import com.espressif.iot.type.help.HelpStepSSSUseDevice;
 import com.espressif.iot.type.net.IOTAddress;
-import com.espressif.iot.ui.EspActivityAbs;
 import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
 import com.espressif.iot.user.builder.EspSSSUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -41,30 +35,27 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class SSSFragmentDevices extends Fragment implements OnRefreshListener<ListView>, OnItemClickListener,
-    OnItemLongClickListener, IEspHelpUISSSUseDevice, IEspHelpUISSSUpgrade
+    OnItemLongClickListener
 {
     private final Logger log = Logger.getLogger(SSSFragmentDevices.class);
     
     private SoftApStaSupportActivity mActivity;
     
-    private EspSSSUser mUser;
+    protected EspSSSUser mUser;
     
-    private List<IEspDeviceSSS> mStaList;
+    protected List<IEspDeviceSSS> mStaList;
     
-    private PullToRefreshListView mListView;
+    protected PullToRefreshListView mListView;
     
-    private StaAdapter mStaAdapter;
+    protected StaAdapter mStaAdapter;
     
     private View mScanningView;
     
     private boolean mScanning = false;
     
     final int PULL_REFRESH_LIST_HEADER_COUNT = 1;
-    
-    private EspHelpStateMachine mHelpMachine;
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -90,11 +81,10 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
     {
         super.onActivityCreated(savedInstanceState);
         
-        mHelpMachine = EspHelpStateMachine.getInstance();
         mUser = EspSSSUser.getInstance();
     }
     
-    private class StaAdapter extends BaseAdapter
+    protected class StaAdapter extends BaseAdapter
     {
         
         @Override
@@ -190,24 +180,7 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
             showScanningPorgress(false);
             log.debug("scan stas over");
             
-            if (mHelpMachine.isHelpModeUseSSSDevice())
-            {
-                if (mStaList.isEmpty())
-                {
-                    mHelpMachine.transformState(false);
-                }
-                else
-                {
-                    mHelpMachine.transformState(HelpStepSSSUseDevice.DEVICE_SELECT);
-                }
-                
-                onHelpUseSSSDevice();
-            }
-            else if (mHelpMachine.isHelpModeSSSUpgrade())
-            {
-                mHelpMachine.transformState(!mStaList.isEmpty());
-                onHelpUpgradeSSSDevice();
-            }
+            checkHelpOnPostScanSta();
         }
     }
     
@@ -224,22 +197,10 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
     {
         IEspDeviceSSS device = mStaList.get(position - PULL_REFRESH_LIST_HEADER_COUNT);
         EspDeviceType type = device.getDeviceType();
-        
-        if (mHelpMachine.isHelpOn() && type == EspDeviceType.ROOT)
+        if (checkHelpOnItemClick(device))
         {
             return;
         }
-        
-        if (mHelpMachine.isHelpOn() && !mHelpMachine.isHelpModeUseSSSDevice())
-        {
-            return;
-        }
-        else if (mHelpMachine.isHelpModeUseSSSDevice())
-        {
-            mHelpMachine.transformState(true);
-            onHelpUseSSSDevice();
-        }
-        
         switch (type)
         {
             case PLUG:
@@ -264,7 +225,7 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
     {
-        if (mHelpMachine.isHelpOn() && !mHelpMachine.isHelpModeSSSUpgrade())
+        if (checkHelpOnItemLongClick())
         {
             return true;
         }
@@ -287,11 +248,7 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
                             log.info(ip);
                             new UpgradeTask(ip).execute();
                             
-                            if (mHelpMachine.isHelpModeSSSUpgrade())
-                            {
-                                mHelpMachine.transformState(true);
-                                onHelpUpgradeSSSDevice();
-                            }
+                            checkHelpUpgrade();
                         }
                     }).show();
                 return true;
@@ -392,88 +349,22 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
             }
         };
     }
-
-    @Override
-    public void onHelpUseSSSDevice()
+    
+    protected void checkHelpOnPostScanSta()
     {
-        mActivity.clearHelpContainer();
-        
-        HelpStepSSSUseDevice step = HelpStepSSSUseDevice.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch(step)
-        {
-            case START_USE_HELP:
-                mStaList.clear();
-                mStaAdapter.notifyDataSetChanged();
-                mActivity.highlightHelpView(mListView);
-                mActivity.gestureAnimHint(R.string.esp_sss_help_use_device_find_device_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                break;
-            case FAIL_FOUND_DEVICE:
-                mHelpMachine.retry();
-                mActivity.highlightHelpView(mListView);
-                mActivity.gestureAnimHint(R.string.esp_sss_help_use_device_found_device_failed_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                mActivity.setHelpButtonVisible(EspActivityAbs.HELP_BUTTON_EXIT, true);
-                mActivity.setHelpButtonVisible(EspActivityAbs.HELP_BUTTON_NEXT, true);
-                break;
-            case START_DIRECT_CONNECT:
-                break;
-            case FIND_SOFTAP:
-                break;
-            case FOUND_SOFTAP_FAILED:
-                break;
-            case SELECT_SOFTAP:
-                break;
-            case CONNECT_SOFTAP_FAILED:
-                break;
-            case SOFTAP_NOT_SUPPORT:
-                break;
-            case DEVICE_SELECT:
-                mActivity.highlightHelpView(mListView);
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_use_device_select_msg);
-                break;
-            case DEVICE_CONTROL:
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_use_device_control_msg);
-                break;
-            case DEVICE_CONTROL_FAILED:
-                break;
-            case SUC:
-                break;
-        }
-        
     }
-
-    @Override
-    public void onHelpUpgradeSSSDevice()
+    
+    protected boolean checkHelpOnItemClick(IEspDeviceSSS device)
     {
-        mActivity.clearHelpContainer();
-        
-        HelpStepSSSUpgrade step = HelpStepSSSUpgrade.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch(step)
-        {
-            case START_HELP:
-                mStaList.clear();
-                mStaAdapter.notifyDataSetChanged();
-                mActivity.highlightHelpView(mListView);
-                mActivity.gestureAnimHint(R.string.esp_sss_help_upgrade_find_device_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                break;
-            case FOUND_DEVICE_FAILED:
-                mHelpMachine.retry();
-                mActivity.highlightHelpView(mListView);
-                mActivity.gestureAnimHint(R.string.esp_sss_help_upgrade_found_device_failed_msg,
-                    R.anim.esp_pull_to_refresh_hint);
-                mActivity.setHelpButtonVisible(EspActivityAbs.HELP_BUTTON_EXIT, true);
-                break;
-            case SELECT_DEVICE:
-                mActivity.highlightHelpView(mListView);
-                mActivity.setHelpHintMessage(R.string.esp_sss_help_upgrade_select_device_msg);
-                break;
-            case SUC:
-                mHelpMachine.exit();
-                mActivity.onExitHelpMode();
-                Toast.makeText(mActivity, R.string.esp_sss_help_upgrade_success_msg, Toast.LENGTH_LONG).show();
-                break;
-        }
+        return false;
+    }
+    
+    protected boolean checkHelpOnItemLongClick()
+    {
+        return false;
+    }
+    
+    protected void checkHelpUpgrade()
+    {
     }
 }

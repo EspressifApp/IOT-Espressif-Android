@@ -153,7 +153,7 @@ public abstract class DeviceTimerEditActivityAbs extends Activity implements Esp
             }
             else
             {
-                Toast.makeText(activity, R.string.esp_device_timer_save_result_success, Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, R.string.esp_device_timer_save_result_failed, Toast.LENGTH_LONG).show();
             }
         }
     }

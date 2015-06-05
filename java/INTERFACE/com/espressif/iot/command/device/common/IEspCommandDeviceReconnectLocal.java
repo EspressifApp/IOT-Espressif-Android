@@ -6,8 +6,6 @@ import com.espressif.iot.type.net.WifiCipherType;
 
 public interface IEspCommandDeviceReconnectLocal extends IEspCommandActivated, IEspCommandLocal
 {
-    final String URL = "http://192.168.4.1/config?command=wifi";
-    
     /**
      * Make device reconnect to another AP, only mesh device support the function.
      * Except mesh device, the device will shut down softap,

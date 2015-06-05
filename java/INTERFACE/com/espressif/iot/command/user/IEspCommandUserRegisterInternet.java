@@ -6,7 +6,7 @@ import com.espressif.iot.type.user.EspRegisterResult;
 
 public interface IEspCommandUserRegisterInternet extends IEspCommandUser, IEspCommandInternet
 {
-    final String URL = "https://iot.espressif.cn/v1/user/join/";
+    static final String URL = "https://iot.espressif.cn/v1/user/join/";
     
     /**
      * Register a new account

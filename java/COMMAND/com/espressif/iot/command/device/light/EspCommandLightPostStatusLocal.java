@@ -13,9 +13,10 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
 {
     private final static Logger log = Logger.getLogger(EspCommandLightPostStatusLocal.class);
     
-    private String getLightLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http:/" + inetAddress + "/" + "config?command=light";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=light";
     }
     
     private JSONObject getRequestJSONObject(IEspStatusLight statusLight)
@@ -27,7 +28,9 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
             rgb.put(Red, statusLight.getRed());
             rgb.put(Green, statusLight.getGreen());
             rgb.put(Blue, statusLight.getBlue());
-            request.put(Freq, statusLight.getFreq());
+            rgb.put(CWhite, statusLight.getCWhite());
+            rgb.put(WWhite, statusLight.getWWhite());
+            request.put(Period, statusLight.getPeriod());
             request.put(Rgb, rgb);
         }
         catch (JSONException e)
@@ -40,7 +43,7 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
     private boolean postLightStatus(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
         String router)
     {
-        String uriString = getLightLocalUrl(inetAddress);
+        String uriString = getLocalUrl(inetAddress);
         JSONObject jsonObject = getRequestJSONObject(statusLight);
         JSONObject result = null;
         if (deviceBssid == null || router == null)

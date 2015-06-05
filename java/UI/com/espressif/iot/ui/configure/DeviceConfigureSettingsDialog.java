@@ -11,70 +11,49 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
-import com.espressif.iot.type.help.HelpStepConfigure;
 import com.espressif.iot.type.net.WifiCipherType;
-import com.espressif.iot.user.IEspUser;
-import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.ui.view.WifiAdapter;
+import com.espressif.iot.util.BSSIDUtil;
 
-public class DeviceConfigureSettingsDialog implements OnClickListener, OnCancelListener
+public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs implements OnClickListener,
+    OnCancelListener
 {
-    private DeviceConfigureActivity mActivity;
-    
-    private IEspDeviceNew mDevice;
-    
-    private AlertDialog.Builder mBuilder;
+    protected AlertDialog mDialog;
     
     private Spinner mWifiSpinner;
-    
     private WifiAdapter mWifiAdapter;
-    
-    private List<ScanResult> mWifiList;
+    protected List<ScanResult> mWifiList;
     
     private EditText mWifiPasswordEdt;
-    
     private CheckBox mShowPasswordCheck;
     
-    private IEspUser mUser;
-    
-    private IEspHelpStateMachine mHelpMachine;
+    protected View mMeshContent;
     
     public DeviceConfigureSettingsDialog(DeviceConfigureActivity activity, IEspDeviceNew device)
     {
-        mActivity = activity;
-        mDevice = device;
-        mBuilder = new AlertDialog.Builder(activity);
-        mUser = BEspUser.getBuilder().getInstance();
-        mHelpMachine = EspHelpStateMachine.getInstance();
+        super(activity, device);
     }
     
     public void show()
     {
-        mActivity.setIsShowConfigureDialog(true);
-        mActivity.removeRefreshMessage();
-        
-        final AlertDialog dialog;
+        stopAutoRefresh();
         
         LayoutInflater inflater = mActivity.getLayoutInflater();
-        View view = inflater.inflate(R.layout.device_configure_settings_dialog, null);
+        View view = inflater.inflate(R.layout.device_configure_select_dialog, null);
         
         mWifiSpinner = (Spinner)view.findViewById(R.id.wifi_spinner);
         mWifiList = EspBaseApiUtil.scan();
-        mActivity.removeConfigureDeviceFromWifiList(mWifiList, mDevice);
-        mWifiAdapter = new WifiAdapter();
+        mWifiAdapter = new WifiAdapter(mActivity, mWifiList);
+        mWifiAdapter.addFilter(BSSIDUtil.restoreSoftApBSSID(mDevice.getBssid()));
         mWifiSpinner.setAdapter(mWifiAdapter);
         mWifiSpinner.setOnItemSelectedListener(mWifiSelectedListener);
         
@@ -83,12 +62,17 @@ public class DeviceConfigureSettingsDialog implements OnClickListener, OnCancelL
         mShowPasswordCheck.setOnCheckedChangeListener(mShowPasswordListener);
         mShowPasswordCheck.setChecked(true);
         
-        mBuilder.setTitle(mDevice.getSsid());
-        mBuilder.setView(view);
-        mBuilder.setPositiveButton(R.string.esp_configure_start, this);
-        mBuilder.setOnCancelListener(this);
-        dialog = mBuilder.show();
-        dialog.setCanceledOnTouchOutside(false);
+        mMeshContent = view.findViewById(R.id.device_mesh_content);
+        mMeshContent.setVisibility(View.GONE);
+        
+        mDialog =
+            new AlertDialog.Builder(mActivity).setTitle(mDevice.getSsid())
+                .setView(view)
+                .setPositiveButton(R.string.esp_configure_start, this)
+                .create();
+        mDialog.setOnCancelListener(this);
+        mDialog.setCanceledOnTouchOutside(false);
+        mDialog.show();
         
         // Get last configured AP
         String lastBssid = mUser.getLastSelectedApBssid();
@@ -106,25 +90,8 @@ public class DeviceConfigureSettingsDialog implements OnClickListener, OnCancelL
             }
         }
         
-        if (mHelpMachine.isHelpModeConfigure())
-        {
-            if (mHelpMachine.getCurrentStateOrdinal() == HelpStepConfigure.SCAN_AVAILABLE_AP.ordinal())
-            {
-                if (mWifiList.isEmpty())
-                {
-                    mHelpMachine.transformState(false);
-                    dialog.dismiss();
-                }
-                else
-                {
-                    mHelpMachine.transformState(true);
-                }
-                
-                mActivity.onHelpConfigure();
-            }
-        }
+        checkHelpState();
     }
-    
     
     @Override
     public void onClick(DialogInterface dialog, int which)
@@ -132,29 +99,34 @@ public class DeviceConfigureSettingsDialog implements OnClickListener, OnCancelL
         switch (which)
         {
             case AlertDialog.BUTTON_POSITIVE:
-                String bssid;
-                String ssid;
-                String password;
-                WifiCipherType wifiType;
-                int wifiSelection = mWifiSpinner.getSelectedItemPosition();
-                if (wifiSelection >= 0)
-                {
-                    String currentSSID = EspBaseApiUtil.getWifiConnectedSsid();
-                    if (!TextUtils.isEmpty(currentSSID))
-                    {
-                        mUser.setLastConnectedSsid(currentSSID);
-                    }
-                    
-                    ScanResult sr = mWifiList.get(wifiSelection);
-                    bssid = sr.BSSID;
-                    ssid = sr.SSID;
-                    password = mWifiPasswordEdt.getText().toString();
-                    wifiType = WifiCipherType.getWifiCipherType(sr);
-                    //TODO mesh
-                    ApInfo apInfo = new ApInfo(bssid, ssid, password, wifiType);
-                    new DeviceConfigureProgressDialog(mActivity, mDevice, apInfo).show();
-                }
+                configure();
                 break;
+        }
+    }
+    
+    private void configure()
+    {
+        String bssid;
+        String ssid;
+        String password;
+        WifiCipherType wifiType;
+        int wifiSelection = mWifiSpinner.getSelectedItemPosition();
+        if (wifiSelection >= 0)
+        {
+            String currentSSID = EspBaseApiUtil.getWifiConnectedSsid();
+            if (!TextUtils.isEmpty(currentSSID))
+            {
+                mUser.setLastConnectedSsid(currentSSID);
+            }
+            
+            ScanResult sr = mWifiList.get(wifiSelection);
+            bssid = sr.BSSID;
+            ssid = sr.SSID;
+            password = mWifiPasswordEdt.getText().toString();
+            wifiType = WifiCipherType.getWifiCipherType(sr);
+            
+            ApInfo apInfo = new ApInfo(bssid, ssid, password, wifiType);
+            mActivity.showConfigureProgressDialog(mDevice, apInfo);
         }
     }
     
@@ -195,59 +167,21 @@ public class DeviceConfigureSettingsDialog implements OnClickListener, OnCancelL
         
     };
     
-    private class WifiAdapter extends BaseAdapter
-    {
-        
-        @Override
-        public int getCount()
-        {
-            return mWifiList.size();
-        }
-        
-        @Override
-        public Object getItem(int position)
-        {
-            return mWifiList.get(position);
-        }
-        
-        @Override
-        public long getItemId(int position)
-        {
-            return 0;
-        }
-        
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            if (convertView == null)
-            {
-                LayoutInflater inflater = mActivity.getLayoutInflater();
-                convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
-            }
-            ScanResult sr = mWifiList.get(position);
-            
-            TextView wifiSsidTV = (TextView)convertView.findViewById(android.R.id.text1);
-            wifiSsidTV.setText(sr.SSID);
-            return convertView;
-        }
-        
-    }
-
     @Override
     public void onCancel(DialogInterface dialog)
     {
-        if (mHelpMachine.isHelpModeConfigure())
+        if (checkHelpOnCancel())
         {
-            if (mHelpMachine.getCurrentStateOrdinal() == HelpStepConfigure.SELECT_CONFIGURED_DEVICE.ordinal())
-            {
-                mHelpMachine.retry();
-                mActivity.onHelpConfigure();
-            }
+            return;
         }
-        else
-        {
-            mActivity.setIsShowConfigureDialog(false);
-            mActivity.resetRefreshMessage();
-        }
+        
+        resetAutoRefresh();
+    }
+    
+    protected void checkHelpState() {
+    }
+    
+    protected boolean checkHelpOnCancel() {
+        return false;
     }
 }

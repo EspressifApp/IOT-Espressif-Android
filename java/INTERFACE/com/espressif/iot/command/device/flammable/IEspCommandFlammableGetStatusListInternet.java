@@ -8,7 +8,7 @@ import com.espressif.iot.type.device.status.IEspStatusFlammable;
 
 public interface IEspCommandFlammableGetStatusListInternet extends IEspCommandInternet, IEspCommandFlammable
 {
-    final String URL = "https://iot.espressif.cn/v1/datastreams/flammable_gas/datapoints/";
+    static final String URL = "https://iot.espressif.cn/v1/datastreams/flammable_gas/datapoints/";
     
     /**
      * get the statusFlammable list to the Flammable by Internet

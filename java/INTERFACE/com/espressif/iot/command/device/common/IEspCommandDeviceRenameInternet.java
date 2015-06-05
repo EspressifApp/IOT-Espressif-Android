@@ -5,7 +5,7 @@ import com.espressif.iot.command.device.IEspCommandActivated;
 
 public interface IEspCommandDeviceRenameInternet extends IEspCommandActivated, IEspCommandInternet
 {
-    final String URL = "https://iot.espressif.cn/v1/device/" + "?method=PUT";
+    static final String URL = "https://iot.espressif.cn/v1/device/" + "?method=PUT";
     /**
      * rename the device on Server
      * @param deviceKey the device's key

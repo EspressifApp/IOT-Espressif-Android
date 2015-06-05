@@ -12,7 +12,8 @@ import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 
 public class EspCommandPlugsPostStatusLocal implements IEspCommandPlugsPostStatusLocal
 {
-    private String getLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
         return "http://" + inetAddress.getHostAddress() + "/" + "config?command=plugs";
     }

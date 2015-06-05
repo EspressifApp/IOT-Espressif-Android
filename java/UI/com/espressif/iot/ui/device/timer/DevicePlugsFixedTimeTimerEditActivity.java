@@ -1,16 +1,12 @@
 package com.espressif.iot.ui.device.timer;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.type.device.timer.EspDeviceFixedTimeTimer;
 import com.espressif.iot.util.EspStrings;
 
 import android.os.Bundle;
 
-public class DevicePlugsFixedTimeTimerEditActivity extends DevicePlugFixedTimeTimerEditActivity
+public class DevicePlugsFixedTimeTimerEditActivity extends DeviceTimerEditFixedTimerActivityAbs
 {
     private String mValue;
     
@@ -23,48 +19,16 @@ public class DevicePlugsFixedTimeTimerEditActivity extends DevicePlugFixedTimeTi
     }
     
     @Override
-    protected JSONObject getPostJSON()
+    protected String getEditAction()
     {
-        JSONObject json = super.getPostJSON();
-        try
-        {
-            JSONArray array = json.getJSONArray(KEY_TIMERS_ARRAY);
-            for (int i = 0; i < array.length(); i++)
-            {
-                JSONObject jsonInArray = array.getJSONObject(i);
-                JSONArray actionArray = jsonInArray.getJSONArray(KEY_TIMER_TIME_ACTION);
-                for (int j = 0; j < actionArray.length(); j++)
-                {
-                    JSONObject actionJSON = actionArray.getJSONObject(j);
-                    String action = actionJSON.getString(KEY_TIMER_ACTION);
-                    action += mValue;
-                    actionJSON.put(KEY_TIMER_ACTION, action);
-                }
-            }
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return json;
+        return mActionValues[mActionSpinner.getSelectedItemPosition()] + mValue;
     }
-    
+
     @Override
-    protected void setGotData()
+    protected String getTimerAction(EspDeviceFixedTimeTimer timer)
     {
-        super.setGotData();
-        
-        EspDeviceFixedTimeTimer timer = (EspDeviceFixedTimeTimer)mTimer;
         String action = timer.getTimeAction().get(0).getAction();
         action = action.substring(0, action.length() - IEspDevicePlugs.TIMER_TAIL_LENGTH);
-        for (int i = 0; i < mActionValues.length; i++)
-        {
-            if (action.equals(mActionValues[i]))
-            {
-                mActionSpinner.setSelection(i);
-                break;
-            }
-        }
+        return action;
     }
 }

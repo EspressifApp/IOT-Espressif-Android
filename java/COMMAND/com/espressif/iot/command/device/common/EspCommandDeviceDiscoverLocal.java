@@ -1,5 +1,6 @@
 package com.espressif.iot.command.device.common;
 
+import java.net.InetAddress;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -17,6 +18,12 @@ public class EspCommandDeviceDiscoverLocal implements IEspCommandDeviceDiscoverL
         List<IOTAddress> result = EspBaseApiUtil.discoverDevices();
         log.debug(Thread.currentThread().toString() + "##doCommandDeviceDiscoverLocal(): " + result);
         return result;
+    }
+    
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
+    {
+        throw new RuntimeException("EspCommandDeviceSleepRebootLocal don't support getLocalUrl");
     }
     
 }

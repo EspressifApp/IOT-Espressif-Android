@@ -8,5 +8,13 @@ import com.espressif.iot.type.device.status.IEspStatusPlugs;
 
 public interface IEspCommandPlugsGetStatusLocal extends IEspCommandLocal, IEspCommandPlugs
 {
+    /**
+     * get the statusPlugs to the Plugs by Local
+     * 
+     * @param inetAddress the Plugs's ip address
+     * @param deviceBssid the Plugs's bssid
+     * @param router the Plugs's router
+     * @return the status of the Plugs or null(if executed fail)
+     */
     IEspStatusPlugs doCommandPlugsGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router);
 }

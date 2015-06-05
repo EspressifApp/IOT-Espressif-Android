@@ -4,8 +4,8 @@ import com.espressif.iot.type.device.status.IEspStatusLight;
 
 public interface IEspDeviceLight extends IEspDevice
 {
-    public static final int FREQ_MIN = 100;
-    public static final int FREQ_MAX = 500;
+    public static final int PERIOD_MIN = 1000;
+    public static final int PERIOD_MAX = 10000;
     public static final int RGB_MAX = 254;
     
     /**

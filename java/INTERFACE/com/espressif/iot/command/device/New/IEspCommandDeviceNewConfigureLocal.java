@@ -7,7 +7,6 @@ import com.espressif.iot.type.net.WifiCipherType;
 
 public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEspCommandActivated, IEspCommandLocal
 {
-    final String URL = "http://192.168.4.1/config?command=wifi";
     /**
      * configure the new device to an AP accessible to Internet
      * 
@@ -17,7 +16,7 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
      * @param apSsid Ap's ssid
      * @param apWifiCipherType Ap's wifi cipher type
      * @param apPassword Ap's password
-     * @param randomToken Ap's randomToken
+     * @param randomToken 40 randomToken
      * @return whether the command executed suc
      * @throws InterruptedException when the command is interrupted
      */
@@ -29,7 +28,7 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
      * @param deviceSsid the device's ssid(softap)
      * @param deviceWifiCipherType the device's wifi cipher type
      * @param devicePassword the device's password
-     * @param randomToken Ap's randomToken
+     * @param randomToken 40 randomToken
      * @return whether the command executed suc
      * @throws InterruptedException when the command is interrupted
      */

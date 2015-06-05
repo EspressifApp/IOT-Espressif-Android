@@ -16,7 +16,7 @@ import com.espressif.iot.type.net.HeaderPair;
 
 public class EspCommandPlugsGetStatusInternet implements IEspCommandPlugsGetStatusInternet
 {
-
+    
     @Override
     public IEspStatusPlugs doCommandPlugsGetStatusInternet(String deviceKey)
     {
@@ -40,7 +40,7 @@ public class EspCommandPlugsGetStatusInternet implements IEspCommandPlugsGetStat
             
             IEspStatusPlugs plugsStatus = new EspStatusPlugs();
             List<IAperture> apertures = new ArrayList<IAperture>();
-            JSONObject dataJSON = resultJSON.getJSONObject(KEY_DATA_POINT);
+            JSONObject dataJSON = resultJSON.getJSONObject(Datapoint);
             int valueSum = dataJSON.getInt(X);
             int count = dataJSON.getInt(Y);
             for (int i = 0; i < count; i++)

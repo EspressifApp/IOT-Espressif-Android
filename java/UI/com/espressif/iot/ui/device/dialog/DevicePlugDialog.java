@@ -1,10 +1,6 @@
 package com.espressif.iot.ui.device.dialog;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -13,44 +9,24 @@ import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDevicePlug;
 import com.espressif.iot.device.IEspDeviceSSS;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.EspStatusPlug;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
-import com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity;
-import com.espressif.iot.user.IEspUser;
-import com.espressif.iot.user.builder.BEspUser;
 
-public class DevicePlugDialog implements EspDeviceDialogInterface, View.OnClickListener, OnDismissListener
+public class DevicePlugDialog extends DeviceDialogAbs implements View.OnClickListener
 {
-    private IEspUser mUser;
-    
-    private Context mContext;
-    
-    private IEspDevice mDevice;
-    
-    private View mProgressContainer;
-    
     private CheckBox mPlugCB;
     private CheckBox mControlChildCB;
     
-    private AlertDialog mDialog;
-    
     public DevicePlugDialog(Context context, IEspDevice device)
     {
-        mUser = BEspUser.getBuilder().getInstance();
-        mContext = context;
-        mDevice = device;
+        super(context, device);
     }
     
     @Override
-    public void show()
+    protected View getContentView(LayoutInflater inflater)
     {
-        LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.device_dialog_plug, null);
-        
-        mProgressContainer = view.findViewById(R.id.progress_container);
-        mProgressContainer.setOnClickListener(this);
+        View view = inflater.inflate(R.layout.device_activity_plug, null);
         
         mPlugCB = (CheckBox)view.findViewById(R.id.plug_switch);
         mPlugCB.setOnClickListener(this);
@@ -62,33 +38,7 @@ public class DevicePlugDialog implements EspDeviceDialogInterface, View.OnClickL
             mControlChildCB.setVisibility(View.GONE);
         }
         
-        mDialog =
-            new AlertDialog.Builder(mContext).setTitle(mDevice.getName())
-                .setView(view)
-                .setCancelable(false)
-                .setNegativeButton(R.string.esp_sss_device_dialog_exit, null)
-                .show();
-        mDialog.setOnDismissListener(this);
-        
-        new StatusTask().execute();
-    }
-    
-    @Override
-    public void cancel()
-    {
-        if (mDialog != null)
-        {
-            mDialog.cancel();
-        }
-    }
-
-    @Override
-    public void dismiss()
-    {
-        if (mDialog != null)
-        {
-            mDialog.dismiss();
-        }
+        return view;
     }
     
     @Override
@@ -102,71 +52,22 @@ public class DevicePlugDialog implements EspDeviceDialogInterface, View.OnClickL
         }
     }
     
-    private class StatusTask extends AsyncTask<IEspStatusPlug, Void, Boolean>
+    @Override
+    protected void onExecuteEnd(boolean suc)
     {
-        private boolean mBroadcast;
-        
-        public StatusTask()
+        if (mDevice.getDeviceType() == EspDeviceType.PLUG)
         {
-            mBroadcast = false;
-        }
-
-        public StatusTask(boolean broadcast)
-        {
-            mBroadcast = broadcast;
-        }
-        
-        @Override
-        protected void onPreExecute()
-        {
-            mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);
-            mProgressContainer.setVisibility(View.VISIBLE);
-        }
-        
-        @Override
-        protected Boolean doInBackground(IEspStatusPlug... params)
-        {
-            if (params.length > 0)
+            IEspStatusPlug status;
+            if (mDevice instanceof IEspDeviceSSS)
             {
-                IEspStatusPlug status = params[0];
-                return mUser.doActionPostDeviceStatus(mDevice, status, mBroadcast);
+                status = (IEspStatusPlug)((IEspDeviceSSS)mDevice).getDeviceStatus();
             }
             else
             {
-                return mUser.doActionGetDeviceStatus(mDevice);
+                status = ((IEspDevicePlug)mDevice).getStatusPlug();
             }
-        }
-        
-        @Override
-        protected void onPostExecute(Boolean result)
-        {
-            if (mDevice.getDeviceType() == EspDeviceType.PLUG)
-            {
-                IEspStatusPlug status;
-                if (mDevice instanceof IEspDeviceSSS)
-                {
-                    status = (IEspStatusPlug)((IEspDeviceSSS)mDevice).getDeviceStatus();
-                }
-                else
-                {
-                    status = ((IEspDevicePlug)mDevice).getStatusPlug();
-                }
-                mPlugCB.setChecked(status.isOn());
-            }
-            
-            mProgressContainer.setVisibility(View.GONE);
-            mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(true);
+            mPlugCB.setChecked(status.isOn());
         }
     }
-
-    @Override
-    public void onDismiss(DialogInterface dialog)
-    {
-        EspHelpStateMachine helpMachine = EspHelpStateMachine.getInstance();
-        if (helpMachine.isHelpModeUseSSSDevice())
-        {
-            helpMachine.transformState(true);
-            ((SoftApStaSupportActivity)mContext).onHelpUseSSSDevice();
-        }
-    }
+    
 }

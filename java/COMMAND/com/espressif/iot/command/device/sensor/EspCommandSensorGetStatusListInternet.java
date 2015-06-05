@@ -140,8 +140,8 @@ public abstract class EspCommandSensorGetStatusListInternet implements IEspComma
         long endTimestamp)
     {
         List<IEspStatusSensor> result = getStatusesDataList(deviceKey, startTimestamp, endTimestamp);
-        log.debug(Thread.currentThread().toString() + "##doCommandSensorGetStatusListInternet(deviceKey=["
-            + deviceKey + "],startTimestamp=[" + TimeUtil.getDateStr(startTimestamp, null) + "],endTimestamp=["
+        log.debug(Thread.currentThread().toString() + "##doCommandSensorGetStatusListInternet(deviceKey=[" + deviceKey
+            + "],startTimestamp=[" + TimeUtil.getDateStr(startTimestamp, null) + "],endTimestamp=["
             + TimeUtil.getDateStr(endTimestamp, null) + "]): receive " + result.size());
         return result;
     }

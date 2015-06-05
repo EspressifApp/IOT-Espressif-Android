@@ -36,6 +36,7 @@
     <string name="esp_qrcode_capture_result_success">Capture device success</string>
     <string name="esp_qrcode_capture_result_failed">Capture device failed</string>
 
+    <string name="esp_ui_title">My Devices</string>
     <string name="esp_ui_menu_get_share">Get Share</string>
     <string name="esp_ui_menu_configure">Device configure</string>
     <string name="esp_ui_menu_settings">Settings</string>
@@ -66,6 +67,11 @@
     <string name="esp_settings_version_upgrade">Version upgrade</string>
     <string name="esp_settings_version_name">Version</string>
     <string name="esp_settings_version_log">Version update log</string>
+    <string name="esp_settings_debug">Debug</string>
+    <string name="esp_settings_debug_store_log">Store Log</string>
+    <string name="esp_settings_debug_read_log">Read debug Log</string>
+    <string name="esp_settings_debug_clear_log">Clear Log</string>
+    <string name="esp_settings_debug_read_log_no_log">No stored log</string>
 
     <string name="esp_upgrade_apk_downloading">Downloading %1$d %%</string>
     <string name="esp_upgrade_apk_status_complete">Download complete</string>
@@ -83,10 +89,18 @@
     <string name="pull_to_refresh_from_bottom_refreshing_label">Loading…</string>
 
     <string name="esp_configure_title">Device Configure</string>
+    <string name="esp_configure_activate">Activate device</string>
+    <string name="esp_configure_mesh">Mesh configure</string>
     <string name="esp_configure_wifi_select_hint">Please select Wifi</string>
     <string name="esp_configure_wifi_password_hint">Input Wifi password</string>
     <string name="esp_configure_wifi_show_password">Show password</string>
     <string name="esp_configure_wifi_hint">Please open Wifi first</string>
+    <string name="esp_configure_direct_connect">Connect device</string>
+    <string name="esp_configure_direct_connecting">Connecting&#8230;</string>
+    <string name="esp_configure_direct_result_failed">Connect failed</string>
+    <string name="esp_configure_direct_result_not_support">The device don\'t support local usage</string>
+    <string name="esp_configure_direct_result_not_found">The device can\'t use now</string>
+    <string name="esp_configure_direct_result_suc">Connect successfully</string>
     <string name="esp_configure_start">Start configure</string>
     <string name="esp_configure_configuring">Configuring&#8230;</string>
     <string name="esp_configure_result_success">Configure success</string>
@@ -137,7 +151,11 @@
     <string name="esp_device_light_red">Red</string>
     <string name="esp_device_light_green">Green</string>
     <string name="esp_device_light_blue">Blue</string>
+    <string name="esp_device_light_white">White</string>
+    <string name="esp_device_light_cwhite">Cold White</string>
+    <string name="esp_device_light_wwhite">Warm White</string>
     <string name="esp_device_light_confirm">Confirm</string>
+    <string name="esp_device_light_disconnect_msg">Device is disconnected</string>
 
     <string name="esp_device_remote_address_hint">Please input address</string>
     <string name="esp_device_remote_command_hint">Please input command</string>
@@ -191,7 +209,7 @@
     <string name="esp_help_hint_retry">Retry</string>
     <string name="esp_help_hint_next">Next</string>
     <string name="esp_help_configure_discover_softap_msg">Comfirm to open Wifi and your IOT device, then pull to refresh</string>
-    <string name="esp_help_configure_select_softap_msg">Please select your IOT device</string>
+    <string name="esp_help_configure_select_softap_msg">Please select your IOT device, then selcet Activate device.</string>
     <string name="esp_help_configure_discover_wifi_msg">Comfirm Wifi is available, then select your IOT device</string>
     <string name="esp_help_configure_connect_device_failed_msg">Connect device failed</string>
     <string name="esp_help_configure_device_activating_msg">Device is activating, pleast wait for a moment</string>
@@ -284,11 +302,15 @@
     <string name="esp_sss_help_upgrade_success_msg">You have learned how to upgrade device</string>
     
     <string name="esp_esptouch">Esp Touch</string>
+    <string name="esp_esptouch_version">EspTouch v0.3.2</string>
     <string name="esp_esptouch_current_ssid">Current SSID: %1$s</string>
     <string name="esp_esptouch_configure_ssid">Select configure wifi</string>
-    <string name="esp_esptouch_ssid_pwd_hint">Please enter password</string>
+    <string name="esp_esptouch_pwd_hint">Please enter password</string>
+    <string name="esp_esptouch_ssid_hint">Please enter ssid</string>
     <string name="esp_esptouch_show_pwd">Show password</string>
+    <string name="esp_esptouch_isSsidHidden">IsSsidHidden</string>
     <string name="esp_esptouch_delete_pwd">Delete password</string>
+    <string name="esp_esptouch_cannot_find_ap_hing">Cannot find Ap: "%1$s</string>
     <string name="esp_esptouch_connection_hint">Please connect Wifi first</string>
     <string name="esp_esptouch_configure_message">Configuring to %1$s</string>
     <string name="esp_esptouch_result_suc">Configure successfully</string>
@@ -296,6 +318,7 @@
     <string name="esp_esptouch_result_over">Configure over, current connected Wifi isn\'t the same as the configred Wifi, please check the result by yourself</string>
     <string name="esp_esptouch_result_cancel">Cancel configure</string>
     
+    <string name="esp_wifi_edit">Wifi Edit</string>
     <string name="esp_wifi_pwd_edit">Edit</string>
     <string name="esp_wifi_pwd_edit_title">Edit wifi password</string>
     <string name="esp_wifi_pwd_delete">Delete</string>

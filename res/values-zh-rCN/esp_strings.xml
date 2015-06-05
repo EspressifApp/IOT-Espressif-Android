@@ -36,6 +36,7 @@
     <string name="esp_qrcode_capture_result_success">获取设备成功</string>
     <string name="esp_qrcode_capture_result_failed">获取设备失败</string>
 
+    <string name="esp_ui_title">我的设备</string>
     <string name="esp_ui_menu_get_share">获取分享</string>
     <string name="esp_ui_menu_configure">设备配置</string>
     <string name="esp_ui_menu_settings">设置</string>
@@ -66,6 +67,11 @@
     <string name="esp_settings_version_upgrade">检查升级</string>
     <string name="esp_settings_version_name">版本号</string>
     <string name="esp_settings_version_log">版本更新记录</string>
+    <string name="esp_settings_debug">Debug</string>
+    <string name="esp_settings_debug_store_log">存储Log</string>
+    <string name="esp_settings_debug_read_log">读取Log</string>
+    <string name="esp_settings_debug_clear_log">清除Log</string>
+    <string name="esp_settings_debug_read_log_no_log">没有Log记录</string>
 
     <string name="esp_upgrade_apk_downloading">正在下载 %1$d %%</string>
     <string name="esp_upgrade_apk_status_complete">下载完成</string>
@@ -83,10 +89,18 @@
     <string name="pull_to_refresh_from_bottom_refreshing_label">正在刷新…</string>
 
     <string name="esp_configure_title">设备配置</string>
+    <string name="esp_configure_activate">激活设备</string>
+    <string name="esp_configure_mesh">组网配置</string>
     <string name="esp_configure_wifi_select_hint">请选择Wifi</string>
     <string name="esp_configure_wifi_password_hint">输入Wifi密码</string>
     <string name="esp_configure_wifi_show_password">显示密码</string>
     <string name="esp_configure_wifi_hint">请先打开Wifi</string>
+    <string name="esp_configure_direct_connect">直连设备</string>
+    <string name="esp_configure_direct_connecting">正在连接&#8230;</string>
+    <string name="esp_configure_direct_result_failed">连接失败</string>
+    <string name="esp_configure_direct_result_not_support">此设备不支持本地使用</string>
+    <string name="esp_configure_direct_result_not_found">此设备暂不可用</string>
+    <string name="esp_configure_direct_result_suc">连接成功</string>
     <string name="esp_configure_start">开始配置</string>
     <string name="esp_configure_configuring">正在配置&#8230;</string>
     <string name="esp_configure_result_success">配置成功</string>
@@ -137,7 +151,11 @@
     <string name="esp_device_light_red">红</string>
     <string name="esp_device_light_green">绿</string>
     <string name="esp_device_light_blue">蓝</string>
+    <string name="esp_device_light_white">白</string>
+    <string name="esp_device_light_cwhite">冷白</string>
+    <string name="esp_device_light_wwhite">暖白</string>
     <string name="esp_device_light_confirm">确认</string>
+    <string name="esp_device_light_disconnect_msg">与设备的连接断开了</string>
 
     <string name="esp_device_remote_address_hint">请输入地址</string>
     <string name="esp_device_remote_command_hint">请输入命令</string>
@@ -191,7 +209,7 @@
     <string name="esp_help_configure_device">设备配置帮助</string>
     <string name="esp_help_configure">配置帮助</string>
     <string name="esp_help_configure_discover_softap_msg">确认打开Wifi功能以及您的设备，然后下拉刷新界面</string>
-    <string name="esp_help_configure_select_softap_msg">请点击您要配置的设备</string>
+    <string name="esp_help_configure_select_softap_msg">请点击您要配置的设备, 点击激活设备</string>
     <string name="esp_help_configure_discover_wifi_msg">请确认有可用的Wifi， 然后再选择您的设备</string>
     <string name="esp_help_configure_connect_device_failed_msg">连接设备失败</string>
     <string name="esp_help_configure_device_activating_msg">设备正在激活，请稍等片刻</string>
@@ -284,11 +302,15 @@
     <string name="esp_sss_help_upgrade_success_msg">您已经学会了如何升级设备</string>
     
     <string name="esp_esptouch">Esp Touch</string>
+    <string name="esp_esptouch_version">EspTouch v0.3.2</string>
     <string name="esp_esptouch_current_ssid">当前的SSID: %1$s</string>
     <string name="esp_esptouch_configure_ssid">请选择要配置到的Wifi</string>
-    <string name="esp_esptouch_ssid_pwd_hint">请输入Wifi密码</string>
+    <string name="esp_esptouch_ssid_hint">请输入Wifi名称</string>
+    <string name="esp_esptouch_pwd_hint">请输入Wifi密码</string>
     <string name="esp_esptouch_show_pwd">显示密码</string>
+    <string name="esp_esptouch_isSsidHidden">隐藏SSID</string>
     <string name="esp_esptouch_delete_pwd">删除密码</string>
+    <string name="esp_esptouch_cannot_find_ap_hing">无法找到路由器: %1$s</string>
     <string name="esp_esptouch_connection_hint">请先连上一个Wifi</string>
     <string name="esp_esptouch_configure_message">正在配往 %1$s</string>
     <string name="esp_esptouch_result_suc">配置成功</string>
@@ -296,6 +318,7 @@
     <string name="esp_esptouch_result_over">配置结束，因当前连接的WIFI与配置的WIFI不同，无法收到反馈，请自行检查结果。</string>
     <string name="esp_esptouch_result_cancel">取消配置</string>
     
+    <string name="esp_wifi_edit">Wifi编辑</string>
     <string name="esp_wifi_pwd_edit">编辑</string>
     <string name="esp_wifi_pwd_edit_title">修改wifi密码</string>
     <string name="esp_wifi_pwd_delete">删除</string>

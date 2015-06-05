@@ -3,10 +3,7 @@ package com.espressif.iot.ui.device.dialog;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,31 +24,17 @@ import com.espressif.iot.type.device.EspPlugsAperture;
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
-import com.espressif.iot.ui.device.dialog.EspDeviceDialogInterface;
-import com.espressif.iot.user.IEspUser;
-import com.espressif.iot.user.builder.BEspUser;
 
-public class DevicePlugsDialog implements EspDeviceDialogInterface, OnItemClickListener
+public class DevicePlugsDialog extends DeviceDialogAbs implements OnItemClickListener
 {
-    private AlertDialog mDialog;
-    
-    private Context mContext;
-    
-    private IEspDevice mDevice;
-    
-    private IEspUser mUser;
-    
     private ListView mApertureListView;
     private List<IAperture> mApertureList;
     private ApertureAdapter mApertureAdapter;
     private CheckBox mControlChildCB;
-    private View mProgressContainer;
     
     public DevicePlugsDialog(Context context, IEspDevice device)
     {
-        mContext = context;
-        mDevice = device;
-        mUser = BEspUser.getBuilder().getInstance();
+        super(context, device);
     }
     
     @Override
@@ -73,13 +56,9 @@ public class DevicePlugsDialog implements EspDeviceDialogInterface, OnItemClickL
     }
     
     @Override
-    public void show()
+    protected View getContentView(LayoutInflater inflater)
     {
-        LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.device_dialog_plugs, null);
-        
-        mProgressContainer = view.findViewById(R.id.progress_container);
-        mProgressContainer.setClickable(true);
+        View view = inflater.inflate(R.layout.device_activity_plugs, null);
         
         mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
         mControlChildCB.setVisibility(mDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
@@ -105,61 +84,15 @@ public class DevicePlugsDialog implements EspDeviceDialogInterface, OnItemClickL
         mApertureListView.setAdapter(mApertureAdapter);
         mApertureListView.setOnItemClickListener(this);
         
-        mDialog =
-            new AlertDialog.Builder(mContext).setTitle(mDevice.getName())
-                .setView(view)
-                .setCancelable(false)
-                .setNegativeButton(R.string.esp_sss_device_dialog_exit, null)
-                .show();
-        
-        new StatusTask().execute();
+        return view;
     }
     
-    private class StatusTask extends AsyncTask<IEspStatusPlugs, Void, Boolean>
+    @Override
+    protected void onExecuteEnd(boolean suc)
     {
-        private boolean mBroadcast;
-        
-        public StatusTask()
-        {
-            mBroadcast = false;
-        }
-
-        public StatusTask(boolean broadcast)
-        {
-            mBroadcast = broadcast;
-        }
-        
-        @Override
-        protected void onPreExecute()
-        {
-            mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);
-            mProgressContainer.setVisibility(View.VISIBLE);
-        }
-        
-        @Override
-        protected Boolean doInBackground(IEspStatusPlugs... params)
-        {
-            if (params.length > 0)
-            {
-                IEspStatusPlugs status = params[0];
-                return mUser.doActionPostDeviceStatus(mDevice, status, mBroadcast);
-            }
-            else
-            {
-                return mUser.doActionGetDeviceStatus(mDevice);
-            }
-        }
-        
-        @Override
-        protected void onPostExecute(Boolean result)
-        {
-            mApertureAdapter.notifyDataSetChanged();
-            
-            mProgressContainer.setVisibility(View.GONE);
-            mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(true);
-        }
+        mApertureAdapter.notifyDataSetChanged();
     }
-
+    
     private class ApertureAdapter extends BaseAdapter
     {
         private class ViewHolder

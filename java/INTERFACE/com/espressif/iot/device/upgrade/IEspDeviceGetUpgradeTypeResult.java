@@ -4,7 +4,7 @@ import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 
 public interface IEspDeviceGetUpgradeTypeResult extends IEspDeviceUpgrade
 {
-    final boolean IS_USED_BY_DEVELOPER = true;
+    static final boolean IS_USED_BY_DEVELOPER = true;
     /**
      * get the device's @see EspUpgradeDeviceTypeResult by its romVersion and latestRomVersion
      * @param romVersion current rom version

@@ -6,8 +6,6 @@ import com.espressif.iot.type.device.status.IEspStatusRemote;
 
 public interface IEspCommandRemoteGetStatusInternet extends IEspCommandInternet, IEspCommandRemote
 {
-    final String URL = "https://iot.espressif.cn/v1/datastreams/remote/datapoint/?deliver_to_device=true";
-    
     /**
      * get the statusRemote to the Remote by Internet
      * 

@@ -8,5 +8,5 @@ package com.espressif.iot.command.device;
  */
 public interface IEspCommandPlug extends IEspCommandDevice
 {
-    
+    static final String Response = "Response";
 }

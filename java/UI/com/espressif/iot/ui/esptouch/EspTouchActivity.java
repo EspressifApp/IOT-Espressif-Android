@@ -6,6 +6,7 @@ import java.util.List;
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.esptouch.EsptouchTask;
+import com.espressif.iot.esptouch.IEsptouchResult;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -45,13 +46,16 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
     private SharedPreferences mShared;
     private TextView mCurrentSsidTV;
     private Spinner mConfigureSP;
+    private EditText mSsidET;
     private EditText mPasswordET;
     private CheckBox mShowPasswordCB;
+    private CheckBox mIsSsidHiddenCB;
     private Button mDeletePasswordBtn;
     private Button mConfirmBtn;
     
     private BaseAdapter mWifiAdapter;
-    private List<String> mWifiList;
+    private volatile List<ScanResult> mScanResultList;
+    private volatile List<String> mScanResultSsidList;
     
     private String mCurrentSSID;
     
@@ -82,7 +86,9 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         mCurrentSsidTV = (TextView)findViewById(R.id.esptouch_current_ssid);
         mConfigureSP = (Spinner)findViewById(R.id.esptouch_configure_wifi);
         mPasswordET = (EditText)findViewById(R.id.esptouch_pwd);
+        mSsidET = (EditText)findViewById(R.id.esptouch_ssid);
         mShowPasswordCB = (CheckBox)findViewById(R.id.esptouch_show_pwd);
+        mIsSsidHiddenCB = (CheckBox)findViewById(R.id.esptouch_isSsidHidden);
         mDeletePasswordBtn = (Button)findViewById(R.id.esptouch_delete_pwd);
         mConfirmBtn = (Button)findViewById(R.id.esptouch_confirm);
         
@@ -90,9 +96,10 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         mDeletePasswordBtn.setOnClickListener(this);
         mConfirmBtn.setOnClickListener(this);
         
-        mWifiList = new ArrayList<String>();
+        mScanResultList = new ArrayList<ScanResult>();
+        mScanResultSsidList = new ArrayList<String>();
         mWifiAdapter =
-            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, mWifiList);
+            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, mScanResultSsidList);
         mConfigureSP.setAdapter(mWifiAdapter);
         mConfigureSP.setOnItemSelectedListener(this);
         
@@ -108,13 +115,13 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         unregisterReceiver(mReceiver);
     }
     
-    private void scanWifi(List<String> list)
+    private void scanWifi()
     {
-        list.clear();
-        List<ScanResult> wifis = EspBaseApiUtil.scan();
-        for (ScanResult sr : wifis)
+        mScanResultList = EspBaseApiUtil.scan();
+        mScanResultSsidList.clear();
+        for(ScanResult scanResult : mScanResultList)
         {
-            list.add(sr.SSID);
+            mScanResultSsidList.add(scanResult.SSID);
         }
     }
     
@@ -129,11 +136,11 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         
         if (!TextUtils.isEmpty(mCurrentSSID))
         {
-            scanWifi(mWifiList);
+            scanWifi();
             mWifiAdapter.notifyDataSetChanged();
-            for (int i = 0; i < mWifiList.size(); i++)
+            for (int i = 0; i < mScanResultList.size(); i++)
             {
-                String ssid = mWifiList.get(i);
+                String ssid = mScanResultList.get(i).SSID;
                 if (ssid.equals(mCurrentSSID))
                 {
                     mConfigureSP.setSelection(i);
@@ -147,7 +154,7 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         }
     }
     
-    private class ConfigureTask extends AsyncTask<String, Void, Boolean> implements OnCancelListener
+    private class ConfigureTask extends AsyncTask<String, Void, IEsptouchResult> implements OnCancelListener
     {
         private Activity mActivity;
         
@@ -157,18 +164,11 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         
         private final String mSsid;
         
-        private final String mPassword;
-        
-        private boolean mCancelled;
-        
-        public ConfigureTask(Activity activity, String apSsid, String password)
+        public ConfigureTask(Activity activity, String apSsid, String apBssid, String password, boolean isSsidHidden)
         {
             mActivity = activity;
-            
-            mCancelled = false;
             mSsid = apSsid;
-            mPassword = password;
-            mTask = new EsptouchTask(mSsid, mPassword, EspTouchActivity.this);
+            mTask = new EsptouchTask(apSsid, apBssid, password, isSsidHidden, EspTouchActivity.this);
         }
         
         @Override
@@ -182,22 +182,22 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         }
         
         @Override
-        protected Boolean doInBackground(String... params)
+        protected IEsptouchResult doInBackground(String... params)
         {
-            return mTask.execute();
+            return mTask.executeForResult();
         }
         
         @Override
-        protected void onPostExecute(Boolean result)
+        protected void onPostExecute(IEsptouchResult result)
         {
             mDialog.dismiss();
             
             int toastMsg;
-            if (result)
+            if (result.isSuc())
             {
                 toastMsg = R.string.esp_esptouch_result_suc;
             }
-            else if (mCancelled)
+            else if (result.isCancelled())
             {
                 toastMsg = R.string.esp_esptouch_result_cancel;
             }
@@ -218,10 +218,32 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         {
             if (mTask != null)
             {
-                mCancelled = true;
                 mTask.interrupt();
+                Toast.makeText(mActivity, R.string.esp_esptouch_result_cancel, Toast.LENGTH_LONG).show();
             }
         }
+    }
+    
+    private String scanApBssidBySsid(String apSsid)
+    {
+        if (TextUtils.isEmpty(apSsid))
+        {
+            return null;
+        }
+        String bssid = null;
+        for (int retry = 0; bssid == null && retry < 3; retry++)
+        {
+            scanWifi();
+            for (ScanResult scanResult : mScanResultList)
+            {
+                if (scanResult.SSID.equals(apSsid))
+                {
+                    bssid = scanResult.BSSID;
+                    return bssid;
+                }
+            }
+        }
+        return null;
     }
     
     @Override
@@ -231,11 +253,21 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         {
             if (!TextUtils.isEmpty(mCurrentSSID))
             {
-                String ssid = mConfigureSP.getSelectedItem().toString();
+                String ssid = mSsidET.getText().toString();
                 String password = mPasswordET.getText().toString();
                 mShared.edit().putString(ssid, password).commit();
-                
-                new ConfigureTask(this, ssid, password).execute();
+                boolean isSsidHidden = mIsSsidHiddenCB.isChecked();
+                // find the bssid is scanList
+                String bssid = scanApBssidBySsid(ssid);
+                if (bssid == null)
+                {
+                    Toast.makeText(this, getString(R.string.esp_esptouch_cannot_find_ap_hing, ssid), Toast.LENGTH_LONG)
+                        .show();
+                }
+                else
+                {
+                    new ConfigureTask(this, ssid, bssid, password, isSsidHidden).execute();
+                }
             }
             else
             {
@@ -272,9 +304,10 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
     {
-        String ssid = mWifiList.get(position);
+        String ssid = mScanResultList.get(position).SSID;
         String password = mShared.getString(ssid, "");
         mPasswordET.setText(password);
+        mSsidET.setText(ssid);
     }
     
     @Override

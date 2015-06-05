@@ -69,7 +69,7 @@ public class EspCommandPlugPostStatusInternet implements IEspCommandPlugPostStat
     {
         return doCommandPlugPostStatusInternet(deviceKey, statusPlug, null);
     }
-
+    
     @Override
     public boolean doCommandPlugPostStatusInternet(String deviceKey, IEspStatusPlug statusPlug, String router)
     {

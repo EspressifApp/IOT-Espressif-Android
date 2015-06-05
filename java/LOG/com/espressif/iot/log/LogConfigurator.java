@@ -25,6 +25,8 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.apache.log4j.helpers.LogLog;
 
+import com.espressif.iot.base.application.EspApplication;
+
 /**
  * Configures the Log4j logging framework. See <a
  * href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html">Patterns</a> for pattern
@@ -50,11 +52,25 @@ public class LogConfigurator
     
     private boolean useLogCatAppender = true;
     
-    private boolean useFileAppender = false;
+    private boolean useFileAppender = true;
     
     private boolean resetConfiguration = true;
     
     private boolean internalDebugging = false;
+    
+    public static final String APPENDER_NAME = "appender";
+    
+    private static final String DefaultFilePattern = "%d - [%p::%c::%t] - %m%n";
+    
+    public static String DefaultLogFileDirPath = EspApplication.sharedInstance().getContextFilesDirPath() + "/Log/";
+    
+    public static final String DefaultLogFileName = "log";
+    
+    public static final int DefaultMaxBackupSize = 5;
+    
+    private static final long DefaultMaxFileSize = 512 * 1024;
+    
+    private static final boolean DefaultImmediateFlush = true;
     
     public LogConfigurator()
     {
@@ -144,23 +160,41 @@ public class LogConfigurator
     private void configureFileAppender()
     {
         final Logger root = Logger.getRootLogger();
+        final RollingFileAppender rollingFileAppender = createFileAppender();
+
+        root.addAppender(rollingFileAppender);
+    }
+    
+    public static RollingFileAppender createFileAppender()
+    {
+        return createFileAppender(DefaultFilePattern,
+            DefaultLogFileDirPath + DefaultLogFileName,
+            DefaultMaxBackupSize,
+            DefaultMaxFileSize,
+            DefaultImmediateFlush);
+    }
+    
+    public static RollingFileAppender createFileAppender(String filePattern, String fileName, int maxBackupSize,
+        long maxFileSize, boolean immediateFlush)
+    {
         final RollingFileAppender rollingFileAppender;
-        final Layout fileLayout = new PatternLayout(getFilePattern());
+        final Layout fileLayout = new PatternLayout(filePattern);
         
         try
         {
-            rollingFileAppender = new RollingFileAppender(fileLayout, getFileName());
+            rollingFileAppender = new RollingFileAppender(fileLayout, fileName);
         }
         catch (final IOException e)
         {
             throw new RuntimeException("Exception configuring log system", e);
         }
         
-        rollingFileAppender.setMaxBackupIndex(getMaxBackupSize());
-        rollingFileAppender.setMaximumFileSize(getMaxFileSize());
-        rollingFileAppender.setImmediateFlush(isImmediateFlush());
+        rollingFileAppender.setName(APPENDER_NAME);
+        rollingFileAppender.setMaxBackupIndex(maxBackupSize);
+        rollingFileAppender.setMaximumFileSize(maxFileSize);
+        rollingFileAppender.setImmediateFlush(immediateFlush);
         
-        root.addAppender(rollingFileAppender);
+        return rollingFileAppender;
     }
     
     private void configureLogCatAppender()
@@ -289,7 +323,7 @@ public class LogConfigurator
      */
     public boolean isUseFileAppender()
     {
-        return useFileAppender;
+        return this.useFileAppender;
     }
     
     /**

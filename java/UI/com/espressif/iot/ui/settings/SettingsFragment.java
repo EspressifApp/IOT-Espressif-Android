@@ -1,7 +1,12 @@
 package com.espressif.iot.ui.settings;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
+import org.apache.log4j.Logger;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -19,11 +24,14 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.webkit.WebView;
+import android.widget.ArrayAdapter;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.base.api.EspBaseApiUtil.ProgressUpdateListener;
 import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.log.LogConfigurator;
+import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
 import com.espressif.iot.user.IEspUser;
@@ -32,12 +40,17 @@ import com.espressif.iot.util.EspStrings;
 
 public class SettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener
 {
+    private final Logger log = Logger.getLogger(getClass());
+    
     private static final String KEY_ACCOUNT_AUTO_LOGIN = "account_auto_login";
     private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
     private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
     private static final String KEY_VERSION_NAME = "version_name";
     private static final String KEY_VERSION_UPGRADE = "version_upgrade";
     private static final String KEY_VERSION_LOG = "version_log";
+    private static final String KEY_STORE_LOG = "store_log";
+    private static final String KEY_READ_LOG = "read_log";
+    private static final String KEY_CLEAR_LOG = "clear_log";
     
     private static final String DEFAULT_VERSION_LOG_URL = "file:///android_asset/html/en_us/update.html";
     /**
@@ -55,10 +68,17 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     private Preference mVersionNamePre;
     private Preference mVersionUpgradePre;
     private Preference mVersionLogPre;
+    private CheckBoxPreference mStoreLogPre;
+    private Preference mReadLogPre;
+    private Preference mClearLogPre;
     
     private IEspUser mUser;
     
     private UpgradeApkTask mUpgradeApkTask;
+    
+    private AlertDialog mLogDialog;
+    private List<String> mLogList;
+    private ArrayAdapter<String> mLogAdapter;
     
     private SharedPreferences mShared;
     
@@ -108,6 +128,19 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
         
         mVersionLogPre = findPreference(KEY_VERSION_LOG);
+        
+        // About DEBUG
+        mStoreLogPre = (CheckBoxPreference)findPreference(KEY_STORE_LOG);
+        mStoreLogPre.setOnPreferenceChangeListener(this);
+        mReadLogPre = findPreference(KEY_READ_LOG);
+        boolean store = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, false);
+        mStoreLogPre.setChecked(store);
+        mClearLogPre = findPreference(KEY_CLEAR_LOG);
+        
+        mLogList = new ArrayList<String>();
+        mLogAdapter =
+            new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1, mLogList);
+        mLogDialog = new AlertDialog.Builder(getActivity()).setAdapter(mLogAdapter, null).create();
     }
     
     @Override
@@ -132,6 +165,16 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         else if (preference == mVersionLogPre)
         {
             showLogDialog();
+            return true;
+        }
+        else if (preference == mReadLogPre)
+        {
+            readLog();
+            return true;
+        }
+        else if (preference == mClearLogPre)
+        {
+            clearLog();
             return true;
         }
         
@@ -161,6 +204,11 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             mAutoConfigureDevicePre.setValue(value);
             mAutoConfigureDevicePre.setSummary(mAutoConfigureDevicePre.getEntry());
             mShared.edit().putInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, Integer.parseInt(value)).commit();
+            return true;
+        }
+        else if (preference == mStoreLogPre)
+        {
+            onStoreLogChanged((Boolean) newValue);
             return true;
         }
         
@@ -249,7 +297,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         {
             
             @Override
-            public void onProgress(double percent)
+            public void onProgress(long downloadSize, double percent)
             {
                 int per = (int)(percent * 100);
                 publishProgress(per);
@@ -336,5 +384,79 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
         
         return result;
+    }
+    
+    private void readLog()
+    {
+        final ReadLogTask task = new ReadLogTask()
+        {
+            @Override
+            protected void onPreExecute()
+            {
+                mLogList.clear();
+                mLogAdapter.notifyDataSetChanged();
+                mLogDialog.show();
+            }
+            
+            @Override
+            protected void onProgressUpdate(String... values)
+            {
+                mLogList.add("\n" + values[0] + "\n");
+                mLogAdapter.notifyDataSetChanged();
+                mLogDialog.getListView().setSelection(mLogList.size() - 1);
+            }
+            
+            @Override
+            protected void onPostExecute(Boolean result)
+            {
+                if (mLogList.isEmpty())
+                {
+                    mLogList.add(getActivity().getString(R.string.esp_settings_debug_read_log_no_log));
+                    mLogAdapter.notifyDataSetChanged();
+                }
+            }
+        };
+        mLogDialog.setOnDismissListener(new DialogInterface.OnDismissListener()
+        {
+            
+            @Override
+            public void onDismiss(DialogInterface dialog)
+            {
+                task.cancel(true);
+            }
+        });
+        task.execute();
+    }
+    
+    private void onStoreLogChanged(Boolean store)
+    {
+        mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, store).commit();
+        Logger root = Logger.getRootLogger();
+        if (store)
+        {
+            root.addAppender(LogConfigurator.createFileAppender());
+            log.debug("Open log file store");
+        }
+        else
+        {
+            root.removeAppender(LogConfigurator.APPENDER_NAME);
+        }
+    }
+    
+    private void clearLog()
+    {
+        File file = new File(LogConfigurator.DefaultLogFileDirPath);
+        if (file.isDirectory())
+        {
+            File[] logFiles = file.listFiles();
+            for (int i = 0; i < logFiles.length; i++)
+            {
+                logFiles[i].delete();
+            }
+        }
+        else
+        {
+            log.warn("Delete path is not directry");
+        }
     }
 }

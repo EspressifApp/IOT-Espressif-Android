@@ -33,7 +33,7 @@ public class EspStatusPlugs implements IEspStatusPlugs, Cloneable
     }
     
     @Override
-    public void updateAperture(IAperture newAperture)
+    public void updateOrAddAperture(IAperture newAperture)
     {
         for (IAperture aperture : mApertureList)
         {

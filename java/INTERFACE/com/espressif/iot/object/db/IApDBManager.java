@@ -44,13 +44,35 @@ public interface IApDBManager
      */
     void updateApInfo(String deviceBssid, boolean isConfiguredSuc);
     
+    /**
+     * get the Ap's password by the Ap's bssid
+     * @param bssid the Ap's bssid
+     * @return the Ap's password
+     */
     String getPassword(String bssid);
     
+    /**
+     * get the last selected Ap
+     * @return the last selected Ap
+     */
     ApDB getLastSelectedApDB();
     
+    /**
+     * get the list of all Aps
+     * @return the list of all Aps
+     */
     List<ApDB> getAllApDBList();
     
+    /**
+     * delete the Ap(s) by the Ap's ssid
+     * @param ssid the ssid of which Ap is to be deleted
+     */
     void delete(String ssid);
     
+    /**
+     * update the Ap(s)'s password by its ssid
+     * @param ssid the Ap's ssid
+     * @param password the Ap's password
+     */
     void updatePassword(String ssid, String password);
 }

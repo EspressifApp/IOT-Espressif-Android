@@ -14,10 +14,12 @@ public class EspCommandDeviceGenerateShareKeyInternet implements IEspCommandDevi
     public String doCommandDeviceGenerateShareKey(String ownerDeviceKey)
     {
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(Name, "share test name");
+        try
+        {
             jsonObject.put(Scope, Device);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e)
+        {
             e.printStackTrace();
             return null;
         }
@@ -33,7 +35,8 @@ public class EspCommandDeviceGenerateShareKeyInternet implements IEspCommandDevi
         try
         {
             int status = result.getInt(Status);
-            if (status != HttpStatus.SC_OK) {
+            if (status != HttpStatus.SC_OK)
+            {
                 return null;
             }
             

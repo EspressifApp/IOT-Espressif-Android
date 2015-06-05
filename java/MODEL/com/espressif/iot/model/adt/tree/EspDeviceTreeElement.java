@@ -5,11 +5,6 @@ import com.espressif.iot.device.IEspDevice;
 
 public class EspDeviceTreeElement implements IEspDeviceTreeElement
 {
-    public EspDeviceTreeElement()
-    {
-        
-    }
-    
     public EspDeviceTreeElement(IEspDevice device, String parentDeviceKey, boolean hasParent, boolean hasChild,
         int level)
     {

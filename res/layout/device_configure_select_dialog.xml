@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <include
+        android:id="@+id/device_mesh_content"
+        layout="@layout/device_configure_mesh_select_dialog" />
+
+    <include
+        android:id="@+id/device_configrue_content"
+        layout="@layout/device_configure_settings_dialog" />
+
+</LinearLayout>

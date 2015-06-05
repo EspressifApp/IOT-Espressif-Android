@@ -1,7 +1,7 @@
 package com.espressif.iot.ui.help;
 
 import com.espressif.iot.R;
-import com.espressif.iot.ui.EspActivityAbs;
+import com.espressif.iot.ui.main.EspActivityAbs;
 
 import android.app.FragmentManager;
 import android.os.Bundle;
@@ -20,12 +20,5 @@ public class HelpActivity extends EspActivityAbs
                 .commit();
 
         setTitle(R.string.esp_help);
-        setTitleLeftIcon(R.drawable.esp_icon_back);
-    }
-    
-    @Override
-    protected void onTitleLeftIconClick()
-    {
-        finish();
     }
 }

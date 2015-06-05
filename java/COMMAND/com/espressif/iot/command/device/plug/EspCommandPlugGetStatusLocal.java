@@ -14,14 +14,15 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
 {
     private final static Logger log = Logger.getLogger(EspCommandPlugGetStatusLocal.class);
     
-    private String getPlugLocalUrl(InetAddress inetAddress)
+    @Override
+    public String getLocalUrl(InetAddress inetAddress)
     {
-        return "http:/" + inetAddress + "/" + "config?command=switch";
+        return "http://" + inetAddress.getHostAddress() + "/" + "config?command=switch";
     }
     
     private IEspStatusPlug getCurrentPlugStatus(InetAddress inetAddress, String deviceBssid, String router)
     {
-        String uriString = getPlugLocalUrl(inetAddress);
+        String uriString = getLocalUrl(inetAddress);
         JSONObject jo = null;
         if (deviceBssid == null || router == null)
         {

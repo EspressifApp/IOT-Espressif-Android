@@ -3,23 +3,21 @@ package com.espressif.iot.base.upgrade.apk;
 import java.io.File;
 
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.base.api.EspBaseApiUtil.ProgressUpdateListener;
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.base.upgrade.abs.UpgradeManagerAbs;
+import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 
 import android.content.Intent;
 import android.net.Uri;
 
-public class UpgradeManagerApkOnline extends UpgradeManagerAbs
+public class UpgradeManagerApkOnline
 {
     
     private final Logger log = Logger.getLogger(UpgradeManagerApkOnline.class);
@@ -48,11 +46,7 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
     
     private final static String KEY_APK_NAME = "name";
     
-    private final static String KEY_APK_SIZE = "size";
-    
     private EspApplication mApplication;
-    
-    private long mApkSize;
     
     private ProgressUpdateListener mProgressListener;
     
@@ -77,13 +71,11 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
         
         String version;
         String apkName;
-        long apkSize;
         try
         {
             version = apkInfo.getString(KEY_APK_VERSION);
             JSONObject apkJSON = apkInfo.getJSONArray(KEY_APK_FILES).getJSONObject(0);
             apkName = apkJSON.getString(KEY_APK_NAME);
-            apkSize = apkJSON.getLong(KEY_APK_SIZE);
         }
         catch (JSONException je)
         {
@@ -101,7 +93,6 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
             return EspUpgradeApkResult.LOWER_VERSION;
         }
         
-        mApkSize = apkSize;
         if (downloadNewestApk(version, apkName))
         {
             return EspUpgradeApkResult.UPGRADE_COMPLETE;
@@ -110,6 +101,11 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
         {
             return EspUpgradeApkResult.DOWNLOAD_FAILED;
         }
+    }
+    
+    private String getHeaderValue(String tokenValue)
+    {
+        return TOKEN + " " + tokenValue;
     }
     
     /**
@@ -204,18 +200,17 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
     private boolean downloadNewestApk(String version, String apkName)
     {
         String url = getDownloadUrl(version, apkName);
-        HttpGet httpGet = new HttpGet(url);
-        httpGet.addHeader(Authorization, getHeaderValue(KEY_MASTER));
+        HeaderPair header = new HeaderPair(Authorization, getHeaderValue(KEY_MASTER));
         String folderPath = mApplication.getEspRootSDPath() + "apk/";
-        String saveName = "Esp.apk";
+        String saveFileName = "Esp.apk";
         
         log.info("apk url = " + url);
         log.info("folder path = " + folderPath);
-        log.info("file save name = " + saveName);
+        log.info("file save name = " + saveFileName);
         
-        if (download(httpGet, folderPath, saveName))
+        if (EspBaseApiUtil.download(mProgressListener, url, folderPath, saveFileName, header))
         {
-            installApk(folderPath + saveName);
+            installApk(folderPath + saveFileName);
             return true;
         }
         else
@@ -235,24 +230,9 @@ public class UpgradeManagerApkOnline extends UpgradeManagerAbs
         mApplication.startActivity(intent);
     }
     
-    private String getHeaderValue(String tokenValue)
-    {
-        return TOKEN + " " + tokenValue;
-    }
-    
     private String getDownloadUrl(String version, String fileName)
     {
         return URL_NEWEST_APK_INFO + "?action=download_rom&version=" + version + "&filename=" + fileName;
-    }
-    
-    @Override
-    protected void updateDownloadProgress(long downloadSize)
-    {
-        double percent = ((double)downloadSize) / ((double)mApkSize);
-        if (mProgressListener != null)
-        {
-            mProgressListener.onProgress(percent);
-        }
     }
     
     public void setOnProgressUpdateListener(ProgressUpdateListener listener)

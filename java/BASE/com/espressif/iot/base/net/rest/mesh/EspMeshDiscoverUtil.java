@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.net.mdns.MdnsDiscoverUtil;
 import com.espressif.iot.base.net.udp.UdpBroadcastUtil;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.IOTAddress;
@@ -23,6 +24,7 @@ import com.espressif.iot.util.MeshUtil;
 public class EspMeshDiscoverUtil
 {
 	private static final Logger log = Logger.getLogger(EspMeshDiscoverUtil.class);
+	private static final boolean IS_MDNS_ON = false;
 	
     private static final int UDP_RETRY_TIME = 3;
     private static final String ROUTER = "router";
@@ -89,9 +91,16 @@ public class EspMeshDiscoverUtil
 			Future<?> _future = EspBaseApiUtil.submit(new Runnable() {
 				@Override
 				public void run() {
-					List<IOTAddress> rootDeviceList = UdpBroadcastUtil
-							.discoverIOTDevices();
-					rootDeviceSet.addAll(rootDeviceList);
+				    List<IOTAddress> rootDeviceList = null;
+                    if (IS_MDNS_ON)
+                    {
+                        rootDeviceList = MdnsDiscoverUtil.discoverIOTDevices();
+                    }
+                    else
+                    {
+                        rootDeviceList = UdpBroadcastUtil.discoverIOTDevices();
+                    }
+                    rootDeviceSet.addAll(rootDeviceList);
 				}
 			});
 			_futureList.add(_future);

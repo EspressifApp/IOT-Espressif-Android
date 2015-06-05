@@ -1,12 +1,12 @@
 package com.espressif.iot.ui.settings;
 
 import com.espressif.iot.R;
+import com.espressif.iot.ui.main.EspActivityAbs;
 
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.os.Bundle;
 
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends EspActivityAbs {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

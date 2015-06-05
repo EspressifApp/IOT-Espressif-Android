@@ -6,7 +6,7 @@ import com.espressif.iot.type.device.status.IEspStatusLight;
 
 public interface IEspCommandLightGetStatusInternet extends IEspCommandInternet, IEspCommandLight
 {
-    final String URL = "https://iot.espressif.cn/v1/datastreams/light/datapoint/?deliver_to_device=true";
+    static final String URL = "https://iot.espressif.cn/v1/datastreams/light/datapoint/?deliver_to_device=true";
     
     /**
      * get the statusLight to the Light by Internet

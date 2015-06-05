@@ -7,14 +7,14 @@ import com.espressif.iot.command.device.IEspCommandDevice;
 
 public interface IEspCommandDeviceTimerInternet extends IEspCommandDevice, IEspCommandInternet
 {
-    final String URL_GET = "https://iot.espressif.cn/v1/device/timers/?is_humanize_format=true";
+    static final String URL_GET = "https://iot.espressif.cn/v1/device/timers/?is_humanize_format=true";
     
-    final String URL_NEW = "https://iot.espressif.cn/v1/device/timers/?deliver_to_device=true&is_humanize_format=true";
+    static final String URL_NEW = "https://iot.espressif.cn/v1/device/timers/?deliver_to_device=true&is_humanize_format=true";
     
-    final String URL_EDIT =
+    static final String URL_EDIT =
         "https://iot.espressif.cn/v1/device/timers/?method=PUT&deliver_to_device=true&is_humanize_format=true";
     
-    final String URL_DELETE =
+    static final String URL_DELETE =
         "https://iot.espressif.cn//v1/device/timers/?method=DELETE&deliver_to_device=true&is_humanize_format=true";
     
     /**

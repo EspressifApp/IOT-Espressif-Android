@@ -11,5 +11,4 @@ import com.espressif.iot.command.IEspCommand;
  */
 public interface IEspCommandActivated extends IEspCommand
 {
-    
 }

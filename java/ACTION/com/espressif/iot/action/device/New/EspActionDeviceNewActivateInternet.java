@@ -86,7 +86,10 @@ public class EspActionDeviceNewActivateInternet implements IEspActionDeviceNewAc
         if (!isSuc)
         {
             log.warn(Thread.currentThread().toString() + "##__waitEspDeviceDisconnected() fail");
-            return null;
+            if (!EspBaseApiUtil.isNetworkAvailable())
+            {
+                return null;
+            }
         }
         IEspCommandDeviceNewActivateInternet command = new EspCommandDeviceNewActivateInternet();
         IEspDevice device = null;

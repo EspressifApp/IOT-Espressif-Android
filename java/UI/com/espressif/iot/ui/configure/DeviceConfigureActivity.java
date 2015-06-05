@@ -12,12 +12,13 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.help.ui.IEspHelpUIConfigure;
+import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
-import com.espressif.iot.type.help.HelpStepConfigure;
 import com.espressif.iot.type.net.WifiCipherType;
-import com.espressif.iot.ui.EspActivityAbs;
+import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
+import com.espressif.iot.ui.device.dialog.EspDeviceDialogInterface;
+import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -39,41 +40,37 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceConfigureActivity extends EspActivityAbs implements OnItemClickListener,
-    OnRefreshListener<ListView>, OnItemLongClickListener, OnSharedPreferenceChangeListener, IEspHelpUIConfigure
+    OnRefreshListener<ListView>, OnItemLongClickListener, OnSharedPreferenceChangeListener
 {
     private final Logger log = Logger.getLogger(DeviceConfigureActivity.class);
     
     private IEspUser mUser;
     
-    private PullToRefreshListView mSoftApListView;
-    
     /**
      * There is a header in PullToRefreshListView, so the list items are behind header.
      */
-    private final int LIST_HEADER_COUNT = 1;
+    private final int LIST_HEADER_COUNT = PullToRefreshListView.DEFAULT_HEADER_COUNT;
     
-    private List<IEspDeviceNew> mSoftApList;
-    
-    private SoftApAdapter mSoftApAdapter;
+    protected PullToRefreshListView mSoftApListView;
+    protected List<IEspDeviceNew> mSoftApList;
+    protected BaseAdapter mSoftApAdapter;
     
     private Handler mHandler;
     
@@ -81,6 +78,10 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     private int mAutoConfigureValue;
     
     public static final int DEFAULT_AUTO_CONFIGRUE_VALUE = -30;
+    
+    protected static final int POPMENU_ID_ACTIVATE = 0;
+    protected static final int POPMENU_ID_DIRECT_CONNECT = 1;
+    protected static final int POPMENU_ID_MESH = 2;
     
     /**
      * When show the dialogs, pause the auto refresh handler
@@ -112,15 +113,8 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mHandler = new ListHandler(this);
         
         setTitle(R.string.esp_configure_title);
-        setTitleLeftIcon(R.drawable.esp_icon_back);
         
-        if (mHelpMachine.isHelpModeConfigure())
-        {
-            mSoftApList.clear();
-            mSoftApAdapter.notifyDataSetInvalidated();
-            
-            onHelpConfigure();
-        }
+        checkHelpModeConfigureClear();
     }
     
     @Override
@@ -167,14 +161,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             }
         }
         
-        if (mHelpMachine.isHelpModeConfigure())
-        {
-            if (mHelpMachine.getCurrentStateOrdinal() <= HelpStepConfigure.FAIL_DISCOVER_IOT_DEVICES.ordinal())
-            {
-                mHelpMachine.retry();
-                onHelpConfigure();
-            }
-        }
+        checkHelpModeConfigureRetry();
     }
     
     private void autoConfigure(IEspDeviceNew device)
@@ -210,7 +197,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 ApInfo apInfo = new ApInfo(bssid, ssid, password, wifiType);
                 if (!TextUtils.isEmpty(password))
                 {
-                    new DeviceConfigureProgressDialog(this, device, apInfo).show();
+                    showConfigureProgressDialog(device, apInfo);
                     return;
                 }
             }
@@ -274,6 +261,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             if (sr.BSSID.equals(device.getBssid()))
             {
                 wifiList.remove(sr);
+                return;
             }
         }
     }
@@ -442,14 +430,94 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             return;
         }
         IEspDeviceNew device = mSoftApList.get(position - LIST_HEADER_COUNT);
-        showConfigureSettingsDialog(device);
+        
+        PopupMenu popMenu = new PopupMenu(this, view);
+        Menu menu = popMenu.getMenu();
+        menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
+        menu.add(Menu.NONE, POPMENU_ID_DIRECT_CONNECT, 0, R.string.esp_configure_direct_connect);
+        //TODO
+//        menu.add(Menu.NONE, POPMENU_ID_MESH, 0, R.string.esp_configure_mesh);
+        popMenu.setOnMenuItemClickListener(new SoftAPPopMenuItemClickListener(device));
+        popMenu.show();
     }
     
-    private void showConfigureSettingsDialog(IEspDeviceNew device)
+    private class SoftAPPopMenuItemClickListener implements OnMenuItemClickListener
+    {
+        private IEspDeviceNew mPopDevice;
+        
+        public SoftAPPopMenuItemClickListener(IEspDeviceNew device)
+        {
+            mPopDevice = device;
+        }
+        
+        @Override
+        public boolean onMenuItemClick(MenuItem item)
+        {
+            if (checkHelpPopMenuItemClick(item.getItemId()))
+            {
+                return true;
+            }
+            
+            switch(item.getItemId())
+            {
+                case POPMENU_ID_ACTIVATE:
+                    showConfigureSettingsDialog(mPopDevice);
+                    return true;
+                case POPMENU_ID_DIRECT_CONNECT:
+                    showDirectConnectProgressDialog(mPopDevice);
+                    return true;
+                case POPMENU_ID_MESH:
+                    showMeshConfigureDialog(mPopDevice);
+                    return true;
+            }
+            return false;
+        }
+        
+    }
+    
+    protected void showConfigureSettingsDialog(IEspDeviceNew device)
     {
         new DeviceConfigureSettingsDialog(this, device).show();
     }
-
+    
+    public void showConfigureProgressDialog(IEspDeviceNew device, ApInfo apInfo)
+    {
+        new DeviceConfigureProgressDialog(this, device, apInfo).show(); 
+    }
+    
+    public void showMeshConfigureDialog(IEspDeviceNew device)
+    {
+        new DeviceMeshConfigureDialog(this, device, isConfigured(device.getBssid()) && device.getIsMeshDevice()).show();
+    }
+    
+    public void showDirectConnectProgressDialog(IEspDeviceNew device)
+    {
+        new DeviceDirectConnectProgressDialog(this, device).show();
+    }
+    
+    public void showLocalDeviceDialog(IEspDeviceSSS device, final String cacheSsid)
+    {
+        setIsShowConfigureDialog(true);
+        removeRefreshMessage();
+        
+        EspDeviceDialogInterface deviceDialog = new DeviceDialogBuilder(this, device).show();
+        deviceDialog.setOnDissmissedListener(new EspDeviceDialogInterface.OnDissmissedListener()
+        {
+            
+            @Override
+            public void onDissmissed(DialogInterface dialog)
+            {
+                if (!TextUtils.isEmpty(cacheSsid))
+                {
+                    EspBaseApiUtil.enableConnected(cacheSsid);
+                }
+                
+                setIsShowConfigureDialog(false);
+                resetRefreshMessage();
+            }
+        });
+    }
+    
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
     {
@@ -530,7 +598,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         protected DeviceInfo doInBackground(IEspDeviceNew... params)
         {
             IEspDeviceNew device = params[0];
-            return mUser.doActionDeviceNewGetInfo(device);
+            return mUser.doActionDeviceNewConnect(device);
         }
         
         @Override
@@ -582,77 +650,14 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         }
     }
     
-    @Override
-    protected void onTitleLeftIconClick()
-    {
-        onBackPressed();
+    protected void checkHelpModeConfigureClear() {
     }
     
-    @Override
-    public void onHelpConfigure()
-    {
-        highlightHelpView(mSoftApListView);
-        
-        HelpStepConfigure step = HelpStepConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch(step)
-        {
-            case START_CONFIGURE_HELP:
-                break;
-            case DISCOVER_IOT_DEVICES:
-                mHelpMachine.transformState(!mSoftApList.isEmpty());
-                onHelpConfigure();
-                break;
-            case FAIL_DISCOVER_IOT_DEVICES:
-                hintDiscoverSoftAP();
-                break;
-            case SCAN_AVAILABLE_AP:
-                setHelpHintMessage(R.string.esp_help_configure_select_softap_msg);
-                break;
-            case FAIL_DISCOVER_AP:
-                setHelpHintMessage(R.string.esp_help_configure_discover_wifi_msg);
-                mHelpMachine.retry();
-                break;
-            case SELECT_CONFIGURED_DEVICE:
-                break;
-            case FAIL_CONNECT_DEVICE:
-                setHelpHintMessage(R.string.esp_help_configure_connect_device_failed_msg);
-                setHelpButtonVisible(HELP_BUTTON_ALL, true);
-                break;
-                
-            case DEVICE_IS_ACTIVATING:
-            case FAIL_ACTIVATE:
-            case FAIL_CONNECT_AP:
-            case SUC:
-                // Process in EspUIActivity, not here.
-                break;
-        }
+    protected void checkHelpModeConfigureRetry() {
     }
     
-    private void hintDiscoverSoftAP()
+    protected boolean checkHelpPopMenuItemClick(int itemId)
     {
-        ImageView hintView = new ImageView(this);
-        hintView.setScaleType(ScaleType.CENTER_INSIDE);
-        hintView.setImageResource(R.drawable.esp_pull_to_refresh_hint);
-        FrameLayout.LayoutParams lp =
-            new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-        mHelpContainer.addView(hintView, lp);
-        
-        setHelpHintMessage(R.string.esp_help_configure_discover_softap_msg);
-        
-        Animation anim = AnimationUtils.loadAnimation(this, R.anim.esp_pull_to_refresh_hint);
-        hintView.startAnimation(anim);
-    }
-    
-    @Override
-    public void onExitHelpMode()
-    {
-        setResult(RESULT_EXIT_HELP_MODE);
-        finish();
-    }
-    
-    @Override
-    public void onHelpRetryClick()
-    {
-        onHelpConfigure();
+        return false;
     }
 }
