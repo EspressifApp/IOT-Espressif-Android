@@ -115,6 +115,7 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                 JSONObject deviceJson = jsonObjectResult.getJSONObject(Device);
                 String BSSID = deviceJson.getString(Bssid);
                 String name = deviceJson.getString(Name);
+                
                 int ptype = deviceJson.getInt(Ptype);
                 String rom_version = deviceJson.getString(Rom_Version);
                 String latest_rom_version = deviceJson.getString(Latest_Rom_Version);
@@ -151,6 +152,34 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                         rom_version,
                         latest_rom_version,
                         userId);
+                
+                boolean isRouterValid = !deviceJson.isNull(Router);
+
+                if(isRouterValid)
+                {
+                    // router
+                    String router = deviceJson.getString(Router);
+                    
+                    // root device id
+                    long rootDeviceId = -1;
+                    
+                    if (router.equals("null"))
+                    {
+                        router = null;
+                    }
+                    else
+                    {
+                        rootDeviceId = deviceJson.getLong(Root_Device_Id);
+                    }
+                    // synchronize router info from server
+                    device.setRootDeviceId(rootDeviceId);
+                    device.setRouter(router);
+                    if (router != null)
+                    {
+                        device.setIsMeshDevice(true);
+                    }
+                }
+                
                 log.debug(Thread.currentThread().toString() + "##doCommandNewActivateInternet(userId=[" + userId
                     + "],userKey=[" + userKey + "],randomToken=[" + randomToken + "]): " + device);
                 return device;

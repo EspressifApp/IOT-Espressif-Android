@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.base.net.longsocket.EspLongSocket;
 import com.espressif.iot.base.net.longsocket.IEspLongSocket;
+import com.espressif.iot.base.net.rest.mesh.EspSocketRequestBaseEntity;
 import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 
@@ -115,7 +116,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             if (cost > MIN_INTERVAL)
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthtStatusLocal()");
-                String request = mLightBuilder.buildLocalPostStatusRequest(mInetAddress, statusLight, null);
+                EspSocketRequestBaseEntity request = mLightBuilder.buildLocalPostStatusRequest(mInetAddress, statusLight, null);
                 mLongSocket.addRequest(request);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status
@@ -136,7 +137,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             if (cost > MIN_INTERVAL)
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthStatusInternet()");
-                String request = mLightBuilder.buildInternetPostStatusRequest(mDeviceKey, statusLight, null);
+                EspSocketRequestBaseEntity request = mLightBuilder.buildInternetPostStatusRequest(mDeviceKey, statusLight, null);
                 mLongSocket.addRequest(request);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status

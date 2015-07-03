@@ -13,4 +13,8 @@
     
     <color name="esp_help_frame_background_dark">#99000000</color>
     <color name="esp_help_hint_message_frame_bg">#55000000</color>
+    
+    <color name="esp_ui_tab_normal">#ff23afcd</color>
+    <color name="esp_ui_tab_selected">#ff1a98b3</color>
+    <color name="esp_ui_tab_stroke">#ff0a6d82</color>
 </resources>

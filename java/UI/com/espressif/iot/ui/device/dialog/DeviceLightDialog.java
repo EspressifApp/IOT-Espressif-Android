@@ -111,6 +111,7 @@ public class DeviceLightDialog extends DeviceDialogAbs implements View.OnClickLi
             mControlChildCB.setChecked(true);
             mControlChildCB.setVisibility(View.GONE);
         }
+//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         
@@ -204,20 +205,30 @@ public class DeviceLightDialog extends DeviceDialogAbs implements View.OnClickLi
             mLightRedBar.setProgress(seekValue);
             mLightGreenBar.setProgress(seekValue);
             mLightBlueBar.setProgress(seekValue);
+            mLightWWhiteBar.setProgress(seekValue);
+            mLightCWhiteBar.setProgress(seekValue);
             
             IEspStatusLight status = new EspStatusLight();
             status.setPeriod(getProgressLightPeriod());
             status.setRed(seekValue);
             status.setGreen(seekValue);
             status.setBlue(seekValue);
-            status.setCWhite(mLightCWhiteBar.getProgress());
-            status.setWWhite(mLightWWhiteBar.getProgress());
+            status.setCWhite(seekValue);
+            status.setWWhite(seekValue);
             
             new StatusTask(mControlChildCB.isChecked()).execute(status);
         }
         else if (v == mColorPickerSwap)
         {
-            swapColorSelectView();
+            if (mDevice.getIsMeshDevice())
+            {
+                Toast.makeText(mContext, R.string.esp_device_light_continuous_control_forbidden, Toast.LENGTH_SHORT)
+                    .show();
+            }
+            else
+            {
+                swapColorSelectView();
+            }
         }
     }
     

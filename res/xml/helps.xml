@@ -7,6 +7,10 @@
         android:key="esp_help_configure"
         android:title="@string/esp_help_configure" />
 
+    <Preference
+        android:key="esp_help_mesh_configure"
+        android:title="@string/esp_help_mesh_configure" />
+
     <PreferenceCategory android:title="@string/esp_help_use_device" />
 
     <Preference

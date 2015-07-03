@@ -8,9 +8,11 @@ import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
@@ -23,8 +25,13 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
+import android.view.View;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
@@ -33,7 +40,10 @@ import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListene
 import com.espressif.iot.log.LogConfigurator;
 import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
+import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
+import com.espressif.iot.ui.main.LoginTask;
+import com.espressif.iot.ui.main.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -42,6 +52,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
 {
     private final Logger log = Logger.getLogger(getClass());
     
+    private static final String KEY_ACCOUNT = "account";
+    private static final String KEY_ACCOUNT_REGISTER = "account_register";
     private static final String KEY_ACCOUNT_AUTO_LOGIN = "account_auto_login";
     private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
     private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
@@ -62,6 +74,10 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
      */
     private static final String VERSION_LOG_PATH = "html/%locale/update.html";
     
+    private static final int REQUEST_REGISTER = 1000;
+    
+    private Preference mAccountPre;
+    private Preference mAccountRegisterPre;
     private CheckBoxPreference mAutoLoginPre;
     private ListPreference mAutoRefreshDevicePre;
     private ListPreference mAutoConfigureDevicePre;
@@ -82,6 +98,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private SharedPreferences mShared;
     
+    private LocalBroadcastManager mBroadcastManager;
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -91,11 +109,23 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         
         mUser = BEspUser.getBuilder().getInstance();
         mShared = getActivity().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        mBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
         
         // About Account
-        Preference mAccountCatgory = findPreference("esp_settings_account_category");
-        String userEmail = mUser.getUserEmail();
-        mAccountCatgory.setTitle(getString(R.string.esp_settings_account, userEmail));
+        mAccountPre = findPreference(KEY_ACCOUNT);
+        mAccountRegisterPre = findPreference(KEY_ACCOUNT_REGISTER);
+        if (mUser.isLogin())
+        {
+            String userEmail = mUser.getUserEmail();
+            mAccountPre.setTitle(userEmail);
+            
+            getPreferenceScreen().removePreference(mAccountRegisterPre);
+        }
+        else
+        {
+            mAccountPre.setTitle(R.string.esp_settings_account_not_login);
+            mAccountPre.setSummary(R.string.esp_settings_account_not_login_summary);
+        }
         
         mAutoLoginPre = (CheckBoxPreference)findPreference(KEY_ACCOUNT_AUTO_LOGIN);
         mAutoLoginPre.setChecked(mUser.isAutoLogin());
@@ -155,6 +185,22 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     }
     
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == REQUEST_REGISTER)
+        {
+            if (resultCode == Activity.RESULT_OK)
+            {
+                String email = data.getStringExtra(EspStrings.Key.REGISTER_NAME_EMAIL);
+                String password = data.getStringExtra(EspStrings.Key.REGISTER_NAME_PASSWORD);
+                
+                login(email, password);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+    
+    @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference)
     {
         if (preference == mVersionUpgradePre)
@@ -175,6 +221,20 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         else if (preference == mClearLogPre)
         {
             clearLog();
+            return true;
+        }
+        else if (preference == mAccountPre)
+        {
+            if (!mUser.isLogin())
+            {
+                showLoginDialog();
+                return true;
+            }
+        }
+        else if (preference == mAccountRegisterPre)
+        {
+            Intent i = new Intent(getActivity(), RegisterActivity.class);
+            startActivityForResult(i, REQUEST_REGISTER);
             return true;
         }
         
@@ -269,6 +329,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             switch (result)
             {
                 case UPGRADE_COMPLETE:
+                    Toast.makeText(getActivity(), R.string.esp_upgrade_apk_status_complete_toast, Toast.LENGTH_LONG)
+                        .show();
                     mVersionUpgradePre.setSummary(R.string.esp_upgrade_apk_status_complete);
                     break;
                 case DOWNLOAD_FAILED:
@@ -458,5 +520,53 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         {
             log.warn("Delete path is not directry");
         }
+    }
+    
+    private void showLoginDialog()
+    {
+        View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
+        final EditText emailEdT = (EditText)view.findViewById(R.id.login_edt_account);
+        final EditText pwdEdt = (EditText)view.findViewById(R.id.login_edt_password);
+        
+        new AlertDialog.Builder(getActivity()).setTitle(R.string.esp_login_login)
+            .setView(view)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+            {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    String email = emailEdT.getText().toString();
+                    String password = pwdEdt.getText().toString();
+                    if (!TextUtils.isEmpty(email))
+                    {
+                        login(email, password);
+                    }
+                }
+            })
+            .show();
+    }
+    
+    private void login(final String email, final String password)
+    {
+        new LoginTask(getActivity(), email, password, mAutoLoginPre.isChecked())
+        {
+            public void loginResult(EspLoginResult result)
+            {
+                if (result == EspLoginResult.SUC)
+                {
+                    mAccountPre.setTitle(email);
+                    mAccountPre.setSummary("");
+                    
+                    Preference registerPre = findPreference(KEY_ACCOUNT_REGISTER);
+                    if (registerPre != null)
+                    {
+                        getPreferenceScreen().removePreference(registerPre);
+                    }
+                    
+                    mBroadcastManager.sendBroadcast(new Intent(EspStrings.Action.LOGIN_NEW_ACCOUNT));
+                }
+            }
+        }.execute();
     }
 }

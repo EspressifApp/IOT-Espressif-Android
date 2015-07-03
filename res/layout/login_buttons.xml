@@ -31,6 +31,21 @@
         android:paddingRight="30dip" >
 
         <Button
+            android:id="@+id/login_btn_quick_usage"
+            style="@style/YellowButton"
+            android:text="@string/esp_login_quick_usage" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dip"
+        android:orientation="horizontal"
+        android:paddingLeft="30dip"
+        android:paddingRight="30dip"
+        android:visibility="gone" >
+
+        <Button
             android:id="@+id/login_skip"
             style="@style/BlueButton"
             android:layout_gravity="left"
@@ -51,6 +66,7 @@
         android:layout_marginLeft="30dip"
         android:layout_marginRight="30dip"
         android:layout_marginTop="20dip"
-        android:text="@string/esp_esptouch" />
+        android:text="@string/esp_esptouch"
+        android:visibility="gone" />
 
 </merge>

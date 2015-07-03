@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import android.text.TextUtils;
+
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.db.IOTDeviceDBManager;
 import com.espressif.iot.device.IEspDevice;
@@ -55,10 +57,16 @@ public class EspDevice implements IEspDevice, Cloneable
     protected List<EspDeviceTimer> mTimerList;
     
     /**
-     * empty device is used by EspDeviceCacheHandler to distinguish between Internet unaccessible and user with no
+     * empty device1 is used by EspDeviceCacheHandler to distinguish between Internet unaccessible and user with no
      * devices
      */
-    public static EspDevice EmptyDevice = new EspDevice();
+    public static EspDevice EmptyDevice1 = new EspDevice();
+    
+    /**
+     * empty device2 is used by EspDeviceCacheHandler to distinguish between Internet unaccessible and user's device
+     * list is empty
+     */
+    public static EspDevice EmptyDevice2 = new EspDevice();
     
     @Override
     public void setBssid(String bssid)
@@ -433,7 +441,7 @@ public class EspDevice implements IEspDevice, Cloneable
             return false;
         }
         IEspDevice other = (IEspDevice)o;
-        return other.getId() == this.mDeviceId;
+        return other.getKey().equals(mDeviceKey);
     }
     
     @Override
@@ -547,6 +555,12 @@ public class EspDevice implements IEspDevice, Cloneable
             deviceTreeElemenInList.setRelativeLevel(currentLevel);
         }
         return deviceTreeElementList;
+    }
+
+    @Override
+    public boolean isActivated()
+    {
+        return mDeviceId > 0 && !TextUtils.isEmpty(mDeviceKey);
     }
 
 }

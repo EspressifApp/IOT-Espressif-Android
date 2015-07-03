@@ -3,7 +3,9 @@ package com.espressif.iot.ui.softap_sta_support.help;
 import java.lang.ref.WeakReference;
 
 import com.espressif.iot.R;
+import com.espressif.iot.help.IEspHelpUISSSMeshConfigure;
 import com.espressif.iot.help.ui.IEspHelpUISSSUseDevice;
+import com.espressif.iot.type.help.HelpStepSSSMeshConfigure;
 import com.espressif.iot.type.help.HelpStepSSSUseDevice;
 import com.espressif.iot.type.help.HelpType;
 import com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity;
@@ -24,7 +26,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
 public class HelpSoftApStaSupportActivity extends SoftApStaSupportActivity implements OnCheckedChangeListener,
-    IEspHelpUISSSUseDevice
+    IEspHelpUISSSUseDevice, IEspHelpUISSSMeshConfigure
 {
     private HelpSSSFragmentDevices mHelpFragmentDevice;
     private HelpSSSFragmentConfigure mHelpFragmentConfig;
@@ -73,6 +75,11 @@ public class HelpSoftApStaSupportActivity extends SoftApStaSupportActivity imple
                     mViewPager.setCurrentItem(FRAGMENT_DEVICE);
                     mViewPager.setInterceptTouchEvent(false);
                     mHelpHandler.sendEmptyMessage(RESULT_HELP_SSS_UPGRADE);
+                    break;
+                case RESULT_HELP_SSS_MESH_CONFIGURE:
+                    mViewPager.setCurrentItem(FRAGMENT_DEVICE);
+                    mViewPager.setInterceptTouchEvent(false);
+                    mHelpHandler.sendEmptyMessage(RESULT_HELP_SSS_MESH_CONFIGURE);
                     break;
             }
         }
@@ -158,6 +165,23 @@ public class HelpSoftApStaSupportActivity extends SoftApStaSupportActivity imple
     }
     
     @Override
+    public void onHelpSSSMeshConfigure()
+    {
+        clearHelpContainer();
+        
+        HelpStepSSSMeshConfigure step = HelpStepSSSMeshConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
+        switch(step)
+        {
+            case START_MESH_CONFIGURE:
+                highlightHelpView(findViewById(R.id.pager_tab_configure));
+                setHelpHintMessage(R.string.esp_sss_help_mesh_configure_select_configure_msg);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    @Override
     protected void checkHelpPagerConfigureSelected()
     {
         if (mHelpMachine.isHelpModeUseSSSDevice())
@@ -170,6 +194,19 @@ public class HelpSoftApStaSupportActivity extends SoftApStaSupportActivity imple
                 public void run()
                 {
                     mHelpFragmentConfig.onHelpUseSSSDevice();
+                }
+            });
+        }
+        else if (mHelpMachine.isHelpModeSSSMeshConfigure())
+        {
+            mHelpMachine.transformState(true);
+            mHelpHandler.post(new Runnable()
+            {
+                
+                @Override
+                public void run()
+                {
+                    mHelpFragmentConfig.onHelpSSSMeshConfigure();
                 }
             });
         }
@@ -208,6 +245,10 @@ public class HelpSoftApStaSupportActivity extends SoftApStaSupportActivity imple
                 case RESULT_HELP_SSS_UPGRADE:
                     mHelpMachine.start(HelpType.SSS_UPGRADE);
                     activity.mHelpFragmentDevice.onHelpUpgradeSSSDevice();
+                    break;
+                case RESULT_HELP_SSS_MESH_CONFIGURE:
+                    mHelpMachine.start(HelpType.SSS_MESH_CONFIGURE);
+                    activity.onHelpSSSMeshConfigure();
                     break;
             }
         }

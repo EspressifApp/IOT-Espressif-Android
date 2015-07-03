@@ -35,6 +35,8 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
     
     private Queue<IOTAddress> mUpgradeSucLocalDeviceCacheQueue;
     
+    private Queue<IOTAddress> mStaDeviceIOTAddressQueue;
+    
     /*
      * Singleton lazy initialization start
      */
@@ -46,6 +48,7 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
         mStatemachineDeviceCacheQueue = new ConcurrentLinkedQueue<IEspDevice>();
         mSharedDeviceCacheQueue = new ConcurrentLinkedQueue<IEspDevice>();
         mUpgradeSucLocalDeviceCacheQueue = new ConcurrentLinkedQueue<IOTAddress>();
+        mStaDeviceIOTAddressQueue = new ConcurrentLinkedQueue<IOTAddress>();
     }
     
     private static class InstanceHolder
@@ -260,6 +263,51 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
         return result;
     }
     
+
+    @Override
+    public boolean addStaDeviceCache(IOTAddress deviceStaDevice)
+    {
+        boolean result;
+        synchronized (mStaDeviceIOTAddressQueue)
+        {
+            result = mStaDeviceIOTAddressQueue.add(deviceStaDevice);
+        }
+        log.info(Thread.currentThread().toString() + "##addSharedDeviceCache(deviceStaDevice=[" + deviceStaDevice
+            + "]): " + result);
+        return result;
+    }
+    
+    @Override
+    public boolean addStaDeviceCacheList(List<IOTAddress> deviceStaDeviceList)
+    {
+        boolean result;
+        synchronized (mStaDeviceIOTAddressQueue)
+        {
+            result = mStaDeviceIOTAddressQueue.addAll(deviceStaDeviceList);
+        }
+        log.info(Thread.currentThread().toString() + "##devieStaDeviceList(deviceStaDeviceList=[" + deviceStaDeviceList
+            + "]): " + result);
+        return result;
+    }
+
+    @Override
+    public List<IOTAddress> pollStaDeviceCacheList()
+    {
+        List<IOTAddress> result = new ArrayList<IOTAddress>();
+        IOTAddress iotAddress = null;
+        synchronized (mStaDeviceIOTAddressQueue)
+        {
+            iotAddress = mStaDeviceIOTAddressQueue.poll();
+            while (iotAddress != null)
+            {
+                result.add(iotAddress);
+                iotAddress = mStaDeviceIOTAddressQueue.poll();
+            }
+        }
+        log.info(Thread.currentThread().toString() + "##pollStaDeviceCacheList(): " + result);
+        return result;
+    }
+    
     @Override
     public void notifyIUser(NotifyType type)
     {
@@ -283,4 +331,6 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
         }
         
     }
+
+
 }

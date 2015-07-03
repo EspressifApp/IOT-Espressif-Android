@@ -89,7 +89,6 @@ public class EspHelpStateMachine implements IEspHelpStateMachine, IEspSingletonO
     @Override
     public void transformState(Enum<?> state)
     {
-        // TODO should check
         mCurrentStateOrdinal = state.ordinal();
     }
     
@@ -174,6 +173,8 @@ public class EspHelpStateMachine implements IEspHelpStateMachine, IEspSingletonO
         {
             case CONFIGURE:
                 return EspHelpConfigureHandler.getInstance();
+            case MESH_CONFIGURE:
+                return EspHelpMeshConfigureHandler.getInstance();
             case USAGE_PLUG:
                 return EspHelpUsePlugHandler.getInstance();
             case USAGE_PLUGS:
@@ -196,6 +197,8 @@ public class EspHelpStateMachine implements IEspHelpStateMachine, IEspSingletonO
                 return EspHelpSSSUseDeviceHandler.getInstance();
             case SSS_UPGRADE:
                 return EspHelpSSSUpgradeHandler.getInstance();
+            case SSS_MESH_CONFIGURE:
+                return EspHelpSSSMeshConfigureHandler.getInstance();
         }
         return null;
     }
@@ -291,5 +294,17 @@ public class EspHelpStateMachine implements IEspHelpStateMachine, IEspSingletonO
     public boolean isHelpModeSSSUpgrade()
     {
         return (isHelpOn() && getCurrentType() == HelpType.SSS_UPGRADE);
+    }
+
+    @Override
+    public boolean isHelpModeSSSMeshConfigure()
+    {
+        return (isHelpOn() && getCurrentType() == HelpType.SSS_MESH_CONFIGURE);
+    }
+
+    @Override
+    public boolean isHelpModeMeshConfigure()
+    {
+        return (isHelpOn() && getCurrentType() == HelpType.MESH_CONFIGURE);
     }
 }

@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.Menu;
@@ -42,6 +43,11 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     public static final int HELP_BUTTON_EXIT = -2;
     public static final int HELP_BUTTON_RETRY = -3;
     public static final int HELP_BUTTON_NEXT = -4;
+    
+    public static final int InputType_PASSWORD_VISIBLE = InputType.TYPE_CLASS_TEXT
+        | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+    public static final int InputType_PAssWORD_NORMAL = InputType.TYPE_CLASS_TEXT
+        | InputType.TYPE_TEXT_VARIATION_PASSWORD;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -569,7 +575,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         }
     }
     
-    protected void setHelpFrameDark()
+    public void setHelpFrameDark()
     {
         clearHelpContainer();
         

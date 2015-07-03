@@ -15,6 +15,8 @@ import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 
 public class UpgradeManagerApkOnline
@@ -45,6 +47,9 @@ public class UpgradeManagerApkOnline
     private final static String KEY_APK_FILES = "files";
     
     private final static String KEY_APK_NAME = "name";
+    
+    private final static String APK_FILE_NAME = "Esp.apk";
+    private final static String APK_FILE_TEMP_NAME = "Esp.apk.temp";
     
     private EspApplication mApplication;
     
@@ -200,17 +205,38 @@ public class UpgradeManagerApkOnline
     private boolean downloadNewestApk(String version, String apkName)
     {
         String url = getDownloadUrl(version, apkName);
-        HeaderPair header = new HeaderPair(Authorization, getHeaderValue(KEY_MASTER));
-        String folderPath = mApplication.getEspRootSDPath() + "apk/";
-        String saveFileName = "Esp.apk";
-        
         log.info("apk url = " + url);
-        log.info("folder path = " + folderPath);
-        log.info("file save name = " + saveFileName);
+        HeaderPair header = new HeaderPair(Authorization, getHeaderValue(KEY_MASTER));
+        String folderPath = getApkDirPath();
         
-        if (EspBaseApiUtil.download(mProgressListener, url, folderPath, saveFileName, header))
+        boolean downloadSuc = false;
+        
+        // Check APK in download folder
+        PackageManager pm = mApplication.getPackageManager();
+        PackageInfo info = pm.getPackageArchiveInfo(folderPath + APK_FILE_NAME, PackageManager.GET_ACTIVITIES);
+        if (info != null)
         {
-            installApk(folderPath + saveFileName);
+            String existApkVersion = info.versionName;
+            if (existApkVersion.equals(version))
+            {
+                downloadSuc = true;
+            }
+        }
+        
+        if (!downloadSuc)
+        {
+            // Download from server
+            downloadSuc = EspBaseApiUtil.download(mProgressListener, url, folderPath, APK_FILE_TEMP_NAME, header);
+            if (downloadSuc)
+            {
+                File tempApkFile = new File(folderPath + APK_FILE_TEMP_NAME);
+                tempApkFile.renameTo(new File(folderPath + APK_FILE_NAME));
+            }
+        }
+        
+        if (downloadSuc)
+        {
+            installApk(folderPath + APK_FILE_NAME);
             return true;
         }
         else
@@ -241,5 +267,10 @@ public class UpgradeManagerApkOnline
         {
             mProgressListener = listener;
         }
+    }
+    
+    private String getApkDirPath()
+    {
+        return mApplication.getEspRootSDPath() + "apk/";
     }
 }

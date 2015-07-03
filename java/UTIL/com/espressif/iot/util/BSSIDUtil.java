@@ -1,5 +1,7 @@
 package com.espressif.iot.util;
 
+import java.util.Locale;
+
 //98:fe:34:77:ce:00
 public class BSSIDUtil
 {
@@ -52,7 +54,7 @@ public class BSSIDUtil
             String subStr = str.substring(i, i + 1);
             char subChar = str.charAt(i);
             if (subChar >= 'a' && subChar <= 'z')
-                result += subStr.toUpperCase();
+                result += subStr.toUpperCase(Locale.US);
             else
                 result += subStr;
         }
@@ -67,12 +69,23 @@ public class BSSIDUtil
      */
     public static String genDeviceNameByBSSID(String BSSID)
     {
+        return genDeviceNameByBSSID("ESP_", BSSID);
+    }
+
+    /**
+     * generate Device Name By BSSID
+     * @param prefix the prefix of the name
+     * @param BSSID
+     * @return prefix + "XXXXXX", "XXXXXX" is the last 6 of BSSID
+     */
+    public static String genDeviceNameByBSSID(String prefix, String BSSID)
+    {
         // 1a:fe:34:77:c0:00 change to 77C000
         String tail = "";
         tail += UpperCase(BSSID.substring(9, 11));
-        tail += BSSID.substring(12, 14).toUpperCase();
-        tail += BSSID.substring(15, 17).toUpperCase();
-        return "ESP_" + tail;
+        tail += BSSID.substring(12, 14).toUpperCase(Locale.US);
+        tail += BSSID.substring(15, 17).toUpperCase(Locale.US);
+        return prefix + tail;
     }
     
     /**
@@ -103,5 +116,24 @@ public class BSSIDUtil
     public static boolean isSoftapDevice(String bssid)
     {
         return bssid.subSequence(0, 2).equals("1a");
+    }
+    
+    /**
+     * restore the bssid from esptouch result
+     * @param BSSID like 18fe34abcdef
+     * @return like 18:fe:34:ab:cd:ef
+     */
+    public static String restoreBSSID(String BSSID)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int index = 0; index < BSSID.length(); index += 2)
+        {
+            sb.append(BSSID.substring(index, index + 2));
+            if (index != BSSID.length() - 2)
+            {
+                sb.append(":");
+            }
+        }
+        return sb.toString();
     }
 }

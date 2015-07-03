@@ -1,4 +1,4 @@
-package com.espressif.iot.esptouch;
+package com.espressif.iot.type.device.esptouch;
 
 import java.net.InetAddress;
 

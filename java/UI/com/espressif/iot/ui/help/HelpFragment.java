@@ -2,15 +2,18 @@ package com.espressif.iot.ui.help;
 
 import com.espressif.iot.R;
 import com.espressif.iot.help.ui.IEspHelpUI;
+import com.espressif.iot.user.builder.BEspUser;
 
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.widget.Toast;
 
 public class HelpFragment extends PreferenceFragment implements IEspHelpUI
 {
     private final static String KEY_CONFIGURE_HELP = "esp_help_configure";
+    private final static String KEY_MESH_CONFIGURE_HELP = "esp_help_mesh_configure";
     private final static String KEY_USE_PLUG_HELP = "esp_help_use_plug";
     private final static String KEY_USE_PLUGS_HELP = "esp_help_use_plugs";
     private final static String KEY_USE_LIGHT_HELP = "esp_help_use_light";
@@ -22,6 +25,7 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
     private final static String KEY_UPGRADE_ONLINE_HELP = "esp_help_upgrade_online";
     
     private Preference mConfigureHelpPre;
+    private Preference mMeshConfigurePre;
     private Preference mUsePlugHelpPre;
     private Preference mUsePlugsHelpPre;
     private Preference mUseLightHelpPre;
@@ -40,6 +44,7 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         addPreferencesFromResource(R.xml.helps);
         
         mConfigureHelpPre = findPreference(KEY_CONFIGURE_HELP);
+        mMeshConfigurePre = findPreference(KEY_MESH_CONFIGURE_HELP);
         mUsePlugHelpPre = findPreference(KEY_USE_PLUG_HELP);
         mUsePlugsHelpPre = findPreference(KEY_USE_PLUGS_HELP);
         mUseLightHelpPre = findPreference(KEY_USE_LIGHT_HELP);
@@ -49,6 +54,11 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         mUseRemoteHelpPre = findPreference(KEY_USE_REMOTE_HELP);
         mUpgradeLocalPre = findPreference(KEY_UPGRADE_LOCAL_HELP);
         mUpgradeOnlinePre = findPreference(KEY_UPGRADE_ONLINE_HELP);
+        
+        if (mMeshConfigurePre != null)
+        {
+            getPreferenceScreen().removePreference(mMeshConfigurePre);
+        }
         
         // Remote has stopped develop
         if (mUseRemoteHelpPre != null)
@@ -62,7 +72,19 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
     {
         if (preference == mConfigureHelpPre)
         {
-            finishForResult(RESULT_HELP_CONFIGURE);
+            if (BEspUser.getBuilder().getInstance().isLogin())
+            {
+                finishForResult(RESULT_HELP_CONFIGURE);
+            }
+            else
+            {
+                Toast.makeText(getActivity(), R.string.esp_help_configure_login_msg, Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
+        else if (preference == mMeshConfigurePre)
+        {
+            finishForResult(RESULT_HELP_MESH_CONFIGURE);
             return true;
         }
         else if (preference == mUsePlugHelpPre)

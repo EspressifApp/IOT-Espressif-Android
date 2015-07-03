@@ -9,6 +9,9 @@ import com.espressif.iot.type.device.EspDeviceType;
 // "I'm Plug.98:fe:34:77:ce:00 192.168.4.1"
 public class IOTAddress implements IEspObject
 {
+    
+    public static IOTAddress EmptyIOTAddress = new IOTAddress("EmptyIOTAddress", null);
+    
     private String mSSID;
     
     /**

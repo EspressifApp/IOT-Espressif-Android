@@ -51,11 +51,11 @@ public class EspPureSocketResponseBaseEntity implements IEspPureSocketResponse
             }
             if (respJson.isNull(NONCE))
             {
-                this.mNonce = respJson.getLong(NONCE);
+                this.mNonce = NO_NONCE_VALUE;
             }
             else
             {
-                this.mNonce = NO_NONCE_VALUE;
+                this.mNonce = respJson.getLong(NONCE);
             }
             this.mJson = respJson;
         }

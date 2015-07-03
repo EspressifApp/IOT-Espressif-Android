@@ -3,7 +3,12 @@
 
     <!-- About account -->
     <PreferenceCategory
-         android:key="esp_settings_account_category" />
+         android:title="@string/esp_settings_account" />
+    <Preference
+        android:key="account_register"
+        android:title="@string/esp_settings_account_register" />
+    <Preference
+        android:key="account" />
     <CheckBoxPreference
         android:key="account_auto_login"
         android:title="@string/esp_settings_account_auto_login" />

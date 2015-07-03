@@ -51,7 +51,7 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
         View view = inflater.inflate(R.layout.device_configure_select_dialog, null);
         
         mWifiSpinner = (Spinner)view.findViewById(R.id.wifi_spinner);
-        mWifiList = EspBaseApiUtil.scan();
+        mWifiList = mUser.scanApList(true);
         mWifiAdapter = new WifiAdapter(mActivity, mWifiList);
         mWifiAdapter.addFilter(BSSIDUtil.restoreSoftApBSSID(mDevice.getBssid()));
         mWifiSpinner.setAdapter(mWifiAdapter);

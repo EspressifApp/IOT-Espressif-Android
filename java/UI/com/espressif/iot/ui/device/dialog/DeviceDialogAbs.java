@@ -160,7 +160,6 @@ public abstract class DeviceDialogAbs implements EspDeviceDialogInterface, Dialo
         @Override
         protected void onCancelled()
         {
-            System.out.println("xxj Task cancelled");
         }
     }
     

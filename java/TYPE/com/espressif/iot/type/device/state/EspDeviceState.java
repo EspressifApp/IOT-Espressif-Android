@@ -34,6 +34,67 @@ public class EspDeviceState implements IEspDeviceState, Cloneable
     
     public static final IEspDeviceState CLEAR = new EspDeviceState(0);
     
+    
+    // check whether the state which should be final is final
+    private void __checkvalid()
+    {
+        if (this == NEW)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.NEW can't be changed or the statemachine will make supprise");
+        }
+        else if (this == LOCAL)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.LOCAL can't be changed or the statemachine will make supprise");
+        }
+        else if (this == INTERNET)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.INTERNET can't be changed or the statemachine will make supprise");
+        }
+        else if (this == OFFLINE)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.OFFLINE can't be changed or the statemachine will make supprise");
+        }
+        else if (this == CONFIGURING)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.CONFIGURING can't be changed or the statemachine will make supprise");
+        }
+        else if (this == UPGRADING_LOCAL)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.UPGRADING_LOCAL can't be changed or the statemachine will make supprise");
+        }
+        else if (this == UPGRADING_INTERNET)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.UPGRADING_INTERNET can't be changed or the statemachine will make supprise");
+        }
+        else if (this == ACTIVATING)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.ACTIVATING can't be changed or the statemachine will make supprise");
+        }
+        else if (this == DELETED)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.DELETED can't be changed or the statemachine will make supprise");
+        }
+        else if (this == RENAMED)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.RENAMED can't be changed or the statemachine will make supprise");
+        }
+        else if (this == CLEAR)
+        {
+            throw new IllegalArgumentException(
+                "EspDeviceState.CLEAR can't be changed or the statemachine will make supprise");
+        }
+    }
+    
     /**
      * 
      * @param state
@@ -168,11 +229,13 @@ public class EspDeviceState implements IEspDeviceState, Cloneable
     
     private void addStateXXX(IEspDeviceState.Enum stateEnum)
     {
+        __checkvalid();
         this.mState |= (1 << stateEnum.ordinal());
     }
     
     private void clearStateXXX(IEspDeviceState.Enum stateEnum)
     {
+        __checkvalid();
         this.mState &= (~(1 << stateEnum.ordinal()));
     }
     
@@ -190,6 +253,7 @@ public class EspDeviceState implements IEspDeviceState, Cloneable
     @Override
     public void setStateValue(int state)
     {
+        __checkvalid();
         this.mState = state;
     }
     

@@ -35,6 +35,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SSSFragmentDevices extends Fragment implements OnRefreshListener<ListView>, OnItemClickListener,
     OnItemLongClickListener
@@ -179,6 +180,11 @@ public class SSSFragmentDevices extends Fragment implements OnRefreshListener<Li
             
             showScanningPorgress(false);
             log.debug("scan stas over");
+            
+            if (mStaList.isEmpty())
+            {
+                Toast.makeText(getActivity(), R.string.esp_sss_esptouch_toast, Toast.LENGTH_LONG).show();
+            }
             
             checkHelpOnPostScanSta();
         }

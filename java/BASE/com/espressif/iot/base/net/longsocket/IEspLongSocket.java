@@ -2,6 +2,8 @@ package com.espressif.iot.base.net.longsocket;
 
 import org.json.JSONObject;
 
+import com.espressif.iot.base.net.rest.mesh.EspSocketRequestBaseEntity;
+
 /**
  * The interface of Esp long socket which is used to improve the effective of the code.
  * 
@@ -74,7 +76,7 @@ public interface IEspLongSocket
      * add the request to be sent,
      * @param request the request to be sent
      */
-    void addRequest(String request);
+    void addRequest(EspSocketRequestBaseEntity request);
     
     /**
      * close the long socket immediately

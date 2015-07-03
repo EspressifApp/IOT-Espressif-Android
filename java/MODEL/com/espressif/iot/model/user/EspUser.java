@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
+import android.text.TextUtils;
 
 import com.espressif.iot.action.device.New.EspActionDeviceNewGetInfoLocal;
 import com.espressif.iot.action.device.New.IEspActionDeviceNewGetInfoLocal;
@@ -35,12 +37,16 @@ import com.espressif.iot.action.device.common.timer.EspActionDeviceTimerPostInte
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerDeleteInternet;
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerGetInternet;
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerPostInternet;
+import com.espressif.iot.action.device.esptouch.EspActionDeviceEsptouch;
+import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
 import com.espressif.iot.action.device.humiture.EspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.device.humiture.IEspActionHumitureGetStatusListInternetDB;
+import com.espressif.iot.action.user.EspActionFindAccountInternet;
 import com.espressif.iot.action.user.EspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.EspActionUserLoginDB;
 import com.espressif.iot.action.user.EspActionUserLoginInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterInternet;
+import com.espressif.iot.action.user.IEspActionFindAccountnternet;
 import com.espressif.iot.action.user.IEspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.IEspActionUserLoginDB;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
@@ -52,7 +58,9 @@ import com.espressif.iot.db.IOTUserDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.db.greenrobot.daos.DeviceDB;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
+import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.builder.BEspDeviceNew;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
@@ -62,6 +70,8 @@ import com.espressif.iot.device.upgrade.IEspDeviceCheckCompatibility;
 import com.espressif.iot.device.upgrade.IEspDeviceGetUpgradeTypeResult;
 import com.espressif.iot.model.adt.tree.EspDeviceTreeElement;
 import com.espressif.iot.model.device.statemachine.EspDeviceStateMachine;
+import com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler;
+import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler;
 import com.espressif.iot.model.device.upgrade.EspDeviceCheckCompatibility;
 import com.espressif.iot.model.device.upgrade.EspDeviceGetUpgradeTypeResult;
 import com.espressif.iot.object.db.IApDB;
@@ -69,9 +79,11 @@ import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
+import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
+import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
@@ -101,6 +113,18 @@ public class EspUser implements IEspUser
     private boolean mAutoLogin;
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
+    
+    private final List<IEspDeviceSSS> mStaDeviceList = new ArrayList<IEspDeviceSSS>();
+    
+    private final ReentrantLock mDeviceListsLock = new ReentrantLock();
+    
+    private volatile IEspActionDeviceEsptouch mActionDeviceEsptouch = null;
+    
+    private final Object mEsptouchLock = new Object();
+    
+    private volatile int mIsEsptouchExecuteCount = 0;
+    
+    private volatile int mIsEsptouchCancelledCount = 0;
     
     @Override
     public String toString()
@@ -196,9 +220,22 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public boolean isLogin()
+    {
+        return !TextUtils.isEmpty(mUserKey);
+    }
+    
+    @Override
     public List<IEspDevice> getDeviceList()
     {
-        return mDeviceList;
+        // for the mDeviceList maybe changed after the result return,
+        // but we don't like UI layer get dirty device list,
+        // so we return the copy list to prevent it
+        List<IEspDevice> result = new ArrayList<IEspDevice>();
+        lockUserDeviceLists();
+        result.addAll(mDeviceList);
+        unlockUserDeviceLists();
+        return result;
     }
     
     private String mLastConnectedSsid;
@@ -274,7 +311,7 @@ public class EspUser implements IEspUser
     {
         IOTApDBManager iotApDBManager = IOTApDBManager.getInstance();
         iotApDBManager.insertOrReplace(bssid, ssid, password);
-    } 
+    }
     
     @Override
     public void saveApInfoInDB(String bssid, String ssid, String password, String deviceBssid)
@@ -298,7 +335,8 @@ public class EspUser implements IEspUser
             return deviceRoot;
         }
         
-        for (IEspDevice device : mDeviceList)
+        List<IEspDevice> deviceList = getAllDeviceList();
+        for (IEspDevice device : deviceList)
         {
             // if the device is DELETED, ignore it
             if (device.getDeviceState().isStateDeleted())
@@ -310,6 +348,7 @@ public class EspUser implements IEspUser
                 return device;
             }
         }
+        
         return null;
     }
     
@@ -408,8 +447,16 @@ public class EspUser implements IEspUser
         action.doActionDeviceSynchronizeInterentDiscoverLocal(mUserKey);
     }
     
+    @Override
+    public void doActionRefreshStaDevices(boolean isSyn)
+    {
+        IEspActionDeviceSynchronizeInterentDiscoverLocal action = new EspActionDeviceSynchronizeInterentDiscoverLocal();
+        action.doActionDeviceSynchronizeDiscoverLocal(isSyn);
+    }
+    
     private void __loadUserDeviceList()
     {
+        lockUserDeviceLists();
         IOTUserDBManager iotUserDBManager = IOTUserDBManager.getInstance();
         List<DeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(mUserId);
         mDeviceList = new ArrayList<IEspDevice>();
@@ -519,6 +566,7 @@ public class EspUser implements IEspUser
                 doActionDelete(device);
             }
         }
+        unlockUserDeviceLists();
     }
     
     @Override
@@ -547,10 +595,30 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public void loadUserDeviceListDB()
+    {
+        __loadUserDeviceList();
+    }
+    
+    @Override
     public EspRegisterResult doActionUserRegisterInternet(String userName, String userEmail, String userPassword)
     {
         IEspActionUserRegisterInternet action = new EspActionUserRegisterInternet();
         return action.doActionUserRegisterInternet(userName, userEmail, userPassword);
+    }
+    
+    @Override
+    public boolean findAccountUsernameRegistered(String userName)
+    {
+        IEspActionFindAccountnternet action = new EspActionFindAccountInternet();
+        return action.doActionFindUsernametInternet(userName);
+    }
+    
+    @Override
+    public boolean findAccountEmailRegistered(String email)
+    {
+        IEspActionFindAccountnternet action = new EspActionFindAccountInternet();
+        return action.doActionFindEmailInternet(email);
     }
     
     @Override
@@ -607,7 +675,7 @@ public class EspUser implements IEspUser
             String bssidSoftap;
             String bssidDevice;
             long timestampConfigure;
-            for (IEspDevice device : mDeviceList)
+            for (IEspDevice device : getDeviceList())
             {
                 for (int i = 0; i < softapDeviceList.size(); i++)
                 {
@@ -631,6 +699,24 @@ public class EspUser implements IEspUser
         }
         
         return softapDeviceList;
+    }
+    
+    @Override
+    public List<ScanResult> scanApList(boolean isFilter)
+    {
+        List<ScanResult> scanResultList = EspBaseApiUtil.scan();
+        if (isFilter)
+        {
+            for (int i = 0; i < scanResultList.size(); ++i)
+            {
+                String ssid = scanResultList.get(i).SSID;
+                if (isESPDevice(ssid))
+                {
+                    scanResultList.remove(i--);
+                }
+            }
+        }
+        return scanResultList;
     }
     
     @Override
@@ -745,7 +831,7 @@ public class EspUser implements IEspUser
             return result;
         }
     }
-
+    
     @Override
     public List<IEspDeviceTreeElement> getAllDeviceTreeElementList()
     {
@@ -758,7 +844,7 @@ public class EspUser implements IEspUser
         int level = -1;
         // get routerList
         List<String> routerList = new ArrayList<String>();
-        for (IEspDevice deviceInList : mDeviceList)
+        for (IEspDevice deviceInList : getAllDeviceList())
         {
             router = deviceInList.getRouter();
             if (router != null)
@@ -768,7 +854,7 @@ public class EspUser implements IEspUser
         }
         // build deviceTreeElementList
         List<IEspDeviceTreeElement> deviceTreeElementList = new ArrayList<IEspDeviceTreeElement>();
-        for (IEspDevice deviceInList : mDeviceList)
+        for (IEspDevice deviceInList : getAllDeviceList())
         {
             router = deviceInList.getRouter();
             // don't forget to clear dirty info
@@ -781,7 +867,7 @@ public class EspUser implements IEspUser
             {
                 level = RouterUtil.getRouterLevel(router);
                 parentRouter = RouterUtil.getParentRouter(routerList, router);
-                for (IEspDevice deviceInList2 : mDeviceList)
+                for (IEspDevice deviceInList2 : getAllDeviceList())
                 {
                     routerTemp = deviceInList2.getRouter();
                     if (routerTemp != null && routerTemp.equals(parentRouter))
@@ -799,6 +885,327 @@ public class EspUser implements IEspUser
         }
         return deviceTreeElementList;
     }
-
+    
+    @Override
+    public List<IEspDeviceSSS> __getOriginStaDeviceList()
+    {
+        return this.mStaDeviceList;
+    }
+    
+    @Override
+    public List<IEspDeviceSSS> getStaDeviceList()
+    {
+        // for the mStaDeviceList maybe changed after the result return,
+        // but we don't like UI layer get dirty device list,
+        // so we return the copy list to prevent it
+        List<IEspDeviceSSS> result = new ArrayList<IEspDeviceSSS>();
+        lockUserDeviceLists();
+        result.addAll(mStaDeviceList);
+        unlockUserDeviceLists();
+        return result;
+    }
+    
+    @Override
+    public List<IEspDevice> __getOriginDeviceList()
+    {
+        return mDeviceList;
+    }
+    
+    @Override
+    public List<IEspDevice> getAllDeviceList()
+    {
+        // for the mDeviceList and mStaDeviceList maybe changed after the result return,
+        // but we don't like UI layer get dirty device list,
+        // so we return the copy list to prevent it
+        List<IEspDevice> result = new ArrayList<IEspDevice>();
+        lockUserDeviceLists();
+        result.addAll(mDeviceList);
+        result.addAll(mStaDeviceList);
+        unlockUserDeviceLists();
+        return result;
+    }
+    
+    @Override
+    public List<IEspDeviceNew> getSoftapDeviceList()
+    {
+        List<IEspDeviceNew> result = scanSoftapDeviceList(false);
+        // it has been locked when call getAllDeviceList(),
+        // so thre's no need locking here
+        List<IEspDevice> allDeviceList = getAllDeviceList();
+        // delete the IEspDeviceNew if the device is belong to getAllDeviceList()
+        boolean isExist;
+        for (int i = 0; i < result.size(); ++i)
+        {
+            isExist = false;
+            String newDeviceBssid = result.get(i).getBssid();
+            for (IEspDevice device : allDeviceList)
+            {
+                if (device.getBssid().equals(newDeviceBssid))
+                {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (isExist)
+            {
+                result.remove(i--);
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public void lockUserDeviceLists()
+    {
+        mDeviceListsLock.lock();
+    }
+    
+    @Override
+    public void unlockUserDeviceLists()
+    {
+        mDeviceListsLock.unlock();
+    }
+    
+    @Override
+    public boolean addDeviceSyn(final IEspDeviceSSS device)
+    {
+        log.debug("addDeviceSyn() device:" + device);
+        // start add device task asyn
+        boolean isAddDeviceAsynSuc = addDeviceAsyn(device);
+        if (isAddDeviceAsynSuc)
+        {
+            // wait the add device task finished
+            IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+            try
+            {
+                while (!handler.isTaskFinished(device.getBssid()))
+                {
+                    // busy waiting
+                    Thread.sleep(500);
+                }
+                // let UI refresh the device list first
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+                return false;
+            }
+            // check whether the device is added suc
+            return handler.isTaskSuc(device.getBssid());
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean addDevicesSyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate)
+    {
+        log.debug("addDevicesSyn(apSsid=[" + apSsid + "],apBssid=[" + apBssid + "],apPassword=[" + apPassword
+            + "],isSsidHidden=[" + isSsidHidden + "],requiredActivate=[" + requiredActivate + "])");
+        
+        if (!doEsptouchTaskPrepare())
+        {
+            log.debug("addDevicesSyn fail for doEsptouchTaskPrepare()");
+            return false;
+        }
+        if (mActionDeviceEsptouch.isExecuted())
+        {
+            log.debug("addDevicesSyn fail for mActionDeviceEsptouch.isExecuted()");
+            return false;
+        }
+        
+        List<IEsptouchResult> esptouchResultList =
+            doEsptouchTaskSynAddDeviceAsyn(apSsid, apBssid, apPassword, isSsidHidden, requiredActivate);
+        boolean isEsptouchSuc = esptouchResultList.get(0).isSuc();
+        // when requiredActivate is false, the result is dependent upon isEsptouchSuc
+        if (!requiredActivate)
+        {
+            return isEsptouchSuc;
+        }
+        
+        IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+        while (!handler.isAllTasksFinished())
+        {
+            try
+            {
+                // busy waiting
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e)
+            {
+                return false;
+            }
+        }
+        log.error("addDevicesSyn finish");
+        // check whether there's device activating suc
+        if (isEsptouchSuc)
+        {
+            for (IEsptouchResult esptouchResult : esptouchResultList)
+            {
+                String bssid = BSSIDUtil.restoreBSSID(esptouchResult.getBssid());
+                // it is suc as long as one device activating suc
+                if (handler.isTaskSuc(bssid))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean addDeviceAsyn(final IEspDeviceSSS device)
+    {
+        log.info("addDeviceAsyn() device:" + device);
+        IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+        // there's another task about the device is executing, so return false
+        if (!handler.isTaskFinished(device.getBssid()))
+        {
+            return false;
+        }
+        log.info("addDeviceAsyn() device:" + device + " is finished");
+        String randomToken = RandomUtil.random40();
+        IEspDeviceConfigure deviceConfigure = device.createConfiguringDevice(randomToken);
+        deviceConfigure.setName("Opps: It shouldn't be displayed 1");
+        deviceConfigure.setUserId(mUserId);
+        log.info("addDeviceAsyn() device:" + device + " before stateMachine");
+        IEspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
+        stateMachine.transformState(deviceConfigure, Direction.CONFIGURE);
+        log.info("addDeviceAsyn() device:" + device + " after stateMachine");
+        return true;
+    }
+    
+    @Override
+    public boolean addDevicesAsyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate)
+    {
+        log.debug("addDevicesAsyn(apSsid=[" + apSsid + "],apBssid=[" + apBssid + "],apPassword=[" + apPassword
+            + "],isSsidHidden=[" + isSsidHidden + "],requiredActivate=[" + requiredActivate + "])");
+        
+        if (!doEsptouchTaskPrepare())
+        {
+            log.debug("addDevicesAsyn fail for doEsptouchTaskPrepare()");
+            return false;
+        }
+        if (mActionDeviceEsptouch.isExecuted())
+        {
+            log.debug("addDevicesAsyn fail for mActionDeviceEsptouch.isExecuted()");
+            return false;
+        }
+        
+        EspBaseApiUtil.submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                doEsptouchTaskSynAddDeviceAsyn(apSsid, apBssid, apPassword, isSsidHidden, requiredActivate);
+            }
+        });
+        return true;
+    }
+    
+    private List<IEsptouchResult> doEsptouchTaskSynAddDeviceAsyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, boolean requiredActivate)
+    {
+        log.debug("doEsptouchTaskSynAddDeviceAsyn entrance");
+        List<IEsptouchResult> esptouchResultList =
+            mActionDeviceEsptouch.doActionDeviceEsptouch(0, apSsid, apBssid, apPassword, isSsidHidden);
+        // no matter whether requiredActivate is true or false, we should discover sta devices both
+        log.debug("doEsptouchTaskSynAddDeviceAsyn requiredActivate = true");
+        if (requiredActivate)
+        {
+            log.debug("doEsptouchTaskSynAddDeviceAsyn add sta device list last discovered");
+            // clear the interrupted by esptouchResultList
+            Thread.interrupted();
+            // add sta devices
+//            List<IEspDeviceSSS> staDeviceList = getStaDeviceList();
+//            for (IEspDeviceSSS staDevice : staDeviceList)
+//            {
+//                // remove the relevant esptouchResult
+//                for (int index = 0; index < esptouchResultList.size(); ++index)
+//                {
+//                    IEsptouchResult esptouchResult = esptouchResultList.get(index);
+//                    // check whether the task is executed suc
+//                    if (!esptouchResult.isSuc())
+//                    {
+//                        break;
+//                    }
+//                    String bssid1 = staDevice.getBssid();
+//                    String bssid2 = BSSIDUtil.restoreBSSID(esptouchResult.getBssid());
+//                    log.error("doEsptouchTaskSynAddDeviceAsyn bssid1: " + bssid1 + ",bssid2: " + bssid2);
+//                    if (bssid1.equals(bssid2))
+//                    {
+//                        esptouchResultList.remove(index--);
+//                        break;
+//                    }
+//                }
+//                addDeviceAsyn(staDevice);
+//            }
+            
+            // add the esptouch devices
+            log.debug("doEsptouchTaskSynAddDeviceAsyn add the remainder esptouchResultList");
+            for (IEsptouchResult esptouchResult : esptouchResultList)
+            {
+                // check whether the task is executed suc
+                if (!esptouchResult.isSuc())
+                {
+                    break;
+                }
+                // for doActionRefreshStaDevices() can't find them,
+                // so we can't get the info like deviceType, router, etc.
+                // thus we can't make them added into staDeviceList
+                String bssid = BSSIDUtil.restoreBSSID(esptouchResult.getBssid());
+                IOTAddress iotAddress = new IOTAddress(bssid, esptouchResult.getInetAddress());
+                iotAddress.setEspDeviceTypeEnum(EspDeviceType.NEW);
+                IEspDeviceSSS iotAddressDevice = BEspDevice.createSSSDevice(iotAddress);
+                iotAddressDevice.getDeviceState().clearState();
+                iotAddressDevice.setName("Opps: It shouldn't be displayed 2");
+                addDeviceAsyn(iotAddressDevice);
+            }
+        }
+        else
+        {
+            doActionRefreshStaDevices(true);
+        }
+        return esptouchResultList;
+    }
+    
+    private boolean doEsptouchTaskPrepare()
+    {
+        synchronized (mEsptouchLock)
+        {
+            if (mIsEsptouchCancelledCount > mIsEsptouchExecuteCount)
+            {
+                mIsEsptouchCancelledCount = 0;
+                mIsEsptouchExecuteCount = 0;
+                return false;
+            }
+            mActionDeviceEsptouch = new EspActionDeviceEsptouch();
+            ++mIsEsptouchExecuteCount;
+            // counteract
+            int min = Math.min(mIsEsptouchCancelledCount, mIsEsptouchExecuteCount);
+            mIsEsptouchCancelledCount -= min;
+            mIsEsptouchExecuteCount -= min;
+        }
+        return true;
+    }
+    
+    @Override
+    public void cancelAllAddDevices()
+    {
+        synchronized (mEsptouchLock)
+        {
+            ++mIsEsptouchCancelledCount;
+            if (mActionDeviceEsptouch != null)
+            {
+                mActionDeviceEsptouch.cancel();
+            }
+        }
+        IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+        handler.cancelAllTasks();
+    }
     
 }

@@ -1,4 +1,6 @@
-package com.espressif.iot.esptouch;
+package com.espressif.iot.type.device.esptouch;
+
+import java.util.List;
 
 import android.content.Context;
 
@@ -65,4 +67,14 @@ public class EsptouchTask implements IEsptouchTask
         return _mEsptouchTask.isCancelled();
     }
     
+    @Override
+    public List<IEsptouchResult> executeForResults(int expectTaskResultCount)
+        throws RuntimeException
+    {
+        if (expectTaskResultCount <= 0)
+        {
+            expectTaskResultCount = Integer.MAX_VALUE;
+        }
+        return _mEsptouchTask.executeForResults(expectTaskResultCount);
+    }
 }

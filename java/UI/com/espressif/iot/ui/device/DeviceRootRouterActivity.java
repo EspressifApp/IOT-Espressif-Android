@@ -49,6 +49,10 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
         super.onCreate(savedInstanceState);
         
         mChangeRouterDialog = new ChangeChildRouterDialog(this);
+        
+        // hide mesh child control
+        mPager.setCurrentItem(1);
+        mPager.setInterceptTouchEvent(false);
     }
 
     @Override

@@ -169,20 +169,32 @@ public class MeshUtil
     }
     
     /**
-     * Check whether the phone is connected to a mesh device
-     * 
+     * Check whether the gateway is belong to mesh device
      * @param gateway the phone's gateway
-     * @return whether the phone is connected to a mesh device
+     * @return whehter the phone is connected to a mesh device
      */
-    public static boolean isConnectedToMeshDevice(String gateway)
+    public static boolean isGatewayMesh(String gateway)
     {
-        String[] gateways = gateway.split(".");
-        if (gateways[0].equals("192") && gateways[1].equals("4") && gateways[2].equals("1"))
+        if (gateway == null)
+        {
             return false;
+        }
         else
-            return true;
+        {
+            String[] gateways = gateway.split("\\.");
+            // [2-5].255.255.xxx
+            if (gateways[0].equals("2") || gateways[0].equals("3") || gateways[0].equals("4")
+                || gateways[0].equals("5") && gateways[1].equals("255") && gateways[2].equals("255"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
-    
+
     private static void test_getPortForMesh()
     {
         int port1 = 7777;

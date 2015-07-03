@@ -18,11 +18,14 @@ import com.espressif.iot.action.device.common.IEspActionDeviceRenameInternet;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
 import com.espressif.iot.device.upgrade.IEspDeviceDoUpgradeLocal;
 import com.espressif.iot.device.upgrade.IEspDeviceDoUpgradeOnline;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
+import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateInternet;
+import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateLocal;
 import com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeLocal;
 import com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeOnline;
 import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
@@ -33,6 +36,7 @@ import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.device.builder.BEspDeviceRoot;
 import com.espressif.iot.device.cache.IEspDeviceCache.NotifyType;
 import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
 
@@ -151,7 +155,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
     /*
      * if don't use IEspHelpStateMachine, the below method and its related code should be annotated
      */
-    private void __transformHelpStateMachine(final String deviceBssid, boolean isSuc)
+    void __transformHelpStateMachine(final String deviceBssid, boolean isSuc)
     {
         IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
         if (helpStateMachine.isHelpOn() && deviceBssid.equals(helpStateMachine.__getCurrentDeviceBssid()))
@@ -163,7 +167,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
     /*
      * if don't use IEspHelpStateMachine, the below method and its related code should be annotated
      */
-    private void __setHelpStateMachineDeviceBssid(final String deviceBssid)
+    void __setHelpStateMachineDeviceBssid(final String deviceBssid)
     {
         IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
         if (helpStateMachine.isHelpOn())
@@ -174,6 +178,14 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
     
     private void __activate(final IEspDevice device, final IEspDevice deviceStateMachine)
     {
+        if (device instanceof IEspDeviceConfigure)
+        {
+            log.debug(Thread.currentThread().toString() + "##__activate IEspDeviceConfigure");
+            IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+            ITaskActivateInternet task = handler.createTaskActivateInternet((IEspDeviceConfigure)device);
+            handler.addTask(task);
+            return;
+        }
         log.debug(Thread.currentThread().toString() + "##__activate(deviceStateMachine=[" + deviceStateMachine + "])");
         Callable<?> task = new Callable<IEspDevice>()
         {
@@ -211,12 +223,14 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                         String apSsidCurrent = EspBaseApiUtil.getWifiConnectedSsid();
                         if (apSsidExpected.equals(apSsidCurrent))
                         {
+                            // activate fail
                             log.debug("apSsidExpected.equals(apSsidCurrent) = true");
                             __transformHelpStateMachine(device.getBssid(), false);
                             __transformHelpStateMachine(device.getBssid(), false);
                         }
                         else
                         {
+                            // connect Ap fail
                             log.debug("apSsidExpected.equals(apSsidCurrent) = false");
                             __transformHelpStateMachine(device.getBssid(), false);
                         }
@@ -235,6 +249,14 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
     
     private void __configure(final IEspDevice device, final IEspDevice deviceStateMachine)
     {
+        if(device instanceof IEspDeviceConfigure)
+        {
+            log.debug(Thread.currentThread().toString() + "##__configure IEspDeviceConfigure");
+            IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+            ITaskActivateLocal task = handler.createTaskActivateLocal((IEspDeviceConfigure)device);
+            handler.addTask(task);
+            return;
+        }
         log.debug(Thread.currentThread().toString() + "##__configure(deviceStateMachine=[" + deviceStateMachine + "])");
         Callable<?> task = new Callable<Boolean>()
         {

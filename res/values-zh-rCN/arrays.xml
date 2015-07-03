@@ -88,7 +88,7 @@
 
     <string-array name="esp_sss_device_configure_options">
         <item>直连</item>
-        <!-- <item>组网配置</item> -->
+       <!-- <item>组网配置</item> -->
     </string-array>
 
     <string-array name="esp_sss_device_use_options">

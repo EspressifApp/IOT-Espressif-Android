@@ -38,50 +38,127 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
         return action.doCommandDeviceSynchronizeInternet(userKey);
     }
     
-    private void __doActionDeviceSynchronizeInterentDiscoverLocal(final String userKey)
+    private void __doActionDeviceSynchronizeInterentDiscoverLocal(final String userKey, boolean serverRequired,
+        boolean localRequired)
     {
+        // internet variables
+        Callable<List<IEspDevice>> taskInternet = null;
+        Future<List<IEspDevice>> futureInternet = null;
+        // local variables
+        List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
+        Callable<List<IOTAddress>> taskLocal = null;
+        Future<List<IOTAddress>> futureLocal = null;
+        
         // task Internet
-        Callable<List<IEspDevice>> taskInternet = new Callable<List<IEspDevice>>()
+        if (serverRequired)
         {
-            
-            @Override
-            public List<IEspDevice> call()
-                throws Exception
+            taskInternet = new Callable<List<IEspDevice>>()
             {
-                log.debug(Thread.currentThread().toString()
-                    + "##__doActionDeviceSynchronizeInterentDiscoverLocal(userKey=[" + userKey
-                    + "]): doCommandDeviceSynchronizeInternet()");
-                return doCommandDeviceSynchronizeInternet(userKey);
-            }
-            
-        };
-        Future<List<IEspDevice>> futureInternet = EspBaseApiUtil.submit(taskInternet);
+                
+                @Override
+                public List<IEspDevice> call()
+                    throws Exception
+                {
+                    log.debug(Thread.currentThread().toString()
+                        + "##__doActionDeviceSynchronizeInterentDiscoverLocal(userKey=[" + userKey
+                        + "]): doCommandDeviceSynchronizeInternet()");
+                    return doCommandDeviceSynchronizeInternet(userKey);
+                }
+                
+            };
+            futureInternet = EspBaseApiUtil.submit(taskInternet);
+        }
         
         // task Local
-        List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
-        Callable<List<IOTAddress>> taskLocal = new Callable<List<IOTAddress>>()
+        if (localRequired)
         {
-            
-            @Override
-            public List<IOTAddress> call()
-                throws Exception
+            taskLocal = new Callable<List<IOTAddress>>()
             {
-                log.debug(Thread.currentThread().toString()
-                    + "##__doActionDeviceSynchronizeInterentDiscoverLocal(userKey=[" + userKey
-                    + "]): doCommandDeviceDiscoverLocal()");
-                return doCommandDeviceDiscoverLocal();
-            }
-            
-        };
-        for (int executeTime = 0; executeTime < UDP_EXECUTE_MAX_TIMES; executeTime++)
+                
+                @Override
+                public List<IOTAddress> call()
+                    throws Exception
+                {
+                    log.debug(Thread.currentThread().toString()
+                        + "##__doActionDeviceSynchronizeInterentDiscoverLocal(userKey=[" + userKey
+                        + "]): doCommandDeviceDiscoverLocal()");
+                    return doCommandDeviceDiscoverLocal();
+                }
+                
+            };
+        }
+        
+        if (localRequired && serverRequired)
         {
-            if (executeTime >= UDP_EXECUTE_MIN_TIMES && futureInternet.isDone())
+            for (int executeTime = 0; executeTime < UDP_EXECUTE_MAX_TIMES; executeTime++)
             {
-                break;
+                if (executeTime >= UDP_EXECUTE_MIN_TIMES && futureInternet.isDone())
+                {
+                    break;
+                }
+                futureLocal = EspBaseApiUtil.submit(taskLocal);
+                // get local result
+                try
+                {
+                    List<IOTAddress> localResult = futureLocal.get();
+                    for (IOTAddress iotAddress : localResult)
+                    {
+                        // add iotAddress if iotAddressList doesn't have
+                        if (!iotAddressList.contains(iotAddress))
+                        {
+                            iotAddressList.add(iotAddress);
+                        }
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e)
+                {
+                    e.printStackTrace();
+                }
             }
-            Future<List<IOTAddress>> futureLocal = EspBaseApiUtil.submit(taskLocal);
+        }
+        
+        // only localRequired, do discover local only once
+        else if (localRequired)
+        {
+            futureLocal = EspBaseApiUtil.submit(taskLocal);
+        }
+        
+        if (serverRequired)
+        {
+            // wait futureInternet finished
+            while (!futureInternet.isDone())
+            {
+                try
+                {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if (localRequired)
+        {
+            // wait local finished
+            while (!futureLocal.isDone())
+            {
+                try
+                {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
             try
             {
+                // get local result
                 List<IOTAddress> localResult = futureLocal.get();
                 for (IOTAddress iotAddress : localResult)
                 {
@@ -101,29 +178,49 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                 e.printStackTrace();
             }
         }
-        
-        // wait futureInternet finished
-        while (!futureInternet.isDone())
+        else
         {
-            try
-            {
-                Thread.sleep(500);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+            throw new IllegalArgumentException("serverRequired = false, localRequired = false");
         }
         
         IEspDeviceCache deviceCache = EspDeviceCache.getInstance();
         try
         {
-            List<IEspDevice> internetResult = futureInternet.get();
-            // Internet unaccessible
+            // add sta device list
+            if (localRequired)
+            {
+                // add the discover local result
+                if (iotAddressList.isEmpty())
+                {
+                    // add EmptyIOTAddress to distinguish from localRequired is false
+                    deviceCache.addStaDeviceCache(IOTAddress.EmptyIOTAddress);
+                }
+                else
+                {
+                    deviceCache.addStaDeviceCacheList(iotAddressList);
+                }
+            }
+            
+            List<IEspDevice> internetResult = null;
+            if (serverRequired)
+            {
+                internetResult = futureInternet.get();
+            }
+            
+            // Internet unaccessible or serverRequired = false
             if (internetResult == null)
             {
-                log.error("Internet unaccessible");
-                deviceCache.addLocalDeviceCacheList(iotAddressList);
+                if (serverRequired)
+                {
+                    log.error("Internet unaccessible");
+                    deviceCache.addLocalDeviceCacheList(iotAddressList);
+                }
+                else
+                {
+                    log.error("add EmptyDevice 1");
+                    // add EmptyDevice to distinguish from Internet unaccessible
+                    deviceCache.addServerLocalDeviceCache(EspDevice.EmptyDevice1);
+                }
             }
             // Internet accessible
             else
@@ -157,9 +254,9 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                 }
                 else
                 {
-                    log.error("add EmptyDevice");
+                    log.error("add EmptyDevice 2");
                     // add EmptyDevice to distinguish from Internet unaccessible
-                    deviceCache.addServerLocalDeviceCache(EspDevice.EmptyDevice);
+                    deviceCache.addServerLocalDeviceCache(EspDevice.EmptyDevice2);
                 }
             }
             deviceCache.notifyIUser(NotifyType.PULL_REFRESH);
@@ -184,7 +281,44 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
             @Override
             public void run()
             {
-                __doActionDeviceSynchronizeInterentDiscoverLocal(userKey);
+                __doActionDeviceSynchronizeInterentDiscoverLocal(userKey, true, true);
+            }
+            
+        });
+    }
+    
+    @Override
+    public void doActionDeviceSynchronizeDiscoverLocal(boolean isSyn)
+    {
+        if (isSyn)
+        {
+            __doActionDeviceSynchronizeInterentDiscoverLocal(null, false, true);
+        }
+        else
+        {
+            EspBaseApiUtil.submit(new Runnable()
+            {
+                
+                @Override
+                public void run()
+                {
+                    __doActionDeviceSynchronizeInterentDiscoverLocal(null, false, true);
+                }
+                
+            });
+        }
+    }
+    
+    @Override
+    public void doActionDeviceSynchronizeInternet(final String userKey)
+    {
+        EspBaseApiUtil.submit(new Runnable()
+        {
+            
+            @Override
+            public void run()
+            {
+                __doActionDeviceSynchronizeInterentDiscoverLocal(userKey, true, false);
             }
             
         });

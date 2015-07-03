@@ -75,15 +75,13 @@ public class EspMeshNetUtil
     
     private final static String ROUTER = "router";
     
-    private final static String TOPOLOGH = "topology";
-    
     private final static String SIP = "sip";
     
     private final static String PORT = "sport";
     
-    private static final int CONNECTION_TIMEOUT = 10000;
+    private static final int CONNECTION_TIMEOUT = 5000;
     
-    private static final int SO_TIMEOUT = 10000;
+    private static final int SO_TIMEOUT = 5000;
     
     private static final int MESH_PORT = 8000;
     
@@ -92,6 +90,8 @@ public class EspMeshNetUtil
     private static final String METHOD_POST = "POST";
     
     private static final int CONNECT_RETRY = 3;
+    
+    private static final int IS_DEVICE_AVAILABLE_RETRY = 3;
     
     private static void __closeClient(EspSocketClient client)
     {
@@ -161,44 +161,65 @@ public class EspMeshNetUtil
         // create request
         String content = __createIsDeviceAvailableRequestContent(router, deviceBssid, localInetAddress, port);
         IEspSocketRequest requestEntity = new EspSocketRequestBaseEntity(METHOD_POST, uriStr, content);
-        // send request
-        if (!__sendRequest(client, requestEntity))
+        boolean isAvailable = false;
+        for (int retry = 0; !isAvailable && retry < IS_DEVICE_AVAILABLE_RETRY; retry++)
         {
-            log.warn("__isDeviceAvailable(): send request fail");
-            return false;
-        }
-        // receive response
-        IEspSocketResponse responseEntity = __receiveOneResponse(client);
-        log.info("__isDeviceAvailable() response:\n" + responseEntity);
-        String command = null;
-        if (responseEntity != null)
-        {
-            try
+            // sleep 500ms when it isn't first time retry
+            if (retry != 0)
             {
-                JSONObject resultJson = new JSONObject(responseEntity.getContentBodyStr());
-                command = resultJson.getString(COMMAND);
+                try
+                {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e)
+                {
+                    // when the Thread is interrupt, we think that there's no necessary to
+                    // request __isDeviceAvailable(), just return false.
+                    return false;
+                }
             }
-            catch (JSONException e)
+            
+            // send request
+            if (!__sendRequest(client, requestEntity))
             {
-                e.printStackTrace();
+                log.warn("__isDeviceAvailable(): send request fail");
+                continue;
             }
+            
+            // receive response
+            IEspSocketResponse responseEntity = __receiveOneResponse(client);
+            log.info("__isDeviceAvailable() response:\n" + responseEntity);
+            String command = null;
+            if (responseEntity != null)
+            {
+                try
+                {
+                    JSONObject resultJson = new JSONObject(responseEntity.getContentBodyStr());
+                    command = resultJson.getString(COMMAND);
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            
+            // analyze the response to decide whether the device is available
+            isAvailable = command != null ? __checkIsDeviceAvailable(command) : false;
         }
-        
-        // analyze the response to decide whether the device is available
-        return command != null ? __checkIsDeviceAvailable(command) : false;
+        return isAvailable;
     }
     
-    private static boolean __connect(EspSocketClient client, String host, int port, int soTimeout)
+    private static boolean __connect(EspSocketClient client, String host, int port, int connectionTimeout)
     {
-        log.debug("__connect() host:" + host + ",port:" + port + ",soTimeout:" + soTimeout);
-        if (client.connect(host, port, CONNECTION_TIMEOUT))
+        log.debug("__connect() host:" + host + ",port:" + port + ",connectionTimeout:" + connectionTimeout);
+        if (client.connect(host, port, connectionTimeout))
         {
-            log.info("__connect() suc, host:" + host + ",port:" + port + ",soTimeout:" + soTimeout);
+            log.info("__connect() suc, host:" + host + ",port:" + port + ",connectionTimeout:" + connectionTimeout);
             return true;
         }
         else
         {
-            log.warn("__connect() fail, host:" + host + ",port:" + port + ",soTimeout:" + soTimeout);
+            log.warn("__connect() fail, host:" + host + ",port:" + port + ",connectionTimeout:" + connectionTimeout);
             return false;
         }
     }
@@ -237,12 +258,6 @@ public class EspMeshNetUtil
         try
         {
             json.put(ROUTER, router);
-            // deviceBssid!=null means the command is about to ask topology,
-            // otherwise, we don't need to add TOPOLOGH
-            if (deviceBssid != null)
-            {
-                json.put(TOPOLOGH, MeshUtil.getMacAddressForMesh(deviceBssid));
-            }
             json.put(SIP, MeshUtil.getIpAddressForMesh(localInetAddress));
             json.put(PORT, MeshUtil.getPortForMesh(port));
         }
@@ -255,31 +270,27 @@ public class EspMeshNetUtil
     
     private static JSONObject __executeForJson(EspSocketClient client, String method, String uriStr, String router,
         String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
-        int targetPort, HeaderPair... headers)
+        int targetPort, int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout,
+        HeaderPair... headers)
     {
         log.debug("__executeForJson()");
         boolean isConnectRequired = false;
         // it is used just to get host by uri
         EspSocketRequestBaseEntity request1 = new EspSocketRequestBaseEntity(method, uriStr);
-        // check whether the uri is about to ask topology
-        if (!request1.equals(""))
-        {
-            deviceBssid = null;
-        }
         String host = request1.getHost();
         if (client == null)
         {
             client = new EspSocketClient();
             isConnectRequired = true;
         }
-        client.setSoTimeout(SO_TIMEOUT);
+        client.setSoTimeout(soTimeout);
         // connect
         boolean isConnectSuc = false;
         if (isConnectRequired)
         {
-            for (int i = 0; i < CONNECT_RETRY; i++)
+            for (int i = 0; i < connectRetry; i++)
             {
-                if (__connect(client, host, targetPort, SO_TIMEOUT))
+                if (__connect(client, host, targetPort, connectTimeout))
                 {
                     isConnectSuc = true;
                     break;
@@ -334,25 +345,28 @@ public class EspMeshNetUtil
             return null;
         }
         
-        // receive response
-        IEspSocketResponse responseEntity = __receiveOneResponse(client);
-        if (responseEntity == null)
-        {
-            log.warn("responseEntity is null,return null");
-            __closeClient(client);
-            return null;
-        }
-        
         JSONObject jsonResult = null;
-        try
+        if (isResultRead)
         {
-            jsonResult = new JSONObject(responseEntity.getContentBodyStr());
-        }
-        catch (JSONException e)
-        {
-            log.warn("build json result fail, return null");
-            __closeClient(client);
-            return null;
+            // receive response
+            IEspSocketResponse responseEntity = __receiveOneResponse(client);
+            if (responseEntity == null)
+            {
+                log.warn("responseEntity is null,return null");
+                __closeClient(client);
+                return null;
+            }
+            
+            try
+            {
+                jsonResult = new JSONObject(responseEntity.getContentBodyStr());
+            }
+            catch (JSONException e)
+            {
+                log.warn("build json result fail, return null");
+                __closeClient(client);
+                return null;
+            }
         }
         if (closeClientImmdeiately)
         {
@@ -367,7 +381,8 @@ public class EspMeshNetUtil
     
     private static JSONArray __executeForJsonArray(EspSocketClient client, String method, String uriStr, String router,
         String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
-        int targetPort, HeaderPair... headers)
+        int targetPort, int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout,
+        HeaderPair... headers)
     {
         log.debug("__executeForJsonArray()");
         boolean isConnectRequired = false;
@@ -375,26 +390,21 @@ public class EspMeshNetUtil
         
         // it is used just to get host by uri
         IEspSocketRequest request1 = new EspSocketRequestBaseEntity(method, uriStr);
-        // check whether the uri is about to ask topology
-        if (!request1.equals(""))
-        {
-            deviceBssid = null;
-        }
         String host = request1.getHost();
         if(client==null)
         {
             client = new EspSocketClient();
             isConnectRequired = true;
         }
-        client.setSoTimeout(SO_TIMEOUT);
+        client.setSoTimeout(soTimeout);
         
         // connect
         boolean isConnectSuc = false;
         if (isConnectRequired)
         {
-            for (int i = 0; i < CONNECT_RETRY; i++)
+            for (int i = 0; i < connectRetry; i++)
             {
-                if (__connect(client, host, targetPort, SO_TIMEOUT))
+                if (__connect(client, host, targetPort, connectTimeout))
                 {
                     isConnectSuc = true;
                     break;
@@ -452,31 +462,34 @@ public class EspMeshNetUtil
         }
         
         log.error("jsonArrayResult (start) ip: " + host);
-        // receive response
-        IEspSocketResponse responseEntity = __receiveOneResponse(client);
-        JSONObject jsonResult = null;
-        while (responseEntity != null)
+        if (isResultRead)
         {
-            try
+            // receive response
+            IEspSocketResponse responseEntity = __receiveOneResponse(client);
+            JSONObject jsonResult = null;
+            while (responseEntity != null)
             {
-                jsonResult = new JSONObject(responseEntity.getContentBodyStr());
+                try
+                {
+                    jsonResult = new JSONObject(responseEntity.getContentBodyStr());
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+                if (jsonResult != null)
+                {
+                    jsonArrayResult.put(jsonResult);
+                    log.debug("one response is received");
+                    responseEntity = __receiveOneResponse(client);
+                }
+                else
+                {
+                    break;
+                }
             }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            if (jsonResult != null)
-            {
-                jsonArrayResult.put(jsonResult);
-                log.debug("one response is received");
-                responseEntity = __receiveOneResponse(client);
-            }
-            else
-            {
-                break;
-            }
+            log.debug("receive responses end");
         }
-        log.debug("receive responses end");
         if (closeClientImmdeiately)
         {
             __closeClient(client);
@@ -491,7 +504,20 @@ public class EspMeshNetUtil
     static JSONObject executeForJson(EspSocketClient client,String method, String uriStr, String router, String deviceBssid,
         JSONObject json, HeaderPair... headers)
     {
-        return __executeForJson(client, method, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
+        return __executeForJson(client,
+            method,
+            uriStr,
+            router,
+            deviceBssid,
+            json,
+            true,
+            true,
+            MESH_PORT,
+            CONNECTION_TIMEOUT,
+            CONNECT_RETRY,
+            true,
+            SO_TIMEOUT,
+            headers);
     }
     
     /**
@@ -505,7 +531,20 @@ public class EspMeshNetUtil
      */
     public static JSONObject GetForJson(String uriStr, String router, String deviceBssid, HeaderPair... headers)
     {
-        return __executeForJson(null, METHOD_GET, uriStr, router, deviceBssid, null, true, true, MESH_PORT, headers);
+        return __executeForJson(null,
+            METHOD_GET,
+            uriStr,
+            router,
+            deviceBssid,
+            null,
+            true,
+            true,
+            MESH_PORT,
+            CONNECTION_TIMEOUT,
+            CONNECT_RETRY,
+            true,
+            SO_TIMEOUT,
+            headers);
     }
     
     /**
@@ -519,7 +558,20 @@ public class EspMeshNetUtil
      */
     public static JSONArray GetForJsonArray(String uriStr, String router, String deviceBssid, HeaderPair... headers)
     {
-        return __executeForJsonArray(null, METHOD_GET, uriStr, router, deviceBssid, null, true, true, MESH_PORT, headers);
+        return __executeForJsonArray(null,
+            METHOD_GET,
+            uriStr,
+            router,
+            deviceBssid,
+            null,
+            true,
+            true,
+            MESH_PORT,
+            CONNECTION_TIMEOUT,
+            CONNECT_RETRY,
+            true,
+            SO_TIMEOUT,
+            headers);
     }
     
     /**
@@ -534,7 +586,20 @@ public class EspMeshNetUtil
     public static JSONObject PostForJson(String uriStr, String router, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return __executeForJson(null, METHOD_POST, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
+        return __executeForJson(null,
+            METHOD_POST,
+            uriStr,
+            router,
+            deviceBssid,
+            json,
+            true,
+            true,
+            MESH_PORT,
+            CONNECTION_TIMEOUT,
+            CONNECT_RETRY,
+            true,
+            SO_TIMEOUT,
+            headers);
     }
     
     /**
@@ -549,6 +614,95 @@ public class EspMeshNetUtil
     public static JSONArray PostForJsonArray(String uriStr, String router, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return __executeForJsonArray(null, METHOD_POST, uriStr, router, deviceBssid, json, true, true, MESH_PORT, headers);
+        return __executeForJsonArray(null,
+            METHOD_POST,
+            uriStr,
+            router,
+            deviceBssid,
+            json,
+            true,
+            true,
+            MESH_PORT,
+            CONNECTION_TIMEOUT,
+            CONNECT_RETRY,
+            true,
+            SO_TIMEOUT,
+            headers);
     }
+    
+    /**
+     * execute GET to get JSONObject by Mesh Net
+     * 
+     * @param client the EspSocketClient or null(if null new client will be created)
+     * @param uriStr the uri String
+     * @param router the router of the device
+     * @param deviceBssid the bssid of the device
+     * @param checkIsDeviceAvailable whether check is device available before sending request
+     * @param closeClientImmdeiately whether close the client immediate after sending request
+     * @param targetPort the port of the target
+     * @param connectTimeout connection timeout in milliseconds
+     * @param connectRetry connect retry time
+     * @param isResultRead whether the result will be read
+     * @param soTimeout socket read timeout
+     * @param headers the headers of the request
+     * @return the JSONObject result
+     */
+    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+        boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
+        int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
+    {
+        return __executeForJson(client,
+            METHOD_GET,
+            uriStr,
+            router,
+            deviceBssid,
+            null,
+            checkIsDeviceAvailable,
+            closeClientImmdeiately,
+            targetPort,
+            connectTimeout,
+            connectRetry,
+            isResultRead,
+            soTimeout,
+            headers);
+    }
+    
+    /**
+     * execute POST to get JSONObject by Mesh Net
+     * 
+     * @param client the EspSocketClient or null(if null new client will be created)
+     * @param uriStr the uri String
+     * @param router the router of the device
+     * @param deviceBssid the bssid of the device
+     * @param json the json to be posted
+     * @param checkIsDeviceAvailable whether check is device available before sending request
+     * @param closeClientImmdeiately whether close the client immediate after sending request
+     * @param targetPort the port of the target
+     * @param connectTimeout connection timeout in milliseconds
+     * @param connectRetry connect retry time
+     * @param isResultRead whether the result will be read
+     * @param soTimeout socket read timeout
+     * @param headers the headers of the request
+     * @return the JSONObject result
+     */
+    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+        JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort,
+        int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
+    {
+        return __executeForJson(client,
+            METHOD_POST,
+            uriStr,
+            router,
+            deviceBssid,
+            json,
+            checkIsDeviceAvailable,
+            closeClientImmdeiately,
+            targetPort,
+            connectTimeout,
+            connectRetry,
+            isResultRead,
+            soTimeout,
+            headers);
+    }
+    
 }

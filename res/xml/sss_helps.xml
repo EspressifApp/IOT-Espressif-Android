@@ -8,4 +8,8 @@
         <Preference
             android:key="esp_sss_help_upgrade"
             android:title="@string/esp_sss_help_upgrade" />
+
+        <Preference
+            android:key="esp_sss_help_mesh_configure"
+            android:title="@string/esp_sss_help_mesh_configure" />
 </PreferenceScreen>

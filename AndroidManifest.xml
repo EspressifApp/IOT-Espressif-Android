@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="5"
-    android:versionName="v0.9.4" >
+    android:versionCode="6"
+    android:versionName="v0.9.5" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -158,6 +158,9 @@
             android:theme="@style/AppThemeDark" />
         <activity
             android:name="com.espressif.iot.ui.softap_sta_support.help.HelpSoftApStaSupportActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.DeviceEspTouchActivity"
             android:screenOrientation="portrait" />
     </application>
 

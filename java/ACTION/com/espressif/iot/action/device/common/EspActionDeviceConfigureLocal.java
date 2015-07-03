@@ -1,0 +1,130 @@
+package com.espressif.iot.action.device.common;
+
+import java.net.InetAddress;
+
+import org.apache.log4j.Logger;
+
+import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.command.device.common.EspCommandDeviceConfigureLocal;
+import com.espressif.iot.command.device.common.IEspCommandDeviceConfigureLocal;
+import com.espressif.iot.type.net.IOTAddress;
+
+public class EspActionDeviceConfigureLocal implements IEspActionDeviceConfigureLocal
+{
+    
+    private Logger log = Logger.getLogger(EspActionDeviceConfigureLocal.class);
+    
+    private InetAddress mInetAddress;
+    
+    private String mRouter;
+    
+    private void __initInetAddrAndRouter(boolean discoverRequired, InetAddress inetAddress, String router,
+        String deviceBssid)
+    {
+        IOTAddress iotAddress = null;
+        if (discoverRequired && deviceBssid != null)
+        {
+            iotAddress = EspBaseApiUtil.discoverDevice(deviceBssid);
+        }
+        if (iotAddress != null)
+        {
+            this.mInetAddress = iotAddress.getInetAddress();
+            this.mRouter = iotAddress.getRouter();
+        }
+        else
+        {
+            this.mInetAddress = inetAddress;
+            this.mRouter = router;
+        }
+    }
+    
+    @Override
+    public boolean doActionDeviceConfigureLocal(boolean discoverRequired, InetAddress inetAddress, String apSsid,
+        String apPassword, String randomToken, String deviceBssid)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, null, deviceBssid);
+        if (mInetAddress == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandDeviceConfigureLocal(mInetAddress, apSsid, apPassword, randomToken);
+    }
+    
+    @Override
+    public boolean doActionDeviceConfigureLocal(boolean discoverRequired, InetAddress inetAddress, String apSsid,
+        String apPassword, String deviceBssid)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, null, deviceBssid);
+        if (mInetAddress == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandDeviceConfigureLocal(mInetAddress, apSsid, apPassword);
+    }
+    
+    @Override
+    public boolean doActionDeviceConfigureLocal(boolean discoverRequired, InetAddress inetAddress, String randomToken,
+        String deviceBssid)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, null, deviceBssid);
+        if (mInetAddress == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandDeviceConfigureLocal(mInetAddress, randomToken);
+    }
+    
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String router, String deviceBssid,
+        InetAddress inetAddress, String apSsid, String apPassword, String randomToken)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, router, deviceBssid);
+        if (mInetAddress == null || mRouter == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null or mRouter == null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandMeshDeviceConfigureLocal(mRouter,
+            deviceBssid,
+            mInetAddress,
+            apSsid,
+            apPassword,
+            randomToken);
+    }
+    
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String router, String deviceBssid,
+        InetAddress inetAddress, String apSsid, String apPassword)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, router, deviceBssid);
+        if (mInetAddress == null || mRouter == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null or mRouter == null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandMeshDeviceConfigureLocal(mRouter, deviceBssid, mInetAddress, apSsid, apPassword);
+    }
+    
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String router, String deviceBssid,
+        InetAddress inetAddress, String randomToken)
+    {
+        __initInetAddrAndRouter(discoverRequired, inetAddress, router, deviceBssid);
+        if (mInetAddress == null || mRouter == null)
+        {
+            log.warn("doActionDeviceConfigureLocal fail for mInetAddress = null or mRouter == null");
+            return false;
+        }
+        IEspCommandDeviceConfigureLocal command = new EspCommandDeviceConfigureLocal();
+        return command.doCommandMeshDeviceConfigureLocal(mRouter, deviceBssid, mInetAddress, randomToken);
+    }
+    
+}

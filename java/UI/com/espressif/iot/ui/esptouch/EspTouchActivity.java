@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.esptouch.EsptouchTask;
-import com.espressif.iot.esptouch.IEsptouchResult;
+import com.espressif.iot.type.device.esptouch.EsptouchTask;
+import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -41,6 +41,8 @@ import android.widget.Toast;
 public class EspTouchActivity extends Activity implements OnClickListener, OnCheckedChangeListener,
     OnItemSelectedListener
 {
+    private static final String ESPTOUCH_VERSION = "EspTouch v0.3.3";
+    
     private static final String SSID_PASSWORD = "ssid_password";
     
     private SharedPreferences mShared;
@@ -52,6 +54,7 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
     private CheckBox mIsSsidHiddenCB;
     private Button mDeletePasswordBtn;
     private Button mConfirmBtn;
+    private Spinner mSpinnerTaskCount;
     
     private BaseAdapter mWifiAdapter;
     private volatile List<ScanResult> mScanResultList;
@@ -103,8 +106,28 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         mConfigureSP.setAdapter(mWifiAdapter);
         mConfigureSP.setOnItemSelectedListener(this);
         
+        TextView version = (TextView)findViewById(R.id.esptouch_version);
+        version.setText(ESPTOUCH_VERSION);
+        
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(mReceiver, filter);
+        initSpinner();
+    }
+    
+    private void initSpinner()
+    {
+        mSpinnerTaskCount = (Spinner) findViewById(R.id.spinnerTaskResultCount);
+        int[] spinnerItemsInt = getResources().getIntArray(R.array.esp_touch_taskResultCount);
+        int length = spinnerItemsInt.length;
+        Integer[] spinnerItemsInteger = new Integer[length];
+        for(int i=0;i<length;i++)
+        {
+            spinnerItemsInteger[i] = spinnerItemsInt[i];
+        }
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(this,
+                android.R.layout.simple_list_item_1, spinnerItemsInteger);
+        mSpinnerTaskCount.setAdapter(adapter);
+        mSpinnerTaskCount.setSelection(1);
     }
     
     @Override
@@ -154,7 +177,7 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         }
     }
     
-    private class ConfigureTask extends AsyncTask<String, Void, IEsptouchResult> implements OnCancelListener
+    private class ConfigureTask extends AsyncTask<String, Void, List<IEsptouchResult>> implements OnCancelListener
     {
         private Activity mActivity;
         
@@ -164,11 +187,26 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         
         private final String mSsid;
         
-        public ConfigureTask(Activity activity, String apSsid, String apBssid, String password, boolean isSsidHidden)
+        private final int mTaskCount;
+        
+        // without the lock, if the user tap confirm and cancel quickly enough,
+        // the bug will arise. the reason is follows:
+        // 0. task is starting created, but not finished
+        // 1. the task is cancel for the task hasn't been created, it do nothing
+        // 2. task is created
+        // 3. Oops, the task should be cancelled, but it is running
+        private final Object mLock = new Object();
+        
+        public ConfigureTask(Activity activity, String apSsid, String apBssid, String password, boolean isSsidHidden
+            ,int taskCount)
         {
-            mActivity = activity;
-            mSsid = apSsid;
-            mTask = new EsptouchTask(apSsid, apBssid, password, isSsidHidden, EspTouchActivity.this);
+            synchronized(mLock)
+            {
+                mActivity = activity;
+                mSsid = apSsid;
+                mTaskCount = taskCount;
+                mTask = new EsptouchTask(apSsid, apBssid, password, isSsidHidden, EspTouchActivity.this);
+            }
         }
         
         @Override
@@ -182,44 +220,59 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
         }
         
         @Override
-        protected IEsptouchResult doInBackground(String... params)
+        protected List<IEsptouchResult> doInBackground(String... params)
         {
-            return mTask.executeForResult();
+            return mTask.executeForResults(mTaskCount);
         }
         
         @Override
-        protected void onPostExecute(IEsptouchResult result)
+        protected void onPostExecute(List<IEsptouchResult> result)
         {
             mDialog.dismiss();
             
-            int toastMsg;
-            if (result.isSuc())
-            {
-                toastMsg = R.string.esp_esptouch_result_suc;
+            IEsptouchResult firstResult = result.get(0);
+            // check whether the task is cancelled and no results received
+            if (!firstResult.isCancelled()) {
+                int count = 0;
+                // max results to be displayed, if it is more than maxDisplayCount,
+                // just show the count of redundant ones
+                final int maxDisplayCount = 5;
+                // the task received some results including cancelled while
+                // executing before receiving enough results
+                if (firstResult.isSuc()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (IEsptouchResult resultInList : result) {
+                        sb.append("Esptouch success, bssid = "
+                                + resultInList.getBssid()
+                                + ",InetAddress = "
+                                + resultInList.getInetAddress()
+                                        .getHostAddress() + "\n");
+                        count++;
+                        if (count >= maxDisplayCount) {
+                            break;
+                        }
+                    }
+                    if (count < result.size()) {
+                        sb.append("\nthere's " + (result.size() - count)
+                                + " more result(s) without showing\n");
+                    }
+                    Toast.makeText(mActivity, sb.toString(), Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(mActivity, R.string.esp_esptouch_result_failed, Toast.LENGTH_LONG).show();
+                }
             }
-            else if (result.isCancelled())
-            {
-                toastMsg = R.string.esp_esptouch_result_cancel;
-            }
-            else if (mCurrentSSID.equals(mSsid))
-            {
-                toastMsg = R.string.esp_esptouch_result_failed;
-            }
-            else
-            {
-                toastMsg = R.string.esp_esptouch_result_over;
-            }
-            
-            Toast.makeText(mActivity, toastMsg, Toast.LENGTH_LONG).show();
         }
         
         @Override
         public void onCancel(DialogInterface dialog)
         {
-            if (mTask != null)
+            synchronized (mLock)
             {
-                mTask.interrupt();
-                Toast.makeText(mActivity, R.string.esp_esptouch_result_cancel, Toast.LENGTH_LONG).show();
+                if (mTask != null)
+                {
+                    mTask.interrupt();
+                    Toast.makeText(mActivity, R.string.esp_esptouch_result_cancel, Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
@@ -257,6 +310,7 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
                 String password = mPasswordET.getText().toString();
                 mShared.edit().putString(ssid, password).commit();
                 boolean isSsidHidden = mIsSsidHiddenCB.isChecked();
+                int taskResultCount = mSpinnerTaskCount.getSelectedItemPosition();
                 // find the bssid is scanList
                 String bssid = scanApBssidBySsid(ssid);
                 if (bssid == null)
@@ -266,7 +320,7 @@ public class EspTouchActivity extends Activity implements OnClickListener, OnChe
                 }
                 else
                 {
-                    new ConfigureTask(this, ssid, bssid, password, isSsidHidden).execute();
+                    new ConfigureTask(this, ssid, bssid, password, isSsidHidden, taskResultCount).execute();
                 }
             }
             else

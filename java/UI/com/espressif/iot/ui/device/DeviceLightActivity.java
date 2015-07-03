@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 
 public class DeviceLightActivity extends DeviceActivityAbs implements OnClickListener, OnSeekBarChangeListener,
      OnColorChangedListener, OnFocusChangeListener, EspLongSocketDisconnected
@@ -139,6 +140,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mConfirmBtn.setOnClickListener(this);
         mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
         mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
+//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         
@@ -205,20 +207,34 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             mLightRedBar.setProgress(seekValue);
             mLightGreenBar.setProgress(seekValue);
             mLightBlueBar.setProgress(seekValue);
+            mLightWWhiteBar.setProgress(seekValue);
+            mLightCWhiteBar.setProgress(seekValue);
             
             IEspStatusLight status = new EspStatusLight();
             status.setPeriod(getProgressLightPeriod());
             status.setRed(seekValue);
             status.setGreen(seekValue);
             status.setBlue(seekValue);
-            status.setCWhite(mLightCWhiteBar.getProgress());
-            status.setWWhite(mLightWWhiteBar.getProgress());
+            status.setCWhite(seekValue);
+            status.setWWhite(seekValue);
             
             executeStatus(status);
         }
         else if (view == mColorPickerSwap)
         {
-            swapColorSelectView();
+            if (checkHelpClickSwap())
+            {
+                return;
+            }
+            
+            if (mDeviceLight.getIsMeshDevice())
+            {
+                Toast.makeText(this, R.string.esp_device_light_continuous_control_forbidden, Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                swapColorSelectView();
+            }
         }
     }
     
@@ -537,5 +553,10 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     
     protected void checkHelpExecuteFinish(int command, boolean result)
     {
+    }
+    
+    protected boolean checkHelpClickSwap()
+    {
+        return false;
     }
 }

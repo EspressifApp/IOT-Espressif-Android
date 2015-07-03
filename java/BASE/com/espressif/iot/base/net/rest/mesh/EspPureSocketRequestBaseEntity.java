@@ -170,6 +170,18 @@ public class EspPureSocketRequestBaseEntity implements IEspSocketRequest
         }
         return jsonResult.toString().replace("__path", this.mPath) + ESCAPE;
     }
+
+    @Override
+    public String getRelativeUrl()
+    {
+        return this.mRelativeUrl;
+    }
+
+    @Override
+    public String getContent()
+    {
+        return this.mContent;
+    }
     
     public static void main(String args[])
     {
@@ -192,8 +204,15 @@ public class EspPureSocketRequestBaseEntity implements IEspSocketRequest
     }
 
     @Override
-    public String getRelativeUrl()
+    public String getRouter()
     {
-        return this.mRelativeUrl;
+        throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getOriginUri()
+    {
+        throw new UnsupportedOperationException();
+    }
+
 }

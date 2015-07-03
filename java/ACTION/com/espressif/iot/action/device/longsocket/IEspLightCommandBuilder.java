@@ -2,6 +2,7 @@ package com.espressif.iot.action.device.longsocket;
 
 import java.net.InetAddress;
 
+import com.espressif.iot.base.net.rest.mesh.EspSocketRequestBaseEntity;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 
 public interface IEspLightCommandBuilder
@@ -43,7 +44,7 @@ public interface IEspLightCommandBuilder
      * @param router the router(only mesh device has it)
      * @return the local get status request
      */
-    String buildLocalGetStatusRequest(InetAddress inetAddress, String router);
+    EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress, String router);
     
     /**
      * build the local get status request
@@ -53,7 +54,7 @@ public interface IEspLightCommandBuilder
      * @param router the router(only mesh device has it)
      * @return the local post status request
      */
-    String buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router);
+    EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router);
     
     /**
      * build the Internet get status request
@@ -61,7 +62,7 @@ public interface IEspLightCommandBuilder
      * @param deviceKey the device key
      * @return the Internet get status request
      */
-    String buildInternetGetStatusRequest(String deviceKey);
+    EspSocketRequestBaseEntity buildInternetGetStatusRequest(String deviceKey);
     
     /**
      * build the Internet post status request
@@ -71,5 +72,5 @@ public interface IEspLightCommandBuilder
      * @param router the router(only mesh device has it)
      * @return the Internet post status request
      */
-    String buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router);
+    EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router);
 }

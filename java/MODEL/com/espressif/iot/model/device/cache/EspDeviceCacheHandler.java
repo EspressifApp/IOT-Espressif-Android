@@ -10,13 +10,17 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
+import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.cache.IEspDeviceCacheHandler;
 import com.espressif.iot.model.device.EspDevice;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.BSSIDUtil;
 
 public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCacheHandler
 {
@@ -105,19 +109,32 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
     {
         // poll devices from EspDeviceCache, the state should be OFFLINE,LOCAL,INTERNET or LOCAL,INTERNET coexist
         List<IEspDevice> serverLocaldeviceList = EspDeviceCache.getInstance().pollServerLocalDeviceCacheList();
+        boolean isEmptyDevice1Exist = false;
         if (serverLocaldeviceList.isEmpty())
         {
             // Internet unaccessible, don't handleServerLocal
             return false;
         }
-        // delete the EmptyDevice from serverLocaldeviceList
+        // delete the EmptyDevice1 and EmptyDevice2 from serverLocaldeviceList
         for (int i = 0; i < serverLocaldeviceList.size(); i++)
         {
-            if (serverLocaldeviceList.get(i) == EspDevice.EmptyDevice)
+            if (serverLocaldeviceList.get(i) == EspDevice.EmptyDevice1)
+            {
+                isEmptyDevice1Exist = true;
+                serverLocaldeviceList.remove(i--);
+            }
+            else if (serverLocaldeviceList.get(i) == EspDevice.EmptyDevice2)
             {
                 serverLocaldeviceList.remove(i--);
             }
         }
+        
+        if (serverLocaldeviceList.isEmpty() && isEmptyDevice1Exist)
+        {
+            // Keep the userDeviceList in the device list
+            return true;
+        }
+        
         // 1. IUser has, ServerLocal don't have, make IUser's state CLEAR(delete from IUser and delete from local db)
         // 2. IUser doesn't have, ServerLocal have, add into IUser's list(if it doesn't need ignoring)
         // 3. both of IUser and ServerLocal have, but IUser need to ignore(e.g. device is DELETED or ACTIVATING state
@@ -215,10 +232,9 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         return true;
     }
     
-    private void handleLocal(List<IEspDevice> userDeviceList)
+    private void __handleLocal(List<IEspDevice> userDeviceList, List<IOTAddress> localIOTAddressList,
+        boolean clearInternetState)
     {
-        log.debug(Thread.currentThread().toString() + "##handleLocal()");
-        List<IOTAddress> localIOTAddressList = EspDeviceCache.getInstance().pollLocalDeviceCacheList();
         // make userDeviceList device state OFFLINE if LOCAL or INTERNET
         for (IEspDevice userDevice : userDeviceList)
         {
@@ -226,22 +242,46 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
             // only process INTERNET and LOCAL
             if (deviceState.isStateLocal() || deviceState.isStateInternet())
             {
-                deviceState.clearStateInternet();
-                deviceState.clearStateLocal();
-                deviceState.addStateOffline();
+                if (clearInternetState)
+                {
+                    deviceState.clearStateInternet();
+                    deviceState.clearStateLocal();
+                    deviceState.addStateOffline();
+                }
+                else
+                {
+                    deviceState.clearStateLocal();
+                    if (!deviceState.isStateInternet())
+                    {
+                        deviceState.addStateOffline();
+                    }
+                }
             }
         }
-        // only process OFFLINE
+        // only process OFFLINE(when clearInternetState is true)
+        // only process OFFLINE and INTERNET(when clearInternetState is false)
         for (IOTAddress localIOTAddress : localIOTAddressList)
         {
             for (IEspDevice userDevice : userDeviceList)
             {
                 IEspDeviceState deviceState = userDevice.getDeviceState();
-                if (!deviceState.isStateOffline())
+                if (clearInternetState)
                 {
-                    // ignore
-                    continue;
+                    if (!deviceState.isStateOffline())
+                    {
+                        // ignore
+                        continue;
+                    }
                 }
+                else
+                {
+                    if (!deviceState.isStateOffline() && !deviceState.isStateInternet())
+                    {
+                        // ignore
+                        continue;
+                    }
+                }
+                
                 String bssid1 = localIOTAddress.getBSSID();
                 String bssid2 = userDevice.getBssid();
                 if (bssid1.equals(bssid2))
@@ -252,10 +292,16 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     userDevice.setInetAddress(localIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localIOTAddress.isMeshDevice());
                     userDevice.setRouter(localIOTAddress.getRouter());
-                    break;
                 }
             }
         }
+    }
+    
+    private void handleLocal(List<IEspDevice> userDeviceList)
+    {
+        log.debug(Thread.currentThread().toString() + "##handleLocal()");
+        List<IOTAddress> localIOTAddressList = EspDeviceCache.getInstance().pollLocalDeviceCacheList();
+        __handleLocal(userDeviceList, localIOTAddressList, true);
     }
     
     private void handleUpgradeLocalSuc(List<IEspDevice> userDeviceList)
@@ -369,8 +415,12 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
                         EspDeviceState.ACTIVATING))
                     {
-                        IEspDeviceNew deviceNew = (IEspDeviceNew)deviceInUser;
-                        deviceNew.cancel(true);
+                        // when adding device by esptouch, deviceInUser is IEspDeviceConfigure
+                        if(deviceInUser instanceof IEspDeviceNew)
+                        {
+                            IEspDeviceNew deviceNew = (IEspDeviceNew)deviceInUser;
+                            deviceNew.cancel(true);
+                        }
                     }
                 }
                 // delete the same activating device from userDeviceList
@@ -379,7 +429,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     IEspDevice deviceInUser = userDeviceList.get(j);
                     if (deviceInUser.equals(stateMachineDevice))
                     {
-                        userDeviceList.remove(j);
+                        userDeviceList.remove(j--);
                         break;
                     }
                 }
@@ -393,11 +443,11 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 // change CONFIRURING to ACTIVATING
                 for (IEspDevice deviceInUser : userDeviceList)
                 {
-                    // only one CONFIGURING device now
+                    // IEspDeviceNew support only one CONFIGURING device,
+                    // IEspDeviceConfigure support more than one CONFIGURING device
                     if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
                         EspDeviceState.CONFIGURING))
                     {
-                        log.debug("handleStatemachine() deviceStateMachineState.isStateActivating() break");
                         deviceInUser.copyDeviceState(stateMachineDevice);
                         deviceInUser.copyTimestamp(stateMachineDevice);
                         break;
@@ -406,11 +456,15 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 // resume all activating tasks
                 for (IEspDevice deviceInUser : userDeviceList)
                 {
-                    if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
-                        EspDeviceState.ACTIVATING))
+                    // only IEspDeviceNew require resume
+                    if (deviceInUser instanceof IEspDeviceNew)
                     {
-                        IEspDeviceNew deviceNew = (IEspDeviceNew)deviceInUser;
-                        deviceNew.resume();
+                        if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
+                            EspDeviceState.ACTIVATING))
+                        {
+                            IEspDeviceNew deviceNew = (IEspDeviceNew)deviceInUser;
+                            deviceNew.resume();
+                        }
                     }
                 }
                 
@@ -433,13 +487,12 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     if (deviceInUser.isSimilar(deviceInStateMachine))
                     {
                         // replace deviceInUser with deviceInStateMachine
-                        userDeviceList.remove(deviceInUser);
+                        userDeviceList.remove(i--);
                         userDeviceList.add(deviceInStateMachine);
                         // delete the device from deviceInStateMachine
-                        stateMachineDeviceList.remove(deviceInStateMachine);
+                        stateMachineDeviceList.remove(j--);
                         // don't forget to save in db,
                         deviceInStateMachine.saveInDB();
-                        break;
                     }
                 }
             }
@@ -448,14 +501,17 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         // c. handle others (just copy device state, rom version and device name)
         for (IEspDevice stateMachineDevice : stateMachineDeviceList)
         {
+            System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others");
             if (userDeviceList.contains(stateMachineDevice))
             {
+                System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others contained");
                 IEspDevice userDevice = userDeviceList.get(userDeviceList.indexOf(stateMachineDevice));
                 userDevice.copyDeviceState(stateMachineDevice);
                 userDevice.copyDeviceRomVersion(stateMachineDevice);
                 userDevice.copyDeviceName(stateMachineDevice);
                 if (!stateMachineDevice.getDeviceState().isStateClear())
                 {
+                    System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others saveInDB");
                     log.error("userDevice: " + userDevice + ",stateMachineDevice: " + stateMachineDevice);
                     // don't forget to save in db
                     userDevice.saveInDB();
@@ -506,10 +562,84 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
+    private void handleSta(List<IEspDevice> userDeviceList, List<IEspDeviceSSS> userStaDeviceList)
+    {
+        log.debug(Thread.currentThread().toString() + "##handleSta()");
+        List<IOTAddress> staDeviceList = EspDeviceCache.getInstance().pollStaDeviceCacheList();
+        // refresh local device state
+        __handleLocal(userDeviceList, staDeviceList, false);
+        // check whether it's necessary to handle sta
+        if (staDeviceList.isEmpty())
+        {
+            log.info("##handleSta() staDeviceList is empty, return");
+            return;
+        }
+        
+        userStaDeviceList.clear();
+        boolean isExist;
+        for (int index = 0;index < staDeviceList.size(); ++index)
+        {
+            IOTAddress staDevice = staDeviceList.get(index);
+            // when receive IOTAddress.EmptyIOTAddress means that the lately discover local result is empty,
+            // so we should clear the added device in userStaDeviceList
+            if (staDevice == IOTAddress.EmptyIOTAddress)
+            {
+                userStaDeviceList.clear();
+                staDeviceList.remove(index--);
+                continue;
+            }
+            isExist = false;
+            for (IEspDevice userDevice : userDeviceList)
+            {
+                if (userDevice.getDeviceState().isStateDeleted())
+                {
+                    log.debug("#handleSta() ignore deleted userDevice: " + userDevice.getBssid());
+                    continue;
+                }
+                if (userDevice.getBssid().equals(staDevice.getBSSID()))
+                {
+                    log.debug("##handleSta() device: " + userDevice.getBssid() + " is exist already");
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist)
+            {
+                // generate ssid by bssid and whether the device is mesh
+                String bssid = staDevice.getBSSID();
+                String prefix = staDevice.isMeshDevice() ? "espressif_" : "ESP_";
+                String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
+                staDevice.setSSID(ssid);
+                // generate IEspDeviceSSS and add it into userStaDeviceList
+                IEspDeviceSSS userStaDevice = BEspDevice.createSSSDevice(staDevice);
+                log.info("##handleSta() add device: " + userStaDevice);
+                userStaDeviceList.add(userStaDevice);
+            }
+        }
+    }
+    
+    private void handleUserDevices(List<IEspDevice> userDeviceList)
+    {
+        log.debug(Thread.currentThread().toString() + "##handleUserDevices()");
+        for (IEspDevice device : userDeviceList)
+        {
+            IEspDeviceState deviceState = device.getDeviceState();
+            if ((!deviceState.isStateLocal()) && (!deviceState.isStateInternet()))
+            {
+                // clear router info
+                device.setRouter(null);
+                device.setIsMeshDevice(false);
+            }
+        }
+    }
+    
     @Override
     public synchronized Void handleUninterruptible(boolean isStateMachine)
     {
-        List<IEspDevice> userDeviceList = BEspUser.getBuilder().getInstance().getDeviceList();
+        IEspUser user = BEspUser.getBuilder().getInstance();
+        user.lockUserDeviceLists();
+        List<IEspDevice> userDeviceList = user.__getOriginDeviceList();
+        List<IEspDeviceSSS> userStaDeviceList = user.__getOriginStaDeviceList();
         log.debug(Thread.currentThread().toString() + "##handleUninterruptible(userDeviceList=[" + userDeviceList
             + "])");
         if (isStateMachine)
@@ -530,6 +660,12 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         
         // handle device in CLEAR state
         __handleClearList(userDeviceList);
+        
+        // handle user's sta device list
+        handleSta(userDeviceList, userStaDeviceList);
+        // clear device's router info if it isn't local or internet
+        handleUserDevices(userDeviceList);
+        user.unlockUserDeviceLists();
         return null;
     }
     

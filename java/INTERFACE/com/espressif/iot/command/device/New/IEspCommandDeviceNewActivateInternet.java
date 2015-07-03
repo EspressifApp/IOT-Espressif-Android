@@ -7,7 +7,7 @@ import com.espressif.iot.device.IEspDevice;
 
 public interface IEspCommandDeviceNewActivateInternet extends IEspCommandNew, IEspCommandActivated, IEspCommandInternet
 {
-    static final String URL = "https://iot.espressif.cn/v1/key/authorize/";
+    static final String URL = "https://iot.espressif.cn/v1/key/authorize/?query_devices_mesh=true";
     
     /**
      * Activate the new device online

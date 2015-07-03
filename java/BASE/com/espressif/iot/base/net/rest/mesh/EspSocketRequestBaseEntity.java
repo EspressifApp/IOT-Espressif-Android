@@ -15,22 +15,27 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
     
     private final Map<String, String> mHeaerParams;
     private final String mMethod;
+    private final String mOriginUrl;
     private final String mRelativeUrl;
     private final String mHost;
     private final String mContent;
     private final String mScheme;
     private final int mContentLength;
+    private final String mRouter;
     
     /**
      * Constructor of EspSocketRequestBaseEntity
      * @param method the method
      * @param uriStr the String of URI
      * @param content the content
+     * @param router
      */
-    public EspSocketRequestBaseEntity(String method, String uriStr, String content)
+    public EspSocketRequestBaseEntity(String method,String uriStr,String content,String router)
     {
         this.mMethod = method;
         this.mContent = content;
+        this.mRouter = router;
+        this.mOriginUrl = uriStr;
         if (content != null)
         {
             this.mContentLength = content.length() + ESCAPE.length();
@@ -47,6 +52,17 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
         this.mHost = uri.getHost();
         // hash map to store header params
         this.mHeaerParams = new HashMap<String, String>();
+    }
+    
+    /**
+     * Constructor of EspSocketRequestBaseEntity
+     * @param method the method
+     * @param uriStr the String of URI
+     * @param content the content
+     */
+    public EspSocketRequestBaseEntity(String method, String uriStr, String content)
+    {
+        this(method, uriStr, content, null);
     }
     
     /**
@@ -93,6 +109,23 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
         return this.mHost;
     }
     
+    @Override
+    public String getContent()
+    {
+        return this.mContent;
+    }
+    
+    @Override
+    public String getRouter()
+    {
+        return this.mRouter;
+    }
+    
+    @Override
+    public String getOriginUri()
+    {
+        return this.mOriginUrl;
+    }
     /*
      * POST /config?command=light HTTP/1.1
      * Host: 192.168.11.102

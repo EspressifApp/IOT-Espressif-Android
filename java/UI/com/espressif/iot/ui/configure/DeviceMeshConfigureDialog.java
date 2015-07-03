@@ -32,6 +32,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceMeshConfigureDialog implements OnCheckedChangeListener, OnItemSelectedListener, OnClickListener,
@@ -89,6 +90,11 @@ public class DeviceMeshConfigureDialog implements OnCheckedChangeListener, OnIte
         }
     }
     
+    public Context getContext()
+    {
+        return mContext;
+    }
+    
     public void show()
     {
         stopAutoRefresh();
@@ -101,6 +107,8 @@ public class DeviceMeshConfigureDialog implements OnCheckedChangeListener, OnIte
         mWifiAdapter = new WifiAdapter(mContext, EspBaseApiUtil.scan());
         mWifiAdapter.addFilter(BSSIDUtil.restoreSoftApBSSID(mDevice.getBssid()));
         mWifiSpinner.setAdapter(mWifiAdapter);
+        TextView hintTV = (TextView)view.findViewById(R.id.select_hint);
+        hintTV.setText(R.string.esp_configure_select_parent_node);
         
         mPwdEdT = (EditText)view.findViewById(R.id.wifi_password);
         mPwdShowCB = (CheckBox)view.findViewById(R.id.wifi_show_password_check);
@@ -261,5 +269,11 @@ public class DeviceMeshConfigureDialog implements OnCheckedChangeListener, OnIte
     public void onDismiss(DialogInterface dialog)
     {
         resetAutoRefresh();
+        
+        checkHelpDissmissDialog();
+    }
+    
+    protected void checkHelpDissmissDialog()
+    {
     }
 }

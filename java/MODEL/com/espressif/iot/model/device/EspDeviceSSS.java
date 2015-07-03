@@ -5,7 +5,10 @@ import java.util.List;
 
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.builder.BEspDeviceConfigure;
+import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.EspStatusLight;
@@ -13,7 +16,7 @@ import com.espressif.iot.type.device.status.EspStatusPlug;
 import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.EspStatusRemote;
 import com.espressif.iot.type.net.IOTAddress;
-import com.espressif.iot.user.builder.EspSSSUser;
+import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.RandomUtil;
 
 /**
@@ -26,6 +29,15 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     
     private IEspDeviceStatus mStatus;
     
+    // -1, -2, ... is used to activate softap device by direct connect,
+    // 1, 2, ... is used by server
+    private static long mIdCreator = -Long.MAX_VALUE/2;
+    
+    private synchronized long getNextId()
+    {
+        return --mIdCreator;
+    }
+    
     public EspDeviceSSS(IOTAddress iotAddress)
     {
         setKey(RandomUtil.randomString(20));
@@ -36,38 +48,45 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     {
         mIOTAddress = iotAddress;
         
-        setDeviceState(EspDeviceState.LOCAL);
+        EspDeviceState stateLocal = new EspDeviceState();
+        stateLocal.addStateLocal();
+        setDeviceState(stateLocal);
         setName(mIOTAddress.getSSID());
         setBssid(mIOTAddress.getBSSID());
         setInetAddress(mIOTAddress.getInetAddress());
         setDeviceType(mIOTAddress.getDeviceTypeEnum());
         setRouter(mIOTAddress.getRouter());
         setIsMeshDevice(iotAddress.isMeshDevice());
+        setId(getNextId());
         
-        switch(mIOTAddress.getDeviceTypeEnum())
+        EspDeviceType deviceType = mIOTAddress.getDeviceTypeEnum();
+        if (deviceType != null)
         {
-            case LIGHT:
-                mStatus = new EspStatusLight();
-                break;
-            case PLUG:
-                mStatus = new EspStatusPlug();
-                break;
-            case REMOTE:
-                mStatus = new EspStatusRemote();
-                break;
-            case PLUGS:
-                mStatus = new EspStatusPlugs();
-                break;
-            case ROOT:
-                break;
-            case FLAMMABLE:
-                break;
-            case HUMITURE:
-                break;
-            case VOLTAGE:
-                break;
-            case NEW:
-                break;
+            switch (deviceType)
+            {
+                case LIGHT:
+                    mStatus = new EspStatusLight();
+                    break;
+                case PLUG:
+                    mStatus = new EspStatusPlug();
+                    break;
+                case REMOTE:
+                    mStatus = new EspStatusRemote();
+                    break;
+                case PLUGS:
+                    mStatus = new EspStatusPlugs();
+                    break;
+                case ROOT:
+                    break;
+                case FLAMMABLE:
+                    break;
+                case HUMITURE:
+                    break;
+                case VOLTAGE:
+                    break;
+                case NEW:
+                    break;
+            }
         }
     }
     
@@ -96,19 +115,31 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     {
         List<IEspDevice> devices = new ArrayList<IEspDevice>();
         devices.add(this);
-        devices.addAll(EspSSSUser.getInstance().getDeviceList());
+        devices.addAll(BEspUser.getBuilder().getInstance().getStaDeviceList());
         return getDeviceTreeElementList(devices);
+    }
+
+    @Override
+    public IEspDeviceConfigure createConfiguringDevice(String random40)
+    {
+        IEspDeviceConfigure device = BEspDeviceConfigure.getInstance().alloc(this.mBssid, random40);
+        device.setInetAddress(mInetAddress);
+        device.setIsMeshDevice(mIsMeshDevice);
+        device.setRouter(mRouter);
+        device.setName(mDeviceName);
+        return device;
     }
     
     @Override
     public boolean equals(Object o)
     {
         // check the type
-        if (o == null || !(o instanceof IEspDevice))
+        if (o == null || !(o instanceof IEspDeviceSSS))
         {
             return false;
         }
-        IEspDevice other = (IEspDevice)o;
+        IEspDeviceSSS other = (IEspDeviceSSS)o;
         return other.getBssid().equals(mBssid);
     }
+
 }

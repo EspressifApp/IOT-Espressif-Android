@@ -12,6 +12,7 @@
     <string name="esp_login_result_network_unaccessible">网络不可用</string>
     <string name="esp_login_result_not_register">邮箱未注册</string>
     <string name="esp_login_result_password_error">密码错误</string>
+    <string name="esp_login_quick_usage">快速使用</string>
 
     <string name="esp_register_account">用户名</string>
     <string name="esp_register_email">邮箱</string>
@@ -28,7 +29,7 @@
     <string name="esp_register_result_account_format_error">用户名或邮箱格式不合规则</string>
     <string name="esp_register_result_account_exist">用户名或邮箱已被注册</string>
 
-    <string name="esp_skip_wifi_toast">第一次跳过请打开Wifi</string>
+    <string name="esp_skip_wifi_toast">第一次跳过请打开Wi-Fi</string>
     <string name="esp_skip_result_failed">跳过失败</string>
 
     <string name="esp_qrcode_capture_device">获取设备</string>
@@ -36,19 +37,19 @@
     <string name="esp_qrcode_capture_result_success">获取设备成功</string>
     <string name="esp_qrcode_capture_result_failed">获取设备失败</string>
 
-    <string name="esp_ui_title">我的设备</string>
+    <string name="esp_ui_title">IOT Espressif</string>
     <string name="esp_ui_menu_get_share">获取分享</string>
     <string name="esp_ui_menu_configure">设备配置</string>
     <string name="esp_ui_menu_settings">设置</string>
     <string name="esp_ui_menu_logout">退出登录</string>
     <string name="esp_ui_menu_edit">编辑</string>
-    <string name="esp_ui_menu_wifi">wifi设置</string>
-    <string name="esp_ui_status_upgrading_local">本地升级中&#8230;</string>
-    <string name="esp_ui_status_upgrading_online">在线升级中&#8230;</string>
+    <string name="esp_ui_menu_wifi">Wi-Fi设置</string>
+    <string name="esp_ui_status_upgrading_local">在线升级中&#8230;</string>
+    <string name="esp_ui_status_upgrading_online">云端升级中&#8230;</string>
     <string name="esp_ui_status_offline">离线</string>
     <string name="esp_ui_status_activating">激活中&#8230;</string>
-    <string name="esp_ui_status_local">本地</string>
-    <string name="esp_ui_status_online">在线</string>
+    <string name="esp_ui_status_local">在线</string>
+    <string name="esp_ui_status_online">云端</string>
     <string name="esp_ui_delete_message">是否删除该设备？</string>
     <string name="esp_ui_edit_select_all">全选</string>
     <string name="esp_ui_edit_delete_selected">删除</string>
@@ -56,13 +57,21 @@
     <string name="esp_ui_edit_has_eneditable_device_message">部分设备处于不可删除状态</string>
     <string name="esp_ui_edit_forbidden_toast">此设备暂时不可编辑</string>
     <string name="esp_ui_exit_message">\n是否退出应用？\n</string>
+    <string name="esp_ui_tab_activated_devices">云端设备</string>
+    <string name="esp_ui_tab_sta_devices">本地设备</string>
+    <string name="esp_ui_network_enable_msg">没有可用网络</string>
+    <string name="esp_ui_device_activate_suc">激活成功</string>
+    <string name="esp_ui_device_activate_failed">激活失败</string>
 
     <string name="esp_settings">设置</string>
-    <string name="esp_settings_account">账号 %1$s</string>
+    <string name="esp_settings_account">账号</string>
+    <string name="esp_settings_account_register">注册</string>
+    <string name="esp_settings_account_not_login">未登录</string>
+    <string name="esp_settings_account_not_login_summary">点击登录</string>
     <string name="esp_settings_account_auto_login">自动登录</string>
     <string name="esp_settings_device">设备</string>
     <string name="esp_settings_device_auto_refresh">自动刷新设备信息</string>
-    <string name="esp_settings_device_auto_configure">自动配置设备</string>
+    <string name="esp_settings_device_auto_configure">自动激活设备</string>
     <string name="esp_settings_version">版本</string>
     <string name="esp_settings_version_upgrade">检查升级</string>
     <string name="esp_settings_version_name">版本号</string>
@@ -74,7 +83,8 @@
     <string name="esp_settings_debug_read_log_no_log">没有Log记录</string>
 
     <string name="esp_upgrade_apk_downloading">正在下载 %1$d %%</string>
-    <string name="esp_upgrade_apk_status_complete">下载完成</string>
+    <string name="esp_upgrade_apk_status_complete">已下载到 手机存储/Espressif/apk/Esp.apk</string>
+    <string name="esp_upgrade_apk_status_complete_toast">APK 已下载到 手机存储/Espressif/apk/Esp.apk</string>
     <string name="esp_upgrade_apk_status_not_found">没有找到更新版本</string>
     <string name="esp_upgrade_apk_status_download_failed">下载失败</string>
     <string name="esp_upgrade_apk_status_lower_version">您的应用已是最新版本</string>
@@ -91,14 +101,14 @@
     <string name="esp_configure_title">设备配置</string>
     <string name="esp_configure_activate">激活设备</string>
     <string name="esp_configure_mesh">组网配置</string>
-    <string name="esp_configure_wifi_select_hint">请选择Wifi</string>
-    <string name="esp_configure_wifi_password_hint">输入Wifi密码</string>
+    <string name="esp_configure_wifi_select_hint">请选择Wi-Fi</string>
+    <string name="esp_configure_wifi_password_hint">输入Wi-Fi密码</string>
     <string name="esp_configure_wifi_show_password">显示密码</string>
-    <string name="esp_configure_wifi_hint">请先打开Wifi</string>
+    <string name="esp_configure_wifi_hint">请先打开Wi-Fi</string>
     <string name="esp_configure_direct_connect">直连设备</string>
     <string name="esp_configure_direct_connecting">正在连接&#8230;</string>
     <string name="esp_configure_direct_result_failed">连接失败</string>
-    <string name="esp_configure_direct_result_not_support">此设备不支持本地使用</string>
+    <string name="esp_configure_direct_result_not_support">此设备不支持在线使用</string>
     <string name="esp_configure_direct_result_not_found">此设备暂不可用</string>
     <string name="esp_configure_direct_result_suc">连接成功</string>
     <string name="esp_configure_start">开始配置</string>
@@ -113,20 +123,22 @@
     <string name="esp_configure_softap_authorized_no">未激活认证</string>
     <string name="esp_configure_softap_getinfo_failed">获取失败</string>
     <string name="esp_configure_softap_close">关闭SoftAP</string>
+    <string name="esp_configure_select_parent_node">请选择父节点</string>
+    <string name="esp_configure_add">添加设备</string>
 
     <string name="esp_device_task_dialog_message">请稍等&#8230;</string>
 
     <string name="esp_device_menu_share">分享设备</string>
     <string name="esp_device_menu_timer">定时器</string>
-    <string name="esp_device_menu_upgrade_local">本地升级设备</string>
-    <string name="esp_device_menu_upgrade_online">在线升级设备</string>
+    <string name="esp_device_menu_upgrade_local">在线升级设备</string>
+    <string name="esp_device_menu_upgrade_online">云端升级设备</string>
     <string name="esp_device_menu_change_password">修改设备密码</string>
     <string name="esp_device_dialog_upgrade_apk_message">需要升级应用才能控制设备</string>
     <string name="esp_device_dialog_upgrade_device_message">设备需要升级才能使用</string>
-    <string name="esp_device_dialog_upgrading_local_message">设备正在本地升级</string>
-    <string name="esp_device_dialog_upgrading_online_message">设备正在在线升级</string>
-    <string name="esp_device_dialog_upgrade_device_local">本地升级</string>
-    <string name="esp_device_dialog_upgrade_device_online">在线升级</string>
+    <string name="esp_device_dialog_upgrading_local_message">设备正在在线升级</string>
+    <string name="esp_device_dialog_upgrading_online_message">设备正在云端升级</string>
+    <string name="esp_device_dialog_upgrade_device_local">在线升级</string>
+    <string name="esp_device_dialog_upgrade_device_online">云端升级</string>
 
     <string name="esp_device_share_progress_message">正在生成二维码&#8230;</string>
     <string name="esp_device_share_result_failed">获取二维码失败</string>
@@ -156,6 +168,7 @@
     <string name="esp_device_light_wwhite">暖白</string>
     <string name="esp_device_light_confirm">确认</string>
     <string name="esp_device_light_disconnect_msg">与设备的连接断开了</string>
+    <string name="esp_device_light_continuous_control_forbidden">此设备暂不支持连续控制</string>
 
     <string name="esp_device_remote_address_hint">请输入地址</string>
     <string name="esp_device_remote_command_hint">请输入命令</string>
@@ -187,11 +200,11 @@
 
     <string name="esp_sss_actiontab_device">设备</string>
     <string name="esp_sss_actiontab_configure">配置</string>
-    <string name="esp_sss_configure_wifi_hint">请先打开Wifi</string>
+    <string name="esp_sss_configure_wifi_hint">请先打开Wi-Fi</string>
     <string name="esp_sss_configure_direct_connect_message">正在连接&#8230;</string>
     <string name="esp_sss_configure_direct_connect_failed">连接失败</string>
     <string name="esp_sss_configure_direct_connect_success">连接成功</string>
-    <string name="esp_sss_configure_not_support">此设备不支持本地使用</string>
+    <string name="esp_sss_configure_not_support">此设备不支持在线使用</string>
     <string name="esp_sss_device_dialog_exit">退出</string>
     <string name="esp_sss_device_upgrading_message">正在升级设备&#8230;</string>
     <string name="esp_sss_device_upgrade_result_not_support">设备不支持升级</string>
@@ -200,6 +213,13 @@
     <string name="esp_sss_device_upgrade_result_success">升级成功</string>
     <string name="esp_sss_device_reset">重启设备</string>
     <string name="esp_sss_scan_sta_text">正在搜索设备&#8230;</string>
+    <string name="esp_sss_esptouch_wifi_hint">请先连上Wi-Fi</string>
+    <string name="esp_sss_esptouch_ssid">SSID: %1$s</string>
+    <string name="esp_sss_esptouch_password">请输入密码</string>
+    <string name="esp_sss_esptouch_show_password">显示密码</string>
+    <string name="esp_sss_esptouch_is_hidden">此Wi-Fi为隐藏Wi-Fi</string>
+    <string name="esp_sss_esptouch_progressing">正在配置&#8230;</string>
+    <string name="esp_sss_esptouch_toast">没有找到设备, 您可点击标题栏 + 来进行EspTouch配置</string>
 
     <string name="esp_help">帮助</string>
     <string name="esp_help_exit_message">是否退出帮助引导？</string>
@@ -208,9 +228,10 @@
     <string name="esp_help_hint_next">下一步</string>
     <string name="esp_help_configure_device">设备配置帮助</string>
     <string name="esp_help_configure">配置帮助</string>
-    <string name="esp_help_configure_discover_softap_msg">确认打开Wifi功能以及您的设备，然后下拉刷新界面</string>
+    <string name="esp_help_configure_login_msg">请先登录账号</string>
+    <string name="esp_help_configure_discover_softap_msg">确认打开Wi-Fi功能以及您的设备，然后下拉刷新界面</string>
     <string name="esp_help_configure_select_softap_msg">请点击您要配置的设备, 点击激活设备</string>
-    <string name="esp_help_configure_discover_wifi_msg">请确认有可用的Wifi， 然后再选择您的设备</string>
+    <string name="esp_help_configure_discover_wifi_msg">请确认有可用的Wi-Fi， 然后再选择您的设备</string>
     <string name="esp_help_configure_connect_device_failed_msg">连接设备失败</string>
     <string name="esp_help_configure_device_activating_msg">设备正在激活，请稍等片刻</string>
     <string name="esp_help_configure_connect_ap_failed_msg">连接路由器失败</string>
@@ -219,21 +240,21 @@
     <string name="esp_help_use_device">设备使用帮助</string>
     <string name="esp_help_use_plug">Plug使用帮助</string>
     <string name="esp_help_use_plug_fail_found_msg">您的设备列表中没有发现开关, 请先配置一个开关</string>
-    <string name="esp_help_use_plug_no_online_msg">没有找到在线的开关，请先让一个Plug保持在线，然后下拉刷新设备列表，再点击重试</string>
+    <string name="esp_help_use_plug_no_online_msg">没有找到云端的开关，请先让一个Plug保持云端可见，然后下拉刷新设备列表，再点击重试</string>
     <string name="esp_help_use_plug_selcet_msg">请点击Plug设备</string>
     <string name="esp_help_use_plug_tap_icon_msg">请点击Plug图标</string>
     <string name="esp_help_use_plug_control_failed_msg">发送命令失败，请检查您的网络和Plug，然后再点击确认</string>
     <string name="esp_help_use_plug_success_msg">您已经学会了使用Plug，请点击退出。</string>
     <string name="esp_help_use_plugs">Plugs使用帮助</string>
     <string name="esp_help_use_plugs_fail_found_msg">您的设备列表中没有发现Plugs, 请先配置一个开关</string>
-    <string name="esp_help_use_plugs_no_online_msg">没有找到在线的Plugs，请先让一个Plugs保持在线，然后下拉刷新设备列表，再点击重试</string>
+    <string name="esp_help_use_plugs_no_online_msg">没有找到云端的Plugs，请先让一个Plugs保持云端可见，然后下拉刷新设备列表，再点击重试</string>
     <string name="esp_help_use_plugs_selcet_msg">请点击Plugs设备</string>
     <string name="esp_help_use_plugs_tap_icon_msg">请点击要修改的开关</string>
     <string name="esp_help_use_plugs_control_failed_msg">发送命令失败，请检查您的网络和Plugs，然后再点击确认</string>
     <string name="esp_help_use_plugs_success_msg">您已经学会了使用Plugs，请点击退出。</string>
     <string name="esp_help_use_light">Light使用帮助</string>
     <string name="esp_help_use_light_fail_found_msg">您的设备列表中没有发现Light，请先配置一个Light</string>
-    <string name="esp_help_use_light_no_online_msg">没有找到在线的Light，请先让一个Light保持在线，然后下拉刷新设备列表，再点击重试</string>
+    <string name="esp_help_use_light_no_online_msg">没有找到云端的Light，请先让一个Light保持云端可见，然后下拉刷新设备列表，再点击重试</string>
     <string name="esp_help_use_light_select_msg">请点击Light设备</string>
     <string name="esp_help_use_light_control_msg">拖动进度条选择您要修改的颜色，点击确认</string>
     <string name="esp_help_use_light_control_failed_msg">发送命令失败，请检查您的网络和Light，然后再点击确认</string>
@@ -264,65 +285,76 @@
     <string name="esp_help_use_voltage_success_msg">您已经学会了使用Voltage，请点击退出</string>
     <string name="esp_help_use_remote">Remote使用帮助</string>
     <string name="esp_help_use_remote_fail_found_msg">您的设备列表中没有发现Remote，请先配置一个Remote</string>
-    <string name="esp_help_use_remote_no_online_msg">没有找到在线的Remote，请先让一个Remote保持在线，然后下拉刷新设备列表，再点击重试</string>
+    <string name="esp_help_use_remote_no_online_msg">没有找到云端的Remote，请先让一个Remote保持云端可见，然后下拉刷新设备列表，再点击重试</string>
     <string name="esp_help_use_remote_select_msg">请点击Remote</string>
     <string name="esp_help_use_remote_control_msg">输入所有需要的命令后点击确认</string>
     <string name="esp_help_use_remote_control_failed_msg">发送命令失败，请检查您的网络和Remote，然后再点击确认</string>
     <string name="esp_help_use_remote_success_msg">您已经学会了使用Remote，请点击退出。</string>
     <string name="esp_help_upgrade_device">设备升级帮助</string>
-    <string name="esp_help_upgrade_local">本地升级帮助</string>
+    <string name="esp_help_upgrade_local">在线升级帮助</string>
     <string name="esp_help_upgrade_local_no_device_need_upgrade_msg">您的设备中没有找到需要升级的设备</string>
-    <string name="esp_help_upgrade_local_no_device_local_msg">您当前的本地设备中没有可升级的</string>
-    <string name="esp_help_upgrade_local_click_upgrade_msg">点击菜单按钮然后选择 本地升级设备</string>
+    <string name="esp_help_upgrade_local_no_device_local_msg">您当前的在线设备中没有可升级的</string>
+    <string name="esp_help_upgrade_local_click_upgrade_msg">点击菜单按钮然后选择 在线升级设备</string>
     <string name="esp_help_upgrade_local_failed_msg">升级失败</string>
     <string name="esp_help_upgrade_local_success_msg">开始升级</string>
-    <string name="esp_help_upgrade_online">在线升级帮助</string>
+    <string name="esp_help_upgrade_online">云端升级帮助</string>
     <string name="esp_help_upgrade_online_no_device_need_upgrade_msg">您的设备中没有找到需要升级的设备</string>
-    <string name="esp_help_upgrade_online_no_device_local_msg">您当前的在线设备中没有可升级的</string>
-    <string name="esp_help_upgrade_online_click_upgrade_msg">点击菜单按钮然后选择 在线升级设备</string>
+    <string name="esp_help_upgrade_online_no_device_local_msg">您当前的云端设备中没有可升级的</string>
+    <string name="esp_help_upgrade_online_click_upgrade_msg">点击菜单按钮然后选择 云端升级设备</string>
     <string name="esp_help_upgrade_online_failed_msg">升级失败</string>
     <string name="esp_help_upgrade_online_success_msg">开始升级</string>
+    <string name="esp_help_mesh_configure">组网配置帮助</string>
+    <string name="esp_help_mesh_configure_scan_mesh_failed">请确认已打开Mesh设备, 然后下拉刷新</string>
+    <string name="esp_help_mesh_configure_select_softap_msg">点击Mesh设备，选择组网配置</string>
+    <string name="esp_help_mesh_configure_suc_msg">您已经学会了组网配置</string>
     
-    <string name="esp_sss_help_use_device">本地设备使用帮助</string>
+    <string name="esp_sss_help_use_device">在线设备使用帮助</string>
     <string name="esp_sss_help_use_device_find_device_msg">下拉刷新设备列表</string>
     <string name="esp_sss_help_use_device_found_device_failed_msg">没有找到设备，重新下拉刷新或者点击下一步连接一个新设备</string>
     <string name="esp_sss_help_use_device_click_configure_msg">请点击配置按钮</string>
     <string name="esp_sss_help_use_device_find_softap_msg">下拉寻找设备</string>
     <string name="esp_sss_help_use_device_found_softap_failed_msg">没有找到可连接的设备，请打开一个可用设备后再下拉刷新</string>
-    <string name="esp_sss_help_use_device_select_softap_msg">请点击您要连接的设备</string>
+    <string name="esp_sss_help_use_device_select_softap_msg">请点击您要连接的设备，然后点击直连</string>
     <string name="esp_sss_help_use_device_connect_softap_failed_msg">连接设备失败，请再试一次</string>
-    <string name="esp_sss_help_use_device_not_support_msg">此设备不支持本地使用，请换一个设备</string>
+    <string name="esp_sss_help_use_device_not_support_msg">此设备不支持在线使用，请换一个设备</string>
     <string name="esp_sss_help_use_device_select_msg">请点击您要使用的设备</string>
     <string name="esp_sss_help_use_device_control_msg">您可以使用设备了</string>
-    <string name="esp_sss_help_use_device_success_msg">您已经学会使用本地模式的设备了</string>
-    <string name="esp_sss_help_upgrade">本地设备升级帮助</string>
+    <string name="esp_sss_help_use_device_success_msg">您已经学会使用在线模式的设备了</string>
+    <string name="esp_sss_help_upgrade">在线设备升级帮助</string>
     <string name="esp_sss_help_upgrade_find_device_msg">下拉刷新设备列表</string>
     <string name="esp_sss_help_upgrade_found_device_failed_msg">没有找到设备，请重新刷新或点击退出</string>
     <string name="esp_sss_help_upgrade_select_device_msg">请长按要升级的设备然后点击设备升级</string>
     <string name="esp_sss_help_upgrade_success_msg">您已经学会了如何升级设备</string>
+    <string name="esp_sss_help_mesh_configure">组网配置帮助</string>
+    <string name="esp_sss_help_mesh_configure_select_configure_msg">请点击配置按钮</string>
+    <string name="esp_sss_help_mesh_configure_find_softap_msg">下拉寻找设备</string>
+    <string name="esp_sss_help_mesh_configure_found_softap_failed_msg">没有找到设备，请打开一个可用设备后再下拉刷新</string>
+    <string name="esp_sss_help_mesh_select_softap_msg">请点击您要配置的设备，然后选择组网配置</string>
+    <string name="esp_sss_help_mesh_select_mesh_configure_msg">选择组网配置选项，然后点击确认</string>
+    <string name="esp_sss_help_mesh_configure_suc">您已经学会了组网配置</string>
     
     <string name="esp_esptouch">Esp Touch</string>
-    <string name="esp_esptouch_version">EspTouch v0.3.2</string>
     <string name="esp_esptouch_current_ssid">当前的SSID: %1$s</string>
-    <string name="esp_esptouch_configure_ssid">请选择要配置到的Wifi</string>
-    <string name="esp_esptouch_ssid_hint">请输入Wifi名称</string>
-    <string name="esp_esptouch_pwd_hint">请输入Wifi密码</string>
+    <string name="esp_esptouch_configure_ssid">请选择要配置到的Wi-Fi</string>
+    <string name="esp_esptouch_task_count">配置设备数量</string>
+    <string name="esp_esptouch_ssid_hint">请输入Wi-Fi名称</string>
+    <string name="esp_esptouch_pwd_hint">请输入Wi-Fi密码</string>
     <string name="esp_esptouch_show_pwd">显示密码</string>
     <string name="esp_esptouch_isSsidHidden">隐藏SSID</string>
     <string name="esp_esptouch_delete_pwd">删除密码</string>
     <string name="esp_esptouch_cannot_find_ap_hing">无法找到路由器: %1$s</string>
-    <string name="esp_esptouch_connection_hint">请先连上一个Wifi</string>
+    <string name="esp_esptouch_connection_hint">请先连上一个Wi-Fi</string>
     <string name="esp_esptouch_configure_message">正在配往 %1$s</string>
     <string name="esp_esptouch_result_suc">配置成功</string>
     <string name="esp_esptouch_result_failed">配置失败</string>
-    <string name="esp_esptouch_result_over">配置结束，因当前连接的WIFI与配置的WIFI不同，无法收到反馈，请自行检查结果。</string>
+    <string name="esp_esptouch_result_over">配置结束，因当前连接的Wi-Fi与配置的Wi-Fi不同，无法收到反馈，请自行检查结果。</string>
     <string name="esp_esptouch_result_cancel">取消配置</string>
     
-    <string name="esp_wifi_edit">Wifi编辑</string>
+    <string name="esp_wifi_edit">Wi-Fi编辑</string>
     <string name="esp_wifi_pwd_edit">编辑</string>
-    <string name="esp_wifi_pwd_edit_title">修改wifi密码</string>
+    <string name="esp_wifi_pwd_edit_title">修改Wi-Fi密码</string>
     <string name="esp_wifi_pwd_delete">删除</string>
-    <string name="esp_wifi_pwd_delete_sellected_message">是否删除所选wifi密码？</string>
+    <string name="esp_wifi_pwd_delete_sellected_message">是否删除所选Wi-Fi密码？</string>
     
-    <string name="esp_device_mesh_children_title">组网子节点设备</string>
+    <string name="esp_device_mesh_children_title">组网结构</string>
 </resources>

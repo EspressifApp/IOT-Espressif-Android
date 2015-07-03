@@ -14,17 +14,23 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
     private BEspDeviceRoot()
     {
         localRoot = new EspDeviceRoot();
-        localRoot.setDeviceState(EspDeviceState.LOCAL);
+        EspDeviceState stateLocal = new EspDeviceState();
+        stateLocal.addStateLocal();
+        localRoot.setDeviceState(stateLocal);
         localRoot.setDeviceType(EspDeviceType.ROOT);
         localRoot.setKey(RandomUtil.randomString(20));
         localRoot.setRouter(IEspDeviceRoot.LOCAL_ROUTER);
         localRoot.setIsMeshDevice(true);
+        localRoot.setId(Long.MIN_VALUE);
         
         internetRoot = new EspDeviceRoot();
-        internetRoot.setDeviceState(EspDeviceState.INTERNET);
+        EspDeviceState stateInternet = new EspDeviceState();
+        stateInternet.addStateInternet();
+        internetRoot.setDeviceState(stateInternet);
         internetRoot.setDeviceType(EspDeviceType.ROOT);
         internetRoot.setKey(RandomUtil.randomString(20));
         internetRoot.setIsMeshDevice(true);
+        internetRoot.setId(Long.MIN_VALUE + 1);
     }
     
     private static class InstanceHolder

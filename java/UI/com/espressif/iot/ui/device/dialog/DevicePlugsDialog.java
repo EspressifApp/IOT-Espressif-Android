@@ -68,6 +68,7 @@ public class DevicePlugsDialog extends DeviceDialogAbs implements OnItemClickLis
             mControlChildCB.setChecked(true);
             mControlChildCB.setVisibility(View.GONE);
         }
+        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         
         mApertureListView = (ListView)view.findViewById(R.id.aperture_list);
         IEspStatusPlugs status;

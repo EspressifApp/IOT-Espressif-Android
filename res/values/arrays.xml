@@ -94,4 +94,14 @@
     <string-array name="esp_sss_device_use_options">
         <item>Upgrade device</item>
     </string-array>
+    
+    <integer-array name="esp_touch_taskResultCount">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </integer-array>
+    
 </resources>

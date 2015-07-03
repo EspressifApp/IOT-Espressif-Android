@@ -24,118 +24,86 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
     @Override
     public boolean doCommandDeviceNewConfigureLocal(String deviceSsid, WifiCipherType deviceWifiCipherType,
         String devicePassword, String apSsid, WifiCipherType apWifiCipherType, String apPassword, String randomToken)
-        throws InterruptedException
     {
-        // 1. connect to device
-        boolean connectDeviceResult = EspBaseApiUtil.connect(deviceSsid, deviceWifiCipherType, devicePassword);
-        // 2. post configure info
-        if (connectDeviceResult)
+        JSONObject Content = new JSONObject();
+        JSONObject Connect_Station = new JSONObject();
+        JSONObject Station = new JSONObject();
+        JSONObject Request = new JSONObject();
+        try
         {
-            log.error("##doCommandDeviceNewConfigureLocal(): connectDeviceResult = true");
-            JSONObject Content = new JSONObject();
-            JSONObject Connect_Station = new JSONObject();
-            JSONObject Station = new JSONObject();
-            JSONObject Request = new JSONObject();
-            try
-            {
-                Content.put("token", randomToken);
-                Content.put("password", apPassword);
-                Content.put("ssid", apSsid);
-                
-                Connect_Station.put("Connect_Station", Content);
-                
-                Station.put("Station", Connect_Station);
-                
-                Request.put("Request", Station);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            String gateWay = EspApplication.sharedInstance().getGateway();
-            InetAddress inetAddress = null;
-            try
-            {
-                inetAddress = InetAddress.getByName(gateWay);
-            }
-            catch (UnknownHostException e)
-            {
-                e.printStackTrace();
-            }
-            String urlString = getLocalUrl(inetAddress);
-            JSONObject result = EspBaseApiUtil.Post(urlString, Request);
-            log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=["
-                + deviceSsid + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=["
-                + devicePassword + "],apSsid=[" + apSsid + "],apWifiCipherType=[" + apWifiCipherType + "],apPassword=["
-                + apPassword + "],randomToken=[" + randomToken + "]): " + result);
-            return true;
+            Content.put("token", randomToken);
+            Content.put("password", apPassword);
+            Content.put("ssid", apSsid);
+            
+            Connect_Station.put("Connect_Station", Content);
+            
+            Station.put("Station", Connect_Station);
+            
+            Request.put("Request", Station);
         }
-        else
+        catch (JSONException e)
         {
-            log.warn(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=[" + deviceSsid
-                + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=[" + devicePassword
-                + "],apSsid=[" + apSsid + "],apWifiCipherType=[" + apWifiCipherType + "],apPassword=[" + apPassword
-                + "],randomToken=[" + randomToken + "]): " + false);
-            return false;
+            e.printStackTrace();
         }
-        
+        String gateWay = EspApplication.sharedInstance().getGateway();
+        InetAddress inetAddress = null;
+        try
+        {
+            inetAddress = InetAddress.getByName(gateWay);
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
+        String urlString = getLocalUrl(inetAddress);
+        JSONObject result = EspBaseApiUtil.Post(urlString, Request);
+        log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=[" + deviceSsid
+            + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=[" + devicePassword + "],apSsid=["
+            + apSsid + "],apWifiCipherType=[" + apWifiCipherType + "],apPassword=[" + apPassword + "],randomToken=["
+            + randomToken + "]): " + result);
+        return true;
     }
     
     @Override
-    public boolean doCommandMeshDeviceNewConfigureLocal(String deviceSsid, WifiCipherType deviceWifiCipherType,
-        String devicePassword, String randomToken)
-        throws InterruptedException
+    public boolean doCommandMeshDeviceNewConfigureLocal(String router, String deviceBssid, String deviceSsid,
+        WifiCipherType deviceWifiCipherType, String devicePassword, String randomToken)
     {
-        // 1. connect to device
-        boolean connectDeviceResult = EspBaseApiUtil.connect(deviceSsid, deviceWifiCipherType, devicePassword);
-        // 2. post configure info
-        if (connectDeviceResult)
+        JSONObject Content = new JSONObject();
+        JSONObject Connect_Station = new JSONObject();
+        JSONObject Station = new JSONObject();
+        JSONObject Request = new JSONObject();
+        try
         {
-            log.error("##doCommandDeviceNewConfigureLocal(): connectDeviceResult = true");
-            JSONObject Content = new JSONObject();
-            JSONObject Connect_Station = new JSONObject();
-            JSONObject Station = new JSONObject();
-            JSONObject Request = new JSONObject();
-            try
-            {
-                Content.put("token", randomToken);
-                
-                Connect_Station.put("Connect_Station", Content);
-                
-                Station.put("Station", Connect_Station);
-                
-                Request.put("Request", Station);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
+            Content.put("token", randomToken);
             
-            String gateWay = EspApplication.sharedInstance().getGateway();
-            InetAddress inetAddress = null;
-            try
-            {
-                inetAddress = InetAddress.getByName(gateWay);
-            }
-            catch (UnknownHostException e)
-            {
-                e.printStackTrace();
-            }
-            String urlString = getLocalUrl(inetAddress);
-            JSONObject result = EspBaseApiUtil.Post(urlString, Request);
-            log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=["
-                + deviceSsid + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=["
-                + devicePassword + "],randomToken=[" + randomToken + "]): " + result);
-            return true;
+            Connect_Station.put("Connect_Station", Content);
+            
+            Station.put("Station", Connect_Station);
+            
+            Request.put("Request", Station);
         }
-        else
+        catch (JSONException e)
         {
-            log.warn(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceSsid=[" + deviceSsid
-                + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=[" + devicePassword
-                + "],randomToken=[" + randomToken + "]): " + false);
-            return false;
+            e.printStackTrace();
         }
         
+        String gateWay = EspApplication.sharedInstance().getGateway();
+        InetAddress inetAddress = null;
+        try
+        {
+            inetAddress = InetAddress.getByName(gateWay);
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
+        String urlString = getLocalUrl(inetAddress);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, router, deviceBssid, Request);
+        log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(router=[" + router
+            + "],deviceBssid=[" + deviceBssid + "],deviceSsid=[" + deviceSsid + "],deviceWifiCipherType=["
+            + deviceWifiCipherType + "],devicePassword=[" + devicePassword + "],randomToken=[" + randomToken + "]): "
+            + result);
+        return true;
     }
     
 }

@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -157,9 +158,9 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
         new ScanSoftAPTask().execute();
     }
     
-    private static final int OPTION_DIRECT_CONNECT = 0;
+    protected static final int OPTION_DIRECT_CONNECT = 0;
     
-    private static final int OPTION_CONFIGURE = 1;
+    protected static final int OPTION_CONFIGURE = 1;
     
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -174,6 +175,11 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
                 @Override
                 public void onClick(DialogInterface dialog, int which)
                 {
+                    if (checkHelpModeUse(which))
+                    {
+                        return;
+                    }
+                    
                     switch (which)
                     {
                         case OPTION_DIRECT_CONNECT:
@@ -187,12 +193,6 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
                             }
                             break;
                         case OPTION_CONFIGURE:
-                            if (checkHelpModeUse())
-                            {
-                                log.debug("SSS Device use help, forbidden mesh configure");
-                                return;
-                            }
-                            
                             showConfigureDialog(device);
                             break;
                     }
@@ -200,7 +200,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
             }).show();
     }
     
-    private class DirectConnectTask extends AsyncTask<IEspDeviceNew, Void, DeviceInfo>
+    private class DirectConnectTask extends AsyncTask<IEspDeviceNew, Void, DeviceInfo> implements OnCancelListener
     {
         
         private ProgressDialog mDialog;
@@ -210,7 +210,8 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
         {
             mDialog = new ProgressDialog(mActivity);
             mDialog.setMessage(getString(R.string.esp_sss_configure_direct_connect_message));
-            mDialog.setCancelable(false);
+            mDialog.setOnCancelListener(this);
+            mDialog.setCanceledOnTouchOutside(false);
             mDialog.show();
         }
         
@@ -252,9 +253,15 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
                 }
             }
         }
+        
+        @Override
+        public void onCancel(DialogInterface dialog)
+        {
+            cancel(true);
+        }
     }
     
-    private void showConfigureDialog(final IEspDeviceNew device)
+    protected void showConfigureDialog(final IEspDeviceNew device)
     {
         new DeviceMeshConfigureDialog(getActivity(), device).show();
     }
@@ -267,7 +274,7 @@ public class SSSFragmentConfigure extends Fragment implements OnRefreshListener<
     protected void checkHelpTransformNext(boolean suc, int transformCount){
     }
     
-    protected boolean checkHelpModeUse()
+    protected boolean checkHelpModeUse(int which)
     {
         return false;
     }

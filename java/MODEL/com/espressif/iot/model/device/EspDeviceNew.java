@@ -274,15 +274,15 @@ public class EspDeviceNew extends EspDevice implements IEspDeviceNew
             return false;
         }
         
-        if (mSsid.startsWith("ESP_"))
+        for (String meshPrefix : IEspUser.MESH_DEVICE_SSID_PREFIX)
         {
-            return false;
-        }
-        else if (mSsid.startsWith("espressif_"))
-        {
-            return true;
+            if (mSsid.startsWith(meshPrefix))
+            {
+                return true;
+            }
         }
         
         return false;
     }
+    
 }

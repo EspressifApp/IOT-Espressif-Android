@@ -52,6 +52,8 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private Button mEsptouchBtn;
     
+    private Button mQuickUsageBtn;
+    
     private final static int REQUEST_REGISTER = 1;
     
     private final static String SKIP_DEFAULT_PASSWORD = "123456";
@@ -91,6 +93,9 @@ public class LoginActivity extends Activity implements OnClickListener
         
         mEsptouchBtn = (Button)findViewById(R.id.login_esptouch);
         mEsptouchBtn.setOnClickListener(this);
+
+        mQuickUsageBtn = (Button)findViewById(R.id.login_btn_quick_usage);
+        mQuickUsageBtn.setOnClickListener(this);
     }
     
     @Override
@@ -101,7 +106,16 @@ public class LoginActivity extends Activity implements OnClickListener
             String email = mEmailEdt.getText().toString();
             String password = mPasswordEdt.getText().toString();
             boolean autoLogin = mAutoLoginCB.isChecked();
-            new LoginTask(email, password, autoLogin).execute();
+            new LoginTask(this, email, password, autoLogin) {
+                
+                public void loginResult(EspLoginResult result) {
+                    if (result == EspLoginResult.SUC)
+                    {
+                        loginSuccess(0);
+                    }
+                }
+                
+            }.execute();
         }
         else if (v == mSkipBtn)
         {
@@ -129,6 +143,13 @@ public class LoginActivity extends Activity implements OnClickListener
         {
             startActivity(new Intent(this, EspTouchActivity.class));
         }
+        else if (v == mQuickUsageBtn)
+        {
+            mUser.loadUserDeviceListDB();
+            Intent intent = new Intent(this, EspApplication.getEspUIActivity());
+            startActivity(intent);
+            finish();
+        }
     }
     
     @Override
@@ -146,71 +167,8 @@ public class LoginActivity extends Activity implements OnClickListener
         }
     }
     
-    private class LoginTask extends AsyncTask<Void, Void, EspLoginResult>
-    {
-        private Context mContext;
-        
-        private String mEmail;
-        
-        private String mPassword;
-        
-        private boolean mAutoLogin;
-        
-        private ProgressDialog mDialog;
-        
-        public LoginTask(String email, String password, boolean autoLogin)
-        {
-            mContext = LoginActivity.this;
-            mEmail = email;
-            mPassword = password;
-            mAutoLogin = autoLogin;
-        }
-        
-        @Override
-        protected void onPreExecute()
-        {
-            mDialog = new ProgressDialog(mContext);
-            mDialog.setMessage(getString(R.string.esp_login_progress_message));
-            mDialog.setCancelable(false);
-            mDialog.setCanceledOnTouchOutside(false);
-            mDialog.show();
-        }
-        
-        @Override
-        protected EspLoginResult doInBackground(Void... params)
-        {
-            return mUser.doActionUserLoginInternet(mEmail, mPassword, false, mAutoLogin);
-        }
-        
-        @Override
-        protected void onPostExecute(EspLoginResult result)
-        {
-            mDialog.dismiss();
-            mDialog = null;
-            
-            switch (result)
-            {
-                case SUC:
-                    loginSuccess(R.string.esp_login_result_success);
-                    break;
-                case NETWORK_UNACCESSIBLE:
-                    loginFailed(R.string.esp_login_result_network_unaccessible);
-                    break;
-                case NOT_REGISTER:
-                    loginFailed(R.string.esp_login_result_not_register);
-                    break;
-                case PASSWORD_ERR:
-                    loginFailed(R.string.esp_login_result_password_error);
-                    break;
-            }
-        }
-    }
-    
     private void loginSuccess(int msg)
     {
-        log.debug("loginSuccess");
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-        
         Intent intent = new Intent(this, EspApplication.getEspUIActivity());
         startActivity(intent);
         finish();
@@ -218,8 +176,6 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private void loginFailed(int msg)
     {
-        log.debug("loginFailed");
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
     
     private void skip()

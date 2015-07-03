@@ -24,4 +24,16 @@ public interface IEspActionDeviceSynchronizeInterentDiscoverLocal extends IEspCo
      * @param userKey the user key
      */
     void doActionDeviceSynchronizeInterentDiscoverLocal(final String userKey);
+    
+    /**
+     * Synchronize devices from Discovery devices on local only
+     * @param isSyn whether execute it syn or asyn
+     */
+    void doActionDeviceSynchronizeDiscoverLocal(boolean isSyn);
+    
+    /**
+     * Synchronize devices from Server only
+     * @param userKey the user key
+     */
+    void doActionDeviceSynchronizeInternet(final String userKey);
 }

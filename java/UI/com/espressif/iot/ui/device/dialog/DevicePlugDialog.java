@@ -37,6 +37,7 @@ public class DevicePlugDialog extends DeviceDialogAbs implements View.OnClickLis
             mControlChildCB.setChecked(true);
             mControlChildCB.setVisibility(View.GONE);
         }
+//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         
         return view;
     }

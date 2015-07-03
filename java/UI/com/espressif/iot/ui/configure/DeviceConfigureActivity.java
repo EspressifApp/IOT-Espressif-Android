@@ -103,7 +103,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         
         mSoftApListView = (PullToRefreshListView)findViewById(R.id.softap_list);
         mSoftApListView.setOnItemClickListener(this);
-        mSoftApListView.getRefreshableView().setOnItemLongClickListener(this);
+//        mSoftApListView.getRefreshableView().setOnItemLongClickListener(this);
         mSoftApList = new Vector<IEspDeviceNew>();
         mSoftApAdapter = new SoftApAdapter(this);
         mSoftApListView.setAdapter(mSoftApAdapter);
@@ -122,7 +122,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     {
         super.onResume();
         
-        if (!mHelpMachine.isHelpModeConfigure() && !mShowConfigureDialog)
+        if (!mShowConfigureDialog && !checkHelpModeOn())
         {
             sendRefreshMessage();
         }
@@ -152,7 +152,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mSoftApAdapter.notifyDataSetChanged();
         mSoftApListView.onRefreshComplete();
         
-        if (mAutoConfigureValue < 0 && mSoftApList.size() > 0)
+        if (!mHelpMachine.isHelpOn() && mAutoConfigureValue < 0 && mSoftApList.size() > 0)
         {
             IEspDeviceNew device = mSoftApList.get(0);
             if (device.getRssi() >= mAutoConfigureValue && device.getRssi() < 0)
@@ -266,7 +266,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         }
     }
     
-    private boolean isConfigured(String bssid)
+    protected boolean isConfigured(String bssid)
     {
         List<IEspDevice> list = mUser.getDeviceList();
         for (IEspDevice userDevice : list)
@@ -342,7 +342,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 case MSG_REFRESH_LIST:
                     sendEmptyMessageDelayed(MSG_REFRESH_LIST, 5000);
                     
-                    mActivity.get().refreshSoftApList();
+                    activity.refreshSoftApList();
                     break;
             }
         }
@@ -385,18 +385,35 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 convertView = inflater.inflate(R.layout.device_layout, parent, false);
             }
             
-            IEspDeviceNew device = mSoftApList.get(position);
+            IEspDeviceNew deviceNew = mSoftApList.get(position);
             
             TextView deviceNameTV = (TextView)convertView.findViewById(R.id.device_name);
-            deviceNameTV.setText(device.getSsid());
+            String displayText = deviceNew.getSsid();
+            // check whether the device is configured
+            List<IEspDevice> deviceList = BEspUser.getBuilder().getInstance().getDeviceList();
+            for (IEspDevice deviceInList : deviceList)
+            {
+                // when device activating fail, it will be stored in local db and be activating state,
+                // at this situation, we don't let the displayText change to device name
+                if (deviceInList.getDeviceState().isStateActivating())
+                {
+                    continue;
+                }
+                if (deviceNew.getBssid().equals(deviceInList.getBssid()))
+                {
+                    displayText = deviceInList.getName();
+                    break;
+                }
+            }
+            deviceNameTV.setText(displayText);
             ImageView deviceIconIV = (ImageView)convertView.findViewById(R.id.device_icon);
             deviceIconIV.setImageResource(R.drawable.esp_wifi_signal);
-            deviceIconIV.getDrawable().setLevel(WifiManager.calculateSignalLevel(device.getRssi(), 5));
+            deviceIconIV.getDrawable().setLevel(WifiManager.calculateSignalLevel(deviceNew.getRssi(), 5));
             TextView deviceRssiTV = (TextView)convertView.findViewById(R.id.device_status_text);
-            deviceRssiTV.setText("RSSI: " + device.getRssi());
+            deviceRssiTV.setText("RSSI: " + deviceNew.getRssi());
             
             ImageView meshIcon = (ImageView)convertView.findViewById(R.id.device_status);
-            boolean isMesh = device.getIsMeshDevice();
+            boolean isMesh = deviceNew.getIsMeshDevice();
             if (isMesh)
             {
                 meshIcon.setBackgroundResource(R.drawable.esp_icon_mesh);
@@ -407,7 +424,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             }
             
             TextView contentTV = (TextView)convertView.findViewById(R.id.content_text);
-            if (isConfigured(device.getBssid()))
+            if (isConfigured(deviceNew.getBssid()))
             {
                 contentTV.setText("Configured");
             }
@@ -433,10 +450,15 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         
         PopupMenu popMenu = new PopupMenu(this, view);
         Menu menu = popMenu.getMenu();
-        menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
+        if (mUser.isLogin())
+        {
+            menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
+        }
         menu.add(Menu.NONE, POPMENU_ID_DIRECT_CONNECT, 0, R.string.esp_configure_direct_connect);
-        //TODO
-//        menu.add(Menu.NONE, POPMENU_ID_MESH, 0, R.string.esp_configure_mesh);
+//        if (device.getIsMeshDevice())
+//        {
+//            menu.add(Menu.NONE, POPMENU_ID_MESH, 0, R.string.esp_configure_mesh);
+//        }
         popMenu.setOnMenuItemClickListener(new SoftAPPopMenuItemClickListener(device));
         popMenu.show();
     }
@@ -654,6 +676,11 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     }
     
     protected void checkHelpModeConfigureRetry() {
+    }
+    
+    protected boolean checkHelpModeOn()
+    {
+        return false;
     }
     
     protected boolean checkHelpPopMenuItemClick(int itemId)

@@ -30,4 +30,25 @@ public interface IEspSocketRequest
      * @return the host of the uri
      */
     public String getHost();
+    
+    /**
+     * Get the content of the request(usually it is a json String)
+     * 
+     * @return the content of the request
+     */
+    public String getContent();
+    
+    /**
+     * Get the router of the device which the request is belong to
+     * 
+     * @return the router of the device which the request is belong to
+     */
+    public String getRouter();
+    
+    /**
+     * Get the origin uri
+     * 
+     * @return the origin uri
+     */
+    public String getOriginUri();
 }

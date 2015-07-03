@@ -31,17 +31,18 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
      * Singleton lazy initialization end
      */
     
+    // it hasn't been used, let it here just for it maybe used in the future
     @Override
-    public String buildLocalGetStatusRequest(InetAddress inetAddress, String router)
+    public EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress, String router)
     {
         String uriStr = "http:/" + inetAddress + "/" + "config?command=light";
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("GET", uriStr);
         request.putHeaderParams("Connection", "keep-alive");
-        return request.toString();
+        return request;
     }
     
     @Override
-    public String buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router)
+    public EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router)
     {
         String uriStr = "http:/" + inetAddress + "/" + "config?command=light";
         JSONObject requestJson = new JSONObject();
@@ -61,13 +62,14 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
         {
             e.printStackTrace();
         }
-        EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("POST", uriStr, requestJson.toString());
+        EspSocketRequestBaseEntity request =
+            new EspSocketRequestBaseEntity("POST", uriStr, requestJson.toString(), router);
         request.putHeaderParams("Connection", "keep-alive");
-        return request.toString();
+        return request;
     }
     
     @Override
-    public String buildInternetGetStatusRequest(String deviceKey)
+    public EspSocketRequestBaseEntity buildInternetGetStatusRequest(String deviceKey)
     {
         String uriStr = "https://iot.espressif.cn/v1/datastreams/light/datapoint/?deliver_to_device=true";
         String headerKey = Authorization;
@@ -75,11 +77,11 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("GET", uriStr);
         request.putHeaderParams("Connection", "keep-alive");
         request.putHeaderParams(headerKey, headerValue);
-        return request.toString();
+        return request;
     }
     
     @Override
-    public String buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router)
+    public EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router)
     {
         String uriStr = "https://iot.espressif.cn/v1/datastreams/light/datapoint/?deliver_to_device=true";
         String headerKey = Authorization;
@@ -100,9 +102,10 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
             e.printStackTrace();
             return null;
         }
+        // for Internet, we don't care whether the device is router or not, so we treat them as non-router
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("POST", uriStr, jsonObject.toString());
         request.putHeaderParams("Connection", "keep-alive");
         request.putHeaderParams(headerKey, headerValue);
-        return request.toString();
+        return request;
     }
 }

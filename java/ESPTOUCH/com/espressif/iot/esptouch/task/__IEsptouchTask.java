@@ -1,6 +1,8 @@
 package com.espressif.iot.esptouch.task;
 
-import com.espressif.iot.esptouch.IEsptouchResult;
+import java.util.List;
+
+import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 
 /**
  * IEsptouchTask defined the task of esptouch should offer. INTERVAL here means the milliseconds of interval of the
@@ -25,6 +27,18 @@ public interface __IEsptouchTask
      * @throws RuntimeException
      */
     IEsptouchResult executeForResult()
+        throws RuntimeException;
+    
+    /**
+     * Note: !!!Don't call the task at UI Main Thread or RuntimeException will be thrown Execute the Esptouch Task and
+     * return the result
+     * 
+     * @param expectTaskResultCount the expect result count(if expectTaskResultCount <= 0, expectTaskResultCount =
+     *            Integer.MAX_VALUE)
+     * @return the list of IEsptouchResult
+     * @throws RuntimeException
+     */
+    List<IEsptouchResult> executeForResults(int expectTaskResultCount)
         throws RuntimeException;
     
     /**

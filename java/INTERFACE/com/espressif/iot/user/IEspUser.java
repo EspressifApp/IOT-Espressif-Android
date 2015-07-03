@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import android.net.wifi.ScanResult;
+
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
+import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -22,7 +25,9 @@ import com.espressif.iot.type.user.EspRegisterResult;
 
 public interface IEspUser extends IEspSingletonObject
 {
-    String[] DEVICE_SSID_PREFIX = {"ESP_", "espressif_"};
+    final String[] DEVICE_SSID_PREFIX = {"ESP_", "espressif_", "mesh_"};
+    
+    final String[] MESH_DEVICE_SSID_PREFIX = {"espressif_", "mesh_"};
     
     /**
      * when the device is configured just now, the softap will be scanned, but it should be ignored
@@ -102,6 +107,8 @@ public interface IEspUser extends IEspSingletonObject
      * @return whether the user is auto login
      */
     boolean isAutoLogin();
+    
+    boolean isLogin();
     
     /**
      * Get the devices of this user
@@ -303,6 +310,11 @@ public interface IEspUser extends IEspSingletonObject
     IEspUser doActionUserLoginDB();
     
     /**
+     * load devices of user from DB
+     */
+    void loadUserDeviceListDB();
+    
+    /**
      * login by Internet
      * 
      * @param userEmail user's email
@@ -325,6 +337,20 @@ public interface IEspUser extends IEspSingletonObject
     EspRegisterResult doActionUserRegisterInternet(String userName, String userEmail, String userPassword);
     
     /**
+     * Check whether the user name has registered on server
+     * @param userName
+     * @return
+     */
+    boolean findAccountUsernameRegistered(String userName);
+    
+    /**
+     * Check whether the email has registered on server
+     * @param email
+     * @return
+     */
+    boolean findAccountEmailRegistered(String email);
+    
+    /**
      * when device's updated, the broadcast of DEVICES_ARRIVE_STATEMACHINE or DEVICES_ARRIVE_PULLREFRESH(@see
      * EspStrings) will sent. when IUser receiving the broadcast DEVICES_ARRIVE_STATEMACHINE, he should call this method
      * using "isStateMachine=true". when receiving DEVICES_ARRIVE_PULLREFRESH, he should call this method using
@@ -343,6 +369,13 @@ public interface IEspUser extends IEspSingletonObject
      * while it is executing
      */
     void doActionRefreshDevices();
+    
+    /**
+     * it is like {@link #doActionRefreshDevices()}, but it only refresh sta devices
+     * 
+     * @param isSyn whether execute it syn or asyn
+     */
+    void doActionRefreshStaDevices(boolean isSyn);
     
     /**
      * Share device to others, get the share key from server
@@ -430,4 +463,106 @@ public interface IEspUser extends IEspSingletonObject
      * @return the tree element list of the user's all device
      */
     List<IEspDeviceTreeElement> getAllDeviceTreeElementList();
+    
+    /**
+     * 
+     * @param isFilter true is filter the ScanResult belong to the device's Softap
+     * @return the ScanResult List
+     */
+    List<ScanResult> scanApList(boolean isFilter);
+    
+    /**
+     * Get the origin sta device list, don't call it or it will make a Woo surprise
+     * @return the origin sta device list
+     */
+    List<IEspDeviceSSS> __getOriginStaDeviceList();
+    
+    /**
+     * Get the sta devices(which could be found by local but don't belong to the user)
+     * 
+     * @return the sta devices(which could be found by local but don't belong to the user)
+     */
+    List<IEspDeviceSSS> getStaDeviceList();
+    
+    /**
+     * Get the origin device list, don't call it or it will make a Woo surprise
+     * @return the origin device list
+     */
+    List<IEspDevice> __getOriginDeviceList();
+    
+    /**
+     * Get the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
+     * @return the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
+     */
+    List<IEspDevice> getAllDeviceList();
+    
+    /**
+     * Get the softap device list except the device belong to {@link #getAllDeviceList()}
+     * @return the IEspDeviceNew list except the device belong to {@link #getAllDeviceList()}
+     */
+    List<IEspDeviceNew> getSoftapDeviceList();
+    /**
+     * before the user's device list or sta device list will be changed,
+     * lock the device list and sta device list
+     */
+    void lockUserDeviceLists();
+    
+    /**
+     * after the user's device list or sta device list change finished,
+     * unlock the device list and sta device list
+     */
+    void unlockUserDeviceLists();
+    
+    /**
+     * add device(make device is available on server) syn
+     * 
+     * @param device the device to be added
+     * @return whether the device is added suc
+     */
+    boolean addDeviceSyn(final IEspDeviceSSS device);
+    
+    /**
+     * add all devices in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
+     * will make device avaliable on server. all of the tasks are syn.
+     * 
+     * @param apSsid the Ap's ssid
+     * @param apBssid the Ap's bssid
+     * @param apPassword the Ap's password
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param requiredActivate whehter activate the devices automatically
+     * 
+     * @return whether the task started suc(if there's another task executing, it will return false,and don't start the
+     *         task)
+     */
+    boolean addDevicesSyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate);
+    
+    /**
+     * add device(make device is available on server) asyn
+     * 
+     * @param device the device to be added
+     * @return whether the device is added suc
+     */
+    boolean addDeviceAsyn(final IEspDeviceSSS device);
+    
+    /**
+     * add all devices in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
+     * will make device avaliable on server. all of the tasks are asyn.
+     * 
+     * @param apSsid the Ap's ssid
+     * @param apBssid the Ap's bssid
+     * @param apPassword the Ap's password
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param requiredActivate whehter activate the devices automatically
+     * 
+     * @return whether the task started suc(if there's another task executing, it will return false,and don't start the
+     *         task)
+     */
+    boolean addDevicesAsyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate);
+    
+    /**
+     * cancel all tasks about adding devices
+     */
+    void cancelAllAddDevices();
 }

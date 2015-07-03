@@ -48,7 +48,12 @@ public interface IEspDeviceCache
     boolean addUpgradeSucLocalDeviceCacheList(List<IOTAddress> deviceIOTAddressList);
     
     List<IOTAddress> pollUpgradeSucLocalDeviceCacheList();
+    
+    boolean addStaDeviceCache(IOTAddress deviceStaDevice);
+    
+    boolean addStaDeviceCacheList(List<IOTAddress> deviceStaDeviceList);
 
+    List<IOTAddress> pollStaDeviceCacheList();
     /**
      * notify the user that device cache has been changed
      */

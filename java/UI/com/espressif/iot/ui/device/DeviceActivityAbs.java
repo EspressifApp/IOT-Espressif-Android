@@ -9,11 +9,15 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceRoot;
+import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeLocal;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeOnline;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
+import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
@@ -28,6 +32,7 @@ import com.espressif.iot.ui.view.TreeView.LastLevelItemClickListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
+import com.espressif.iot.util.RouterUtil;
 import com.google.zxing.qrcode.ui.CreateQRImageHelper;
 
 import android.app.Activity;
@@ -84,7 +89,16 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
         
         mUser = BEspUser.getBuilder().getInstance();
-        mIEspDevice = mUser.getUserDevice(deviceKey);
+        IEspDevice device = mUser.getUserDevice(deviceKey);
+        if (device instanceof IEspDeviceSSS)
+        {
+            mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
+        }
+        else
+        {
+            mIEspDevice = device;
+        }
+        
         setTitle(mIEspDevice.getName());
         
         checkDeviceCompatibility();
@@ -141,6 +155,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             setTitleContentView(mSwapView);
         }
         
+        if (mIEspDevice.getDeviceType() == EspDeviceType.ROOT) // hide mesh child control
+        {
+            setTitleContentView(null);
+        }
+        
         mControlView = initControlView();
         mViewList = new ArrayList<View>();
         mViewList.add(mControlView);
@@ -165,34 +184,36 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         mTreeView.setLastLevelItemClickCallBack(mTreeViewItemClickListener);
     }
     
-    private List<IEspDeviceTreeElement>  getLocalTreeElementList()
-    {
-        List<IEspDevice> devices = new ArrayList<IEspDevice>();
-        devices.addAll(mUser.getDeviceList());
-        if (mIEspDevice.getDeviceType() == EspDeviceType.ROOT)
-        {
-            devices.add(mIEspDevice);
-        }
-        List<IEspDeviceTreeElement> childList = mIEspDevice.getDeviceTreeElementList(devices);
-        
-        return childList;
-    }
-    
-    private List<IEspDeviceTreeElement> getInternetTreeElementList()
+    private List<IEspDeviceTreeElement> getTreeElementList(IEspDeviceState state)
     {
         List<IEspDevice> userDevices = new ArrayList<IEspDevice>();
-        userDevices.addAll(mUser.getDeviceList());
+        userDevices.addAll(mUser.getAllDeviceList());
         
         // create list with root device
         List<List<IEspDevice>> lists = new ArrayList<List<IEspDevice>>();
+        // add root device in lists[x][0]
         for  (IEspDevice device : userDevices)
         {
-            if (device.getRootDeviceId() == device.getId() && device.getDeviceState().isStateInternet())
+            if (state.isStateInternet())
             {
-                List<IEspDevice> childDevices = new ArrayList<IEspDevice>();
-                childDevices.add(device);
-                
-                lists.add(childDevices);
+                if (device.getRootDeviceId() == device.getId() && device.getDeviceState().isStateInternet())
+                {
+                    List<IEspDevice> childDevices = new ArrayList<IEspDevice>();
+                    childDevices.add(device);
+                    
+                    lists.add(childDevices);
+                }
+            }
+            else if (state.isStateLocal())
+            {
+                if (device.getRouter() != null && RouterUtil.getRouterLevel(device.getRouter()) == 1
+                    && device.getDeviceState().isStateLocal())
+                {
+                    List<IEspDevice> childDevices = new ArrayList<IEspDevice>();
+                    childDevices.add(device);
+                    
+                    lists.add(childDevices);
+                }
             }
         }
         
@@ -200,11 +221,12 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         for (IEspDevice device : userDevices)
         {
             // Check state
-            if (!device.getDeviceState().isStateInternet())
+            if (!EspDeviceState.checkValidWithNecessaryStates(device.getDeviceState(), state))
             {
                 continue;
             }
             
+            // add devices into their root device(lists[x][0]) 
             for (List<IEspDevice> list : lists)
             {
                 IEspDevice rootDevice = list.get(0);
@@ -218,13 +240,43 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
         
         List<IEspDeviceTreeElement> childList = new ArrayList<IEspDeviceTreeElement>();
-        for (List<IEspDevice> list : lists)
+        if (mIEspDevice instanceof IEspDeviceRoot)
         {
-            IEspDevice rootDevice = list.get(0);
-            childList.addAll(rootDevice.getDeviceTreeElementList(list));
+            // Virtual root device, show all mesh devices
+            for (List<IEspDevice> list : lists)
+            {
+                IEspDevice rootDevice = list.get(0);
+                // add root list into result
+                childList.addAll(rootDevice.getDeviceTreeElementList(list));
+            }
+        }
+        else
+        {
+            // Real device, only show it's child mesh devices
+            for (List<IEspDevice> list : lists)
+            {
+                for (IEspDevice device : list)
+                {
+                    if (device == mIEspDevice)
+                    {
+                        childList.addAll(device.getDeviceTreeElementList(list));
+                        return childList;
+                    }
+                }
+            }
         }
         
         return childList;
+    }
+    
+    private List<IEspDeviceTreeElement>  getLocalTreeElementList()
+    {
+        return getTreeElementList(EspDeviceState.LOCAL);
+    }
+    
+    private List<IEspDeviceTreeElement> getInternetTreeElementList()
+    {
+        return getTreeElementList(EspDeviceState.INTERNET);
     }
     
     private LastLevelItemClickListener mTreeViewItemClickListener = new LastLevelItemClickListener() {

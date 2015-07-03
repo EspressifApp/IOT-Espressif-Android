@@ -39,6 +39,7 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         mPlugSwitch.setOnClickListener(this);
         mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
         mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
+//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         
         return view;
     }

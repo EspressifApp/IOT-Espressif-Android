@@ -25,6 +25,11 @@ public class EspStrings
          * 
          */
         public static final String DEVICES_ARRIVE_PULLREFRESH = "DEVICES_ARRIVE_PULLREFRESH";
+        
+        /**
+         * when login successfully in Settings, send this broadcast to refresh devices from server
+         */
+        public static final String LOGIN_NEW_ACCOUNT = "LOGIN_NEW_ACCOUNT";
     }
     
     public static final class Key

@@ -6,6 +6,7 @@ import java.util.List;
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.adt.tree.IEspTreeComponent;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.model.adt.tree.EspTreeComposite;
 import com.espressif.iot.model.adt.tree.EspTreeLeaf;
 
@@ -255,6 +256,8 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
             ImageView icon;
             
             TextView title;
+            
+            ImageView status;
         }
         
         private Context context;
@@ -302,6 +305,7 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
                 convertView = inflater.inflate(R.layout.tree_view_item_layout, null);
                 holder.icon = (ImageView)convertView.findViewById(R.id.tree_view_item_icon);
                 holder.title = (TextView)convertView.findViewById(R.id.tree_view_item_title);
+                holder.status = (ImageView)convertView.findViewById(R.id.tree_view_item_status);
                 convertView.setTag(holder);
             }
             else
@@ -309,13 +313,15 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
                 holder = (ViewHolder)convertView.getTag();
             }
             
-            if (mCurrentElements.get(position).isHasChild())
+            IEspDeviceTreeElement element = mCurrentElements.get(position);
+            
+            if (element.isHasChild())
             {
-                if (mCurrentElements.get(position).isFold())
+                if (element.isFold())
                 {
                     holder.icon.setImageResource(R.drawable.esp_tree_icon_fold_on);
                 }
-                else if (!mCurrentElements.get(position).isFold())
+                else if (!element.isFold())
                 {
                     holder.icon.setImageResource(R.drawable.esp_tree_icon_fold_off);
                 }
@@ -331,14 +337,20 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
             int baseTextSize = context.getResources().getDimensionPixelSize(R.dimen.esp_treeview_text_size);
             int iconVerticalPadding =
                 context.getResources().getDimensionPixelSize(R.dimen.esp_treeview_icon_vertical_padding);
-            holder.icon.setPadding(basePadding * (mCurrentElements.get(position).getLevel()),
-                iconVerticalPadding,
-                0,
-                iconVerticalPadding);
+            holder.icon.setPadding(basePadding * (element.getLevel()), iconVerticalPadding, 0, iconVerticalPadding);
             holder.icon.setOnClickListener(new TreeView.TreeItemForlerListener(position));
-            holder.title.setText(mCurrentElements.get(position).getTitle());
-            holder.title.setTextSize(TypedValue.COMPLEX_UNIT_PX, baseTextSize
-                - mCurrentElements.get(position).getLevel() * 3);
+            holder.title.setText(element.getTitle());
+            holder.title.setTextSize(TypedValue.COMPLEX_UNIT_PX, baseTextSize - element.getLevel() * 3);
+            
+            IEspDevice device = element.getCurrentDevice();
+            if (device.isActivated())
+            {
+                holder.status.setBackgroundResource(R.drawable.esp_icon_cloud);
+            }
+            else
+            {
+                holder.status.setBackgroundResource(R.drawable.esp_icon_local);
+            }
             
             return convertView;
         }

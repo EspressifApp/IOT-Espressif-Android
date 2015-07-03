@@ -2,6 +2,7 @@ package com.espressif.iot.action.device.New;
 
 import org.apache.log4j.Logger;
 
+import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.command.device.New.EspCommandDeviceNewConfigureLocal;
 import com.espressif.iot.command.device.New.IEspCommandDeviceNewConfigureLocal;
 import com.espressif.iot.db.IOTDeviceDBManager;
@@ -21,16 +22,24 @@ public class EspActionDeviceNewConfigureLocal implements IEspActionDeviceNewConf
         String apPassword, String randomToken)
         throws InterruptedException
     {
-        IEspCommandDeviceNewConfigureLocal command = new EspCommandDeviceNewConfigureLocal();
+        boolean result = false;
         long deviceId = 0;
-        boolean result =
-            command.doCommandDeviceNewConfigureLocal(deviceSsid,
-                deviceWifiCipherType,
-                devicePassword,
-                apSsid,
-                apWifiCipherType,
-                apPassword,
-                randomToken);
+        // 1. connect to device
+        boolean connectDeviceResult = EspBaseApiUtil.connect(deviceSsid, deviceWifiCipherType, devicePassword);
+        // 2. post configure info(do EspCommandDeviceNewConfigureLocal)
+        if (connectDeviceResult)
+        {
+            IEspCommandDeviceNewConfigureLocal command = new EspCommandDeviceNewConfigureLocal();
+            result =
+                command.doCommandDeviceNewConfigureLocal(deviceSsid,
+                    deviceWifiCipherType,
+                    devicePassword,
+                    apSsid,
+                    apWifiCipherType,
+                    apPassword,
+                    randomToken);
+        }
+        
         if (result)
         {
             String key = randomToken;

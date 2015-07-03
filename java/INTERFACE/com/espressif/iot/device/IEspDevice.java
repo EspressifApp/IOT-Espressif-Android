@@ -364,4 +364,10 @@ public interface IEspDevice extends IEspObject
      * @return the device's device tree element list
      */
     List<IEspDeviceTreeElement> getDeviceTreeElementList(List<IEspDevice> allDeviceList);
+    
+    /**
+     * Whether the device has activated on server
+     * @return
+     */
+    boolean isActivated();
 }

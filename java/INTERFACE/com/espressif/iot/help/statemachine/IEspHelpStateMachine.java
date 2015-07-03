@@ -175,4 +175,8 @@ public interface IEspHelpStateMachine
     boolean isHelpModeUseSSSDevice();
     
     boolean isHelpModeSSSUpgrade();
+    
+    boolean isHelpModeSSSMeshConfigure();
+    
+    boolean isHelpModeMeshConfigure();
 }

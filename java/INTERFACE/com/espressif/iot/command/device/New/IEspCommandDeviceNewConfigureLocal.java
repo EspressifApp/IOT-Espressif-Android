@@ -21,10 +21,13 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
      * @throws InterruptedException when the command is interrupted
      */
     boolean doCommandDeviceNewConfigureLocal(String deviceSsid, WifiCipherType deviceWifiCipherType,
-        String devicePassword, String apSsid, WifiCipherType apWifiCipherType, String apPassword, String randomToken) throws InterruptedException;
+        String devicePassword, String apSsid, WifiCipherType apWifiCipherType, String apPassword, String randomToken);
     
     /**
+     * configure the new mesh device to an AP accessible to Internet
      * 
+     * @param router the device's router
+     * @param deviceBssid the device's bssid
      * @param deviceSsid the device's ssid(softap)
      * @param deviceWifiCipherType the device's wifi cipher type
      * @param devicePassword the device's password
@@ -32,6 +35,6 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
      * @return whether the command executed suc
      * @throws InterruptedException when the command is interrupted
      */
-    boolean doCommandMeshDeviceNewConfigureLocal(String deviceSsid, WifiCipherType deviceWifiCipherType,
-        String devicePassword, String randomToken) throws InterruptedException;
+    boolean doCommandMeshDeviceNewConfigureLocal(String router, String deviceBssid, String deviceSsid,
+        WifiCipherType deviceWifiCipherType, String devicePassword, String randomToken);
 }

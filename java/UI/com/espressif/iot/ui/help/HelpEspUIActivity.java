@@ -19,6 +19,7 @@ import android.widget.ImageView.ScaleType;
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.help.ui.IEspHelpUIConfigure;
+import com.espressif.iot.help.ui.IEspHelpUIMeshConfigure;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeLocal;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeOnline;
 import com.espressif.iot.help.ui.IEspHelpUIUseFlammable;
@@ -31,6 +32,7 @@ import com.espressif.iot.help.ui.IEspHelpUIUseVoltage;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.help.HelpStepConfigure;
+import com.espressif.iot.type.help.HelpStepMeshConfigure;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.help.HelpStepUseFlammable;
@@ -45,8 +47,9 @@ import com.espressif.iot.ui.device.DeviceRootRouterActivity;
 import com.espressif.iot.ui.main.EspUIActivity;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
-public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfigure, IEspHelpUIUsePlug, IEspHelpUIUseLight, IEspHelpUIUseHumiture, IEspHelpUIUseFlammable,
-IEspHelpUIUseVoltage ,IEspHelpUIUseRemote, IEspHelpUIUsePlugs, IEspHelpUIUpgradeLocal, IEspHelpUIUpgradeOnline
+public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfigure, IEspHelpUIUsePlug,
+    IEspHelpUIUseLight, IEspHelpUIUseHumiture, IEspHelpUIUseFlammable, IEspHelpUIUseVoltage, IEspHelpUIUseRemote,
+    IEspHelpUIUsePlugs, IEspHelpUIUpgradeLocal, IEspHelpUIUpgradeOnline, IEspHelpUIMeshConfigure
 {
     private static final Logger log = Logger.getLogger(HelpEspUIActivity.class);
     
@@ -146,6 +149,11 @@ IEspHelpUIUseVoltage ,IEspHelpUIUseRemote, IEspHelpUIUsePlugs, IEspHelpUIUpgrade
         {
             mHelpMachine.transformState(true);
         }
+        else if (mHelpMachine.isHelpModeMeshConfigure())
+        {
+            mHelpMachine.transformState(true);
+        }
+        
         Intent intent = new Intent(this, HelpDeviceConfigureActivity.class);
         startActivityForResult(intent, REQUEST_CONFIGURE);
     }
@@ -221,6 +229,13 @@ IEspHelpUIUseVoltage ,IEspHelpUIUseRemote, IEspHelpUIUsePlugs, IEspHelpUIUpgrade
                         mHelpMachine.start(HelpType.CONFIGURE);
                     }
                     activity.onHelpConfigure();
+                    break;
+                case RESULT_HELP_MESH_CONFIGURE:
+                    if (!mHelpMachine.isHelpOn())
+                    {
+                        mHelpMachine.start(HelpType.MESH_CONFIGURE);
+                    }
+                    activity.onHelpMeshConfigure();
                     break;
                 case RESULT_HELP_USE_PLUG:
                     if (!mHelpMachine.isHelpOn())
@@ -301,17 +316,21 @@ IEspHelpUIUseVoltage ,IEspHelpUIUseRemote, IEspHelpUIUsePlugs, IEspHelpUIUpgrade
                 hintConfigureStart();
                 break;
             case DEVICE_IS_ACTIVATING:
+                highlightHelpView(mDeviceListView);
                 setHelpHintMessage(R.string.esp_help_configure_device_activating_msg);
                 break;
             case FAIL_CONNECT_AP:
+                highlightHelpView(mDeviceListView);
                 setHelpHintMessage(R.string.esp_help_configure_connect_ap_failed_msg);
                 setHelpButtonVisible(HELP_BUTTON_ALL, true);
                 break;
             case FAIL_ACTIVATE:
+                highlightHelpView(mDeviceListView);
                 setHelpHintMessage(R.string.esp_help_configure_device_activate_failed_msg);
                 setHelpButtonVisible(HELP_BUTTON_ALL, true);
                 break;
             case SUC:
+                highlightHelpView(mDeviceListView);
                 setHelpHintMessage(R.string.esp_help_configure_success_msg);
                 break;
             default:
@@ -878,6 +897,22 @@ IEspHelpUIUseVoltage ,IEspHelpUIUseRemote, IEspHelpUIUsePlugs, IEspHelpUIUpgrade
         else if (mHelpMachine.isHelpModeUseRemote())
         {
             onHelpUseRemote();
+        }
+    }
+    
+    @Override
+    public void onHelpMeshConfigure()
+    {
+        clearHelpContainer();
+        
+        HelpStepMeshConfigure step = HelpStepMeshConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
+        switch (step)
+        {
+            case START:
+                hintConfigureStart();
+                break;
+            default:
+                break;
         }
     }
 }

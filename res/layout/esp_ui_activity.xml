@@ -4,8 +4,32 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <com.handmark.pulltorefresh.library.PullToRefreshListView
-        android:id="@+id/devices_list"
+    <RadioGroup
+        android:id="@+id/pager_tab_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/tab_activated_device"
+            style="@style/EspUITab"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/esp_ui_tab_activated_devices" />
+
+        <RadioButton
+            android:id="@+id/tab_sta_device"
+            style="@style/EspUITab"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/esp_ui_tab_sta_devices" />
+    </RadioGroup>
+
+    <com.espressif.iot.ui.view.EspViewPager
+        android:id="@+id/esp_ui_pager"
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1" />

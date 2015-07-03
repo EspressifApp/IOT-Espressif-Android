@@ -30,6 +30,12 @@ public class HelpDeviceLightActivity extends DeviceLightActivity implements IEsp
     }
     
     @Override
+    protected boolean checkHelpClickSwap()
+    {
+        return mHelpMachine.isHelpModeUseLight();
+    }
+    
+    @Override
     public void onHelpUseLight()
     {
         clearHelpContainer();

@@ -15,7 +15,7 @@ import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListene
 import com.espressif.iot.base.net.rest.EspHttpUtil;
 import com.espressif.iot.base.net.rest.mesh.EspMeshDiscoverUtil;
 import com.espressif.iot.base.net.rest.mesh.EspMeshNetUtil;
-import com.espressif.iot.base.net.udp.UdpBroadcastUtil;
+import com.espressif.iot.base.net.rest.mesh.EspSocketClient;
 import com.espressif.iot.base.net.wifi.WifiAdmin;
 import com.espressif.iot.base.threadpool.CachedThreadPool;
 import com.espressif.iot.base.time.EspTimeManager;
@@ -160,7 +160,79 @@ public class EspBaseApiUtil
     }
     
     /**
-     * discover the devices on the same AP
+     * execute GET to get JSONObject by Mesh Net
+     * 
+     * @param client the EspSocketClient or null(if null new client will be created)
+     * @param uriStr the uri String
+     * @param router the router of the device
+     * @param deviceBssid the bssid of the device
+     * @param checkIsDeviceAvailable whether check is device available before sending request
+     * @param closeClientImmdeiately whether close the client immediate after sending request
+     * @param targetPort the port of the target
+     * @param connectTimeout connection timeout in milliseconds
+     * @param connectRetry connect retry time
+     * @param isResultRead whether the result will be read
+     * @param soTimeout socket read timeout
+     * @param headers the headers of the request
+     * @return the JSONObject result
+     */
+    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+        boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
+        int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
+    {
+        return EspMeshNetUtil.GetForJson(client,
+            uriStr,
+            router,
+            deviceBssid,
+            checkIsDeviceAvailable,
+            closeClientImmdeiately,
+            targetPort,
+            connectTimeout,
+            connectRetry,
+            isResultRead,
+            soTimeout,
+            headers);
+    }
+    
+    /**
+     * execute POST to get JSONObject by Mesh Net
+     * 
+     * @param client the EspSocketClient or null(if null new client will be created)
+     * @param uriStr the uri String
+     * @param router the router of the device
+     * @param deviceBssid the bssid of the device
+     * @param json the json to be posted
+     * @param checkIsDeviceAvailable whether check is device available before sending request
+     * @param closeClientImmdeiately whether close the client immediate after sending request
+     * @param targetPort the port of the target
+     * @param connectTimeout connection timeout in milliseconds
+     * @param connectRetry connect retry time
+     * @param isResultRead whether the result will be read
+     * @param soTimeout socket read timeout
+     * @param headers the headers of the request
+     * @return the JSONObject result
+     */
+    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+        JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort,
+        int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
+    {
+        return EspMeshNetUtil.PostForJson(client,
+            uriStr,
+            router,
+            deviceBssid,
+            json,
+            checkIsDeviceAvailable,
+            closeClientImmdeiately,
+            targetPort,
+            connectTimeout,
+            connectRetry,
+            isResultRead,
+            soTimeout,
+            headers);
+    }
+    
+    /**
+     * discover the devices on the same AP or in the mesh net which root mesh device is on the same AP
      * 
      * @return the list of @see IOTAddress
      */
@@ -170,14 +242,15 @@ public class EspBaseApiUtil
     }
     
     /**
-     * discover the specific device whether is on the same AP
+     * discover the specific device whether is on the same AP or in the mesh net which root mesh device is on the same
+     * AP
      * 
      * @param bssid the device's bssid
      * @return @see IOTAddress
      */
     public static IOTAddress discoverDevice(String bssid)
     {
-        return UdpBroadcastUtil.discoverIOTDevice(bssid);
+        return EspMeshDiscoverUtil.discoverIOTDevice(bssid);
     }
     
     /**

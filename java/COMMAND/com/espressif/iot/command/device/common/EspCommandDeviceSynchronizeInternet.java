@@ -155,21 +155,6 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     // device name
                     String deviceName = deviceJsonObject.getString(Name);
                     
-                    // router
-                    String router = deviceJsonObject.getString(Router);
-                    
-                    // root device id
-                    long rootDeviceId = -1;
-                    
-                    if (router.equals("null"))
-                    {
-                        router = null;
-                    }
-                    else
-                    {
-                        rootDeviceId = deviceJsonObject.getLong(Root_Device_Id);
-                    }
-                    
                     // filter "device-name-"
                     if (deviceName.length() > "device-name-".length())
                     {
@@ -221,12 +206,31 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                             latest_rom_version,
                             userId);
                     
-                    // synchronize router info from server
-                    device.setRootDeviceId(rootDeviceId);
-                    device.setRouter(router);
-                    if (router != null)
+                    boolean isRouterValid = !deviceJsonObject.isNull(Router);
+                    if (isRouterValid)
                     {
-                        device.setIsMeshDevice(true);
+                        // router
+                        String router = deviceJsonObject.getString(Router);
+                        
+                        // root device id
+                        long rootDeviceId = -1;
+                        
+                        if (router.equals("null"))
+                        {
+                            router = null;
+                        }
+                        else
+                        {
+                            rootDeviceId = deviceJsonObject.getLong(Root_Device_Id);
+                        }
+                        
+                        // synchronize router info from server
+                        device.setRootDeviceId(rootDeviceId);
+                        device.setRouter(router);
+                        if (router != null)
+                        {
+                            device.setIsMeshDevice(true);
+                        }
                     }
                     
                     // device.setGroupId(groupId);

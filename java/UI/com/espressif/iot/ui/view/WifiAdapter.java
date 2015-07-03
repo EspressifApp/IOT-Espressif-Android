@@ -4,6 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.BSSIDUtil;
+
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.view.LayoutInflater;
@@ -56,7 +60,25 @@ public class WifiAdapter extends BaseAdapter
         ScanResult sr = mWifiList.get(position);
         
         TextView wifiSsidTV = (TextView)convertView.findViewById(android.R.id.text1);
-        wifiSsidTV.setText(sr.SSID);
+        
+        String displayText = sr.SSID;
+        // check whether the device is configured
+        List<IEspDevice> deviceList = BEspUser.getBuilder().getInstance().getDeviceList();
+        for (IEspDevice device : deviceList)
+        {
+            // when device activating fail, it will be stored in local db and be activating state,
+            // at this situation, we don't let the displayText change to device name
+            if (device.getDeviceState().isStateActivating())
+            {
+                continue;
+            }
+            if (BSSIDUtil.isEqualIgnore2chars(device.getBssid(), sr.BSSID))
+            {
+                displayText = device.getName();
+                break;
+            }
+        }
+        wifiSsidTV.setText(displayText);
         return convertView;
     }
     

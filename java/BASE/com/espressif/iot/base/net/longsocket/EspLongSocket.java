@@ -8,7 +8,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.net.rest.mesh.EspSocketClient;
+import com.espressif.iot.base.net.rest.mesh.EspSocketRequestBaseEntity;
 import com.espressif.iot.base.net.rest.mesh.EspSocketResponseBaseEntity;
 
 public class EspLongSocket implements IEspLongSocket
@@ -35,7 +37,7 @@ public class EspLongSocket implements IEspLongSocket
     
     private EspLongSocketDisconnected mListener;
     
-    private LinkedBlockingDeque<String> mTaskDeque;
+    private LinkedBlockingDeque<EspSocketRequestBaseEntity> mTaskDeque;
     
     private LinkedBlockingDeque<JSONObject> mResultDeque;
     
@@ -46,7 +48,7 @@ public class EspLongSocket implements IEspLongSocket
     public EspLongSocket()
     {
         this.mClient = new EspSocketClient();
-        this.mTaskDeque = new LinkedBlockingDeque<String>();
+        this.mTaskDeque = new LinkedBlockingDeque<EspSocketRequestBaseEntity>();
         this.mResultDeque = new LinkedBlockingDeque<JSONObject>();
         this.mProducerTask = new ProducerTask();
         this.mConsumerTask = new ConsumerTask();
@@ -60,7 +62,7 @@ public class EspLongSocket implements IEspLongSocket
         static final int SEND_RETRY_TIME = 2;
         
         // get the next task to be done
-        private String getNextTask()
+        private EspSocketRequestBaseEntity getNextTask()
         {
             // when the EspLongSocket is finished, just return the last task
             if (mIsFinished)
@@ -71,7 +73,7 @@ public class EspLongSocket implements IEspLongSocket
             int size = mTaskDeque.size();
             if (size <= mMaxTaskSize)
             {
-                String result = null;
+                EspSocketRequestBaseEntity result = null;
                 try
                 {
                     result = mTaskDeque.pollFirst(INTERVAL, TimeUnit.MILLISECONDS);
@@ -97,7 +99,7 @@ public class EspLongSocket implements IEspLongSocket
         // do the next task
         private boolean doNextTask()
         {
-            String task = getNextTask();
+            EspSocketRequestBaseEntity task = getNextTask();
             // if there's no more task
             if (task == null)
             {
@@ -119,7 +121,46 @@ public class EspLongSocket implements IEspLongSocket
                 }
                 try
                 {
-                    mClient.writeRequest(task);
+                    // not mesh device
+                    if(task.getRouter()==null)
+                    {
+                        mClient.writeRequest(task.toString());
+                    }
+                    // mesh device
+                    else
+                    {
+                        JSONObject json = null;
+                        try
+                        {
+                            json = new JSONObject(task.getContent());
+                        }
+                        catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        boolean checkIsDeviceAvailable = false;
+                        boolean closeClientImmdeiately = false;
+                        int targetPort = 8000;
+                        int connectTimeout = 10000;
+                        int connectRetry = 3;
+                        boolean isResultRead = false;
+                        int soTimeout = 3000;
+                        // for the moment method "EspBaseApiUtil.PostForJson(...)" parameter deviceBssid isn't used
+                        // ,so we use null to replace it
+                        String deviceBssid = null;
+                        EspBaseApiUtil.PostForJson(mClient,
+                            task.getOriginUri(),
+                            task.getRouter(),
+                            deviceBssid,
+                            json,
+                            checkIsDeviceAvailable,
+                            closeClientImmdeiately,
+                            targetPort,
+                            connectTimeout,
+                            connectRetry,
+                            isResultRead,
+                            soTimeout);
+                    }
                     complete = true;
                     log.debug("ProducerTask:: doNextTask() nextTask is completed");
                 }
@@ -359,7 +400,7 @@ public class EspLongSocket implements IEspLongSocket
     }
     
     @Override
-    public void addRequest(String request)
+    public void addRequest(EspSocketRequestBaseEntity request)
     {
         if (mIsClosed || mIsFinished)
         {

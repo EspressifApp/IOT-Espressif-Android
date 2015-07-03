@@ -3,6 +3,7 @@ package com.espressif.iot.type.help;
 public enum HelpType
 {
     CONFIGURE,
+    MESH_CONFIGURE,
     USAGE_PLUG,
     USAGE_PLUGS,
     USAGE_LIGHT,
@@ -13,5 +14,6 @@ public enum HelpType
     UPGRADE_LOCAL,
     UPGRADE_ONLINE,
     SSS_USAGE_DEVICE,
-    SSS_UPGRADE
+    SSS_UPGRADE,
+    SSS_MESH_CONFIGURE
 }

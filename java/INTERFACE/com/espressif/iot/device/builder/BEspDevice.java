@@ -119,4 +119,49 @@ public class BEspDevice implements IBEspDevice
 
         return device;
     }
+    
+    public static IEspDevice convertSSSToTypeDevice(IEspDeviceSSS deviceSSS)
+    {
+        IEspDevice device = null;
+        switch(deviceSSS.getDeviceType())
+        {
+            case LIGHT:
+                device = BEspDeviceLight.getInstance().alloc();
+                break;
+            case PLUG:
+                device = BEspDevicePlug.getInstance().alloc();
+                break;
+            case FLAMMABLE:
+                break;
+            case HUMITURE:
+                break;
+            case NEW:
+                break;
+            case PLUGS:
+                device = BEspDevicePlugs.getInstance().alloc();
+                break;
+            case REMOTE:
+                device = BEspDeviceRemote.getInstance().alloc();
+                break;
+            case ROOT:
+                break;
+            case VOLTAGE:
+                break;
+        }
+        
+        if (device != null)
+        {
+            device.setKey(deviceSSS.getKey());
+            device.setIsOwner(false);
+            device.setBssid(deviceSSS.getBssid());
+            device.setDeviceState(deviceSSS.getDeviceState());
+            device.setDeviceType(deviceSSS.getDeviceType());
+            device.setName(deviceSSS.getName());
+            device.setInetAddress(deviceSSS.getInetAddress());
+            device.setRouter(deviceSSS.getRouter());
+            device.setIsMeshDevice(deviceSSS.getIsMeshDevice());
+        }
+        
+        return device;
+    }
 }

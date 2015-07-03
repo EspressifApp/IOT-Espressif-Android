@@ -6,6 +6,7 @@ import java.util.List;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceRoot;
+import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.user.builder.BEspUser;
 
 public class EspDeviceRoot extends EspDevice implements IEspDeviceRoot
@@ -42,7 +43,7 @@ public class EspDeviceRoot extends EspDevice implements IEspDeviceRoot
         
         // create list with root device
         List<List<IEspDevice>> lists = new ArrayList<List<IEspDevice>>();
-        for  (IEspDevice device : userDevices)
+        for (IEspDevice device : userDevices)
         {
             if (device.getRootDeviceId() == device.getId() && device.getDeviceState().isStateInternet())
             {
@@ -66,7 +67,7 @@ public class EspDeviceRoot extends EspDevice implements IEspDeviceRoot
             {
                 IEspDevice rootDevice = list.get(0);
                 // Not device itself and same rootDeviceId
-                if (rootDevice.getId() != device.getId() && rootDevice.getId() == device.getRootDeviceId() )
+                if (rootDevice.getId() != device.getId() && rootDevice.getId() == device.getRootDeviceId())
                 {
                     list.add(device);
                     break;
@@ -83,4 +84,23 @@ public class EspDeviceRoot extends EspDevice implements IEspDeviceRoot
         
         return childList;
     }
+    
+    @Override
+    public IEspDeviceState getDeviceState()
+    {
+        return mDeviceState;
+    }
+    
+    @Override
+    public void setDeviceState(IEspDeviceState deviceState)
+    {
+        this.mDeviceState = deviceState;
+    }
+    
+    @Override
+    public void copyDeviceState(IEspDevice device)
+    {
+        this.mDeviceState.setStateValue(device.getDeviceState().getStateValue());
+    }
+    
 }
