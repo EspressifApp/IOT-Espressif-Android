@@ -21,4 +21,10 @@ public interface IEspCommandLight extends IEspCommandDevice
     static final String CWhite = "cwhite";
     
     static final String WWhite = "wwhite";
+    
+    static final String Switches = "switches";
+    
+    static final String Mac = "mac";
+    
+    static final String VoltageMV = "voltagemv";
 }

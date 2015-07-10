@@ -1,5 +1,8 @@
 package com.espressif.iot.ui.device;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.espressif.iot.R;
 import com.espressif.iot.action.device.longsocket.EspDeviceLongSocketLight;
 import com.espressif.iot.action.device.longsocket.IEspDeviceLongSocketLight;
@@ -7,6 +10,7 @@ import com.espressif.iot.base.net.longsocket.IEspLongSocket.EspLongSocketDisconn
 import com.espressif.iot.device.IEspDeviceLight;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.EspStatusLight;
+import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.ui.view.EspColorPicker;
 import com.espressif.iot.ui.view.EspColorPicker.OnColorChangedListener;
@@ -387,6 +391,37 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mLightWWhiteBar.setProgress(wwhite);
         
         checkHelpExecuteFinish(command, result);
+        
+        if (command == COMMAND_GET)
+        {
+            checkLowBatteryEspnow();
+        }
+    }
+    
+    private void checkLowBatteryEspnow()
+    {
+        List<CharSequence> lowBatteryMacs = new ArrayList<CharSequence>();
+        List<IEspStatusEspnow> espStatuses = mDeviceLight.getEspnowStatusList();
+        for (IEspStatusEspnow espStatus : espStatuses)
+        {
+            if (espStatus.isLowBattery())
+            {
+                lowBatteryMacs.add(espStatus.getMac());
+            }
+        }
+        
+        if (!lowBatteryMacs.isEmpty())
+        {
+            CharSequence[] items = new CharSequence[lowBatteryMacs.size()];
+            for (int i = 0; i < lowBatteryMacs.size(); i++)
+            {
+                items[i] = lowBatteryMacs.get(i);
+            }
+            new AlertDialog.Builder(this).setTitle(R.string.esp_device_light_espnow_low_battery)
+                .setPositiveButton(android.R.string.ok, null)
+                .setItems(items, null)
+                .show();
+        }
     }
     
     private void setRGBSeekbarMax(int max)

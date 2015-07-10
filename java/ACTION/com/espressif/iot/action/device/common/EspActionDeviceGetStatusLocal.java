@@ -1,8 +1,11 @@
 package com.espressif.iot.action.device.common;
 
 import java.net.InetAddress;
+import java.util.List;
 
+import com.espressif.iot.command.device.light.EspCommandLightGetEspnowLocal;
 import com.espressif.iot.command.device.light.EspCommandLightGetStatusLocal;
+import com.espressif.iot.command.device.light.IEspCommandLightGetEspnowLocal;
 import com.espressif.iot.command.device.light.IEspCommandLightGetStatusLocal;
 import com.espressif.iot.command.device.plug.EspCommandPlugGetStatusLocal;
 import com.espressif.iot.command.device.plug.IEspCommandPlugGetStatusLocal;
@@ -17,6 +20,7 @@ import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.device.IEspDeviceRemote;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.EspDeviceType;
+import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
@@ -42,28 +46,44 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
             case VOLTAGE:
                 break;
             case LIGHT:
+                IEspStatusLight statusLight;
+                if (device instanceof IEspDeviceSSS)
+                {
+                    statusLight = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
+                }
+                else
+                {
+                    statusLight = ((IEspDeviceLight)device).getStatusLight();
+                }
+                
+                // Get rgb period white value
                 IEspCommandLightGetStatusLocal lightCommand = new EspCommandLightGetStatusLocal();
-                IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusLocal(inetAddress, deviceBssid, router);
-                if (lightStatus != null)
+                IEspStatusLight resultStatus = lightCommand.doCommandLightGetStatusLocal(inetAddress, deviceBssid, router);
+                if (resultStatus != null)
                 {
                     suc = true;
-                    IEspStatusLight statusLight;
-                    if (device instanceof IEspDeviceSSS)
-                    {
-                        statusLight = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
-                    }
-                    else
-                    {
-                        statusLight = ((IEspDeviceLight)device).getStatusLight();
-                    }
-                    statusLight.setPeriod(lightStatus.getPeriod());
-                    statusLight.setRed(lightStatus.getRed());
-                    statusLight.setGreen(lightStatus.getGreen());
-                    statusLight.setBlue(lightStatus.getBlue());
-                    statusLight.setCWhite(lightStatus.getCWhite());
-                    statusLight.setWWhite(lightStatus.getWWhite());
+                    statusLight.setPeriod(resultStatus.getPeriod());
+                    statusLight.setRed(resultStatus.getRed());
+                    statusLight.setGreen(resultStatus.getGreen());
+                    statusLight.setBlue(resultStatus.getBlue());
+                    statusLight.setCWhite(resultStatus.getCWhite());
+                    statusLight.setWWhite(resultStatus.getWWhite());
                 }
-                return suc;
+                
+                // Get battery value
+                boolean batterySuc = false;
+                IEspCommandLightGetEspnowLocal batteryCommand = new EspCommandLightGetEspnowLocal();
+                List<IEspStatusEspnow> espnowStatusList =
+                    batteryCommand.doCommandLightGetEspnowLocal(inetAddress, deviceBssid, router);
+                if (espnowStatusList != null)
+                {
+                    batterySuc = true;
+                    List<IEspStatusEspnow> deviceEspnowStatusList = device.getEspnowStatusList();
+                    deviceEspnowStatusList.clear();
+                    deviceEspnowStatusList.addAll(espnowStatusList);
+                }
+                
+                return suc && batterySuc;
             case PLUG:
                 IEspCommandPlugGetStatusLocal plugCommand = new EspCommandPlugGetStatusLocal();
                 IEspStatusPlug plugStatus = plugCommand.doCommandPlugGetStatusLocal(inetAddress, deviceBssid, router);

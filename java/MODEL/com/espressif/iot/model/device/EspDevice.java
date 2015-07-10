@@ -17,6 +17,7 @@ import com.espressif.iot.model.device.upgrade.EspDeviceUpgradeParser;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
+import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.timer.EspDeviceTimer;
 import com.espressif.iot.util.RouterUtil;
 
@@ -55,6 +56,8 @@ public class EspDevice implements IEspDevice, Cloneable
     protected long mRootDeviceId;
     
     protected List<EspDeviceTimer> mTimerList;
+    
+    private List<IEspStatusEspnow> mEspnowStatusList = new ArrayList<IEspStatusEspnow>();
     
     /**
      * empty device1 is used by EspDeviceCacheHandler to distinguish between Internet unaccessible and user with no
@@ -561,6 +564,12 @@ public class EspDevice implements IEspDevice, Cloneable
     public boolean isActivated()
     {
         return mDeviceId > 0 && !TextUtils.isEmpty(mDeviceKey);
+    }
+
+    @Override
+    public List<IEspStatusEspnow> getEspnowStatusList()
+    {
+        return mEspnowStatusList;
     }
 
 }

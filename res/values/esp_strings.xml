@@ -113,8 +113,8 @@
     <string name="esp_configure_direct_result_suc">Connect successfully</string>
     <string name="esp_configure_start">Start configure</string>
     <string name="esp_configure_configuring">Configuring&#8230;</string>
-    <string name="esp_configure_result_success">Configure success</string>
-    <string name="esp_configure_result_failed">Configure failed</string>
+    <string name="esp_configure_result_success">Configuration completed</string>
+    <string name="esp_configure_result_failed">Configuration failed</string>
     <string name="esp_configure_softap_connect_message">Do you want connect to this device?</string>
     <string name="esp_configure_softap_version">Version: %1$s</string>
     <string name="esp_configure_softap_type">Type: %1$s</string>
@@ -169,6 +169,7 @@
     <string name="esp_device_light_confirm">Confirm</string>
     <string name="esp_device_light_disconnect_msg">Device is disconnected</string>
     <string name="esp_device_light_continuous_control_forbidden">This light don\'t support to continuous control</string>
+    <string name="esp_device_light_espnow_low_battery">Low battery Espnow</string>
 
     <string name="esp_device_remote_address_hint">Please input address</string>
     <string name="esp_device_remote_command_hint">Please input command</string>

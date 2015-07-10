@@ -41,7 +41,7 @@ public class EspApplication extends Application
         return instance;
     }
     
-    public static boolean GOOGLE_PALY_VERSION = true;
+    public static boolean GOOGLE_PALY_VERSION = false;
     
     @Override
     public void onCreate()

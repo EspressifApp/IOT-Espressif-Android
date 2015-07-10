@@ -169,6 +169,7 @@
     <string name="esp_device_light_confirm">确认</string>
     <string name="esp_device_light_disconnect_msg">与设备的连接断开了</string>
     <string name="esp_device_light_continuous_control_forbidden">此设备暂不支持连续控制</string>
+    <string name="esp_device_light_espnow_low_battery">以下Espnow电量不足</string>
 
     <string name="esp_device_remote_address_hint">请输入地址</string>
     <string name="esp_device_remote_command_hint">请输入命令</string>

@@ -7,6 +7,7 @@ import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.object.IEspObject;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
+import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.timer.EspDeviceTimer;
 
 /**
@@ -370,4 +371,10 @@ public interface IEspDevice extends IEspObject
      * @return
      */
     boolean isActivated();
+    
+    /**
+     * 
+     * @return the list of the Espnow status
+     */
+    List<IEspStatusEspnow> getEspnowStatusList();
 }

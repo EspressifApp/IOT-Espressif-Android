@@ -1,10 +1,14 @@
 package com.espressif.iot.action.device.common;
 
+import java.util.List;
+
 import com.espressif.iot.command.device.flammable.EspCommandFlammableGetStatusInternet;
 import com.espressif.iot.command.device.flammable.IEspCommandFlammableGetStatusInternet;
 import com.espressif.iot.command.device.humiture.EspCommandHumitureGetStatusInternet;
 import com.espressif.iot.command.device.humiture.IEspCommandHumitureGetStatusInternet;
+import com.espressif.iot.command.device.light.EspCommandLightGetEspnowInternet;
 import com.espressif.iot.command.device.light.EspCommandLightGetStatusInternet;
+import com.espressif.iot.command.device.light.IEspCommandLightGetEspnowInternet;
 import com.espressif.iot.command.device.light.IEspCommandLightGetStatusInternet;
 import com.espressif.iot.command.device.plug.EspCommandPlugGetStatusInternet;
 import com.espressif.iot.command.device.plug.IEspCommandPlugGetStatusInternet;
@@ -23,6 +27,7 @@ import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.device.IEspDeviceRemote;
 import com.espressif.iot.device.IEspDeviceVoltage;
 import com.espressif.iot.type.device.EspDeviceType;
+import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.device.status.IEspStatusLight;
@@ -77,12 +82,14 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
                 }
                 return suc;
             case LIGHT:
+                IEspDeviceLight light = (IEspDeviceLight)device;
+                
+                // get rgb period white value
                 IEspCommandLightGetStatusInternet lightCommand = new EspCommandLightGetStatusInternet();
                 IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusInternet(deviceKey);
                 if (lightStatus != null)
                 {
                     suc = true;
-                    IEspDeviceLight light = (IEspDeviceLight)device;
                     light.getStatusLight().setPeriod(lightStatus.getPeriod());
                     light.getStatusLight().setRed(lightStatus.getRed());
                     light.getStatusLight().setGreen(lightStatus.getGreen());
@@ -90,7 +97,20 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
                     light.getStatusLight().setCWhite(lightStatus.getCWhite());
                     light.getStatusLight().setWWhite(lightStatus.getWWhite());
                 }
-                return suc;
+                
+                // get battery value
+                boolean batterySuc = false;
+                IEspCommandLightGetEspnowInternet batteryCommand = new EspCommandLightGetEspnowInternet();
+                List<IEspStatusEspnow> espnowStatusList = batteryCommand.doCommandLightGetEspnowInternet(deviceKey);
+                if (espnowStatusList != null)
+                {
+                    List<IEspStatusEspnow> deviceEspnowStatusList = light.getEspnowStatusList();
+                    deviceEspnowStatusList.clear();
+                    deviceEspnowStatusList.addAll(espnowStatusList);
+                    batterySuc = true;
+                }
+                
+                return suc && batterySuc;
             case PLUG:
                 IEspCommandPlugGetStatusInternet plugCommand = new EspCommandPlugGetStatusInternet();
                 IEspStatusPlug plugStatus = plugCommand.doCommandPlugGetStatusInternet(deviceKey);
