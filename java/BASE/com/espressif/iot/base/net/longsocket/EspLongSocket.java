@@ -37,7 +37,7 @@ public class EspLongSocket implements IEspLongSocket
     
     private EspLongSocketDisconnected mListener;
     
-    private LinkedBlockingDeque<EspSocketRequestBaseEntity> mTaskDeque;
+    private LinkedBlockingDeque<EspLongSocketRequest> mTaskDeque;
     
     private LinkedBlockingDeque<JSONObject> mResultDeque;
     
@@ -45,10 +45,45 @@ public class EspLongSocket implements IEspLongSocket
     
     private Runnable mConsumerTask;
     
+    class EspLongSocketRequest
+    {
+        private EspSocketRequestBaseEntity mRequestEntity;
+        
+        private String mBssid;
+        
+        private boolean mIsMeshDevice;
+        
+        EspLongSocketRequest()
+        {
+        }
+        
+        EspLongSocketRequest(EspSocketRequestBaseEntity requestEntity, String bssid, boolean isMeshDevice)
+        {
+            this.mRequestEntity = requestEntity;
+            this.mBssid = bssid;
+            this.mIsMeshDevice = isMeshDevice;
+        }
+        
+        EspSocketRequestBaseEntity getRequest()
+        {
+            return mRequestEntity;
+        }
+        
+        String getBssid()
+        {
+            return mBssid;
+        }
+        
+        boolean isMeshDevice()
+        {
+            return mIsMeshDevice;
+        }
+    }
+    
     public EspLongSocket()
     {
         this.mClient = new EspSocketClient();
-        this.mTaskDeque = new LinkedBlockingDeque<EspSocketRequestBaseEntity>();
+        this.mTaskDeque = new LinkedBlockingDeque<EspLongSocketRequest>();
         this.mResultDeque = new LinkedBlockingDeque<JSONObject>();
         this.mProducerTask = new ProducerTask();
         this.mConsumerTask = new ConsumerTask();
@@ -62,7 +97,7 @@ public class EspLongSocket implements IEspLongSocket
         static final int SEND_RETRY_TIME = 2;
         
         // get the next task to be done
-        private EspSocketRequestBaseEntity getNextTask()
+        private EspLongSocketRequest getNextTask()
         {
             // when the EspLongSocket is finished, just return the last task
             if (mIsFinished)
@@ -73,7 +108,7 @@ public class EspLongSocket implements IEspLongSocket
             int size = mTaskDeque.size();
             if (size <= mMaxTaskSize)
             {
-                EspSocketRequestBaseEntity result = null;
+                EspLongSocketRequest result = null;
                 try
                 {
                     result = mTaskDeque.pollFirst(INTERVAL, TimeUnit.MILLISECONDS);
@@ -99,7 +134,7 @@ public class EspLongSocket implements IEspLongSocket
         // do the next task
         private boolean doNextTask()
         {
-            EspSocketRequestBaseEntity task = getNextTask();
+            EspLongSocketRequest task = getNextTask();
             // if there's no more task
             if (task == null)
             {
@@ -122,9 +157,9 @@ public class EspLongSocket implements IEspLongSocket
                 try
                 {
                     // not mesh device
-                    if(task.getRouter()==null)
+                    if (!task.isMeshDevice())
                     {
-                        mClient.writeRequest(task.toString());
+                        mClient.writeRequest(task.getRequest().toString());
                     }
                     // mesh device
                     else
@@ -132,7 +167,7 @@ public class EspLongSocket implements IEspLongSocket
                         JSONObject json = null;
                         try
                         {
-                            json = new JSONObject(task.getContent());
+                            json = new JSONObject(task.getRequest().getContent());
                         }
                         catch (JSONException e)
                         {
@@ -147,10 +182,10 @@ public class EspLongSocket implements IEspLongSocket
                         int soTimeout = 3000;
                         // for the moment method "EspBaseApiUtil.PostForJson(...)" parameter deviceBssid isn't used
                         // ,so we use null to replace it
-                        String deviceBssid = null;
+                        String deviceBssid = task.getBssid();
                         EspBaseApiUtil.PostForJson(mClient,
-                            task.getOriginUri(),
-                            task.getRouter(),
+                            task.getRequest().getOriginUri(),
+                            task.getRequest().getRouter(),
                             deviceBssid,
                             json,
                             checkIsDeviceAvailable,
@@ -400,7 +435,7 @@ public class EspLongSocket implements IEspLongSocket
     }
     
     @Override
-    public void addRequest(EspSocketRequestBaseEntity request)
+    public void addRequest(EspSocketRequestBaseEntity request, String bssid, boolean isMeshDevice)
     {
         if (mIsClosed || mIsFinished)
         {
@@ -408,7 +443,7 @@ public class EspLongSocket implements IEspLongSocket
                 + "##addRequest(): EspLongSocket task is closed or finished already");
             return;
         }
-        this.mTaskDeque.addLast(request);
+        this.mTaskDeque.addLast(new EspLongSocketRequest(request, bssid, isMeshDevice));
     }
     
     @Override

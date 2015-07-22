@@ -144,7 +144,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mConfirmBtn.setOnClickListener(this);
         mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
         mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
-//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
+        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         
@@ -278,13 +278,15 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             statusLight.setWWhite(mLightWWhiteBar.getProgress());
             
             IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
+            String bssid = mDeviceLight.getBssid();
+            boolean isMeshDevice = mDeviceLight.getIsMeshDevice();
             if (mDeviceLight.getDeviceState().isStateLocal())
             {
-                lightPlayer.addLigthtStatusLocal(statusLight);
+                lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
             }
             else if (mDeviceLight.getDeviceState().isStateInternet())
             {
-                lightPlayer.addLigthStatusInternet(statusLight);
+                lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
             }
         }
     }
@@ -307,13 +309,15 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         statusLight.setWWhite(mLightWWhiteBar.getProgress());
         
         IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
+        String bssid = mDeviceLight.getBssid();
+        boolean isMeshDevice = mDeviceLight.getIsMeshDevice();
         if (mDeviceLight.getDeviceState().isStateLocal())
         {
-            lightPlayer.addLigthtStatusLocal(statusLight);
+            lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
         }
         else if (mDeviceLight.getDeviceState().isStateInternet())
         {
-            lightPlayer.addLigthStatusInternet(statusLight);
+            lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
         }
     }
     

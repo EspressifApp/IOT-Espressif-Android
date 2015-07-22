@@ -163,9 +163,16 @@ public class EspDeviceNew extends EspDevice implements IEspDeviceNew
     @Override
     public String getDefaultPassword()
     {
-        final String softap_pwd_first_half = BSSIDUtil.restoreSoftApBSSID(mBssid);
-        final String softap_pwd_second_half = "_v*%W>L<@i&Nxe!";
-        return softap_pwd_first_half + softap_pwd_second_half;
+        if (getIsMeshDevice())
+        {
+            return "espressif";
+        }
+        else
+        {
+            final String softap_pwd_first_half = BSSIDUtil.restoreSoftApBSSID(mBssid);
+            final String softap_pwd_second_half = "_v*%W>L<@i&Nxe!";
+            return softap_pwd_first_half + softap_pwd_second_half;
+        }
     }
     
     @Override

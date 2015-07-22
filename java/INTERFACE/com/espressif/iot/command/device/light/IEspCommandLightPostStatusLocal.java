@@ -31,4 +31,16 @@ public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspC
      */
     boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
         String router);
+    
+    /**
+     * post the statusPlug to the Light by Local
+     * 
+     * @param inetAddress the Light's ip address
+     * @param statusLight the status of Light
+     * @param deviceBssid the Light's bssid
+     * @param isMeshDevice whether the Light is mesh device
+     * @return whether the command executed suc
+     */
+    boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
+        boolean isMeshDevice);
 }

@@ -62,8 +62,7 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
         {
             e.printStackTrace();
         }
-        EspSocketRequestBaseEntity request =
-            new EspSocketRequestBaseEntity("POST", uriStr, requestJson.toString(), router);
+        EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("POST", uriStr, requestJson.toString());
         request.putHeaderParams("Connection", "keep-alive");
         return request;
     }

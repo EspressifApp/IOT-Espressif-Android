@@ -177,4 +177,19 @@ public class InputStreamUtils
         
     }
     
+    /**
+     * Transform String to byte[]
+     * 
+     * @param in the String
+     * @return byte[]
+     */
+    public static byte[] String2Bytes(String in)
+    {
+        byte[] bytes = new byte[in.length()];
+        for (int i = 0; i < bytes.length; ++i)
+        {
+            bytes[i] = (byte)(0xff & in.charAt(i));
+        }
+        return bytes;
+    }
 }

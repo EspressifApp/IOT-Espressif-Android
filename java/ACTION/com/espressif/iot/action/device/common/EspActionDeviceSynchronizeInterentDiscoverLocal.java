@@ -245,6 +245,7 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                                 device.setInetAddress(iotAddress.getInetAddress());
                                 device.setIsMeshDevice(iotAddress.isMeshDevice());
                                 device.setRouter(iotAddress.getRouter());
+                                device.setRootDeviceBssid(iotAddress.getRootBssid());
                                 deviceState.addStateLocal();
                                 break;
                             }

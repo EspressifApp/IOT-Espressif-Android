@@ -30,12 +30,16 @@ import com.espressif.iot.util.MeshUtil;
 
 public class EspMeshDiscoverUtil
 {
-	private static final Logger log = Logger.getLogger(EspMeshDiscoverUtil.class);
-	private static final boolean IS_MDNS_ON = false;
-	
+    private static final Logger log = Logger.getLogger(EspMeshDiscoverUtil.class);
+    
+    private static final boolean IS_MDNS_ON = false;
+    
     private static final int UDP_RETRY_TIME = 3;
+    
     private static final String ROUTER = "router";
+    
     private static final String TOPOLOGY = "topology";
+    
     private static final String DEV_TYPE = "dev_type";
     
     private static Set<IOTAddress> __discoverIOTMeshDevicesOnRoot(IOTAddress rootIOTAddress, String deviceBssid)
@@ -58,7 +62,7 @@ public class EspMeshDiscoverUtil
         }
         JSONArray jsonArray = EspMeshNetUtil.PostForJsonArray(url, routerReq, deviceBssid, jsonReq);
         Set<IOTAddress> iotMeshAddressSet = new HashSet<IOTAddress>();
-        for (int i = 0; jsonArray!=null && i < jsonArray.length(); i++)
+        for (int i = 0; jsonArray != null && i < jsonArray.length(); i++)
         {
             EspDeviceType deviceType = null;
             String deviceTypeStr = null;
@@ -67,10 +71,10 @@ public class EspMeshDiscoverUtil
                 JSONObject json = (JSONObject)jsonArray.get(i);
                 String bssid = MeshUtil.getRawMacAddress(json.getString(TOPOLOGY));
                 String router = json.getString(ROUTER);
-                if(router.equals("00000000"))
+                if (router.equals("00000000"))
                 {
-                	log.warn("router equals 00000000, it shouldn't happen");
-                	continue;
+                    log.warn("router equals 00000000, it shouldn't happen");
+                    continue;
                 }
                 if (json.has(DEV_TYPE))
                 {
@@ -91,9 +95,9 @@ public class EspMeshDiscoverUtil
                 {
                     iotMeshAddress.setEspDeviceTypeEnum(deviceType);
                 }
-				log.debug("__discoverIOTMeshDevicesOnRoot(): iotMeshAddress=["
-						+ iotMeshAddress + "] is added into iotMeshAddressSet");
-				iotMeshAddressSet.add(iotMeshAddress);
+                log.debug("__discoverIOTMeshDevicesOnRoot(): iotMeshAddress=[" + iotMeshAddress
+                    + "] is added into iotMeshAddressSet");
+                iotMeshAddressSet.add(iotMeshAddress);
             }
             catch (JSONException e)
             {
@@ -101,6 +105,31 @@ public class EspMeshDiscoverUtil
             }
         }
         return iotMeshAddressSet;
+    }
+    
+    private static Set<IOTAddress> __discoverIOTMeshDevicesOnRoot2(IOTAddress rootIOTAddress, String deviceBssid)
+    {
+        Set<IOTAddress> iotMeshAddressSet = new HashSet<IOTAddress>();
+        InetAddress rootInetAddress = rootIOTAddress.getInetAddress();
+        String rootBssid = rootIOTAddress.getBSSID();
+        if (deviceBssid != null)
+        {
+            IOTAddress iotAddress = EspMeshNetUtil.GetTopoIOTAddress(rootInetAddress, rootBssid, deviceBssid);
+            if (iotAddress != null)
+            {
+                iotMeshAddressSet.add(iotAddress);
+            }
+            return iotMeshAddressSet;
+        }
+        else
+        {
+            List<IOTAddress> iotAddressList = EspMeshNetUtil.GetTopoIOTAddressList(rootInetAddress, rootBssid);
+            if (iotAddressList != null)
+            {
+                iotMeshAddressSet.addAll(iotAddressList);
+            }
+            return iotMeshAddressSet;
+        }
     }
     
     // extract IOTAddress with the specific bssid
@@ -131,6 +160,8 @@ public class EspMeshDiscoverUtil
             if (iotAddress.getBSSID().equals(bssid))
             {
                 Set<IOTAddress> result = new HashSet<IOTAddress>();
+                // don't forget to set rootDeviceBssid
+                iotAddress.setRootBssid(bssid);
                 result.add(iotAddress);
                 return result;
             }
@@ -149,16 +180,17 @@ public class EspMeshDiscoverUtil
         // store the targetDevice set with only one element whose bssid is deviceBssid
         Set<IOTAddress> targetDeviceSet = null;
         // discover IOT Root Devices by UDP Broadcast
-		final Set<IOTAddress> rootDeviceSet = new HashSet<IOTAddress>();
-		// if phone is connected to device, skip sending udp broadcast
-		String gateway = EspApplication.sharedInstance().getGateway();
-		if(MeshUtil.isGatewayMesh(gateway))
-		{
-		    Context context = EspApplication.sharedInstance().getBaseContext();
-	        WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-	        WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-	        String bssid = BSSIDUtil.restoreStaBSSID(wifiInfo.getBSSID());
-	        InetAddress inetAddr = null;
+        final Set<IOTAddress> rootDeviceSet = new HashSet<IOTAddress>();
+        // if phone is connected to device, skip sending udp broadcast
+        String gateway = EspApplication.sharedInstance().getGateway();
+        // it has been forbidden since v0.9.7, just let the code here
+        if (MeshUtil.isGatewayMesh(gateway))
+        {
+            Context context = EspApplication.sharedInstance().getBaseContext();
+            WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+            String bssid = BSSIDUtil.restoreStaBSSID(wifiInfo.getBSSID());
+            InetAddress inetAddr = null;
             try
             {
                 inetAddr = InetAddress.getByName(gateway);
@@ -167,10 +199,10 @@ public class EspMeshDiscoverUtil
             {
                 e.printStackTrace();
             }
-		    IOTAddress meshDevice = new IOTAddress(bssid, inetAddr, true);
-		    // the default deviceType is LIGHT
-		    meshDevice.setEspDeviceTypeEnum(EspDeviceType.LIGHT);
-		    // check whether the device is find already
+            IOTAddress meshDevice = new IOTAddress(bssid, inetAddr, true);
+            // the default deviceType is LIGHT
+            meshDevice.setEspDeviceTypeEnum(EspDeviceType.LIGHT);
+            // check whether the device is find already
             targetDeviceSet = extractIOTAddress(deviceBssid, meshDevice);
             if (targetDeviceSet != null)
             {
@@ -178,47 +210,60 @@ public class EspMeshDiscoverUtil
                 return targetDeviceSet;
             }
             rootDeviceSet.add(meshDevice);
-		}
-		else
-		{
-		    // send udp broadcast each 1000 ms no matter how much is udp broadcast SOTIMEOUT
-	        List<Future<?>> _futureList = new ArrayList<Future<?>>();
-	        for (int i = 0; i < UDP_RETRY_TIME; i++) {
-	            Future<?> _future = EspBaseApiUtil.submit(new Runnable() {
-	                @Override
-	                public void run() {
-	                    List<IOTAddress> rootDeviceList = null;
-	                    if (IS_MDNS_ON)
-	                    {
-	                        rootDeviceList = MdnsDiscoverUtil.discoverIOTDevices();
-	                    }
-	                    else
-	                    {
-	                        rootDeviceList = UdpBroadcastUtil.discoverIOTDevices();
-	                    }
-	                    
-	                    rootDeviceSet.addAll(rootDeviceList);
-	                }
-	            });
-	            _futureList.add(_future);
-	            if (i < UDP_RETRY_TIME - 1) {
-	                try {
-	                    Thread.sleep(1000);
-	                } catch (InterruptedException e) {
-	                    e.printStackTrace();
-	                }
-	            }
-	        }
-	        for (Future<?> future : _futureList) {
-	            try {
-	                future.get();
-	            } catch (InterruptedException e) {
-	                e.printStackTrace();
-	            } catch (ExecutionException e) {
-	                e.printStackTrace();
-	            }
-	        }
-		}
+        }
+        else
+        {
+            // send udp broadcast each 1000 ms no matter how much is udp broadcast SOTIMEOUT
+            List<Future<?>> _futureList = new ArrayList<Future<?>>();
+            for (int i = 0; i < UDP_RETRY_TIME; i++)
+            {
+                Future<?> _future = EspBaseApiUtil.submit(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        List<IOTAddress> rootDeviceList = null;
+                        if (IS_MDNS_ON)
+                        {
+                            rootDeviceList = MdnsDiscoverUtil.discoverIOTDevices();
+                        }
+                        else
+                        {
+                            rootDeviceList = UdpBroadcastUtil.discoverIOTDevices();
+                        }
+                        
+                        rootDeviceSet.addAll(rootDeviceList);
+                    }
+                });
+                _futureList.add(_future);
+                if (i < UDP_RETRY_TIME - 1)
+                {
+                    try
+                    {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            for (Future<?> future : _futureList)
+            {
+                try
+                {
+                    future.get();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (ExecutionException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
         log.debug("discoverIOTMeshDevices(): rootDeviceSet=" + rootDeviceSet);
         // check whether the device is find already
         targetDeviceSet = extractIOTAddress(deviceBssid, rootDeviceSet);
@@ -231,8 +276,8 @@ public class EspMeshDiscoverUtil
         List<Future<Set<IOTAddress>>> futureList = new ArrayList<Future<Set<IOTAddress>>>();
         for (final IOTAddress iotAddress : rootDeviceSet)
         {
-            // if the device isn't mesh device ignore it, 
-            if(!iotAddress.isMeshDevice())
+            // if the device isn't mesh device ignore it,
+            if (!iotAddress.isMeshDevice())
             {
                 continue;
             }
@@ -243,8 +288,8 @@ public class EspMeshDiscoverUtil
                 public Set<IOTAddress> call()
                     throws Exception
                 {
-                	log.debug("__discoverIOTMeshDevicesOnRoot(): iotAddress=[" + iotAddress +"]" );
-                    return __discoverIOTMeshDevicesOnRoot(iotAddress, deviceBssid);
+                    log.debug("__discoverIOTMeshDevicesOnRoot2(): iotAddress=[" + iotAddress + "]");
+                    return __discoverIOTMeshDevicesOnRoot2(iotAddress, deviceBssid);
                 }
                 
             });
@@ -273,8 +318,8 @@ public class EspMeshDiscoverUtil
         {
             if (allDeviceSet.size() > 1)
             {
-                log.warn("discoverIOTMeshDevices():: more than one device in allDeviceSet," +
-                		" but we just trust the first one");
+                log.warn("discoverIOTMeshDevices():: more than one device in allDeviceSet,"
+                    + " but we just trust the first one");
             }
             log.debug("discoverIOTMeshDevices(): allDeviceSet(targetDeviceSet)=" + allDeviceSet);
             return allDeviceSet;
@@ -282,7 +327,7 @@ public class EspMeshDiscoverUtil
         // add all device which isn't belong to mesh device into allDeviceSet directly
         for (final IOTAddress iotAddress : rootDeviceSet)
         {
-            if(!iotAddress.isMeshDevice())
+            if (!iotAddress.isMeshDevice())
             {
                 allDeviceSet.add(iotAddress);
             }

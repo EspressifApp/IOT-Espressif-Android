@@ -26,6 +26,7 @@ public class EspPureSocketServer
     private static final String USER1_BIN = "user1.bin";
     private static final String USER2_BIN = "user2.bin";
     private static final String ROUTER = "router";
+    private final static String MAC = "mdev_mac";
     private static final String DEVICE_ROM = "device_rom";
     private static final String ROM_BASE64 = "rom_base64";
     private static final String GET = "get";
@@ -173,8 +174,10 @@ public class EspPureSocketServer
         {   
             log.debug("__executeMeshDeviceUpgradeLocal() entrance");
             // parse request
-            String router = jsonRequest.getString(ROUTER);
-            log.debug("__executeMeshDeviceUpgradeLocal(): router = " + router);
+//            String router = jsonRequest.getString(ROUTER);
+//            log.debug("__executeMeshDeviceUpgradeLocal(): router = " + router);
+            String bssid = jsonRequest.getString(MAC);
+            log.debug("__executeMeshDeviceUpgradeLocal(): bssid = " + bssid);
             String sip = jsonRequest.getString(SIP);
             log.debug("__executeMeshDeviceUpgradeLocal(): sip = " + sip);
             String sport = jsonRequest.getString(SPORT);
@@ -227,7 +230,8 @@ public class EspPureSocketServer
             jsonDeviceRom.put(SIZE, size);
             jsonDeviceRom.put(SIZE_BASE64, size_base64);
             jsonDeviceRom.put(ACTION, action);
-            jsonDeviceRom.put(ROUTER, router);
+//            jsonDeviceRom.put(ROUTER, router);
+            jsonDeviceRom.put(MAC, bssid);
             jsonDeviceRom.put(SIP, sip);
             jsonDeviceRom.put(SPORT, sport);
             jsonDeviceRom.put(ROM_BASE64, "__rombase64");

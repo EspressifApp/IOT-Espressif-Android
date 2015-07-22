@@ -97,4 +97,46 @@ public interface IEspActionDeviceConfigureLocal extends IEspActionLocal, IEspAct
     boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String router, String deviceBssid,
         InetAddress inetAddress, String randomToken);
     
+    /**
+     * configure the mesh device to an AP accessible to Internet, and make the mesh device activate on Server
+     * 
+     * @param discoverRequired whether it is necessary to discover the device's new inetAddress and new router before do
+     *            the configure action, if we can't find the new inetAddress, we will use the old inetAddress
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the mesh device's ip address
+     * @param apSsid the Ap's ssid
+     * @param apPassword the Ap's password
+     * @param randomToken 40 randomToken
+     * @return whether the action executed suc
+     */
+    boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid, InetAddress inetAddress,
+        String apSsid, String apPassword, String randomToken);
+    
+    /**
+     * configure the mesh device to an AP
+     * 
+     * @param discoverRequired whether it is necessary to discover the device's new inetAddress and new router before do
+     *            the configure action, if we can't find the new inetAddress, we will use the old inetAddress
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the device's ip address
+     * @param apSsid the Ap's ssid
+     * @param apPassword the Ap's password
+     * @return whether the action executed suc
+     */
+    boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid, InetAddress inetAddress,
+        String apSsid, String apPassword);
+    
+    /**
+     * make the mesh device activate on Server
+     * 
+     * @param discoverRequired whether it is necessary to discover the device's new inetAddress and new router before do
+     *            the configure action, if we can't find the new inetAddress, we will use the old inetAddress
+     * @param router the mesh device's router
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the mesh device's ip address
+     * @param randomToken 40 randomToken
+     * @return whether the action executed suc
+     */
+    boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid, InetAddress inetAddress,
+        String randomToken);
 }

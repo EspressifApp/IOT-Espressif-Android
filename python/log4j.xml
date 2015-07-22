@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<log4j level="OFF">
+<log4j level="DEBUG">
     <layer content="java/COMMAND" level="IGNORE">
         <package content="com.espressif.iot.command.device.light" level="IGNORE">
             <class content="EspCommandLightPostStatusLocal" level="IGNORE"/>
-            <class content="EspCommandLightGetStatusInternet" level="IGNORE"/>
             <class content="EspCommandLightGetStatusLocal" level="IGNORE"/>
             <class content="EspCommandLightPostStatusInternet" level="IGNORE"/>
+            <class content="EspCommandLightGetStatusInternet" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.command.device.humiture" level="IGNORE">
             <class content="EspCommandHumitureGetStatusListInternet" level="IGNORE"/>
@@ -16,6 +16,9 @@
             <class content="EspCommandPlugGetStatusInternet" level="IGNORE"/>
             <class content="EspCommandPlugGetStatusLocal" level="IGNORE"/>
             <class content="EspCommandPlugPostStatusLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.command.device.mesh" level="IGNORE">
+            <class content="EspCommandMeshConfigureLocal" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.command.user" level="IGNORE">
             <class content="EspCommandUserRegisterInternet" level="IGNORE"/>
@@ -38,40 +41,45 @@
         <package content="com.espressif.iot.command.device.common" level="IGNORE">
             <class content="EspCommandDeviceDeleteInternet" level="IGNORE"/>
             <class content="EspCommandDeviceDiscoverLocal" level="IGNORE"/>
+            <class content="EspCommandDeviceRenameInternet" level="IGNORE"/>
             <class content="EspCommandDeviceReconnectLocal" level="IGNORE"/>
             <class content="EspCommandDeviceSynchronizeInternet" level="IGNORE"/>
             <class content="EspCommandDeviceTimerInternet" level="IGNORE"/>
-            <class content="EspCommandDeviceRenameInternet" level="IGNORE"/>
+            <class content="EspCommandDeviceConfigureLocal" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.command.device.remote" level="IGNORE">
-            <class content="EspCommandRemoteGetStatusLocal" level="IGNORE"/>
             <class content="EspCommandRemotePostStatusInternet" level="IGNORE"/>
+            <class content="EspCommandRemoteGetStatusLocal" level="IGNORE"/>
             <class content="EspCommandRemotePostStatusLocal" level="IGNORE"/>
             <class content="EspCommandRemoteGetStatusInternet" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.command.device.flammable" level="IGNORE">
-            <class content="EspCommandFlammableGetStatusListInternet" level="IGNORE"/>
             <class content="EspCommandFlammableGetStatusInternet" level="IGNORE"/>
+            <class content="EspCommandFlammableGetStatusListInternet" level="IGNORE"/>
         </package>
     </layer>
     <layer content="java/UI" level="IGNORE">
-        <package content="com.espressif.iot.ui.device.timer" level="IGNORE">
-            <class content="DeviceTimersActivity" level="IGNORE"/>
+        <package content="com.espressif.iot.ui.settings" level="IGNORE">
+            <class content="SettingsFragment" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.ui.device" level="IGNORE">
             <class content="DeviceActivityAbs" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.ui.main" level="IGNORE">
+            <class content="RegisterActivity" level="IGNORE"/>
+            <class content="EspUIActivity" level="IGNORE"/>
+            <class content="WelcomeActivity" level="IGNORE"/>
+            <class content="LoginActivity" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.ui.softap_sta_support" level="IGNORE">
             <class content="SSSFragmentDevices" level="IGNORE"/>
             <class content="SSSFragmentConfigure" level="IGNORE"/>
         </package>
-        <package content="com.espressif.iot.ui.welcome" level="IGNORE">
-            <class content="RegisterActivity" level="IGNORE"/>
-            <class content="LoginActivity" level="IGNORE"/>
-            <class content="WelcomeActivity" level="IGNORE"/>
+        <package content="com.espressif.iot.ui.device.timer" level="IGNORE">
+            <class content="DeviceTimersActivity" level="IGNORE"/>
         </package>
-        <package content="com.espressif.iot.ui" level="IGNORE">
-            <class content="EspUIActivity" level="IGNORE"/>
+        <package content="com.espressif.iot.ui.help" level="IGNORE">
+            <class content="HelpEspUIActivity" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.ui.configure" level="IGNORE">
             <class content="DeviceConfigureActivity" level="IGNORE"/>
@@ -81,31 +89,37 @@
     </layer>
     <layer content="java/BASE" level="IGNORE">
         <package content="com.espressif.iot.base.net.rest.mesh" level="IGNORE">
+            <class content="EspMeshCommandReadUtil" level="IGNORE"/>
             <class content="EspSocketUtil" level="IGNORE"/>
             <class content="EspMeshDiscoverUtil" level="IGNORE"/>
-            <class content="EspSocketClient" level="IGNORE"/>
-            <class content="EspMeshNetUtil" level="IGNORE"/>
-            <class content="EspPureSocketServer" level="IGNORE"/>
             <class content="EspSocketReaderUtil" level="IGNORE"/>
+            <class content="EspMeshNetUtil" level="IGNORE"/>
+            <class content="MeshTypeUtil" level="IGNORE"/>
+            <class content="EspPureSocketServer" level="IGNORE"/>
+            <class content="EspSocketClient" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.base.upgrade.apk" level="IGNORE">
             <class content="UpgradeManagerApkOnline" level="IGNORE"/>
         </package>
-        <package content="com.espressif.iot.base.upgrade.abs" level="IGNORE">
-            <class content="UpgradeManagerAbs" level="IGNORE"/>
-        </package>
         <package content="com.espressif.iot.base.net.rest" level="IGNORE">
             <class content="MeshEspHttpUtil" level="IGNORE"/>
+            <class content="EspHttpDownloadUtil" level="IGNORE"/>
             <class content="EspHttpUtil" level="IGNORE"/>
-        </package>
-        <package content="com.espressif.iot.base.net.wifi" level="IGNORE">
-            <class content="WifiAdmin" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.base.time" level="IGNORE">
             <class content="EspTimeManager" level="IGNORE"/>
         </package>
+        <package content="com.espressif.iot.base.net.wifi" level="IGNORE">
+            <class content="WifiAdmin" level="IGNORE"/>
+        </package>
         <package content="com.espressif.iot.base.threadpool" level="IGNORE">
             <class content="CachedThreadPool" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.net.mdns" level="IGNORE">
+            <class content="MdnsDiscoverUtil" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.base.net.longsocket" level="IGNORE">
+            <class content="EspLongSocket" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.base.net.udp" level="IGNORE">
             <class content="UdpBroadcastUtil" level="IGNORE"/>
@@ -114,6 +128,7 @@
     <layer content="java/LOG" level="IGNORE">
         <package content="com.espressif.iot.log" level="IGNORE">
             <class content="InitLogger" level="IGNORE"/>
+            <class content="ReadLogTask" level="IGNORE"/>
             <class content="LogConfigurator" level="IGNORE"/>
         </package>
     </layer>
@@ -123,18 +138,25 @@
             <class content="EspActionDeviceNewGetInfoLocal" level="IGNORE"/>
             <class content="EspActionDeviceNewConfigureLocal" level="IGNORE"/>
         </package>
+        <package content="com.espressif.iot.action.softap_sta_support" level="IGNORE">
+            <class content="SSSActionDeviceUpgradeLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.device.mesh" level="IGNORE">
+            <class content="EspActionMeshDeviceConfigureLocal" level="IGNORE"/>
+        </package>
         <package content="com.espressif.iot.action.device.common" level="IGNORE">
+            <class content="EspActionDeviceConfigureLocal" level="IGNORE"/>
             <class content="EspActionDeviceSynchronizeInterentDiscoverLocal" level="IGNORE"/>
             <class content="EspActionDeviceReconnectLocal" level="IGNORE"/>
+        </package>
+        <package content="com.espressif.iot.action.device.longsocket" level="IGNORE">
+            <class content="EspDeviceLongSocketLight" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.action.user" level="IGNORE">
             <class content="EspActionUserLoginDB" level="IGNORE"/>
             <class content="EspActionUserDevicesUpdated" level="IGNORE"/>
             <class content="EspActionUserRegisterInternet" level="IGNORE"/>
             <class content="EspActionUserLoginInternet" level="IGNORE"/>
-        </package>
-        <package content="com.espressif.iot.action.softap_sta_support" level="IGNORE">
-            <class content="SSSActionDeviceUpgradeLocal" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.action.device.sensor" level="IGNORE">
             <class content="EspActionSensorGetStatusListInternetDB" level="IGNORE"/>
@@ -148,6 +170,8 @@
             <class content="EspHelpStateMachine" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.model.device.statemachine" level="IGNORE">
+            <class content="EspDeviceStateMachineHandler" level="IGNORE"/>
+            <class content="EspDeviceStateMachineExecutor" level="IGNORE"/>
             <class content="EspDeviceStateMachine" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.model.device.upgrade" level="IGNORE">
@@ -156,6 +180,7 @@
             <class content="EspDeviceDoUpgradeLocal" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.model.device" level="IGNORE">
+            <class content="EspDeviceConfigure" level="IGNORE"/>
             <class content="EspDeviceNew" level="IGNORE"/>
         </package>
         <package content="com.espressif.iot.model.device.cache" level="IGNORE">

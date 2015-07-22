@@ -207,30 +207,39 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                             userId);
                     
                     boolean isRouterValid = !deviceJsonObject.isNull(Router);
+                    boolean isRootDeviceIdValid = !deviceJsonObject.isNull(Root_Device_Id);
+                    // router
+                    String router = null;
+                    // root device id
+                    long rootDeviceId = -1;
+                    
                     if (isRouterValid)
                     {
                         // router
-                        String router = deviceJsonObject.getString(Router);
-                        
-                        // root device id
-                        long rootDeviceId = -1;
+                        router = deviceJsonObject.getString(Router);
                         
                         if (router.equals("null"))
                         {
                             router = null;
                         }
-                        else
+                    }
+                    
+                    if (isRootDeviceIdValid)
+                    {
+                        // root device id
+                        String rootDeviceIdStr = deviceJsonObject.getString(Root_Device_Id);
+                        if (!rootDeviceIdStr.equals("null"))
                         {
                             rootDeviceId = deviceJsonObject.getLong(Root_Device_Id);
                         }
-                        
-                        // synchronize router info from server
-                        device.setRootDeviceId(rootDeviceId);
-                        device.setRouter(router);
-                        if (router != null)
-                        {
-                            device.setIsMeshDevice(true);
-                        }
+                    }
+                    
+                    // synchronize router info from server
+                    device.setRootDeviceId(rootDeviceId);
+                    device.setRouter(router);
+                    if (rootDeviceId != -1)
+                    {
+                        device.setIsMeshDevice(true);
                     }
                     
                     // device.setGroupId(groupId);

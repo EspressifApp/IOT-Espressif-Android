@@ -32,7 +32,6 @@ import com.espressif.iot.ui.view.TreeView.LastLevelItemClickListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
-import com.espressif.iot.util.RouterUtil;
 import com.google.zxing.qrcode.ui.CreateQRImageHelper;
 
 import android.app.Activity;
@@ -53,13 +52,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
-public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHelpUIUpgradeLocal, IEspHelpUIUpgradeOnline
+public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHelpUIUpgradeLocal,
+    IEspHelpUIUpgradeOnline
 {
     private static final Logger log = Logger.getLogger(DeviceActivityAbs.class);
     
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
+    
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
+    
     protected static final int MENU_ID_UPGRADE_LOCAL = 0x1002;
+    
     protected static final int MENU_ID_UPGRADE_ONLINE = 0x1003;
     
     protected IEspDevice mIEspDevice;
@@ -69,15 +72,21 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     private boolean mDeviceCompatibility;
     
     protected static final int COMMAND_GET = 0;
+    
     protected static final int COMMAND_POST = 1;
     
     private HelpHandler mHelpHandler;
     
     protected EspViewPager mPager;
+    
     private List<View> mViewList;
+    
     private View mControlView;
+    
     private View mMeshView;
+    
     private TreeView mTreeView;
+    
     private ImageView mSwapView;
     
     @Override
@@ -169,7 +178,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     
     private void initTreeView()
     {
-
+        
         mTreeView = (TreeView)mMeshView.findViewById(R.id.mesh_children_list);
         List<IEspDeviceTreeElement> childList;
         if (mIEspDevice.getDeviceState().isStateLocal())
@@ -192,7 +201,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         // create list with root device
         List<List<IEspDevice>> lists = new ArrayList<List<IEspDevice>>();
         // add root device in lists[x][0]
-        for  (IEspDevice device : userDevices)
+        for (IEspDevice device : userDevices)
         {
             if (state.isStateInternet())
             {
@@ -206,8 +215,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             }
             else if (state.isStateLocal())
             {
-                if (device.getRouter() != null && RouterUtil.getRouterLevel(device.getRouter()) == 1
-                    && device.getDeviceState().isStateLocal())
+                if (device.getIsMeshDevice() && device.getDeviceState().isStateLocal()
+                    && device.getBssid().equals(device.getRootDeviceBssid()))
                 {
                     List<IEspDevice> childDevices = new ArrayList<IEspDevice>();
                     childDevices.add(device);
@@ -226,15 +235,29 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 continue;
             }
             
-            // add devices into their root device(lists[x][0]) 
+            // add devices into their root device(lists[x][0])
             for (List<IEspDevice> list : lists)
             {
                 IEspDevice rootDevice = list.get(0);
                 // Not device itself and same rootDeviceId
-                if (rootDevice.getId() != device.getId() && rootDevice.getId() == device.getRootDeviceId() )
+                // Internet device use rootDeviceId
+                if (state.isStateInternet())
                 {
-                    list.add(device);
-                    break;
+                    if (rootDevice.getId() != device.getId() && rootDevice.getId() == device.getRootDeviceId())
+                    {
+                        list.add(device);
+                        break;
+                    }
+                }
+                // Local device use rootDeviceBssid
+                else if (state.isStateLocal())
+                {
+                    if (rootDevice.getId() != device.getId()
+                        && rootDevice.getBssid().equals(device.getRootDeviceBssid()))
+                    {
+                        list.add(device);
+                        break;
+                    }
                 }
             }
         }
@@ -257,7 +280,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             {
                 for (IEspDevice device : list)
                 {
-                    if (device == mIEspDevice)
+                    if (device.equals(mIEspDevice))
                     {
                         childList.addAll(device.getDeviceTreeElementList(list));
                         return childList;
@@ -269,7 +292,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         return childList;
     }
     
-    private List<IEspDeviceTreeElement>  getLocalTreeElementList()
+    private List<IEspDeviceTreeElement> getLocalTreeElementList()
     {
         return getTreeElementList(EspDeviceState.LOCAL);
     }
@@ -279,20 +302,21 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         return getTreeElementList(EspDeviceState.INTERNET);
     }
     
-    private LastLevelItemClickListener mTreeViewItemClickListener = new LastLevelItemClickListener() {
-
+    private LastLevelItemClickListener mTreeViewItemClickListener = new LastLevelItemClickListener()
+    {
+        
         @Override
         public void onLastLevelItemClick(IEspDeviceTreeElement element, int position)
         {
             IEspDevice device = element.getCurrentDevice();
-            switch(device.getDeviceType())
+            switch (device.getDeviceType())
             {
                 case PLUG:
                 case LIGHT:
                 case REMOTE:
                     new DeviceDialogBuilder(DeviceActivityAbs.this, device).show();
                     break;
-                    
+                
                 case FLAMMABLE:
                 case HUMITURE:
                 case VOLTAGE:
@@ -757,7 +781,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
     }
     
-    //*************About help below***********//
+    // *************About help below***********//
     @Override
     public void onExitHelpMode()
     {
@@ -883,7 +907,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             setHelpMenuItem(menu, MENU_ID_UPGRADE_ONLINE);
         }
     }
-
+    
     private void setHelpMenuItem(Menu menu, int itemId)
     {
         for (int i = 0; i < menu.size(); i++)
@@ -895,7 +919,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             }
         }
     }
-    
     
     private void checkHelpOnSelectUpgradeLocal()
     {
@@ -914,5 +937,5 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             setResult(RESULT_HELP_UPGRADE_ONLINE);
         }
     }
-    //*************About help up***********//
+    // *************About help up***********//
 }

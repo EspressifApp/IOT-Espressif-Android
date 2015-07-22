@@ -36,7 +36,7 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     
     private IEspUser mUser;
     
-    private EditText mAccountEdt;
+    private EditText mUsernameEdt;
     private EditText mEmailEdt;
     private EditText mPasswordEdt;
     private EditText mPasswordAgainEdt;
@@ -47,6 +47,9 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     private static final int PASSOWRD_WORDS_NUMBER_MIN = 6;
     
     private RegisterHandler mHandler;
+    
+    private static final int FIND_USERNAME_EXIST = 0;
+    private static final int FIND_EMAIL_EXIST = 1;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -63,9 +66,9 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     
     private void init()
     {
-        mAccountEdt = (EditText)findViewById(R.id.register_account);
-        mAccountEdt.addTextChangedListener(new FilterSpaceTextListener(mAccountEdt));
-        mAccountEdt.setOnFocusChangeListener(this);
+        mUsernameEdt = (EditText)findViewById(R.id.register_username);
+        mUsernameEdt.addTextChangedListener(new FilterSpaceTextListener(mUsernameEdt));
+        mUsernameEdt.setOnFocusChangeListener(this);
         
         mEmailEdt = (EditText)findViewById(R.id.register_email);
         mEmailEdt.addTextChangedListener(new FilterSpaceTextListener(mEmailEdt));
@@ -78,6 +81,23 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
         mCancelBtn.setOnClickListener(this);
         mRegisterBtn = (Button)findViewById(R.id.register_register);
         mRegisterBtn.setOnClickListener(this);
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        
+        if (mUsernameEdt.getTag() != null)
+        {
+            ((FindAccountRunnable)mUsernameEdt.getTag()).cancel();
+            mUsernameEdt.setTag(null);
+        }
+        if (mEmailEdt.getTag() != null)
+        {
+            ((FindAccountRunnable)mEmailEdt.getTag()).cancel();
+            mEmailEdt.setTag(null);
+        }
     }
     
     @Override
@@ -95,9 +115,9 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
                     .show();
                 return;
             }
-            if (mAccountEdt.hasFocus())
+            if (mUsernameEdt.hasFocus())
             {
-                mAccountEdt.clearFocus();
+                mUsernameEdt.clearFocus();
             }
             
             if (mPasswordEdt.getText().length() < PASSOWRD_WORDS_NUMBER_MIN)
@@ -116,7 +136,7 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
                 mEmailEdt.clearFocus();
             }
             
-            String username = mAccountEdt.getText().toString();
+            String username = mUsernameEdt.getText().toString();
             String email = mEmailEdt.getText().toString();
             String password = mPasswordEdt.getText().toString();
             new RegisterTask(username, email, password).execute();
@@ -126,50 +146,95 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     @Override
     public void onFocusChange(View v, boolean hasFocus)
     {
-        if (v == mAccountEdt)
+        if (v == mUsernameEdt)
         {
             if (!hasFocus)
             {
-                if (!TextUtils.isEmpty(mAccountEdt.getText().toString()))
-                {
-                    EspBaseApiUtil.submit(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            boolean result = mUser.findAccountUsernameRegistered(mAccountEdt.getText().toString());
-                            mHandler.post(new FindAccountResultRunnable(mAccountEdt, result));
-                        }
-                    });
-                }
+                findAccount(mUsernameEdt, FIND_USERNAME_EXIST);
             }
         }
         else if (v == mEmailEdt)
         {
             if (!hasFocus)
             {
-                if (!TextUtils.isEmpty(mEmailEdt.getText().toString()))
-                {
-                    EspBaseApiUtil.submit(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            boolean result = mUser.findAccountEmailRegistered(mEmailEdt.getText().toString());
-                            mHandler.post(new FindAccountResultRunnable(mEmailEdt, result));
-                        }
-                    });
-                }
+                findAccount(mEmailEdt, FIND_EMAIL_EXIST);
             }
         }
     }
     
-    private class FindAccountResultRunnable implements Runnable
+    private void findAccount(EditText editText, int type)
+    {
+        if (!TextUtils.isEmpty(editText.getText().toString()))
+        {
+            if (editText.getTag() != null)
+            {
+                FindAccountRunnable lastRunnable = (FindAccountRunnable)editText.getTag();
+                lastRunnable.cancel();
+            }
+            FindAccountRunnable findRunnable = new FindAccountRunnable(type);
+            editText.setTag(findRunnable);
+            EspBaseApiUtil.submit(findRunnable);
+        }
+    }
+    
+    private class FindAccountRunnable implements Runnable
+    {
+        final int mType;
+        
+        private volatile boolean mCancel;
+        
+        public FindAccountRunnable(int type)
+        {
+            mType = type;
+            
+            mCancel = false;
+        }
+        
+        @Override
+        public void run()
+        {
+            boolean result;
+            switch (mType)
+            {
+                case FIND_USERNAME_EXIST:
+                    if (mCancel)
+                    {
+                        return;
+                    }
+                    result = mUser.findAccountUsernameRegistered(mUsernameEdt.getText().toString());
+                    if (mCancel)
+                    {
+                        return;
+                    }
+                    mHandler.post(new FindAccountResultUIRunnable(mUsernameEdt, result));
+                    break;
+                case FIND_EMAIL_EXIST:
+                    if (mCancel)
+                    {
+                        return;
+                    }
+                    result = mUser.findAccountEmailRegistered(mEmailEdt.getText().toString());
+                    if (mCancel)
+                    {
+                        return;
+                    }
+                    mHandler.post(new FindAccountResultUIRunnable(mEmailEdt, result));
+                    break;
+            }
+        }
+        
+        public void cancel()
+        {
+            mCancel = true;
+        }
+    }
+    
+    private class FindAccountResultUIRunnable implements Runnable
     {
         private EditText mEditText;
         private boolean mResult;
         
-        public FindAccountResultRunnable(EditText editText, boolean result)
+        public FindAccountResultUIRunnable(EditText editText, boolean result)
         {
             mEditText = editText;
             mResult = result;
@@ -182,21 +247,15 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
             if (mResult)
             {
                 drawables[2] = mEditText.getContext().getResources().getDrawable(R.drawable.esp_register_icon_forbid);
-                mEditText.setCompoundDrawablesWithIntrinsicBounds(drawables[0],
-                    drawables[1],
-                    drawables[2],
-                    drawables[3]);
-                mRegisterBtn.setEnabled(false);
             }
             else
             {
                 drawables[2] = null;
-                mEditText.setCompoundDrawablesWithIntrinsicBounds(drawables[0],
-                    drawables[1],
-                    drawables[2],
-                    drawables[3]);
-                mRegisterBtn.setEnabled(true);
             }
+            
+            mEditText.setCompoundDrawablesWithIntrinsicBounds(drawables[0], drawables[1], drawables[2], drawables[3]);
+            mRegisterBtn.setEnabled(!mResult);
+            mEditText.setTag(null);
         }
         
     }
@@ -242,7 +301,7 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
      */
     private boolean checkAccount()
     {
-        CharSequence username = mAccountEdt.getText();
+        CharSequence username = mUsernameEdt.getText();
         CharSequence email = mEmailEdt.getText();
         if (TextUtils.isEmpty(username) || TextUtils.isEmpty(email))
         {

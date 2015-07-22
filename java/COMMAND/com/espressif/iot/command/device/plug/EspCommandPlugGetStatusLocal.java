@@ -51,6 +51,37 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
         return null;
     }
     
+    private IEspStatusPlug getCurrentPlugStatus2(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
+    {
+        String uriString = getLocalUrl(inetAddress);
+        JSONObject jo = null;
+        if (deviceBssid == null || !isMeshDevice)
+        {
+            jo = EspBaseApiUtil.Get(uriString);
+        }
+        else
+        {
+            jo = EspBaseApiUtil.GetForJson(uriString, null, deviceBssid);
+        }
+        if (jo == null)
+        {
+            return null;
+        }
+        try
+        {
+            JSONObject responseJson = jo.getJSONObject(Response);
+            int on = responseJson.getInt(Status);
+            IEspStatusPlug status = new EspStatusPlug();
+            status.setIsOn(on == 1);
+            return status;
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
     @Override
     public IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress)
     {
@@ -66,6 +97,15 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
         IEspStatusPlug result = getCurrentPlugStatus(inetAddress, deviceBssid, router);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugGetStatusLocal(inetAddress=[" + inetAddress
             + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): " + router);
+        return result;
+    }
+
+    @Override
+    public IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
+    {
+        IEspStatusPlug result = getCurrentPlugStatus2(inetAddress, deviceBssid, isMeshDevice);
+        log.debug(Thread.currentThread().toString() + "##doCommandPlugGetStatusLocal(inetAddress=[" + inetAddress
+            + "],deviceBssid=[" + deviceBssid + "],router=[" + isMeshDevice + "]): " + isMeshDevice);
         return result;
     }
     

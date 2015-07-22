@@ -3,7 +3,7 @@
     <color name="esp_actionbar_color">#ff36bfdc</color>
     <color name="esp_actionbar_split_color">#ff46818e</color>
     
-    <color name="esp_text_hint_color">#b5b5b5</color>
+    <color name="esp_text_hint_color">#dddddd</color>
     
     <color name="esp_qrcode_viewfinder_mask">#60000000</color>
     <color name="esp_qrcode_viewfinder_frame">#ff000000</color>

@@ -55,6 +55,8 @@ public class EspDevice implements IEspDevice, Cloneable
     
     protected long mRootDeviceId;
     
+    protected String mRootDeviceBssid;
+    
     protected List<EspDeviceTimer> mTimerList;
     
     private List<IEspStatusEspnow> mEspnowStatusList = new ArrayList<IEspStatusEspnow>();
@@ -244,13 +246,13 @@ public class EspDevice implements IEspDevice, Cloneable
     {
         return this.mIsMeshDevice;
     }
-
+    
     @Override
     public void setRootDeviceId(long rootDeviceId)
     {
         this.mRootDeviceId = rootDeviceId;
     }
-
+    
     @Override
     public long getRootDeviceId()
     {
@@ -267,6 +269,18 @@ public class EspDevice implements IEspDevice, Cloneable
     public String getRouter()
     {
         return this.mRouter;
+    }
+    
+    @Override
+    public void setRootDeviceBssid(String rootBssid)
+    {
+        this.mRootDeviceBssid = rootBssid;
+    }
+    
+    @Override
+    public String getRootDeviceBssid()
+    {
+        return this.mRootDeviceBssid;
     }
     
     @Override
@@ -289,7 +303,7 @@ public class EspDevice implements IEspDevice, Cloneable
     @Override
     public boolean isSupportTimer()
     {
-        switch(mDeviceType)
+        switch (mDeviceType)
         {
             case PLUG:
             case PLUGS:
@@ -416,7 +430,7 @@ public class EspDevice implements IEspDevice, Cloneable
     {
         this.mRootDeviceId = device.getRootDeviceId();
     }
-
+    
     @Override
     public void copyRouter(IEspDevice device)
     {
@@ -472,14 +486,13 @@ public class EspDevice implements IEspDevice, Cloneable
         // + "],mLatestRomVersion=[" + mLatestRomVersion + "],mTimeStamp=[" + mTimeStamp + "],mUserId=[" + mUserId
         // + "],_isDeviceRefreshed=[" + _isDeviceRefreshed + "],mDeviceType=[" + mDeviceType + "],mDeviceState=["
         // + mDeviceState + "],mInetAddress=[" + mInetAddress + "])";
-        return "EspDevice: (mBssid=[" + mBssid + "],mDeviceId=[" + mDeviceId + "],mDeviceName=[" + mDeviceName
-            + "],mDeviceState=[" + mDeviceState + "],mIsMeshDevice=[" + mIsMeshDevice + "],mRouter=[" + mRouter
-            + "],mInetAddress=[" + mInetAddress + "])";
+        return "EspDevice: (mBssid=[" + mBssid + "],mRootDeviceBssid=[" + mRootDeviceBssid + "]mDeviceId=[" + mDeviceId
+            + "],mDeviceName=[" + mDeviceName + "],mDeviceState=[" + mDeviceState + "],mIsMeshDevice=[" + mIsMeshDevice
+            + "],mRouter=[" + mRouter + "],mInetAddress=[" + mInetAddress + "])";
         
     }
     
-    @Override
-    public List<IEspDeviceTreeElement> getDeviceTreeElementList(List<IEspDevice> allDeviceList)
+    private List<IEspDeviceTreeElement> __getDeviceTreeElementListByRouter(List<IEspDevice> allDeviceList)
     {
         if (!allDeviceList.contains(this))
         {
@@ -559,17 +572,117 @@ public class EspDevice implements IEspDevice, Cloneable
         }
         return deviceTreeElementList;
     }
-
+    
+    private List<IEspDeviceTreeElement> __getDeviceTreeElementListByBssid(List<IEspDevice> allDeviceList)
+    {
+        if (!allDeviceList.contains(this))
+        {
+            throw new IllegalStateException("allDeviceList don't contain current device");
+        }
+        if (!this.getIsMeshDevice())
+        {
+            throw new IllegalStateException("the device isn't mesh device");
+        }
+        // internet tell us the root device id while local tell us the root device bssid
+        // fill root device bssid if it is null and root device id isn't -1
+        for (IEspDevice outDevice : allDeviceList)
+        {
+            // only process mesh device
+            if (!outDevice.getIsMeshDevice())
+            {
+                continue;
+            }
+            // fill root device bssid
+            long outRootDeviceId = outDevice.getRootDeviceId();
+            if (outDevice.getRootDeviceBssid() == null && outRootDeviceId != -1)
+            {
+                for (IEspDevice inDevice : allDeviceList)
+                {
+                    if (outRootDeviceId == inDevice.getId())
+                    {
+                        String outRootDeviceBssid = inDevice.getBssid();
+                        outDevice.setRootDeviceBssid(outRootDeviceBssid);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // define final level is just to make code readable
+        final int rootLevel = 1;
+        final int childLevel = 2;
+        
+        // build deviceTreeElementList
+        List<IEspDeviceTreeElement> deviceTreeElementList = new ArrayList<IEspDeviceTreeElement>();
+        String rootDeviceKey = null;
+        boolean isRootHasChild = false;
+        
+        // root device
+        if (this.getBssid().equals(this.getRootDeviceBssid()))
+        {
+            rootDeviceKey = this.getKey();
+            for (IEspDevice device : allDeviceList)
+            {
+                // check whether the device is valid and isn't this device
+                if (!device.getIsMeshDevice() || device.equals(this) || !device.getRootDeviceBssid().equals(mBssid))
+                {
+                    continue;
+                }
+                // child device tree element
+                IEspDeviceTreeElement child = new EspDeviceTreeElement(device, rootDeviceKey, true, false, childLevel);
+                deviceTreeElementList.add(child);
+                isRootHasChild = true;
+            }
+            
+            // root device tree element
+            IEspDeviceTreeElement root = new EspDeviceTreeElement(this, null, false, isRootHasChild, rootLevel);
+            deviceTreeElementList.add(root);
+        }
+        // non root device
+        else
+        {
+            // root device tree element
+            IEspDevice rootDevice = null;
+            for (IEspDevice device : allDeviceList)
+            {
+                if (this.getRootDeviceBssid().equals(device.getBssid()))
+                {
+                    rootDevice = device;
+                    break;
+                }
+            }
+            if (rootDevice == null)
+            {
+                throw new IllegalStateException();
+            }
+            // root device's child is this device
+            isRootHasChild = true;
+            rootDeviceKey = rootDevice.getKey();
+            IEspDeviceTreeElement root = new EspDeviceTreeElement(rootDevice, null, false, isRootHasChild, rootLevel);
+            deviceTreeElementList.add(root);
+            // child device tree element
+            IEspDeviceTreeElement child = new EspDeviceTreeElement(this, rootDeviceKey, true, false, childLevel);
+            deviceTreeElementList.add(child);
+        }
+        return deviceTreeElementList;
+    }
+    
+    @Override
+    public List<IEspDeviceTreeElement> getDeviceTreeElementList(List<IEspDevice> allDeviceList)
+    {
+        return __getDeviceTreeElementListByBssid(allDeviceList);
+    }
+    
     @Override
     public boolean isActivated()
     {
         return mDeviceId > 0 && !TextUtils.isEmpty(mDeviceKey);
     }
-
+    
     @Override
     public List<IEspStatusEspnow> getEspnowStatusList()
     {
         return mEspnowStatusList;
     }
-
+    
 }

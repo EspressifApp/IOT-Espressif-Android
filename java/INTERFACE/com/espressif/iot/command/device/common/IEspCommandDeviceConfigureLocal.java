@@ -77,4 +77,38 @@ public interface IEspCommandDeviceConfigureLocal extends IEspCommandUnactivated,
     boolean doCommandMeshDeviceConfigureLocal(String router, String deviceBssid, InetAddress inetAddress,
         String randomToken);
     
+    /**
+     * configure the mesh device to an AP accessible to Internet, and make the mesh device activate on Server
+     * 
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the mesh device's ip address
+     * @param apSsid the Ap's ssid
+     * @param apPassword the Ap's password
+     * @param randomToken 40 randomToken
+     * @return whether the command executed suc
+     */
+    boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String apSsid,
+        String apPassword, String randomToken);
+    
+    /**
+     * configure the mesh device to an AP
+     * 
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the device's ip address
+     * @param apSsid the Ap's ssid
+     * @param apPassword the Ap's password
+     * @return whether the command executed suc
+     */
+    boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String apSsid,
+        String apPassword);
+    
+    /**
+     * make the mesh device activate on Server
+     * 
+     * @param deviceBssid the mesh device's bssid
+     * @param inetAddress the mesh device's ip address
+     * @param randomToken 40 randomToken
+     * @return whether the command executed suc
+     */
+    boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String randomToken);
 }

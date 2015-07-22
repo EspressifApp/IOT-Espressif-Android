@@ -86,11 +86,11 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
     
     private final AtomicInteger mCancelledCount;
     
-    private final Map<String,Boolean> mTaskResult;
+    private final Map<String, Boolean> mTaskResult;
     
     private void mainLoop()
     {
-        while(true)
+        while (true)
         {
             // wait semaphore for task(s) arrival,
             // sometimes, semaphore come without new task arrival, we call it fake semaphore,
@@ -124,7 +124,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 // if the task hasn't been set started, submit() and setTaskStart()
                 if (!currentTask.isStarted())
                 {
-                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() +" start");
+                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() + " start");
                     currentTask.submit(isUrgent);
                     currentTask.setTaskStart();
                 }
@@ -136,7 +136,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 // do fail runnable when cancelled
                 if (isCancelled)
                 {
-                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() +" is cancelled");
+                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() + " is cancelled");
                     currentTask.doFailRunnable();
                     mTaskList.remove(index--);
                     log.error("mainLoop():: mTaskList.size()=" + mTaskList.size());
@@ -144,7 +144,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 
                 if (!isCancelled && isDone)
                 {
-                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() +" done");
+                    log.info("mainLoop():: currentTask:" + currentTask.getBssid() + " done");
                     Future<?> future = currentTask.getFuture();
                     Object result = null;
                     try
@@ -152,7 +152,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         result = future.get();
                         log.error("mainLoop():: get result");
                     }
-                    catch(CancellationException e)
+                    catch (CancellationException e)
                     {
                         log.error("CancellationException:: done task can't be cancelled");
                     }
@@ -254,6 +254,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
     private void takeTaskToken()
     {
         log.error("takeTaskToken():: mTaskList.size(): " + mTaskList.size() + ", mTaskToken.take() wait...");
+        
         // wait the semaphore when it is possible that some task has been executed
         try
         {
@@ -373,6 +374,21 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
             boolean isExpired = this.mIsExpiredAlready;
             this.mIsExpiredAlready = System.currentTimeMillis() - this.mStartTimestamp >= this.mTimeout;
             return isExpired;
+        }
+        
+        @Override
+        public void checkIsTaskCancel()
+            throws InterruptedException
+        {
+            try
+            {
+                Thread.sleep(50);
+            }
+            catch (InterruptedException e)
+            {
+                log.info(Thread.currentThread().toString() + "##checkIsTaskCancel(): " + mBssid + " is cancelled");
+                throw e;
+            }
         }
         
         @Override
@@ -502,6 +518,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 public Boolean call()
                     throws Exception
                 {
+                    
                     long startTimestamp = System.currentTimeMillis();
                     log.debug("ActivateLocalTask:: entrance");
                     
@@ -521,6 +538,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     InetAddress inetAddress = mDeviceConfigure.getInetAddress();
                     String randomToken = mDeviceConfigure.getKey();
                     String bssid = mDeviceConfigure.getBssid();
+                    String rootDeviceBssid = mDeviceConfigure.getRootDeviceBssid();
                     IOTAddress iotAddress = null;
                     
                     if (discoverRequired)
@@ -531,12 +549,14 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         log.debug("ActivateLocalTask:: discoverDevice finish, iotAddress:" + iotAddress);
                         router = iotAddress != null ? iotAddress.getRouter() : null;
                         inetAddress = iotAddress != null ? iotAddress.getInetAddress() : null;
+                        rootDeviceBssid = iotAddress != null ? iotAddress.getRootBssid() : null;
                         // update the inetAddress and router
                         if (iotAddress != null)
                         {
                             mDeviceConfigure.setRouter(router);
+                            mDeviceConfigure.setRootDeviceBssid(rootDeviceBssid);
                             mDeviceConfigure.setInetAddress(inetAddress);
-                            mDeviceConfigure.setIsMeshDevice(router != null);
+                            mDeviceConfigure.setIsMeshDevice(rootDeviceBssid != null);
                             // for the moment, we can't see the device's name while activating,
                             // so don't mind the device's name now
                             String prefix = router != null ? "espressif_" : "ESP_";
@@ -554,6 +574,8 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         sleepForInterval(startTimestamp, endTimestamp);
                         log.debug("ActivateLocalTask:: sleep for interval end");
                         log.warn("ActivateLocalTask:: inetAddress = null, return null");
+                        // check whether the task is cancelled
+                        checkIsTaskCancel();
                         // don't forget to add task token
                         addTaskToken();
                         return null;
@@ -565,11 +587,9 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         log.debug("ActivateLocalTask:: do configure action mesh");
                         isSuc =
                             mDeviceConfigure.doActionMeshDeviceConfigureLocal(false,
-                                router,
                                 deviceBssid,
                                 inetAddress,
                                 randomToken);
-                        
                     }
                     else
                     {
@@ -580,12 +600,13 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     
                     log.debug(Thread.currentThread().toString() + "##ActivateLocalTask:: isSuc: " + isSuc);
                     
-                    // don't forget to add task token
-                    addTaskToken();
-                    
                     // return result
                     if (isSuc)
                     {
+                        // check whether the task is cancelled
+                        checkIsTaskCancel();
+                        // don't forget to add task token
+                        addTaskToken();
                         return isSuc;
                     }
                     else
@@ -594,6 +615,10 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         long endTimestamp = System.currentTimeMillis();
                         sleepForInterval(startTimestamp, endTimestamp);
                         log.debug("ActivateLocalTask:: sleep for interval end");
+                        // check whether the task is cancelled
+                        checkIsTaskCancel();
+                        // don't forget to add task token
+                        addTaskToken();
                         return null;
                     }
                     
@@ -654,7 +679,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         
         TaskActivateInternet(IEspDeviceConfigure deviceConfigure)
         {
-            super(deviceConfigure.getBssid(), 60 * 1000, 1*1000);
+            super(deviceConfigure.getBssid(), 60 * 1000, 1 * 1000);
             this.mDeviceConfigure = deviceConfigure;
             this.mDeviceResult = null;
         }
@@ -684,9 +709,12 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         sleepForInterval(startTimestamp, endTimestamp);
                         log.debug("ActivateInternetTask:: sleep for interval end");
                     }
+                    // check whether the task is cancelled
+                    checkIsTaskCancel();
                     // don't forget to add task token
                     addTaskToken();
                     return mDeviceResult;
+                    
                 }
             };
         }
@@ -739,7 +767,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 
             };
         }
-
+        
         @Override
         public boolean isUrgent()
         {
@@ -747,7 +775,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         }
         
     }
-
+    
     @Override
     public void addTask(ITaskBase task)
     {
@@ -755,7 +783,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         mTaskList.add(task);
         addTaskToken();
     }
-
+    
     @Override
     public ITaskActivateLocal createTaskActivateLocal(IEspDeviceConfigure deviceConfigure)
     {
@@ -763,7 +791,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         ITaskActivateLocal task = new TaskActivateLocal(deviceConfigure);
         return task;
     }
-
+    
     @Override
     public ITaskActivateInternet createTaskActivateInternet(IEspDeviceConfigure deviceConfigure)
     {
@@ -771,7 +799,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         ITaskActivateInternet task = new TaskActivateInternet(deviceConfigure);
         return task;
     }
-
+    
     @Override
     public void cancelAllTasks()
     {
@@ -780,21 +808,21 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         mTaskResult.clear();
         List<ITaskBase> currentTasks = new ArrayList<ITaskBase>();
         currentTasks.addAll(mTaskList);
-        for(ITaskBase task : currentTasks)
+        for (ITaskBase task : currentTasks)
         {
             task.cancel();
         }
         mCancelledCount.incrementAndGet();
         addTaskToken();
     }
-
+    
     @Override
     public boolean isAllTasksFinished()
     {
         boolean isAllTasksFinished = mTaskList.isEmpty();
         return isAllTasksFinished;
     }
-
+    
     @Override
     public boolean isTaskFinished(String deviceBssid)
     {
@@ -809,7 +837,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         }
         return true;
     }
-
+    
     private void putTaskResult(String bssid, boolean isSuc)
     {
         mTaskResult.put(bssid, isSuc);

@@ -1,6 +1,9 @@
 package com.espressif.iot.base.net.rest.mesh;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -8,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.type.net.HeaderPair;
+import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.InputStreamUtils;
 import com.espressif.iot.util.MeshUtil;
 
@@ -62,7 +66,7 @@ class EspMeshCommand
         StringBuilder sb = new StringBuilder();
         sb.append("f_req:" + isRequest() + "\n");
         sb.append("f_resp:" + isResponse() + "\n");
-        sb.append("f_cap:" + getCapability());
+        sb.append("f_cap:" + getCapability() + "\n");
         return sb.toString();
     }
 }
@@ -72,6 +76,8 @@ public class EspMeshNetUtil
     private static final Logger log = Logger.getLogger(EspMeshNetUtil.class);
     
     private final static String COMMAND = "command";
+    
+    private final static String MAC = "mdev_mac";
     
     private final static String ROUTER = "router";
     
@@ -226,11 +232,16 @@ public class EspMeshNetUtil
     
     private static boolean __sendRequest(EspSocketClient client, IEspSocketRequest requestEntity)
     {
+        return __sendRequest(client, requestEntity.toString());
+    }
+    
+    private static boolean __sendRequest(EspSocketClient client, String requestStr)
+    {
         log.debug("__sendRequest()");
         try
         {
-            client.writeRequest(requestEntity.toString());
-            log.debug("__sendRequest():\n" + requestEntity.toString());
+            client.writeRequest(requestStr);
+            log.debug("__sendRequest():\n" + requestStr);
         }
         catch (IOException e)
         {
@@ -247,6 +258,12 @@ public class EspMeshNetUtil
         return client.readResponseEntity();
     }
     
+    private static String __receiveOneCommandResponse(EspSocketClient client)
+    {
+        log.debug("__receiveOneCommandResponse()");
+        return client.readCommandResponse();
+    }
+    
     private static JSONObject __addNecessaryElements(JSONObject json, String router, String deviceBssid,
         String localInetAddress, int port)
     {
@@ -255,11 +272,16 @@ public class EspMeshNetUtil
         {
             json = new JSONObject();
         }
+        if (deviceBssid == null)
+        {
+            throw new IllegalArgumentException("__addNecessaryElements(): deviceBssid is null");
+        }
         try
         {
-            json.put(ROUTER, router);
+            // json.put(ROUTER, router);
             json.put(SIP, MeshUtil.getIpAddressForMesh(localInetAddress));
             json.put(PORT, MeshUtil.getPortForMesh(port));
+            json.put(MAC, MeshUtil.getMacAddressForMesh(deviceBssid));
         }
         catch (JSONException e)
         {
@@ -391,7 +413,7 @@ public class EspMeshNetUtil
         // it is used just to get host by uri
         IEspSocketRequest request1 = new EspSocketRequestBaseEntity(method, uriStr);
         String host = request1.getHost();
-        if(client==null)
+        if (client == null)
         {
             client = new EspSocketClient();
             isConnectRequired = true;
@@ -501,8 +523,8 @@ public class EspMeshNetUtil
     }
     
     // temp method, just for mesh
-    static JSONObject executeForJson(EspSocketClient client,String method, String uriStr, String router, String deviceBssid,
-        JSONObject json, HeaderPair... headers)
+    static JSONObject executeForJson(EspSocketClient client, String method, String uriStr, String router,
+        String deviceBssid, JSONObject json, HeaderPair... headers)
     {
         return __executeForJson(client,
             method,
@@ -705,4 +727,142 @@ public class EspMeshNetUtil
             headers);
     }
     
+    static List<IOTAddress> __GetTopoIOTAddressList(InetAddress rootInetAddress, String rootDeviceBssid,
+        String deviceBssid)
+    {
+        log.debug("__GetTopoIOTAddressList(): entrance");
+        // build base parameters
+        String uriStr = "http:/" + rootInetAddress;
+        // it is used just to get host by uri
+        IEspSocketRequest request1 = new EspSocketRequestBaseEntity(METHOD_GET, uriStr);
+        String host = request1.getHost();
+        EspSocketClient client = new EspSocketClient();
+        client.setSoTimeout(SO_TIMEOUT);
+        // connect
+        log.debug("__GetTopoIOTAddressList(): connect");
+        boolean isConnectSuc = false;
+        for (int i = 0; i < CONNECT_RETRY; i++)
+        {
+            if (__connect(client, host, MESH_PORT, CONNECTION_TIMEOUT))
+            {
+                isConnectSuc = true;
+                break;
+            }
+            try
+            {
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        if (!isConnectSuc)
+        {
+            __closeClient(client);
+            return null;
+        }
+        String localInetAddress = client.getLocalAddressStr();
+        int localPort = client.getLocalPort();
+        // build request
+        String getTopoRequest = null;
+        if (deviceBssid == null)
+        {
+            getTopoRequest = MeshTypeUtil.createGetTopologyRequestContent();
+        }
+        else
+        {
+            getTopoRequest = MeshTypeUtil.createIsDeviceLocalRequestContent(deviceBssid);
+        }
+        // check whether device is available
+        log.debug("__GetTopoIOTAddressList(): check whether device is available");
+        if (!__isDeviceAvailable(client, uriStr, null, deviceBssid, localInetAddress, localPort))
+        {
+            __closeClient(client);
+            return null;
+        }
+        // send request
+        log.debug("__GetTopoIOTAddressList(): send request");
+        if (!__sendRequest(client, getTopoRequest))
+        {
+            log.warn("__executeForJsonArray(): send request fail");
+            __closeClient(client);
+            return null;
+        }
+        log.debug("__GetTopoIOTAddressList(): host: " + host);
+        // receive and parse response
+        log.debug("__GetTopoIOTAddressList(): receive and parse response");
+        JSONObject jsonResult = null;
+        List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
+        boolean hasNext = true;
+        while (hasNext)
+        {
+            String responseStr = __receiveOneCommandResponse(client);
+            log.debug("__GetTopoIOTAddressList(): receive one response: " + responseStr);
+            if (responseStr == null)
+            {
+                hasNext = false;
+            }
+            else
+            {
+                try
+                {
+                    jsonResult = new JSONObject(responseStr);
+                    if (deviceBssid != null)
+                    {
+                        hasNext = false;
+                        IOTAddress iotAddress =
+                            MeshTypeUtil.extractDeviceIOTAddress(jsonResult,
+                                rootInetAddress,
+                                deviceBssid,
+                                rootDeviceBssid);
+                        if (iotAddress != null)
+                        {
+                            log.debug("__GetTopoIOTAddressList(): find iotAddress:" + iotAddress);
+                            iotAddressList.add(iotAddress);
+                        }
+                    }
+                    else
+                    {
+                        hasNext =
+                            MeshTypeUtil.extractDeviceIOTAddresses(jsonResult,
+                                rootInetAddress,
+                                iotAddressList,
+                                rootDeviceBssid);
+                        log.debug("__GetTopoIOTAddressList(): current iotAddressList:" + iotAddressList + ", hasNext:"
+                            + hasNext);
+                    }
+                }
+                catch (JSONException e)
+                {
+                    hasNext = false;
+                    e.printStackTrace();
+                }
+            }
+        }
+        return iotAddressList;
+    }
+    
+    static IOTAddress GetTopoIOTAddress(InetAddress rootInetAddress, String rootBssid, String deviceBssid)
+    {
+        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList(rootInetAddress, rootBssid, null);
+        if (iotAddressList == null || iotAddressList.isEmpty())
+        {
+            log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddress(rootInetAddress=[" + rootInetAddress
+                + "],rootBssid=[" + rootBssid + "],deviceBssid=[" + deviceBssid + "]): empty, return null");
+            return null;
+        }
+        IOTAddress iotAddress0 = iotAddressList.get(0);
+        log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddress(rootInetAddress=[" + rootInetAddress
+            + "],rootBssid=[" + rootBssid + "],deviceBssid=[" + deviceBssid + "]): " + iotAddress0);
+        return iotAddress0;
+    }
+    
+    static List<IOTAddress> GetTopoIOTAddressList(InetAddress rootInetAddress, String rootBssid)
+    {
+        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList(rootInetAddress, rootBssid, null);
+        log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddressList(rootInetAddress=[" + rootInetAddress
+            + "],rootBssid=[" + rootBssid + "]): " + iotAddressList);
+        return iotAddressList;
+    }
 }

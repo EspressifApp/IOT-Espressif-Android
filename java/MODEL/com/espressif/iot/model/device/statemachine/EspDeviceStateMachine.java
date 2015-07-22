@@ -36,7 +36,6 @@ import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
-import com.espressif.iot.device.builder.BEspDeviceRoot;
 import com.espressif.iot.device.cache.IEspDeviceCache.NotifyType;
 import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
 
@@ -249,7 +248,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
     
     private void __configure(final IEspDevice device, final IEspDevice deviceStateMachine)
     {
-        if(device instanceof IEspDeviceConfigure)
+        if (device instanceof IEspDeviceConfigure)
         {
             log.debug(Thread.currentThread().toString() + "##__configure IEspDeviceConfigure");
             IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
@@ -471,10 +470,11 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 String deviceKey = device.getKey();
                 String latestRomVersion = device.getLatest_rom_version();
                 String router = device.getRouter();
+                boolean isMeshDevice = device.getIsMeshDevice();
                 boolean isSuc;
                 IOTAddress iotAddressResult = null;
                 List<IOTAddress> localDeviceList = null;
-                if (router != null)
+                if (isMeshDevice)
                 {
                     // for the mesh device upgrade local suc, it will be reset, not only itself will be changed,
                     // but also other device's local state will be changed
@@ -508,6 +508,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                     device.setInetAddress(iotAddressResult.getInetAddress());
                     device.setIsMeshDevice(iotAddressResult.isMeshDevice());
                     device.setRouter(iotAddressResult.getRouter());
+                    device.setRootDeviceBssid(iotAddressResult.getRootBssid());
                     if (device.getIsMeshDevice())
                     {
                         __transformStateMeshUpgradeLocalSuc(device, localDeviceList, Direction.SUC);

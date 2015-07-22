@@ -9,15 +9,21 @@ public interface IEspDeviceLongSocketLight
 {
     /**
      * add light status by local
+     * 
      * @param statusLight status of light
+     * @param bssid the device's bssid
+     * @param isMeshDevice whether the device is mesh device
      */
-    void addLigthtStatusLocal(IEspStatusLight statusLight);
+    void addLigthtStatusLocal(IEspStatusLight statusLight, String bssid, boolean isMeshDevice);
     
     /**
      * add light status by Internet
+     * 
      * @param statusLight status of light
+     * @param bssid the device's bssid
+     * @param isMeshDevice whether the device is mesh device
      */
-    void addLigthStatusInternet(IEspStatusLight statusLight);
+    void addLigthStatusInternet(IEspStatusLight statusLight, String bssid, boolean isMeshDevice);
     
     /**
      * finish the task

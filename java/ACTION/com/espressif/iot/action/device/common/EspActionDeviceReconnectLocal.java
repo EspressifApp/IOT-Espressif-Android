@@ -64,6 +64,7 @@ public class EspActionDeviceReconnectLocal implements IEspActionDeviceReconnectL
                 if (device != null)
                 {
                     device.setRouter(iotAddress.getRouter());
+                    device.setRootDeviceBssid(iotAddress.getRootBssid());
                     localDeviceList.add(device);
                 }
             }

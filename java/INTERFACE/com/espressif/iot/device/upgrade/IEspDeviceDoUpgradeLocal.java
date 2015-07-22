@@ -7,6 +7,9 @@ import com.espressif.iot.type.net.IOTAddress;
 
 public interface IEspDeviceDoUpgradeLocal extends IEspDeviceUpgrade
 {
+    
+    static final long TIMEOUT_MILLISECONDS = 5 * 60 * 1000;
+    
     final static int CONNECTION_TIMEOUT = 2 * 1000;
     
     final static int SO_TIMEOUT = 30 * 1000;
@@ -47,6 +50,6 @@ public interface IEspDeviceDoUpgradeLocal extends IEspDeviceUpgrade
      * @param router the mesh device's router
      * @return the result from EspBaseUtilApi.discoverDevices() which contains the device itself
      */
-    List<IOTAddress> doUpgradeMeshDeviceLocal(InetAddress inetAddress, String bssid, String deviceKey, String latestRomVersion,
-        String router);
+    List<IOTAddress> doUpgradeMeshDeviceLocal(InetAddress inetAddress, String bssid, String deviceKey,
+        String latestRomVersion, String router);
 }

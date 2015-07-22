@@ -18,10 +18,9 @@ public class EspCommandUserLoginInternet implements IEspCommandUserLoginInternet
     @Override
     public EspLoginResult doCommandUserLoginInternet(String userEmail, String userPassword)
     {
-        JSONObject jsonObject = new JSONObject();
         try
         {
-            jsonObject = new JSONObject();
+            JSONObject jsonObject = new JSONObject();
             jsonObject.put(Email, userEmail);
             jsonObject.put(Password, userPassword);
             jsonObject.put(Scope, USER);

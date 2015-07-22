@@ -272,13 +272,15 @@ public class DeviceLightDialog extends DeviceDialogAbs implements View.OnClickLi
             statusLight.setWWhite(mLightWWhiteBar.getProgress());
             
             IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
+            String bssid = mDevice.getBssid();
+            boolean isMeshDevice = mDevice.getIsMeshDevice();
             if (mDevice.getDeviceState().isStateLocal())
             {
-                lightPlayer.addLigthtStatusLocal(statusLight);
+                lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
             }
             else if (mDevice.getDeviceState().isStateInternet())
             {
-                lightPlayer.addLigthStatusInternet(statusLight);
+                lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
             }
         }
     }
@@ -303,13 +305,15 @@ public class DeviceLightDialog extends DeviceDialogAbs implements View.OnClickLi
             statusLight.setWWhite(mLightWWhiteBar.getProgress());
             
             IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
+            String bssid = mDevice.getBssid();
+            boolean isMeshDevice = mDevice.getIsMeshDevice();
             if (mDevice.getDeviceState().isStateLocal())
             {
-                lightPlayer.addLigthtStatusLocal(statusLight);
+                lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
             }
             else if (mDevice.getDeviceState().isStateInternet())
             {
-                lightPlayer.addLigthStatusInternet(statusLight);
+                lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
             }
         }
     }

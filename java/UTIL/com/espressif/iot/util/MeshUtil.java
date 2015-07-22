@@ -12,6 +12,7 @@ import java.util.Locale;
 public class MeshUtil
 {
     public static String BLANK_ROUTER = "FFFFFFFF";
+    
     /**
      * Get the port for mesh usage(For mesh require port hex uppercase).
      * 
@@ -29,6 +30,48 @@ public class MeshUtil
         }
         sb.append(portHexUppercase);
         return sb.toString();
+    }
+    
+    /**
+     * Get the mac address bytes format by the device's bssid String format
+     * @param bssid the device's bssid String format
+     * @return the mac address bytes format
+     */
+    public static byte[] getMacAddressBytes(String bssid)
+    {
+        String[] bssidStrSplit = bssid.split(":");
+        byte[] bssidBytes = new byte[bssidStrSplit.length];
+        for (int i = 0; i < bssidStrSplit.length; ++i)
+        {
+            String bssidStr = bssidStrSplit[i];
+            bssidBytes[i] = (byte)Integer.parseInt(bssidStr, 16);
+        }
+        return bssidBytes;
+    }
+    
+    /**
+     * Get the mac address String format by the device's bssid bytes format
+     * @param bssidBytes the device's bssid bytes format
+     * @return the mac address String format
+     */
+    public static String getMacAddressStr(byte[] bssidBytes)
+    {
+        StringBuilder sb = new StringBuilder();
+        String segmentStr = null;
+        for (int i = 0; i < bssidBytes.length; ++i)
+        {
+            segmentStr = Integer.toHexString(0xff & bssidBytes[i]);
+            if (segmentStr.length() == 1)
+            {
+                sb.append("0");
+            }
+            sb.append(segmentStr);
+            if (i != bssidBytes.length - 1)
+            {
+                sb.append(':');
+            }
+        }
+        return sb.toString().toLowerCase(Locale.US);
     }
     
     /**
@@ -77,6 +120,7 @@ public class MeshUtil
     
     /**
      * Get the host name by mesh ip
+     * 
      * @param meshIp the mesh ip, e.g. C0A80102
      * @return the ip address, e.g. 192.168.1.2
      */
@@ -86,11 +130,11 @@ public class MeshUtil
         int value;
         for (int i = 0; i < meshIp.length(); i += 2)
         {
-            value = Integer.parseInt(meshIp.substring(i, i+2), 16);
+            value = Integer.parseInt(meshIp.substring(i, i + 2), 16);
             sb.append(value);
             sb.append(".");
         }
-        return sb.substring(0, sb.length()-1);
+        return sb.substring(0, sb.length() - 1);
     }
     
     /**
@@ -170,6 +214,7 @@ public class MeshUtil
     
     /**
      * Check whether the gateway is belong to mesh device
+     * 
      * @param gateway the phone's gateway
      * @return whehter the phone is connected to a mesh device
      */
@@ -194,7 +239,7 @@ public class MeshUtil
             }
         }
     }
-
+    
     private static void test_getPortForMesh()
     {
         int port1 = 7777;
@@ -273,13 +318,51 @@ public class MeshUtil
     {
         String meshIp = "C0A80102";
         String result = getHostNameByMeshIp(meshIp);
-        if(result.equals("192.168.1.2"))
+        if (result.equals("192.168.1.2"))
         {
             System.out.println("test_getHostNameByMeshIp() pass");
         }
         else
         {
             System.out.println("test_getHostNameByMeshIp() fail");
+        }
+    }
+    
+    private static void test_getMacAddressBytes()
+    {
+        String bssid = "18:03:56:78:90:ab";
+        byte[] bssidBytes = new byte[] {0x18, 0x03, 0x56, 0x78, (byte)0x90, (byte)0xab};
+        byte[] bssidBytes1 = getMacAddressBytes(bssid);
+        if (bssidBytes.length != bssidBytes1.length)
+        {
+            System.out.println("test_getMacAddressBytes() fail 1");
+        }
+        else
+        {
+            for (int i = 0; i < bssidBytes.length; ++i)
+            {
+                if (bssidBytes[i] != bssidBytes1[i])
+                {
+                    System.out.println("test_getMacAddressBytes() fail 2");
+                    return;
+                }
+            }
+            System.out.println("test_getMacAddressBytes() pass");
+        }
+    }
+    
+    private static void test_getMacAddressStr()
+    {
+        String bssid = "18:03:56:78:90:ab";
+        byte[] bssidBytes = new byte[] {0x18, 0x03, 0x56, 0x78, (byte)0x90, (byte)0xab};
+        String bssid1 = getMacAddressStr(bssidBytes);
+        if(bssid.equals(bssid1))
+        {
+            System.out.println("test_getMacAddressStr() pass");
+        }
+        else
+        {
+            System.out.println("test_getMacAddressStr() fail");
         }
     }
     
@@ -291,5 +374,7 @@ public class MeshUtil
         test_ascii2String();
         test_getRawMacAddress();
         test_getHostNameByMeshIp();
+        test_getMacAddressBytes();
+        test_getMacAddressStr();
     }
 }

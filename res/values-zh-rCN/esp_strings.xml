@@ -13,6 +13,12 @@
     <string name="esp_login_result_not_register">邮箱未注册</string>
     <string name="esp_login_result_password_error">密码错误</string>
     <string name="esp_login_quick_usage">快速使用</string>
+    <string name="esp_login_third_party"><u>使用第三方登录</u></string>
+
+    <string name="esp_third_party_weibo">微博</string>
+    <string name="esp_third_party_wechat">微信</string>
+    <string name="esp_third_party_qq">QQ</string>
+    <string name="esp_third_party_get_token_failed">获取 %1$s 授权失败</string>
 
     <string name="esp_register_account">用户名</string>
     <string name="esp_register_email">邮箱</string>

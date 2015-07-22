@@ -77,19 +77,16 @@
         <item name="android:textColor">@color/esp_week_text_color</item>
     </style>
 
-    <style name="EspTab">
-        <item name="android:button">@null</item>
-        <item name="android:background">@drawable/esp_tab_bg</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
-        <item name="android:minHeight">50dip</item>
-    </style>
-
     <style name="EspUITab" >
         <item name="android:button">@null</item>
         <item name="android:background">@drawable/esp_ui_tab</item>
         <item name="android:gravity">center</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+    </style>
+
+    <style name="TransparentBgDialog" parent="android:Theme.Holo.Light.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 </resources>

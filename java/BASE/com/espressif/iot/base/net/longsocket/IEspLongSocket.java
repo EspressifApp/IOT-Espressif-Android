@@ -73,10 +73,13 @@ public interface IEspLongSocket
     boolean connect();
     
     /**
-     * add the request to be sent,
+     * add the request to be sent and the device's bssid
+     * 
      * @param request the request to be sent
+     * @param bssid the device's bssid
+     * @param isMeshDevice whether the device is mesh device
      */
-    void addRequest(EspSocketRequestBaseEntity request);
+    void addRequest(EspSocketRequestBaseEntity request, String bssid, boolean isMeshDevice);
     
     /**
      * close the long socket immediately

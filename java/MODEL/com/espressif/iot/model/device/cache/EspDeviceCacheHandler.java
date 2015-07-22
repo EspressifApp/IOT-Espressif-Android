@@ -292,6 +292,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     userDevice.setInetAddress(localIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localIOTAddress.isMeshDevice());
                     userDevice.setRouter(localIOTAddress.getRouter());
+                    userDevice.setRootDeviceBssid(localIOTAddress.getRootBssid());
                 }
             }
         }
@@ -349,6 +350,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     userDevice.setInetAddress(localUpgradeSucIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localUpgradeSucIOTAddress.isMeshDevice());
                     userDevice.setRouter(localUpgradeSucIOTAddress.getRouter());
+                    userDevice.setRootDeviceBssid(localUpgradeSucIOTAddress.getRootBssid());
                     break;
                 }
             }
@@ -446,7 +448,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     // IEspDeviceNew support only one CONFIGURING device,
                     // IEspDeviceConfigure support more than one CONFIGURING device
                     if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
-                        EspDeviceState.CONFIGURING))
+                        EspDeviceState.CONFIGURING) && deviceInUser.isSimilar(stateMachineDevice))
                     {
                         deviceInUser.copyDeviceState(stateMachineDevice);
                         deviceInUser.copyTimestamp(stateMachineDevice);
@@ -460,7 +462,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     if (deviceInUser instanceof IEspDeviceNew)
                     {
                         if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(),
-                            EspDeviceState.ACTIVATING))
+                            EspDeviceState.ACTIVATING) && deviceInUser.isSimilar(stateMachineDevice))
                         {
                             IEspDeviceNew deviceNew = (IEspDeviceNew)deviceInUser;
                             deviceNew.resume();
@@ -628,6 +630,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
             {
                 // clear router info
                 device.setRouter(null);
+                device.setRootDeviceBssid(null);
                 device.setIsMeshDevice(false);
             }
         }

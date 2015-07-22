@@ -13,6 +13,12 @@
     <string name="esp_login_result_not_register">This email is not register</string>
     <string name="esp_login_result_password_error">Password error</string>
     <string name="esp_login_quick_usage">Quick Usage</string>
+    <string name="esp_login_third_party"><u>Use third party login</u></string>
+
+    <string name="esp_third_party_weibo">Weibo</string>
+    <string name="esp_third_party_wechat">WeChat</string>
+    <string name="esp_third_party_qq">QQ</string>
+    <string name="esp_third_party_get_token_failed">Get %1$s access token failed</string>
 
     <string name="esp_register_account">User Name</string>
     <string name="esp_register_email">Email</string>

@@ -45,15 +45,34 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     {
         String uriString = getLocalUrl(inetAddress);
         JSONObject jsonObject;
+        JSONObject result = null;
         jsonObject = getRequestJSONObject(statusPlug);
-        if (EspBaseApiUtil.Post(uriString, jsonObject) != null)
+        if (deviceBssid == null || router == null)
         {
-            return true;
+            result = EspBaseApiUtil.Post(uriString, jsonObject);
         }
         else
         {
-            return false;
+            result = EspBaseApiUtil.PostForJson(uriString, router, deviceBssid, jsonObject);
         }
+        return (result != null);
+    }
+    
+    private boolean postPlugStatus2(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid, boolean isMeshDevice)
+    {
+        String uriString = getLocalUrl(inetAddress);
+        JSONObject jsonObject;
+        JSONObject result = null;
+        jsonObject = getRequestJSONObject(statusPlug);
+        if (deviceBssid == null || !isMeshDevice)
+        {
+            result = EspBaseApiUtil.Post(uriString, jsonObject);
+        }
+        else
+        {
+            result = EspBaseApiUtil.PostForJson(uriString, null, deviceBssid, jsonObject);
+        }
+        return (result != null);
     }
     
     @Override
@@ -69,9 +88,20 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     public boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid,
         String router)
     {
-        boolean result = postPlugStatus(inetAddress, statusPlug, null, null);
+        boolean result = postPlugStatus(inetAddress, statusPlug, deviceBssid, router);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugPostStatusLocal(inetAddress=[" + inetAddress
             + "],statusPlug=[" + statusPlug + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): " + result);
+        return result;
+    }
+
+    @Override
+    public boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid,
+        boolean isMeshDevice)
+    {
+        boolean result = postPlugStatus2(inetAddress, statusPlug, deviceBssid, isMeshDevice);
+        log.debug(Thread.currentThread().toString() + "##doCommandPlugPostStatusLocal(inetAddress=[" + inetAddress
+            + "],statusPlug=[" + statusPlug + "],deviceBssid=[" + deviceBssid + "],router=[" + isMeshDevice + "]): "
+            + result);
         return result;
     }
     
