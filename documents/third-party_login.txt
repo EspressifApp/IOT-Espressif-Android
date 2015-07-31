@@ -1,0 +1,64 @@
+IOT_Espressif第三方登录用到了第三方库ShareSDK。
+关于ShareSDK, 具体使用方法可从该库官方网站 http://www.mob.com 了解。源码可以从 https://github.com/ShareSDKPlatform/ShareSDK-for-Android 下载。
+
+这里简单介绍以下IOT_Espressif用到的方面。
+IOT_Espressif 将 ShareSDK 用到的零散的jar包重新打成一个包，位于 libs/ShareSDK.jar
+这里 ShareSDK.jar 只集成了新浪微博，微信和QQ, 若需要其他平台，请自行根据ShareSDK官方文档取得相应jar包。
+
+Point 1:
+将ShareSDK.xml复制到 assets/ 下, ShareSDK.xml的具体使用方法请查看该文件内的注释
+
+Point 2:
+AndroidManifest.xml 内注册需要用到的Activity
+        <activity
+            android:name="com.mob.tools.MobUIShell"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:windowSoftInputMode="stateHidden|adjustResize" >
+            <intent-filter>
+                <data android:scheme="tencent100371282" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!-- WeChat callback : must register with [your APP package].wxapi.WXEntryActivity -->
+        <activity
+            android:name="com.espressif.iot.wxapi.WXEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+其中 MobUIShell 为ShareSDK自带类，路径固定。 但微信回调类 WXEntryActivity 必须注册为 [your app package name].wxapi.WXEntryActivity, 并将文件放到对应位置
+
+Point 3:
+需要使用前记得调用 ShareSDK.initSDK(context);
+IOT_Espressif这一步在EspApplication的private void initSyn()方法内完成。
+
+Point 4:
+取得AccessToken方法:
+Platform plat = ShareSDK.getPlatform("Platform name"); // 取得需要使用的平台
+plat.setPlatformActionListener(listener); // 设置平台行为的监听
+plat.authorize(); // 进行认证
+
+认证结果会在设置的PlatformActionListener内返回。
+认证成功：
+    public void onComplete(Platform platform, int action, HashMap<String, Object> res)
+    {
+        String accessToken = plat.getDb().getToken();
+        // 微信登录需要用到openId
+        String openId = plat.getDb().getUserId();       
+    }
+认证失败：
+    public void onError(Platform platform, int action, Throwable t)
+    {
+    }
+
+Point 5:
+取得access token 和 openId 之后即可登录IOT_Espressif的云端服务。
+目前IOT_Espressif的服务器支持微信和QQ的登录。
+具体的使用方法在 LoginThirdPartyDialog 和 LoginTask内。
+
