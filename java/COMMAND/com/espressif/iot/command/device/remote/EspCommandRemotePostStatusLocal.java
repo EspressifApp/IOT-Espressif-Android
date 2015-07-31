@@ -55,6 +55,24 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
         return (result != null);
     }
     
+    private boolean postRemoteStatus2(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid,
+        boolean isMeshDevice)
+    {
+        String uriString = getLocalUrl(inetAddress);
+        JSONObject jsonObject;
+        jsonObject = getRequestJSONObject(statusRemote);
+        JSONObject result = null;
+        if (deviceBssid == null || !isMeshDevice)
+        {
+            EspBaseApiUtil.Post(uriString, jsonObject);
+        }
+        else
+        {
+            EspBaseApiUtil.PostForJson(uriString, null, deviceBssid, jsonObject);
+        }
+        return (result != null);
+    }
+    
     @Override
     public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote)
     {
@@ -72,6 +90,17 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
         log.debug(Thread.currentThread().toString() + "##doCommandRemotePostStatusLocal(inetAddress=[" + inetAddress
             + "],statusRemote=[" + statusRemote + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): "
             + result);
+        return result;
+    }
+
+    @Override
+    public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote,
+        String deviceBssid, boolean isMeshDevice)
+    {
+        boolean result = postRemoteStatus2(inetAddress, statusRemote, deviceBssid, isMeshDevice);
+        log.debug(Thread.currentThread().toString() + "##doCommandRemotePostStatusLocal(inetAddress=[" + inetAddress
+            + "],statusRemote=[" + statusRemote + "],deviceBssid=[" + deviceBssid + "],isMeshDevice=[" + isMeshDevice
+            + "]): " + result);
         return result;
     }
 }

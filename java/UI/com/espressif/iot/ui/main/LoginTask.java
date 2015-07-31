@@ -1,6 +1,7 @@
 package com.espressif.iot.ui.main;
 
 import com.espressif.iot.R;
+import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -10,7 +11,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class LoginTask extends AsyncTask<Void, Void, EspLoginResult>
+public class LoginTask extends AsyncTask<EspThirdPartyLoginPlat, Void, EspLoginResult>
 {
     private Context mContext;
     
@@ -22,11 +23,32 @@ public class LoginTask extends AsyncTask<Void, Void, EspLoginResult>
     
     private ProgressDialog mDialog;
     
-    public LoginTask(Context context, String email, String password, boolean autoLogin)
+    public LoginTask(Context context)
     {
         mContext = context;
+    }
+    
+    public LoginTask(Context context, String email, String password, boolean autoLogin)
+    {
+        this(context);
+        
         mEmail = email;
         mPassword = password;
+        mAutoLogin = autoLogin;
+    }
+    
+    public void setEmail(String email)
+    {
+        mEmail = email;
+    }
+    
+    public void setPassword(String password)
+    {
+        mPassword = password;
+    }
+    
+    public void setAutoLogin(boolean autoLogin)
+    {
         mAutoLogin = autoLogin;
     }
     
@@ -40,10 +62,19 @@ public class LoginTask extends AsyncTask<Void, Void, EspLoginResult>
     }
     
     @Override
-    protected EspLoginResult doInBackground(Void... params)
+    protected EspLoginResult doInBackground(EspThirdPartyLoginPlat... params)
     {
         IEspUser user = BEspUser.getBuilder().getInstance();
-        return user.doActionUserLoginInternet(mEmail, mPassword, false, mAutoLogin);
+        if (params.length > 0)
+        {
+            EspThirdPartyLoginPlat espPlat = params[0];
+            
+            return user.doActionThirdPartyLoginInternet(espPlat);
+        }
+        else
+        {
+            return user.doActionUserLoginInternet(mEmail, mPassword, false, mAutoLogin);
+        }
     }
     
     @Override

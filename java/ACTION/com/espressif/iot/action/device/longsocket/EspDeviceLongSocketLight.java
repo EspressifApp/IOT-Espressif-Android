@@ -108,7 +108,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
     }
 
     @Override
-    public void addLigthtStatusLocal(IEspStatusLight statusLight)
+    public void addLigthtStatusLocal(IEspStatusLight statusLight, String bssid, boolean isMeshDevice)
     {
         if (!statusLight.equals(this.mLightStatusLast))
         {
@@ -117,7 +117,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthtStatusLocal()");
                 EspSocketRequestBaseEntity request = mLightBuilder.buildLocalPostStatusRequest(mInetAddress, statusLight, null);
-                mLongSocket.addRequest(request);
+                mLongSocket.addRequest(request, bssid, isMeshDevice);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status
                 mLightStatusLast.setPeriod(statusLight.getPeriod());
@@ -129,7 +129,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
     }
 
     @Override
-    public void addLigthStatusInternet(IEspStatusLight statusLight)
+    public void addLigthStatusInternet(IEspStatusLight statusLight, String bssid, boolean isMeshDevice)
     {
         if (!statusLight.equals(this.mLightStatusLast))
         {
@@ -138,7 +138,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthStatusInternet()");
                 EspSocketRequestBaseEntity request = mLightBuilder.buildInternetPostStatusRequest(mDeviceKey, statusLight, null);
-                mLongSocket.addRequest(request);
+                mLongSocket.addRequest(request, bssid, isMeshDevice);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status
                 mLightStatusLast.setPeriod(statusLight.getPeriod());

@@ -28,6 +28,11 @@ public class EspCommandFindAccountInternet implements IEspCommandFindAccountInte
             jsonObject.put(key, value);
             
             JSONObject result = EspBaseApiUtil.Post(URL, jsonObject);
+            if (result == null)
+            {
+                return false;
+            }
+            
             int status = result.getInt(Status);
             
             if (status == RESULT_FOUND)

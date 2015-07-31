@@ -13,6 +13,15 @@
     <string name="esp_login_result_not_register">This email is not register</string>
     <string name="esp_login_result_password_error">Password error</string>
     <string name="esp_login_quick_usage">Quick Usage</string>
+    <string name="esp_login_third_party"><u>Third-party login</u></string>
+    <string name="esp_login_email_hint">Please enter email</string>
+    <string name="esp_login_password_hint">Please enter password</string>
+
+    <string name="esp_third_party_weibo">Weibo</string>
+    <string name="esp_third_party_wechat">WeChat</string>
+    <string name="esp_third_party_qq">QQ</string>
+    <string name="esp_third_party_authorizing">Authorizing&#8230;</string>
+    <string name="esp_third_party_get_token_failed">Get %1$s access token failed</string>
 
     <string name="esp_register_account">User Name</string>
     <string name="esp_register_email">Email</string>
@@ -350,6 +359,7 @@
     <string name="esp_esptouch_result_failed">Configure failed</string>
     <string name="esp_esptouch_result_over">Configure over, current connected Wi-Fi isn\'t the same as the configred Wi-Fi, please check the result by yourself</string>
     <string name="esp_esptouch_result_cancel">Cancel configure</string>
+    <string name="esp_esptouch_version">EspTouch Ver : %1$s</string>
     
     <string name="esp_wifi_edit">Wi-Fi Edit</string>
     <string name="esp_wifi_pwd_edit">Edit</string>

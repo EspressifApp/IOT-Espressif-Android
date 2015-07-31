@@ -184,6 +184,7 @@ public interface IEspDevice extends IEspObject
     
     /**
      * Get the root device id in mesh device
+     * @return the root device id in mesh device
      */
     long getRootDeviceId();
     
@@ -200,6 +201,20 @@ public interface IEspDevice extends IEspObject
      * @return the router of mesh device
      */
     String getRouter();
+    
+    /**
+     * Set the root device bssid in mesh device
+     * 
+     * @param rootBssid the root device bssid
+     */
+    void setRootDeviceBssid(String rootBssid);
+    
+    /**
+     * Get the root device bssid in mesh device
+     * 
+     * @return the root device bssid in mesh device
+     */
+    String getRootDeviceBssid();
     
     /*
      * refreshed means the device on Server maybe dirty, so ignore Server info about the device until refreshed is

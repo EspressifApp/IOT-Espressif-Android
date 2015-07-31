@@ -6,8 +6,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dip"
         android:orientation="horizontal"
-        android:paddingLeft="30dip"
-        android:paddingRight="30dip" >
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip" >
 
         <Button
             android:id="@+id/login_btn_login"
@@ -17,7 +17,7 @@
 
         <Button
             android:id="@+id/login_btn_register"
-            style="@style/YellowButton"
+            style="@style/BlueButton"
             android:layout_gravity="right"
             android:text="@string/esp_login_register" />
     </FrameLayout>
@@ -27,29 +27,33 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dip"
         android:orientation="horizontal"
-        android:paddingLeft="30dip"
-        android:paddingRight="30dip" >
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip" >
 
         <Button
             android:id="@+id/login_btn_quick_usage"
             style="@style/YellowButton"
+            android:layout_gravity="left"
             android:text="@string/esp_login_quick_usage" />
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/login_text_third_party"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="10dip"
+        android:text="@string/esp_login_third_party"
+        android:textColor="@android:color/white" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dip"
         android:orientation="horizontal"
-        android:paddingLeft="30dip"
-        android:paddingRight="30dip"
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip"
         android:visibility="gone" >
-
-        <Button
-            android:id="@+id/login_skip"
-            style="@style/BlueButton"
-            android:layout_gravity="left"
-            android:text="@string/esp_login_skip" />
 
         <Button
             android:id="@+id/login_local"
@@ -57,16 +61,5 @@
             android:layout_gravity="right"
             android:text="@string/esp_login_local" />
     </FrameLayout>
-
-    <Button
-        android:id="@+id/login_esptouch"
-        style="@style/BlueButton"
-        android:layout_width="match_parent"
-        android:layout_height="50dip"
-        android:layout_marginLeft="30dip"
-        android:layout_marginRight="30dip"
-        android:layout_marginTop="20dip"
-        android:text="@string/esp_esptouch"
-        android:visibility="gone" />
 
 </merge>

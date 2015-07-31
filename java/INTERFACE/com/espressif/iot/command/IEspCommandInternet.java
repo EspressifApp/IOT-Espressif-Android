@@ -57,6 +57,8 @@ public interface IEspCommandInternet extends IEspCommand
     
     static final String Scope = "scope";
     
+    static final String Remember = "remember";
+    
     static final String Root_Device_Id = "root_device_id";
     
     static final String Router = "router";

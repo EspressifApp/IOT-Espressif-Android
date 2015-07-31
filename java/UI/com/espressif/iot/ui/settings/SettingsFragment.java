@@ -31,6 +31,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.espressif.iot.R;
@@ -44,6 +45,8 @@ import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
 import com.espressif.iot.ui.main.LoginTask;
 import com.espressif.iot.ui.main.RegisterActivity;
+import com.espressif.iot.ui.main.LoginThirdPartyDialog;
+import com.espressif.iot.ui.main.LoginThirdPartyDialog.OnLoginListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -100,6 +103,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private LocalBroadcastManager mBroadcastManager;
     
+    private LoginThirdPartyDialog mThirdPartyLoginDialog;
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -127,9 +132,13 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             mAccountPre.setSummary(R.string.esp_settings_account_not_login_summary);
         }
         
+        mThirdPartyLoginDialog = new LoginThirdPartyDialog(getActivity());
+        mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
+        
         mAutoLoginPre = (CheckBoxPreference)findPreference(KEY_ACCOUNT_AUTO_LOGIN);
         mAutoLoginPre.setChecked(mUser.isAutoLogin());
         mAutoLoginPre.setOnPreferenceChangeListener(this);
+        mAutoLoginPre.setEnabled(mUser.isLogin());
         
         // About Device
         mAutoRefreshDevicePre = (ListPreference)findPreference(KEY_AUTO_REFRESH_DEVICE);
@@ -210,17 +219,17 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
         else if (preference == mVersionLogPre)
         {
-            showLogDialog();
+            showUpdateLogDialog();
             return true;
         }
         else if (preference == mReadLogPre)
         {
-            readLog();
+            readDebugLog();
             return true;
         }
         else if (preference == mClearLogPre)
         {
-            clearLog();
+            clearDebugLog();
             return true;
         }
         else if (preference == mAccountPre)
@@ -268,13 +277,94 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
         else if (preference == mStoreLogPre)
         {
-            onStoreLogChanged((Boolean) newValue);
+            onStoreDebugLogChanged((Boolean) newValue);
             return true;
         }
         
         return false;
     }
     
+    //******** About Account *********//
+    private void showLoginDialog()
+    {
+        View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
+        final EditText emailEdT = (EditText)view.findViewById(R.id.login_edt_account);
+        final EditText pwdEdt = (EditText)view.findViewById(R.id.login_edt_password);
+        final TextView thirdPartyLoginTV = (TextView)view.findViewById(R.id.login_text_third_party);
+        
+        final AlertDialog dialog = new AlertDialog.Builder(getActivity()).setTitle(R.string.esp_login_login)
+            .setView(view)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+            {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    String email = emailEdT.getText().toString();
+                    String password = pwdEdt.getText().toString();
+                    if (!TextUtils.isEmpty(email))
+                    {
+                        login(email, password);
+                    }
+                }
+            })
+            .show();
+        
+        thirdPartyLoginTV.setOnClickListener(new View.OnClickListener()
+        {
+            
+            @Override
+            public void onClick(View v)
+            {
+                dialog.dismiss();
+                mThirdPartyLoginDialog.show();
+            }
+        });
+    }
+    
+    private OnLoginListener mThirdPartyLoginListener = new OnLoginListener()
+    {
+        
+        @Override
+        public void onLoginComplete(EspLoginResult result)
+        {
+            if (result == EspLoginResult.SUC)
+            {
+                loginSuc();
+            }
+        }
+    };
+    
+    private void login(final String email, final String password)
+    {
+        new LoginTask(getActivity(), email, password, mAutoLoginPre.isChecked())
+        {
+            public void loginResult(EspLoginResult result)
+            {
+                if (result == EspLoginResult.SUC)
+                {
+                    loginSuc();
+                }
+            }
+        }.execute();
+    }
+    
+    private void loginSuc()
+    {
+        mAccountPre.setTitle(mUser.getUserEmail());
+        mAccountPre.setSummary("");
+        mAutoLoginPre.setEnabled(true);
+        
+        Preference registerPre = findPreference(KEY_ACCOUNT_REGISTER);
+        if (registerPre != null)
+        {
+            getPreferenceScreen().removePreference(registerPre);
+        }
+        
+        mBroadcastManager.sendBroadcast(new Intent(EspStrings.Action.LOGIN_NEW_ACCOUNT));
+    }
+    
+    //******** About Version *********//
     private void updateApk()
     {
         ConnectivityManager cm = (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -371,7 +461,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     /**
      * Show update log
      */
-    private void showLogDialog()
+    private void showUpdateLogDialog()
     {
         /*
          * check for the full language + country resource, if not there, check for the only language resource, if not
@@ -448,7 +538,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         return result;
     }
     
-    private void readLog()
+    //******** About Debug *********//
+    private void readDebugLog()
     {
         final ReadLogTask task = new ReadLogTask()
         {
@@ -490,7 +581,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         task.execute();
     }
     
-    private void onStoreLogChanged(Boolean store)
+    private void onStoreDebugLogChanged(Boolean store)
     {
         mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, store).commit();
         Logger root = Logger.getRootLogger();
@@ -505,7 +596,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
     }
     
-    private void clearLog()
+    private void clearDebugLog()
     {
         File file = new File(LogConfigurator.DefaultLogFileDirPath);
         if (file.isDirectory())
@@ -522,51 +613,4 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
     }
     
-    private void showLoginDialog()
-    {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
-        final EditText emailEdT = (EditText)view.findViewById(R.id.login_edt_account);
-        final EditText pwdEdt = (EditText)view.findViewById(R.id.login_edt_password);
-        
-        new AlertDialog.Builder(getActivity()).setTitle(R.string.esp_login_login)
-            .setView(view)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-            {
-                
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    String email = emailEdT.getText().toString();
-                    String password = pwdEdt.getText().toString();
-                    if (!TextUtils.isEmpty(email))
-                    {
-                        login(email, password);
-                    }
-                }
-            })
-            .show();
-    }
-    
-    private void login(final String email, final String password)
-    {
-        new LoginTask(getActivity(), email, password, mAutoLoginPre.isChecked())
-        {
-            public void loginResult(EspLoginResult result)
-            {
-                if (result == EspLoginResult.SUC)
-                {
-                    mAccountPre.setTitle(email);
-                    mAccountPre.setSummary("");
-                    
-                    Preference registerPre = findPreference(KEY_ACCOUNT_REGISTER);
-                    if (registerPre != null)
-                    {
-                        getPreferenceScreen().removePreference(registerPre);
-                    }
-                    
-                    mBroadcastManager.sendBroadcast(new Intent(EspStrings.Action.LOGIN_NEW_ACCOUNT));
-                }
-            }
-        }.execute();
-    }
 }

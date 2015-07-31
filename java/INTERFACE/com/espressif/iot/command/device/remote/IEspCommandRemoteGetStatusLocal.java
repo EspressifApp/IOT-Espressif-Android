@@ -28,4 +28,15 @@ public interface IEspCommandRemoteGetStatusLocal extends IEspCommandLocal, IEspC
      * @return the status of the Remote or null(if executed fail)
      */
     IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router);
+
+    /**
+     * get the statusRemote to the Remote by Local
+     * 
+     * @param inetAddress the Remote's ip address
+     * @param deviceBssid the Remote's bssid
+     * @param isMeshDevice whether the Remote is mesh device
+     * @return the status of the Remote or null(if executed fail)
+     */
+    IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice);
+
 }

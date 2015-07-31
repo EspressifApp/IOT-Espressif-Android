@@ -36,6 +36,7 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         InetAddress inetAddress = device.getInetAddress();
         String deviceBssid = device.getBssid();
         String router = device.getRouter();
+        boolean isMeshDevice = device.getIsMeshDevice();
         boolean suc = false;
         switch (deviceType)
         {
@@ -58,35 +59,37 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
                 
                 // Get rgb period white value
                 IEspCommandLightGetStatusLocal lightCommand = new EspCommandLightGetStatusLocal();
-                IEspStatusLight resultStatus = lightCommand.doCommandLightGetStatusLocal(inetAddress, deviceBssid, router);
-                if (resultStatus != null)
+                IEspStatusLight lightStatus =
+                    lightCommand.doCommandLightGetStatusLocal(inetAddress, deviceBssid, isMeshDevice);
+                if (lightStatus != null)
                 {
                     suc = true;
-                    statusLight.setPeriod(resultStatus.getPeriod());
-                    statusLight.setRed(resultStatus.getRed());
-                    statusLight.setGreen(resultStatus.getGreen());
-                    statusLight.setBlue(resultStatus.getBlue());
-                    statusLight.setCWhite(resultStatus.getCWhite());
-                    statusLight.setWWhite(resultStatus.getWWhite());
+                    statusLight.setPeriod(lightStatus.getPeriod());
+                    statusLight.setRed(lightStatus.getRed());
+                    statusLight.setGreen(lightStatus.getGreen());
+                    statusLight.setBlue(lightStatus.getBlue());
+                    statusLight.setCWhite(lightStatus.getCWhite());
+                    statusLight.setWWhite(lightStatus.getWWhite());
                 }
                 
                 // Get battery value
                 boolean batterySuc = false;
                 IEspCommandLightGetEspnowLocal batteryCommand = new EspCommandLightGetEspnowLocal();
                 List<IEspStatusEspnow> espnowStatusList =
-                    batteryCommand.doCommandLightGetEspnowLocal(inetAddress, deviceBssid, router);
+                    batteryCommand.doCommandLightGetEspnowLocal(inetAddress, deviceBssid, isMeshDevice);
+                List<IEspStatusEspnow> deviceEspnowStatusList = device.getEspnowStatusList();
+                deviceEspnowStatusList.clear();
                 if (espnowStatusList != null)
                 {
                     batterySuc = true;
-                    List<IEspStatusEspnow> deviceEspnowStatusList = device.getEspnowStatusList();
-                    deviceEspnowStatusList.clear();
                     deviceEspnowStatusList.addAll(espnowStatusList);
                 }
                 
                 return suc && batterySuc;
             case PLUG:
                 IEspCommandPlugGetStatusLocal plugCommand = new EspCommandPlugGetStatusLocal();
-                IEspStatusPlug plugStatus = plugCommand.doCommandPlugGetStatusLocal(inetAddress, deviceBssid, router);
+                IEspStatusPlug plugStatus =
+                    plugCommand.doCommandPlugGetStatusLocal(inetAddress, deviceBssid, isMeshDevice);
                 if (plugStatus != null)
                 {
                     suc = true;
@@ -104,7 +107,8 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
                 return suc;
             case REMOTE:
                 IEspCommandRemoteGetStatusLocal remoteCommand = new EspCommandRemoteGetStatusLocal();
-                IEspStatusRemote remoteStatus = remoteCommand.doCommandRemoteGetStatusLocal(inetAddress, deviceBssid, router);
+                IEspStatusRemote remoteStatus =
+                    remoteCommand.doCommandRemoteGetStatusLocal(inetAddress, deviceBssid, isMeshDevice);
                 if (remoteStatus != null)
                 {
                     suc = true;
@@ -124,7 +128,8 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
                 return suc;
             case PLUGS:
                 IEspCommandPlugsGetStatusLocal plugsCommand = new EspCommandPlugsGetStatusLocal();
-                IEspStatusPlugs plugsStatus = plugsCommand.doCommandPlugsGetStatusLocal(inetAddress, deviceBssid, router);
+                IEspStatusPlugs plugsStatus =
+                    plugsCommand.doCommandPlugsGetStatusLocal(inetAddress, deviceBssid, isMeshDevice);
                 if (plugsStatus != null)
                 {
                     suc = true;

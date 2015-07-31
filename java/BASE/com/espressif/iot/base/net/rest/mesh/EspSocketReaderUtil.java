@@ -1,9 +1,7 @@
 package com.espressif.iot.base.net.rest.mesh;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.apache.log4j.Logger;
 
@@ -60,14 +58,46 @@ public class EspSocketReaderUtil
         return result;
     }
     
+    // it don't support only '\r' as the carriage return at the moment
+    private static String __readLine(InputStream inputStream)
+        throws IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        char ch;
+        int iValue;
+        while (true)
+        {
+            iValue = inputStream.read();
+            if (iValue == -1)
+            {
+                log.error("__readLine() ch is -1");
+                return null;
+            }
+            ch = (char)iValue;
+            if (ch == '\n')
+            {
+                break;
+            }
+            if (ch == '\r')
+            {
+                continue;
+            }
+            else
+            {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+    }
+    
     /**
-     * Read Header by BufferedReader and check the contentLength
+     * Read Header by InputStream and check the contentLength
      * 
-     * @param reader the BufferedReader of the socket's InputStream
+     * @param inputStream the InputStream of the socket
      * @return the header String or null if the header String is invalid
      * @throws IOException
      */
-    private static String __readHeader(BufferedReader reader)
+    private static String __readHeader(InputStream inputStream)
     {
         StringBuffer resultSb = new StringBuffer("");
         String oneLineStr = null;
@@ -79,7 +109,7 @@ public class EspSocketReaderUtil
         // read content by LF('\n')
         try
         {
-            while ((oneLineStr = reader.readLine()) != null)
+            while ((oneLineStr = __readLine(inputStream)) != null)
             {
                 	
 				log.debug("__readHeader(): oneLineStr:" + oneLineStr);
@@ -162,17 +192,17 @@ public class EspSocketReaderUtil
     }
     
     /**
-     * Read Body by BufferedReader and check the contentLength
+     * Read Body by InputStream and check the contentLength
      * 
-     * @param reader the BufferedReader of the socket's InputStream
+     * @param inputStream the InputStream of the socket
      * @return the header String or null if the header String is invalid
      * @throws IOException
      */
-    private static String __readBody(BufferedReader reader, int contentLength)
+    private static String __readBody(InputStream inputStream, int contentLength)
     {
         StringBuffer result = new StringBuffer("");
         
-        char[] chars = new char[contentLength];
+        byte[] bytes = new byte[contentLength];
         int totalLen = 0;
         int validLen;
         log.debug("__readBody(): contentLength = " + contentLength);
@@ -181,13 +211,18 @@ public class EspSocketReaderUtil
             log.debug("__readBody(): totalLen = " + totalLen);
             while (totalLen < contentLength)
             {
-                validLen = reader.read(chars);
+                // read bytes from inputStream
+                validLen = inputStream.read(bytes);
                 if (validLen < 0)
                 {
                     log.warn("__readBody(): validLen = " + validLen);
                     return null;
                 }
-                result.append(chars, 0, validLen);
+                // append all bytes
+                for (int i = 0; i < bytes.length; ++i)
+                {
+                    result.append((char)bytes[i]);
+                }
                 totalLen += validLen;
             }
             log.debug("__readBody(): result = " + result);
@@ -213,12 +248,12 @@ public class EspSocketReaderUtil
     /**
      * Read header entity by socket's InputStream
      * 
-     * @param reader the BufferedReader of the socket's InputStream
+     * @param inputStream the InputStream of the socket
      * @return the header entity of EspSocketResponseEntity or null if the header String is invalid
      */
-    public static EspSocketResponseBaseEntity readHeaderEntity(BufferedReader reader)
+    public static EspSocketResponseBaseEntity readHeaderEntity(InputStream inputStream)
     {
-        String header = __readHeader(reader);
+        String header = __readHeader(inputStream);
         if (header != null)
         {
             return new EspSocketResponseBaseEntity(header);
@@ -232,12 +267,12 @@ public class EspSocketReaderUtil
     /**
      * Read header and body entity by socket's InputStream
      * 
-     * @param reader the BufferedReader of the socket's InputStream
+     * @param inputStream the InputStream of the socket
      * @return the header body entity of EspSocketResponseEntity or null if the header String is invalid
      */
-    public static EspSocketResponseBaseEntity readHeaderBodyEntity(BufferedReader reader)
+    public static EspSocketResponseBaseEntity readHeaderBodyEntity(InputStream inputStream)
     {
-        String header = __readHeader(reader);
+        String header = __readHeader(inputStream);
         String body = null;
         int contentLength = -1;
         // get body
@@ -247,11 +282,9 @@ public class EspSocketReaderUtil
             log.debug("contentLength: " + contentLength);
             if (contentLength > 0)
             {
-                body = __readBody(reader, contentLength);
+                body = __readBody(inputStream, contentLength);
             }
         }
-        
-        
         // return result according to head and body
         if (header != null && contentLength == 0)
         {
@@ -270,29 +303,27 @@ public class EspSocketReaderUtil
     /**
      * Read header by socket's InputStream
      * 
-     * @param in the socket's InputStream
+     * @param inputStream the socket's InputStream
      * @return the header String or null if the header String is invalid
      */
-    public static String readHeader(InputStream in)
+    public static String readHeader(InputStream inputStream)
     {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        return __readHeader(reader);
+        return __readHeader(inputStream);
     }
     
     /**
      * Read header and body by socket's InputStream
-     * @param in the socket's InputStream
+     * @param inputStream the socket's InputStream
      * @return the header body("\r\n\r\n" is delimiter) String or null if the header String is invalid
      */
-    public static String readHeaderBody(InputStream in)
+    public static String readHeaderBody(InputStream inputStream)
     {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String header = __readHeader(reader);
+        String header = __readHeader(inputStream);
         String body = null;
         if (header != null)
         {
             int contentLength = getBodyLength(header);
-            body = __readBody(reader, contentLength);
+            body = __readBody(inputStream, contentLength);
         }
         if (header == null || body == null)
         {

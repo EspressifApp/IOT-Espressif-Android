@@ -11,6 +11,7 @@ import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -25,9 +26,9 @@ import com.espressif.iot.type.user.EspRegisterResult;
 
 public interface IEspUser extends IEspSingletonObject
 {
-    final String[] DEVICE_SSID_PREFIX = {"ESP_", "espressif_", "mesh_"};
+    final String[] DEVICE_SSID_PREFIX = {"ESP_", "espressif_"};
     
-    final String[] MESH_DEVICE_SSID_PREFIX = {"espressif_", "mesh_"};
+    final String[] MESH_DEVICE_SSID_PREFIX = {"espressif_"};
     
     /**
      * when the device is configured just now, the softap will be scanned, but it should be ignored
@@ -325,6 +326,14 @@ public interface IEspUser extends IEspSingletonObject
      */
     EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword, boolean isPwdSaved,
         boolean isAutoLogin);
+    
+    /**
+     * Third-party login
+     * 
+     * @param EspThirdPartyLoginPlat the platform info
+     * @return @see EspLoginResult
+     */
+    EspLoginResult doActionThirdPartyLoginInternet(EspThirdPartyLoginPlat espPlat);
     
     /**
      * register user account by Internet

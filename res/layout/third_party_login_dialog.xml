@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/weibo_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip"
+        android:drawableTop="@drawable/logo_sinaweibo"
+        android:gravity="center_horizontal"
+        android:text="@string/esp_third_party_weibo"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/wechat_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip"
+        android:drawableTop="@drawable/logo_wechat"
+        android:gravity="center_horizontal"
+        android:text="@string/esp_third_party_wechat" />
+
+    <TextView
+        android:id="@+id/qq_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip"
+        android:drawableTop="@drawable/logo_qq"
+        android:gravity="center_horizontal"
+        android:text="@string/esp_third_party_qq" />
+
+</LinearLayout>

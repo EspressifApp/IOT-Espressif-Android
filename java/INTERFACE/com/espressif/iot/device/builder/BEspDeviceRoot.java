@@ -20,6 +20,7 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
         localRoot.setDeviceType(EspDeviceType.ROOT);
         localRoot.setKey(RandomUtil.randomString(20));
         localRoot.setRouter(IEspDeviceRoot.LOCAL_ROUTER);
+        localRoot.setRootDeviceBssid(localRoot.getBssid());
         localRoot.setIsMeshDevice(true);
         localRoot.setId(Long.MIN_VALUE);
         

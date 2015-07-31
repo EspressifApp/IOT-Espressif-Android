@@ -55,6 +55,41 @@ public class EspCommandRemoteGetStatusLocal implements IEspCommandRemoteGetStatu
         return null;
     }
     
+    private IEspStatusRemote getCurrentRemoteStatus2(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
+    {
+        String uriString = getLocalUrl(inetAddress);
+        JSONObject jo = null;
+        if (deviceBssid == null || !isMeshDevice)
+        {
+            jo = EspBaseApiUtil.Get(uriString);
+        }
+        else
+        {
+            jo = EspBaseApiUtil.GetForJson(uriString, null, deviceBssid);
+        }
+        if (jo == null)
+        {
+            return null;
+        }
+        try
+        {
+            JSONObject rgb = jo.getJSONObject(Remote);
+            int address = rgb.getInt(Addr);
+            int cmd = rgb.getInt(Cmd);
+            int rep = rgb.getInt(Rep);
+            IEspStatusRemote status = new EspStatusRemote();
+            status.setAddress(address);
+            status.setCommand(cmd);
+            status.setRepeat(rep);
+            return status;
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
     @Override
     public IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress)
     {
@@ -70,6 +105,16 @@ public class EspCommandRemoteGetStatusLocal implements IEspCommandRemoteGetStatu
         IEspStatusRemote result = getCurrentRemoteStatus(inetAddress, deviceBssid, router);
         log.debug(Thread.currentThread().toString() + "##doCommandRemoteGetStatusLocal(inetAddress=[" + inetAddress
             + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): " + result);
+        return result;
+    }
+
+    @Override
+    public IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress, String deviceBssid,
+        boolean isMeshDevice)
+    {
+        IEspStatusRemote result = getCurrentRemoteStatus2(inetAddress, deviceBssid, isMeshDevice);
+        log.debug(Thread.currentThread().toString() + "##doCommandRemoteGetStatusLocal(inetAddress=[" + inetAddress
+            + "],deviceBssid=[" + deviceBssid + "],router=[" + isMeshDevice + "]): " + isMeshDevice);
         return result;
     }
     

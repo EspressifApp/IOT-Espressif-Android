@@ -129,4 +129,43 @@ public class EspCommandDeviceConfigureLocal implements IEspCommandDeviceConfigur
         return isSuc;
     }
     
+    @Override
+    public boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String apSsid,
+        String apPassword, String randomToken)
+    {
+        String urlString = getLocalUrl(inetAddress);
+        JSONObject request = createJSONReq(apSsid, apPassword, randomToken);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, null, deviceBssid, request);
+        boolean isSuc = result != null;
+        log.debug(Thread.currentThread().toString() + "##doCommandMeshDeviceConfigureLocal(deviceBssid=[" + deviceBssid
+            + "],inetAddress=[" + inetAddress + "],apSsid=[" + apSsid + "],apPassword=[" + apPassword
+            + "],randomToken=[" + randomToken + "]): " + isSuc);
+        return isSuc;
+    }
+    
+    @Override
+    public boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String apSsid,
+        String apPassword)
+    {
+        String urlString = getLocalUrl(inetAddress);
+        JSONObject request = createJSONReq(apSsid, apPassword, null);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, null, deviceBssid, request);
+        boolean isSuc = result != null;
+        log.debug(Thread.currentThread().toString() + "##doCommandMeshDeviceConfigureLocal(deviceBssid=[" + deviceBssid
+            + "],inetAddress=[" + inetAddress + "],apSsid=[" + apSsid + "],apPassword=[" + apPassword + "]): " + isSuc);
+        return isSuc;
+    }
+    
+    @Override
+    public boolean doCommandMeshDeviceConfigureLocal(String deviceBssid, InetAddress inetAddress, String randomToken)
+    {
+        String urlString = getLocalUrl(inetAddress);
+        JSONObject request = createJSONReq(null, null, randomToken);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, null, deviceBssid, request);
+        boolean isSuc = result != null;
+        log.debug(Thread.currentThread().toString() + "##doCommandMeshDeviceConfigureLocal(deviceBssid=[" + deviceBssid
+            + "],inetAddress=[" + inetAddress + "],randomToken=[" + randomToken + "]): " + isSuc);
+        return isSuc;
+    }
+    
 }

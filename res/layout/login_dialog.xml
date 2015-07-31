@@ -19,4 +19,13 @@
         android:hint="@string/esp_login_password"
         android:inputType="textPassword" />
 
+    <TextView
+        android:id="@+id/login_text_third_party"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="15dip"
+        android:text="@string/esp_login_third_party"
+        android:textColor="@android:color/primary_text_light" />
+
 </LinearLayout>

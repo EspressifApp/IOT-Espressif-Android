@@ -1,5 +1,7 @@
 package com.espressif.iot.base.application;
 
+import cn.sharesdk.framework.ShareSDK;
+
 import com.espressif.iot.base.net.wifi.WifiAdmin;
 import com.espressif.iot.base.threadpool.CachedThreadPool;
 import com.espressif.iot.base.time.EspTimeManager;
@@ -156,6 +158,9 @@ public class EspApplication extends Application
         daoSession = daoMaster.newSession();
         IOTGenericDataDBManager.init(daoSession);
         IOTGenericDataDirectoryDBManager.init(daoSession);
+        
+        // ShareSDK: third-party login
+        ShareSDK.initSDK(this);
     }
     
     private void initAsyn()

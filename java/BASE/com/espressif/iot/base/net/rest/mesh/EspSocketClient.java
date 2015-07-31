@@ -1,8 +1,7 @@
 package com.espressif.iot.base.net.rest.mesh;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -18,11 +17,11 @@ public class EspSocketClient
     private static final Logger log = Logger.getLogger(EspSocketClient.class);
     
     private final Socket mSocket;
-    private BufferedReader mReader;
+    private InputStream mInputStream;
     
-    private void __initReader() throws IOException
+    private void __initInputStream() throws IOException
     {
-        mReader = new BufferedReader(new InputStreamReader((mSocket.getInputStream())));
+        mInputStream = mSocket.getInputStream();
     }
     
     private String __getPrintInfo()
@@ -52,9 +51,9 @@ public class EspSocketClient
     {
         log.debug(__getPrintInfo() + " is closed");
         mSocket.close();
-        if (mReader != null)
+        if (mInputStream != null)
         {
-            mReader.close();
+            mInputStream.close();
         }
     }
     
@@ -102,7 +101,7 @@ public class EspSocketClient
         throws UnknownHostException, IOException
     {
         mSocket = new Socket(host, port);
-        __initReader();
+        __initInputStream();
     }
     
     /**
@@ -118,7 +117,7 @@ public class EspSocketClient
         throws IOException
     {
         mSocket = new Socket(address, port);
-        __initReader();
+        __initInputStream();
     }
     
     /**
@@ -218,9 +217,23 @@ public class EspSocketClient
     public EspSocketResponseBaseEntity readResponseEntity()
     {
         EspSocketResponseBaseEntity result = null;
-        if(mReader!=null)
+        if (mInputStream != null)
         {
-            result = EspSocketReaderUtil.readHeaderBodyEntity(mReader);
+            result = EspSocketReaderUtil.readHeaderBodyEntity(mInputStream);
+        }
+        return result;
+    }
+    
+    /**
+     * Read the command response by mesh device
+     * @return the command response by mesh device
+     */
+    public String readCommandResponse()
+    {
+        String result = null;
+        if (mInputStream != null)
+        {
+            result = EspMeshCommandReadUtil.readCommand(mInputStream);
         }
         return result;
     }
@@ -307,7 +320,7 @@ public class EspSocketClient
         try
         {
             mSocket.connect(endpoint);
-            __initReader();
+            __initInputStream();
             return true;
         }
         catch (IOException e)
@@ -331,7 +344,7 @@ public class EspSocketClient
         try
         {
             mSocket.connect(endpoint, timeout);
-            __initReader();
+            __initInputStream();
             return true;
         }
         catch (Exception e)

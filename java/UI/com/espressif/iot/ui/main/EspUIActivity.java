@@ -262,6 +262,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         if (mIsDevicesUpdatedNecessary)
         {
             mDeviceListView.onRefreshComplete();
+            mStaListView.onRefreshComplete();
+            mStaScanning = false;
             mRefreshing = false;
             mIsDevicesUpdatedNecessary = false;
         }

@@ -65,6 +65,12 @@ public interface IEspDeviceStateMachineHandler
         boolean isExpired();
         
         /**
+         * sleep a little time to check whether the task is cancelled
+         * @throws InterruptedException
+         */
+        void checkIsTaskCancel() throws InterruptedException;
+        
+        /**
          * cancel the task
          */
         void cancel();

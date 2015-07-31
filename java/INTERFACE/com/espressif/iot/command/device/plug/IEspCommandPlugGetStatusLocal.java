@@ -27,4 +27,15 @@ public interface IEspCommandPlugGetStatusLocal extends IEspCommandLocal, IEspCom
      * @return the status of the Plug or null(if executed fail)
      */
     IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router);
+
+    /**
+     * get the statusPlug to the Plug by Local
+     * 
+     * @param inetAddress the Plug's ip address
+     * @param deviceBssid the Plug's bssid
+     * @param isMeshDevice whether the Plug is mesh device
+     * @return the status of the Plug or null(if executed fail)
+     */
+    IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice);
+
 }

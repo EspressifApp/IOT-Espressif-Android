@@ -1,6 +1,7 @@
 package com.espressif.iot.base.net.rest.mesh;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,11 +39,11 @@ public class EspSocketUtil {
         try
         {
             log.debug(EspSocketUtil.getNowTime() + ": prepared to write [\n" + str + "\n].");
-            // add buffered writer
-            BufferedOutputStream writer = new BufferedOutputStream(out);
+            // add writer
+            DataOutputStream writer = new DataOutputStream(out);
             
             // write
-            writer.write(str.getBytes());
+            writer.writeBytes(str);
             
             writer.flush();
         }

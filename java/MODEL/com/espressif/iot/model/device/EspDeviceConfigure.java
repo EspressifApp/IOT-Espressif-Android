@@ -124,4 +124,33 @@ public class EspDeviceConfigure extends EspDevice implements IEspDeviceConfigure
         return action.doActionMeshDeviceConfigureLocal(discoverRequired, router, deviceBssid, inetAddress, randomToken);
     }
     
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid,
+        InetAddress inetAddress, String apSsid, String apPassword, String randomToken)
+    {
+        IEspActionDeviceConfigureLocal action = new EspActionDeviceConfigureLocal();
+        return action.doActionMeshDeviceConfigureLocal(discoverRequired,
+            deviceBssid,
+            inetAddress,
+            apSsid,
+            apPassword,
+            randomToken);
+    }
+    
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid,
+        InetAddress inetAddress, String apSsid, String apPassword)
+    {
+        IEspActionDeviceConfigureLocal action = new EspActionDeviceConfigureLocal();
+        return action.doActionMeshDeviceConfigureLocal(discoverRequired, deviceBssid, inetAddress, apSsid, apPassword);
+    }
+    
+    @Override
+    public boolean doActionMeshDeviceConfigureLocal(boolean discoverRequired, String deviceBssid,
+        InetAddress inetAddress, String randomToken)
+    {
+        IEspActionDeviceConfigureLocal action = new EspActionDeviceConfigureLocal();
+        return action.doActionMeshDeviceConfigureLocal(discoverRequired, deviceBssid, inetAddress, randomToken);
+    }
+    
 }

@@ -38,6 +38,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private WifiManager mWifiManager;
     
+    private static final String ESPTOUCH_VERSION = "v0.3.4";
     
     private TextView mSsidTV;
     private EditText mPasswordEdT;
@@ -46,6 +47,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     private CheckBox mActivateCB;
     private Button mConfirmBtn;
     private TextView mWifiHintTV;
+    private TextView mEspTouchVersionTV;
     
     private IEspUser mUser;
     
@@ -91,6 +93,9 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         
         mWifiHintTV = (TextView)findViewById(R.id.wifi_connect_hint);
         mWifiHintTV.setVisibility(isWifiConnected ? View.GONE : View.VISIBLE);
+        
+        mEspTouchVersionTV = (TextView)findViewById(R.id.esptouch_version);
+        mEspTouchVersionTV.setText(getString(R.string.esp_esptouch_version, ESPTOUCH_VERSION));
         
         setTitle(R.string.esp_configure_add);
     }

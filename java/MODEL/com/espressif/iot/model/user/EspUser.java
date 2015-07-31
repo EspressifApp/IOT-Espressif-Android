@@ -42,11 +42,13 @@ import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
 import com.espressif.iot.action.device.humiture.EspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.device.humiture.IEspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.user.EspActionFindAccountInternet;
+import com.espressif.iot.action.user.EspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.EspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.EspActionUserLoginDB;
 import com.espressif.iot.action.user.EspActionUserLoginInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterInternet;
 import com.espressif.iot.action.user.IEspActionFindAccountnternet;
+import com.espressif.iot.action.user.IEspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.IEspActionUserLoginDB;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
@@ -583,6 +585,18 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public EspLoginResult doActionThirdPartyLoginInternet(EspThirdPartyLoginPlat espPlat)
+    {
+        IEspActionThirdPartyLoginInternet action = new EspActionThirdPartyLoginInternet();
+        EspLoginResult result = action.doActionThirdPartyLoginInternet(espPlat);
+        if (result == EspLoginResult.SUC)
+        {
+            __loadUserDeviceList();
+        }
+        return result;
+    }
+    
+    @Override
     public IEspUser doActionUserLoginDB()
     {
         IEspActionUserLoginDB action = new EspActionUserLoginDB();
@@ -628,7 +642,21 @@ public class EspUser implements IEspUser
         return action.doActionDevicesUpdated(isStateMachine);
     }
     
-    // "ESP_" + MAC address's 6 places
+    // "espressif_" + MAC address's 6 places
+    private boolean isESPMeshDevice(String SSID)
+    {
+        for (int i=0; i<MESH_DEVICE_SSID_PREFIX.length; i++)
+        {
+            if (SSID.startsWith(MESH_DEVICE_SSID_PREFIX[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // "ESP_" + MAC address's 6 places, ordinary device
+    // "espressif_" + MAC address's 6 places, mesh device
     private boolean isESPDevice(String SSID)
     {
         for (int i = 0; i < DEVICE_SSID_PREFIX.length; i++)
@@ -654,7 +682,8 @@ public class EspUser implements IEspUser
         List<ScanResult> scanResultList = EspBaseApiUtil.scan();
         for (ScanResult scanResult : scanResultList)
         {
-            if (isESPDevice(scanResult.SSID))
+            // mesh device don't support softap mode, although the softap can be found
+            if (isESPDevice(scanResult.SSID) && !isESPMeshDevice(scanResult.SSID))
             {
                 String ssid = scanResult.SSID;
                 // change the device bssid to sta

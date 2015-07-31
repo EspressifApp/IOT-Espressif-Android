@@ -6,7 +6,7 @@ import com.espressif.iot.type.user.EspLoginResult;
 
 public interface IEspCommandUserLoginInternet extends IEspCommandUser, IEspCommandInternet
 {
-    static final String URL = "https://iot.espressif.cn/v1/keys/";
+    static final String URL = "https://iot.espressif.cn/v1/user/login/";
     
     /**
      * Login in online

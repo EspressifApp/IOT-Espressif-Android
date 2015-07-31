@@ -116,14 +116,14 @@ public class BEspDevice implements IBEspDevice
     public static IEspDeviceSSS createSSSDevice(IOTAddress iotAddress)
     {
         EspDeviceSSS device = new EspDeviceSSS(iotAddress);
-
+        
         return device;
     }
     
     public static IEspDevice convertSSSToTypeDevice(IEspDeviceSSS deviceSSS)
     {
         IEspDevice device = null;
-        switch(deviceSSS.getDeviceType())
+        switch (deviceSSS.getDeviceType())
         {
             case LIGHT:
                 device = BEspDeviceLight.getInstance().alloc();
@@ -151,6 +151,7 @@ public class BEspDevice implements IBEspDevice
         
         if (device != null)
         {
+            device.setId(deviceSSS.getId());
             device.setKey(deviceSSS.getKey());
             device.setIsOwner(false);
             device.setBssid(deviceSSS.getBssid());
@@ -159,6 +160,7 @@ public class BEspDevice implements IBEspDevice
             device.setName(deviceSSS.getName());
             device.setInetAddress(deviceSSS.getInetAddress());
             device.setRouter(deviceSSS.getRouter());
+            device.setRootDeviceBssid(deviceSSS.getRootDeviceBssid());
             device.setIsMeshDevice(deviceSSS.getIsMeshDevice());
         }
         

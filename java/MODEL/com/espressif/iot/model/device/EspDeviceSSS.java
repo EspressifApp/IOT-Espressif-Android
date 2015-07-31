@@ -21,7 +21,7 @@ import com.espressif.iot.util.RandomUtil;
 
 /**
  * Support SoftAP and Station device
- *
+ * 
  */
 public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
 {
@@ -31,7 +31,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     
     // -1, -2, ... is used to activate softap device by direct connect,
     // 1, 2, ... is used by server
-    private static long mIdCreator = -Long.MAX_VALUE/2;
+    private static long mIdCreator = -Long.MAX_VALUE / 2;
     
     private synchronized long getNextId()
     {
@@ -56,6 +56,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         setInetAddress(mIOTAddress.getInetAddress());
         setDeviceType(mIOTAddress.getDeviceTypeEnum());
         setRouter(mIOTAddress.getRouter());
+        setRootDeviceBssid(mIOTAddress.getRootBssid());
         setIsMeshDevice(iotAddress.isMeshDevice());
         setId(getNextId());
         
@@ -103,7 +104,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     {
         return mIOTAddress;
     }
-
+    
     @Override
     public IEspDeviceStatus getDeviceStatus()
     {
@@ -118,7 +119,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         devices.addAll(BEspUser.getBuilder().getInstance().getStaDeviceList());
         return getDeviceTreeElementList(devices);
     }
-
+    
     @Override
     public IEspDeviceConfigure createConfiguringDevice(String random40)
     {
@@ -126,20 +127,9 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         device.setInetAddress(mInetAddress);
         device.setIsMeshDevice(mIsMeshDevice);
         device.setRouter(mRouter);
+        device.setRootDeviceBssid(mRootDeviceBssid);
         device.setName(mDeviceName);
         return device;
     }
     
-    @Override
-    public boolean equals(Object o)
-    {
-        // check the type
-        if (o == null || !(o instanceof IEspDeviceSSS))
-        {
-            return false;
-        }
-        IEspDeviceSSS other = (IEspDeviceSSS)o;
-        return other.getBssid().equals(mBssid);
-    }
-
 }

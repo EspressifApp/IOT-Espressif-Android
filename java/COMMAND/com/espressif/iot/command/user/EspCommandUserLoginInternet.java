@@ -2,7 +2,6 @@ package com.espressif.iot.command.user;
 
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,13 +17,12 @@ public class EspCommandUserLoginInternet implements IEspCommandUserLoginInternet
     @Override
     public EspLoginResult doCommandUserLoginInternet(String userEmail, String userPassword)
     {
-        JSONObject jsonObject = new JSONObject();
         try
         {
-            jsonObject = new JSONObject();
+            JSONObject jsonObject = new JSONObject();
             jsonObject.put(Email, userEmail);
             jsonObject.put(Password, userPassword);
-            jsonObject.put(Scope, USER);
+            jsonObject.put(Remember, 1);
             JSONObject jsonObjectResult = EspBaseApiUtil.Post(URL, jsonObject);
             EspLoginResult result = null;
             if (jsonObjectResult == null)
@@ -36,13 +34,14 @@ public class EspCommandUserLoginInternet implements IEspCommandUserLoginInternet
             int status = jsonObjectResult.getInt(Status);
             if (status == HttpStatus.SC_OK)
             {
-                JSONArray keys = jsonObjectResult.getJSONArray(Keys);
-                JSONObject key = keys.getJSONObject(0);
-                String token = key.getString(Token);
-                long id = Long.parseLong(key.getString(User_Id));
+                JSONObject userJSON = jsonObjectResult.getJSONObject(USER);
+                long userId = userJSON.getLong(Id);
+                JSONObject keyJSON = jsonObjectResult.getJSONObject(Key);
+                String userKey = keyJSON.getString(Token);
+                
                 IEspUser user = BEspUser.getBuilder().getInstance();
-                user.setUserKey(token);
-                user.setUserId(id);
+                user.setUserKey(userKey);
+                user.setUserId(userId);
                 user.setUserEmail(userEmail);
                 user.setUserPassword(userPassword);
             }

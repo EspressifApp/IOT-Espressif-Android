@@ -10,7 +10,7 @@
     android:paddingRight="50dip" >
 
     <EditText
-        android:id="@+id/register_account"
+        android:id="@+id/register_username"
         style="@style/RegisterEditText"
         android:drawableLeft="@drawable/esp_register_icon_account"
         android:hint="@string/esp_register_account" />

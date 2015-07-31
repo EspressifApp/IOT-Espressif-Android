@@ -116,5 +116,4 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
     {
         mWWhite = white;
     }
-    
 }
