@@ -177,44 +177,18 @@ public interface IEspDevice extends IEspObject
     boolean getIsMeshDevice();
     
     /**
-     * Set the root device id in mesh device
-     * @param rootDeviceId  the root device id
-     */
-    void setRootDeviceId(long rootDeviceId);
-    
-    /**
-     * Get the root device id in mesh device
-     * @return the root device id in mesh device
-     */
-    long getRootDeviceId();
-    
-    /**
-     * Set the router of mesh device
+     * Set the parent device bssid in mesh device
      * 
-     * @param router the router of mesh device
+     * @param parentBssid the parent device bssid(root's parent bssid is null)
      */
-    void setRouter(String router);
+    void setParentDeviceBssid(String parentBssid);
     
     /**
-     * Get the router of mesh device
+     * Get the parent device bssid in mesh device
      * 
-     * @return the router of mesh device
+     * @return the parent device bssid in mesh device(root's parent bssid is null)
      */
-    String getRouter();
-    
-    /**
-     * Set the root device bssid in mesh device
-     * 
-     * @param rootBssid the root device bssid
-     */
-    void setRootDeviceBssid(String rootBssid);
-    
-    /**
-     * Get the root device bssid in mesh device
-     * 
-     * @return the root device bssid in mesh device
-     */
-    String getRootDeviceBssid();
+    String getParentDeviceBssid();
     
     /*
      * refreshed means the device on Server maybe dirty, so ignore Server info about the device until refreshed is
@@ -350,22 +324,17 @@ public interface IEspDevice extends IEspObject
     void copyInetAddress(IEspDevice device);
     
     /**
-     * Copy the router of mesh device from another mesh device
-     * 
-     * @param device another device
-     */
-    void copyRouter(IEspDevice device);
-    
-    /**
-     * Copy the root device id in mesh device from another mesh device
-     */
-    void copyRootDeviceId(IEspDevice device);
-    
-    /**
      * Copy IsMeshDevice from another device
      * @param device  another device
      */
     void copyIsMeshDevice(IEspDevice device);
+    
+    /**
+     * Copy parent device bssid from another device
+     * 
+     * @param device another device
+     */
+    void copyParentDeviceBssid(IEspDevice device);
     
     /**
      * Copy the device activating timestamp from another device

@@ -13,5 +13,5 @@ public interface IEspCommandPlugsPostStatusInternet extends IEspCommandInternet,
      * @param statusPlug the status of Plugs
      * @return whether the command executed suc
      */
-    boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status, String router);
+    boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status);
 }

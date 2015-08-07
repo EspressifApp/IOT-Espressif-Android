@@ -12,6 +12,7 @@ import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.MeshUtil;
 import com.espressif.iot.util.TimeUtil;
 
 public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNewActivateInternet
@@ -153,41 +154,27 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                         latest_rom_version,
                         userId);
                 
-                boolean isRouterValid = !deviceJson.isNull(Router);
-                boolean isRootDeviceIdValid = !deviceJson.isNull(Root_Device_Id);
-                // router
-                String router = null;
-                // root device id
-                long rootDeviceId = -1;
-                
-                if (isRouterValid)
+                boolean isParentMdevMacValid = !deviceJson.isNull(Parent_Mdev_Mac);
+                String parentBssid = null;
+                if(isParentMdevMacValid)
                 {
-                    // router
-                    router = deviceJson.getString(Router);
-                    
-                    if (router.equals("null"))
+                    // parent device bssid
+                    String parentDeviceBssid = deviceJson.getString(Parent_Mdev_Mac);
+                    if(!parentDeviceBssid.equals("null"))
                     {
-                        router = null;
+                        parentBssid = MeshUtil.getRawMacAddress(parentDeviceBssid);
                     }
                 }
-                
-                if (isRootDeviceIdValid)
+                // synchronize parent device bssid, filter the AP
+                if (parentBssid != null && BSSIDUtil.isEspDevice(parentBssid))
                 {
-                    // root device id
-                    String rootDeviceIdStr = deviceJson.getString(Root_Device_Id);
-                    if (!rootDeviceIdStr.equals("null"))
-                    {
-                        rootDeviceId = deviceJson.getLong(Root_Device_Id);
-                    }
+                    device.setParentDeviceBssid(parentBssid);
                 }
-                
-                // synchronize router info from server
-                device.setRootDeviceId(rootDeviceId);
-                device.setRouter(router);
-                if (rootDeviceId != -1)
+                else
                 {
-                    device.setIsMeshDevice(true);
+                    device.setParentDeviceBssid(null);
                 }
+                device.setIsMeshDevice(parentBssid != null);
 
                 log.debug(Thread.currentThread().toString() + "##doCommandNewActivateInternet(userId=[" + userId
                     + "],userKey=[" + userKey + "],randomToken=[" + randomToken + "]): " + device);

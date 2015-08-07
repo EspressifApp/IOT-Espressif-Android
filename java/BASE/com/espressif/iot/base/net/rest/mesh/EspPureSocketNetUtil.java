@@ -17,7 +17,6 @@ import com.espressif.iot.util.MeshUtil;
  */
 public class EspPureSocketNetUtil
 {
-    private final static String ROUTER = "router";
     private final static String MAC = "mdev_mac";
     private final static String SIP = "sip";
     private final static String SPORT = "sport";
@@ -60,14 +59,13 @@ public class EspPureSocketNetUtil
     /**
      * send mesh upgrade local request to mesh device
      * @param client the EspSocketClient
-     * @param router the mesh device's router
      * @param targetInetAddress the mesh device's InetAddress
      * @param version the version to be upgraded
      * @param bssid the bssid of the device
      * @return whether the mesh device is ready to upgrade local
      */
-    public static boolean executeMeshUpgradeLocalRequest(EspSocketClient client, String router,
-        InetAddress targetInetAddress, String version, String bssid)
+    public static boolean executeMeshUpgradeLocalRequest(EspSocketClient client, InetAddress targetInetAddress,
+        String version, String bssid)
     {
         String method = "GET";
         String uriStr = __getLoalUpgradeUri(targetInetAddress);
@@ -79,7 +77,6 @@ public class EspPureSocketNetUtil
             jsonPost.put(SIP, MeshUtil.getIpAddressForMesh(localInetAddress));
 //            jsonPost.put(SPORT, MeshUtil.getPortForMesh(localPort));
             jsonPost.put(SPORT, "8000");
-//            jsonPost.put(ROUTER, router);
             jsonPost.put(MAC, MeshUtil.getMacAddressForMesh(bssid));
         }
         catch (JSONException e)
@@ -131,17 +128,16 @@ public class EspPureSocketNetUtil
      * @param user1 the user1.bin
      * @param user2 the user2.bin
      * @param targetInetAddress the mesh device's InetAddress
-     * @param router the mesh device's router
      * @param deviceBssid the mesh device's bssid
      * @param timeout the millisecond timeout
      * @return whether the device is upgrade suc
      */
     public static boolean listen(EspSocketClient client, byte[] user1, byte[] user2, InetAddress targetAddress,
-        String router, String deviceBssid, long timeout)
+        String deviceBssid, long timeout)
     {
         long start = System.currentTimeMillis();
         EspPureSocketServer server =
-            new EspPureSocketServer(client, user1, user2, targetAddress.getHostAddress(), router, deviceBssid);
+            new EspPureSocketServer(client, user1, user2, targetAddress.getHostAddress(), deviceBssid);
         while (!server.isClosed() && System.currentTimeMillis() - start < timeout)
         {
             if (!server.handle())

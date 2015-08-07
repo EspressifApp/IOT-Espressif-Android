@@ -26,7 +26,6 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
     /**
      * configure the new mesh device to an AP accessible to Internet
      * 
-     * @param router the device's router
      * @param deviceBssid the device's bssid
      * @param deviceSsid the device's ssid(softap)
      * @param deviceWifiCipherType the device's wifi cipher type
@@ -35,6 +34,6 @@ public interface IEspCommandDeviceNewConfigureLocal extends IEspCommandNew, IEsp
      * @return whether the command executed suc
      * @throws InterruptedException when the command is interrupted
      */
-    boolean doCommandMeshDeviceNewConfigureLocal(String router, String deviceBssid, String deviceSsid,
+    boolean doCommandMeshDeviceNewConfigureLocal(String deviceBssid, String deviceSsid,
         WifiCipherType deviceWifiCipherType, String devicePassword, String randomToken);
 }

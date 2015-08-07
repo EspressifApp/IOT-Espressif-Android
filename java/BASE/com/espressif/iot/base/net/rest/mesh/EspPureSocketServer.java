@@ -25,7 +25,6 @@ public class EspPureSocketServer
     private static final String FILE_NAME = "filename";
     private static final String USER1_BIN = "user1.bin";
     private static final String USER2_BIN = "user2.bin";
-    private static final String ROUTER = "router";
     private final static String MAC = "mdev_mac";
     private static final String DEVICE_ROM = "device_rom";
     private static final String ROM_BASE64 = "rom_base64";
@@ -36,7 +35,6 @@ public class EspPureSocketServer
     private final byte[] mUser2Bin;
     private boolean mIsFinished = false;
     private final String mIpAddr;
-    private final String mRouter;
     private final String mDeviceBssid;
     
     enum RequestType
@@ -46,14 +44,13 @@ public class EspPureSocketServer
     
     private final EspSocketClient mClient;
     
-    EspPureSocketServer(EspSocketClient client,byte[] user1bin,byte[] user2bin,String targetIpAddr
-        ,String router,String deviceBssid)
+    EspPureSocketServer(EspSocketClient client, byte[] user1bin, byte[] user2bin, String targetIpAddr,
+        String deviceBssid)
     {
         this.mClient = client;
         this.mUser1Bin = user1bin;
         this.mUser2Bin = user2bin;
         this.mIpAddr = targetIpAddr;
-        this.mRouter = router;
         this.mDeviceBssid = deviceBssid;
     }
     
@@ -158,24 +155,22 @@ public class EspPureSocketServer
     }
 
 //    Request is like this:
-//    {"get": {"action": "download_rom_base64", "version": "v1.2", "router" : "1234FFFF","sip":"1F2F3F",
+//    {"get": {"action": "download_rom_base64", "version": "v1.2", "sip":"1F2F3F",
 //    "sport":"8000", "filename":"user1.bin", "offset": 0, "size": 100}, "meta": {"Authorization": "token
 //     746065cb68348eb376fc3ff36a4572c6fd22258e"}, "path": "/v1/device/rom/","method": "GET"}
 
 //    Response is like this:
-//    {"status": 200,  "router" : "1234FFFF","sip":"1F2F3F","sport":"8000", 
+//    {"status": 200,"sip":"1F2F3F","sport":"8000", 
 //      "device_rom": {"rom_base64":
 //      "6QMAAAQAEEAAABBAQGYAAAQOAEASwfAJAw==",
 //      "filename": "user1.bin", "version": "v1.2", "offset": 0, "action":
-//      "download_rom_base64", "router": "", "total": 234812, "size": 100}}
+//      "download_rom_base64", "total": 234812, "size": 100}}
     private boolean __executeMeshDeviceUpgradeLocal(JSONObject jsonRequest)
     {
         try
         {   
             log.debug("__executeMeshDeviceUpgradeLocal() entrance");
             // parse request
-//            String router = jsonRequest.getString(ROUTER);
-//            log.debug("__executeMeshDeviceUpgradeLocal(): router = " + router);
             String bssid = jsonRequest.getString(MAC);
             log.debug("__executeMeshDeviceUpgradeLocal(): bssid = " + bssid);
             String sip = jsonRequest.getString(SIP);
@@ -219,7 +214,6 @@ public class EspPureSocketServer
 //          {"status": 200, "device_rom": {"rom_base64":
 //            "6QMAAAQAEEAAABBAQGYAAAQOAEASwfAJAw==",
 //            "filename": "user1.bin", "version": "v1.2", "offset": 0, "action":
-//            "download_rom_base64", "router": "", "total": 234812, "size": 100, "size_base64": 134}}
             JSONObject jsonResponse = new JSONObject();
             JSONObject jsonDeviceRom = new JSONObject();
 //            jsonDeviceRom.put(ROM_BASE64, new String(encoded));
@@ -230,7 +224,6 @@ public class EspPureSocketServer
             jsonDeviceRom.put(SIZE, size);
             jsonDeviceRom.put(SIZE_BASE64, size_base64);
             jsonDeviceRom.put(ACTION, action);
-//            jsonDeviceRom.put(ROUTER, router);
             jsonDeviceRom.put(MAC, bssid);
             jsonDeviceRom.put(SIP, sip);
             jsonDeviceRom.put(SPORT, sport);
@@ -269,7 +262,7 @@ public class EspPureSocketServer
         // send reset command
         String uriStr = "http://" + mIpAddr + "/upgrade?command=reset";
         log.debug("__executeReset(): uriStr = " + uriStr);
-        EspMeshNetUtil.executeForJson(mClient, "POST", uriStr, mRouter, mDeviceBssid, null);
+        EspMeshNetUtil.executeForJson(mClient, "POST", uriStr, mDeviceBssid, null);
     }
     
     private boolean __executeMeshDeviceUpgradeLocalSuc()

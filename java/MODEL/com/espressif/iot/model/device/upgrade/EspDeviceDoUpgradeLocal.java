@@ -455,7 +455,7 @@ public class EspDeviceDoUpgradeLocal implements IEspDeviceDoUpgradeLocal
         return null;
     }
     
-    private boolean __doUpgradeLocal(InetAddress inetAddress, String bssid, String deviceKey, String latestRomVersion,String router)
+    private boolean __doUpgradeLocal(InetAddress inetAddress, String bssid, String deviceKey, String latestRomVersion)
     {
         Boolean isUser1 = __isUser1Running(inetAddress);
         boolean suc = false;
@@ -504,7 +504,7 @@ public class EspDeviceDoUpgradeLocal implements IEspDeviceDoUpgradeLocal
     @Override
     public IOTAddress doUpgradeLocal(InetAddress inetAddress, String bssid, String deviceKey, String latestRomVersion)
     {
-        if (!__doUpgradeLocal(inetAddress, bssid, deviceKey, latestRomVersion, null))
+        if (!__doUpgradeLocal(inetAddress, bssid, deviceKey, latestRomVersion))
         {
             return null;
         }
@@ -538,11 +538,11 @@ public class EspDeviceDoUpgradeLocal implements IEspDeviceDoUpgradeLocal
     
     @Override
     public List<IOTAddress> doUpgradeMeshDeviceLocal(InetAddress inetAddress, String bssid, String deviceKey,
-        String latestRomVersion, String router)
+        String latestRomVersion)
     {
         log.debug(Thread.currentThread().toString() + "##doUpgradeMeshDeviceLocal(inetAddress=[" + inetAddress
             + "],bssid=[" + bssid + "],deviceKey=[" + deviceKey + "],latestRomVersion=[" + latestRomVersion
-            + "],router=[" + router + "])");
+            + "])");
         log.debug("doUpgradeMeshDeviceLocal get user1.bin start");
         // get user1.bin and user2.bin
         byte[] user1 = __getUserBin(true, deviceKey, latestRomVersion);
@@ -581,7 +581,6 @@ public class EspDeviceDoUpgradeLocal implements IEspDeviceDoUpgradeLocal
         {
             isUpgradeStartSuc =
                 EspPureSocketNetUtil.executeMeshUpgradeLocalRequest(client,
-                    router,
                     inetAddress,
                     latestRomVersion,
                     bssid);
@@ -595,7 +594,7 @@ public class EspDeviceDoUpgradeLocal implements IEspDeviceDoUpgradeLocal
         // listen device request
         log.debug("doUpgradeMeshDeviceLocal listen start");
         boolean isListenSuc =
-            EspPureSocketNetUtil.listen(client, user1, user2, inetAddress, router, bssid, TIMEOUT_MILLISECONDS);
+            EspPureSocketNetUtil.listen(client, user1, user2, inetAddress, bssid, TIMEOUT_MILLISECONDS);
         if (!isListenSuc)
         {
             log.warn("doUpgradeMeshDeviceLocal listen fail");

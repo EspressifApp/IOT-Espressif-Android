@@ -37,20 +37,19 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
         return request;
     }
     
-    private boolean postRemoteStatus(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid,
-        String router)
+    private boolean postRemoteStatus(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid)
     {
         String uriString = getLocalUrl(inetAddress);
         JSONObject jsonObject;
         jsonObject = getRequestJSONObject(statusRemote);
         JSONObject result = null;
-        if (deviceBssid == null || router == null)
+        if (deviceBssid == null)
         {
             EspBaseApiUtil.Post(uriString, jsonObject);
         }
         else
         {
-            EspBaseApiUtil.PostForJson(uriString, router, deviceBssid, jsonObject);
+            EspBaseApiUtil.PostForJson(uriString, deviceBssid, jsonObject);
         }
         return (result != null);
     }
@@ -68,7 +67,7 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
         }
         else
         {
-            EspBaseApiUtil.PostForJson(uriString, null, deviceBssid, jsonObject);
+            EspBaseApiUtil.PostForJson(uriString, deviceBssid, jsonObject);
         }
         return (result != null);
     }
@@ -76,23 +75,12 @@ public class EspCommandRemotePostStatusLocal implements IEspCommandRemotePostSta
     @Override
     public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote)
     {
-        boolean result = postRemoteStatus(inetAddress, statusRemote, null, null);
+        boolean result = postRemoteStatus(inetAddress, statusRemote, null);
         log.debug(Thread.currentThread().toString() + "##doCommandRemotePostStatusInternet(inetAddress=[" + inetAddress
             + "],statusRemote=[" + statusRemote + "]): " + result);
         return result;
     }
     
-    @Override
-    public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote,
-        String deviceBssid, String router)
-    {
-        boolean result = postRemoteStatus(inetAddress, statusRemote, deviceBssid, router);
-        log.debug(Thread.currentThread().toString() + "##doCommandRemotePostStatusLocal(inetAddress=[" + inetAddress
-            + "],statusRemote=[" + statusRemote + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): "
-            + result);
-        return result;
-    }
-
     @Override
     public boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote,
         String deviceBssid, boolean isMeshDevice)

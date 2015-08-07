@@ -27,8 +27,6 @@ public interface IEspDeviceDoUpgradeLocal extends IEspDeviceUpgrade
     final static String URL_DOWNLOAD_BIN = "https://iot.espressif.cn/v1/device/rom/";
     
     /**
-     * and the router=null when you call the method
-     * 
      * upgrade local by the latestRomVersion
      * 
      * @param inetAddress the inetAddress of the device
@@ -47,9 +45,8 @@ public interface IEspDeviceDoUpgradeLocal extends IEspDeviceUpgrade
      * @param bssid the device's bssid
      * @param deviceKey the device's key
      * @param latestRomVersion the latestRomVersion
-     * @param router the mesh device's router
      * @return the result from EspBaseUtilApi.discoverDevices() which contains the device itself
      */
     List<IOTAddress> doUpgradeMeshDeviceLocal(InetAddress inetAddress, String bssid, String deviceKey,
-        String latestRomVersion, String router);
+        String latestRomVersion);
 }

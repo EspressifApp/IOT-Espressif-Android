@@ -10,7 +10,7 @@ public interface IEspCommandPlugPostStatusLocal extends IEspCommandLocal, IEspCo
 {
     /**
      * @deprecated Use {@link #doCommandPlugPostStatusLocal(InetAddress, IEspStatusPlug, String, String)} instead of it,
-     * and the deviceBssid=null and router=null when you call the method
+     * and the deviceBssid=null when you call the method
      * 
      * post the statusPlug to the Plug by Local
      * @param inetAddress the Plug's ip address
@@ -18,18 +18,6 @@ public interface IEspCommandPlugPostStatusLocal extends IEspCommandLocal, IEspCo
      * @return whether the command executed suc
      */
     boolean doCommandPlugPostStatusLocal(InetAddress inetAddress,IEspStatusPlug statusPlug);
-    
-    /**
-     * post the statusPlug to the Plug by Local
-     * 
-     * @param inetAddress the Plug's ip address
-     * @param statusPlug the status of Plug
-     * @param deviceBssid the Plug's bssid
-     * @param router the Plug's router
-     * @return whether the command executed suc
-     */
-    boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid,
-        String router);
     
     /**
      * post the statusPlug to the Plug by Local

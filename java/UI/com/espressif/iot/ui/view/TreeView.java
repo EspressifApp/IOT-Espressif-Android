@@ -9,6 +9,7 @@ import com.espressif.iot.adt.tree.IEspTreeComponent;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.model.adt.tree.EspTreeComposite;
 import com.espressif.iot.model.adt.tree.EspTreeLeaf;
+import com.espressif.iot.type.device.IEspDeviceState;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -198,6 +199,12 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
     public void onItemClick(AdapterView<?> arg0, View convertView, int position, long id)
     {
         IEspDeviceTreeElement element = mCurrentElements.get(position);
+        IEspDeviceState deviceState = element.getCurrentDevice().getDeviceState();
+        if (deviceState.isStateUpgradingInternet() || deviceState.isStateUpgradingLocal())
+        {
+            return;
+        }
+        
         if (mItemClickCallBack != null)
         {
             mItemClickCallBack.onLastLevelItemClick(element, position);
@@ -343,6 +350,10 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
             holder.title.setTextSize(TypedValue.COMPLEX_UNIT_PX, baseTextSize - element.getLevel() * 3);
             
             IEspDevice device = element.getCurrentDevice();
+            if (device.getDeviceState().isStateUpgradingInternet() || device.getDeviceState().isStateUpgradingLocal())
+            {
+                holder.title.append(" (upgrading...) ");
+            }
             if (device.isActivated())
             {
                 holder.status.setBackgroundResource(R.drawable.esp_icon_cloud);

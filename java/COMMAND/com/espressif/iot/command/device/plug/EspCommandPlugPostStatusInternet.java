@@ -8,13 +8,12 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.RouterUtil;
 
 public class EspCommandPlugPostStatusInternet implements IEspCommandPlugPostStatusInternet
 {
     private final static Logger log = Logger.getLogger(EspCommandPlugPostStatusInternet.class);
     
-    private boolean postPlugStatus(String deviceKey, IEspStatusPlug statusPlug, String router)
+    private boolean postPlugStatus(String deviceKey, IEspStatusPlug statusPlug)
     {
         
         JSONObject jsonObject = new JSONObject();
@@ -38,10 +37,6 @@ public class EspCommandPlugPostStatusInternet implements IEspCommandPlugPostStat
         }
         
         String url = URL;
-        if (router != null)
-        {
-            url += "&router=" + RouterUtil.getBroadcastRouter(router);
-        }
         result = EspBaseApiUtil.Post(url, jsonObject, header);
         int status = -1;
         try
@@ -67,13 +62,7 @@ public class EspCommandPlugPostStatusInternet implements IEspCommandPlugPostStat
     @Override
     public boolean doCommandPlugPostStatusInternet(String deviceKey, IEspStatusPlug statusPlug)
     {
-        return doCommandPlugPostStatusInternet(deviceKey, statusPlug, null);
-    }
-    
-    @Override
-    public boolean doCommandPlugPostStatusInternet(String deviceKey, IEspStatusPlug statusPlug, String router)
-    {
-        boolean result = postPlugStatus(deviceKey, statusPlug, router);
+        boolean result = postPlugStatus(deviceKey, statusPlug);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugPostStatusInternet(deviceKey=[" + deviceKey
             + "],statusPlug=[" + statusPlug + "]): " + result);
         return result;

@@ -46,13 +46,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
         new HelpDeviceConfigureProgressDialog(this, device, apInfo).show();
     }
     
-    @Override
-    public void showMeshConfigureDialog(IEspDeviceNew device)
-    {
-        boolean isActivatedMesh = isConfigured(device.getBssid()) && device.getIsMeshDevice();
-        new HelpDeviceMeshConfigureDialog(this, device, isActivatedMesh).show();
-    }
-    
     private static class HelpHandler extends Handler {
         private WeakReference<HelpDeviceConfigureActivity> mActivity;
         
@@ -237,7 +230,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
             switch(itemId)
             {
                 case POPMENU_ID_DIRECT_CONNECT:
-                case POPMENU_ID_MESH:
                     return true;
                 default:
                     return false;

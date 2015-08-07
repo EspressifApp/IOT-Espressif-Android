@@ -49,11 +49,10 @@ public class EspSocketClient
     public void close()
         throws IOException
     {
-        log.debug(__getPrintInfo() + " is closed");
-        mSocket.close();
-        if (mInputStream != null)
+        if (!isClosed())
         {
-            mInputStream.close();
+            log.debug(__getPrintInfo() + " is closed");
+            mSocket.close();
         }
     }
     

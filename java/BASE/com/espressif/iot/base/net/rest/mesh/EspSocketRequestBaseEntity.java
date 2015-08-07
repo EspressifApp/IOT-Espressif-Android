@@ -21,20 +21,17 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
     private final String mContent;
     private final String mScheme;
     private final int mContentLength;
-    private final String mRouter;
     
     /**
      * Constructor of EspSocketRequestBaseEntity
      * @param method the method
      * @param uriStr the String of URI
      * @param content the content
-     * @param router
      */
-    public EspSocketRequestBaseEntity(String method,String uriStr,String content,String router)
+    public EspSocketRequestBaseEntity(String method, String uriStr, String content)
     {
         this.mMethod = method;
         this.mContent = content;
-        this.mRouter = router;
         this.mOriginUrl = uriStr;
         if (content != null)
         {
@@ -52,17 +49,6 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
         this.mHost = uri.getHost();
         // hash map to store header params
         this.mHeaerParams = new HashMap<String, String>();
-    }
-    
-    /**
-     * Constructor of EspSocketRequestBaseEntity
-     * @param method the method
-     * @param uriStr the String of URI
-     * @param content the content
-     */
-    public EspSocketRequestBaseEntity(String method, String uriStr, String content)
-    {
-        this(method, uriStr, content, null);
     }
     
     /**
@@ -116,12 +102,6 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
     }
     
     @Override
-    public String getRouter()
-    {
-        return this.mRouter;
-    }
-    
-    @Override
     public String getOriginUri()
     {
         return this.mOriginUrl;
@@ -131,7 +111,7 @@ public class EspSocketRequestBaseEntity implements IEspSocketRequest
      * Host: 192.168.11.102
      * Content-Length: 113
      * 
-     * {"router": "00000000", "freq":500,"rgb":{"red":255,"green":255,"blue":255},
+     * {"freq":500,"rgb":{"red":255,"green":255,"blue":255},
      * "sip": "C0A80B7B", "sport": "0FA1"}
      */
     

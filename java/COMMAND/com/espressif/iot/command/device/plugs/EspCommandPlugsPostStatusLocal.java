@@ -20,53 +20,6 @@ public class EspCommandPlugsPostStatusLocal implements IEspCommandPlugsPostStatu
     
     @Override
     public boolean doCommandPlugsPostStatusLocal(InetAddress inetAddress, IEspStatusPlugs status, String deviceBssid,
-        String router)
-    {
-        String url = getLocalUrl(inetAddress);
-        
-        JSONObject params = new JSONObject();
-        JSONObject statusJSON = new JSONObject();
-        try
-        {
-            List<IAperture> apertures = status.getStatusApertureList();
-            int valueSum = 0;
-            for (IAperture aperture : apertures)
-            {
-                int value;
-                if (aperture.isOn())
-                {
-                    value = 1 << aperture.getId();
-                }
-                else
-                {
-                    value = 0;
-                }
-                valueSum += value;
-            }
-            statusJSON.put(KEY_PLUGS_VALUE, valueSum);
-            statusJSON.put(KEY_APERTURE_COUNT, apertures.size());
-            params.put(KEY_PLUGS_STATUS, statusJSON);
-        }
-        catch (JSONException e1)
-        {
-            e1.printStackTrace();
-        }
-        
-        JSONObject result;
-        if (deviceBssid == null || router == null)
-        {
-            result = EspBaseApiUtil.Post(url, params);
-        }
-        else
-        {
-            result = EspBaseApiUtil.PostForJson(url, router, deviceBssid, params);
-        }
-        
-        return result != null;
-    }
-    
-    @Override
-    public boolean doCommandPlugsPostStatusLocal(InetAddress inetAddress, IEspStatusPlugs status, String deviceBssid,
         boolean isMeshDevice)
     {
         String url = getLocalUrl(inetAddress);
@@ -106,7 +59,7 @@ public class EspCommandPlugsPostStatusLocal implements IEspCommandPlugsPostStatu
         }
         else
         {
-            result = EspBaseApiUtil.PostForJson(url, null, deviceBssid, params);
+            result = EspBaseApiUtil.PostForJson(url, deviceBssid, params);
         }
         
         return result != null;

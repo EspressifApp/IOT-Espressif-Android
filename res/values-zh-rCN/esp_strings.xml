@@ -360,6 +360,7 @@
     <string name="esp_esptouch_result_over">配置结束，因当前连接的Wi-Fi与配置的Wi-Fi不同，无法收到反馈，请自行检查结果。</string>
     <string name="esp_esptouch_result_cancel">取消配置</string>
     <string name="esp_esptouch_version">EspTouch版本 : %1$s</string>
+    <string name="esp_esptouch_hint_msg">“点击[确定]前请确认设备的绿灯处于慢闪状态”</string>
     
     <string name="esp_wifi_edit">Wi-Fi编辑</string>
     <string name="esp_wifi_pwd_edit">编辑</string>

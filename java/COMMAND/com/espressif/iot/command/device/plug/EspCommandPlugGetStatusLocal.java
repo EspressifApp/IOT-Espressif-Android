@@ -20,37 +20,6 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
         return "http://" + inetAddress.getHostAddress() + "/" + "config?command=switch";
     }
     
-    private IEspStatusPlug getCurrentPlugStatus(InetAddress inetAddress, String deviceBssid, String router)
-    {
-        String uriString = getLocalUrl(inetAddress);
-        JSONObject jo = null;
-        if (deviceBssid == null || router == null)
-        {
-            jo = EspBaseApiUtil.Get(uriString);
-        }
-        else
-        {
-            jo = EspBaseApiUtil.GetForJson(uriString, router, deviceBssid);
-        }
-        if (jo == null)
-        {
-            return null;
-        }
-        try
-        {
-            JSONObject responseJson = jo.getJSONObject(Response);
-            int on = responseJson.getInt(Status);
-            IEspStatusPlug status = new EspStatusPlug();
-            status.setIsOn(on == 1);
-            return status;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
     private IEspStatusPlug getCurrentPlugStatus2(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
     {
         String uriString = getLocalUrl(inetAddress);
@@ -61,7 +30,7 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
         }
         else
         {
-            jo = EspBaseApiUtil.GetForJson(uriString, null, deviceBssid);
+            jo = EspBaseApiUtil.GetForJson(uriString, deviceBssid);
         }
         if (jo == null)
         {
@@ -85,27 +54,18 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
     @Override
     public IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress)
     {
-        IEspStatusPlug result = getCurrentPlugStatus(inetAddress, null, null);
+        IEspStatusPlug result = getCurrentPlugStatus2(inetAddress, null, false);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugGetStatusLocal(inetAddress=[" + inetAddress
             + "]): " + result);
         return result;
     }
     
     @Override
-    public IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router)
-    {
-        IEspStatusPlug result = getCurrentPlugStatus(inetAddress, deviceBssid, router);
-        log.debug(Thread.currentThread().toString() + "##doCommandPlugGetStatusLocal(inetAddress=[" + inetAddress
-            + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): " + router);
-        return result;
-    }
-
-    @Override
     public IEspStatusPlug doCommandPlugGetStatusLocal(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
     {
         IEspStatusPlug result = getCurrentPlugStatus2(inetAddress, deviceBssid, isMeshDevice);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugGetStatusLocal(inetAddress=[" + inetAddress
-            + "],deviceBssid=[" + deviceBssid + "],router=[" + isMeshDevice + "]): " + isMeshDevice);
+            + "],deviceBssid=[" + deviceBssid + "],isMeshDevice=[" + isMeshDevice + "])");
         return result;
     }
     

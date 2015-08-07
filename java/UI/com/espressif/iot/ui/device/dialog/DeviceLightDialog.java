@@ -111,7 +111,7 @@ public class DeviceLightDialog extends DeviceDialogAbs implements View.OnClickLi
             mControlChildCB.setChecked(true);
             mControlChildCB.setVisibility(View.GONE);
         }
-//        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
+        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         

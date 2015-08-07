@@ -185,7 +185,6 @@ public class EspLongSocket implements IEspLongSocket
                         String deviceBssid = task.getBssid();
                         EspBaseApiUtil.PostForJson(mClient,
                             task.getRequest().getOriginUri(),
-                            task.getRequest().getRouter(),
                             deviceBssid,
                             json,
                             checkIsDeviceAvailable,

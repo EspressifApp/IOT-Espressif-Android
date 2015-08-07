@@ -116,7 +116,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             if (cost > MIN_INTERVAL)
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthtStatusLocal()");
-                EspSocketRequestBaseEntity request = mLightBuilder.buildLocalPostStatusRequest(mInetAddress, statusLight, null);
+                EspSocketRequestBaseEntity request = mLightBuilder.buildLocalPostStatusRequest(mInetAddress, statusLight);
                 mLongSocket.addRequest(request, bssid, isMeshDevice);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status
@@ -137,7 +137,7 @@ public class EspDeviceLongSocketLight implements IEspDeviceLongSocketLight
             if (cost > MIN_INTERVAL)
             {
                 log.debug(Thread.currentThread().toString() + "##addLigthStatusInternet()");
-                EspSocketRequestBaseEntity request = mLightBuilder.buildInternetPostStatusRequest(mDeviceKey, statusLight, null);
+                EspSocketRequestBaseEntity request = mLightBuilder.buildInternetPostStatusRequest(mDeviceKey, statusLight);
                 mLongSocket.addRequest(request, bssid, isMeshDevice);
                 mLastTimestamp = System.currentTimeMillis();
                 // copy current light status to last light status

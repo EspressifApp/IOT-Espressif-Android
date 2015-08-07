@@ -10,7 +10,7 @@ public interface IEspCommandRemoteGetStatusLocal extends IEspCommandLocal, IEspC
 {
     /**
      * @deprecated Use {@link #doCommandRemoteGetStatusLocal(InetAddress, String, String)} instead of it,
-     * and the deviceBssid=null and router=null when you call the method
+     * and the deviceBssid=null when you call the method
      * 
      * get the statusRemote to the Remote by Local
      * 
@@ -18,16 +18,6 @@ public interface IEspCommandRemoteGetStatusLocal extends IEspCommandLocal, IEspC
      * @return the status of the Remote or null(if executed fail)
      */
     IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress);
-    
-    /**
-     * get the statusRemote to the Remote by Local
-     * 
-     * @param inetAddress the Remote's ip address
-     * @param deviceBssid the Remote's bssid
-     * @param router the Remote's router
-     * @return the status of the Remote or null(if executed fail)
-     */
-    IEspStatusRemote doCommandRemoteGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router);
 
     /**
      * get the statusRemote to the Remote by Local

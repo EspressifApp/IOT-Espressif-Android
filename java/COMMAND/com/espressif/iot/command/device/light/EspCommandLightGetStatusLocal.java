@@ -20,47 +20,6 @@ public class EspCommandLightGetStatusLocal implements IEspCommandLightGetStatusL
         return "http://" + inetAddress.getHostAddress() + "/" + "config?command=light";
     }
     
-    private IEspStatusLight getCurrentLightStatus(InetAddress inetAddress, String deviceBssid, String router)
-    {
-        String uriString = getLocalUrl(inetAddress);
-        JSONObject jo = null;
-        if (deviceBssid == null || router == null)
-        {
-            jo = EspBaseApiUtil.Get(uriString);
-        }
-        else
-        {
-            jo = EspBaseApiUtil.GetForJson(uriString, router, deviceBssid);
-        }
-        if (jo == null)
-        {
-            return null;
-        }
-        try
-        {
-            int period = jo.getInt(Period);
-            JSONObject rgb = jo.getJSONObject(Rgb);
-            int red = rgb.getInt(Red);
-            int green = rgb.getInt(Green);
-            int blue = rgb.getInt(Blue);
-            int cwhite = rgb.getInt(CWhite);
-            int wwhite = rgb.getInt(WWhite);
-            IEspStatusLight status = new EspStatusLight();
-            status.setPeriod(period);
-            status.setRed(red);
-            status.setGreen(green);
-            status.setBlue(blue);
-            status.setCWhite(cwhite);
-            status.setWWhite(wwhite);
-            return status;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
     private IEspStatusLight getCurrentLightStatus2(InetAddress inetAddress, String deviceBssid, boolean isMeshDevice)
     {
         String uriString = getLocalUrl(inetAddress);
@@ -71,7 +30,7 @@ public class EspCommandLightGetStatusLocal implements IEspCommandLightGetStatusL
         }
         else
         {
-            jo = EspBaseApiUtil.GetForJson(uriString, null, deviceBssid);
+            jo = EspBaseApiUtil.GetForJson(uriString, deviceBssid);
         }
         if (jo == null)
         {
@@ -105,21 +64,12 @@ public class EspCommandLightGetStatusLocal implements IEspCommandLightGetStatusL
     @Override
     public IEspStatusLight doCommandLightGetStatusLocal(InetAddress inetAddress)
     {
-        IEspStatusLight result = getCurrentLightStatus(inetAddress, null, null);
+        IEspStatusLight result = getCurrentLightStatus2(inetAddress, null, false);
         log.debug(Thread.currentThread().toString() + "##doCommandLightGetStatusLocal(inetAddress=[" + inetAddress
             + "]): " + result);
         return result;
     }
     
-    @Override
-    public IEspStatusLight doCommandLightGetStatusLocal(InetAddress inetAddress, String deviceBssid, String router)
-    {
-        IEspStatusLight result = getCurrentLightStatus(inetAddress, deviceBssid, router);
-        log.debug(Thread.currentThread().toString() + "##doCommandLightGetStatusLocal(inetAddress=[" + inetAddress
-            + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): " + result);
-        return result;
-    }
-
     @Override
     public IEspStatusLight doCommandLightGetStatusLocal(InetAddress inetAddress, String deviceBssid,
         boolean isMeshDevice)

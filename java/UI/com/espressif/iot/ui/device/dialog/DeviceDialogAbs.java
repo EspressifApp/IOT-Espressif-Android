@@ -5,9 +5,7 @@ import java.util.Vector;
 
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.device.IEspDeviceStatus;
-import com.espressif.iot.ui.softap_sta_support.help.HelpSoftApStaSupportActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 
@@ -102,13 +100,6 @@ public abstract class DeviceDialogAbs implements EspDeviceDialogInterface, Dialo
         if (mOnDissmissedListener != null)
         {
             mOnDissmissedListener.onDissmissed(this);
-        }
-        
-        EspHelpStateMachine helpMachine = EspHelpStateMachine.getInstance();
-        if (helpMachine.isHelpModeUseSSSDevice())
-        {
-            helpMachine.transformState(true);
-            ((HelpSoftApStaSupportActivity)mContext).onHelpUseSSSDevice();
         }
     }
     

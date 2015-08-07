@@ -81,7 +81,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     
     protected static final int POPMENU_ID_ACTIVATE = 0;
     protected static final int POPMENU_ID_DIRECT_CONNECT = 1;
-    protected static final int POPMENU_ID_MESH = 2;
     
     /**
      * When show the dialogs, pause the auto refresh handler
@@ -455,10 +454,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
         }
         menu.add(Menu.NONE, POPMENU_ID_DIRECT_CONNECT, 0, R.string.esp_configure_direct_connect);
-//        if (device.getIsMeshDevice())
-//        {
-//            menu.add(Menu.NONE, POPMENU_ID_MESH, 0, R.string.esp_configure_mesh);
-//        }
         popMenu.setOnMenuItemClickListener(new SoftAPPopMenuItemClickListener(device));
         popMenu.show();
     }
@@ -488,9 +483,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 case POPMENU_ID_DIRECT_CONNECT:
                     showDirectConnectProgressDialog(mPopDevice);
                     return true;
-                case POPMENU_ID_MESH:
-                    showMeshConfigureDialog(mPopDevice);
-                    return true;
             }
             return false;
         }
@@ -505,11 +497,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     public void showConfigureProgressDialog(IEspDeviceNew device, ApInfo apInfo)
     {
         new DeviceConfigureProgressDialog(this, device, apInfo).show(); 
-    }
-    
-    public void showMeshConfigureDialog(IEspDeviceNew device)
-    {
-        new DeviceMeshConfigureDialog(this, device, isConfigured(device.getBssid()) && device.getIsMeshDevice()).show();
     }
     
     public void showDirectConnectProgressDialog(IEspDeviceNew device)

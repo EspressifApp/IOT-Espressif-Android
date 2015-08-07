@@ -40,11 +40,6 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
     {
         EspDeviceType deviceType = device.getDeviceType();
         String deviceKey = device.getKey();
-        String deviceRouter = null;
-        if (isBroadcast)
-        {
-            deviceRouter = device.getRouter();
-        }
         boolean suc = false;
         switch (deviceType)
         {
@@ -57,7 +52,7 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             case LIGHT:
                 IEspStatusLight lightStatus = (IEspStatusLight)status;
                 IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
-                suc = lightCommand.doCommandLightPostStatusInternet(deviceKey, lightStatus, deviceRouter);
+                suc = lightCommand.doCommandLightPostStatusInternet(deviceKey, lightStatus);
                 if (suc)
                 {
                     IEspDeviceLight light = (IEspDeviceLight)device;
@@ -72,7 +67,7 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             case PLUG:
                 IEspStatusPlug plugStatus = (IEspStatusPlug)status;
                 IEspCommandPlugPostStatusInternet plugCommand = new EspCommandPlugPostStatusInternet();
-                suc = plugCommand.doCommandPlugPostStatusInternet(deviceKey, plugStatus, deviceRouter);
+                suc = plugCommand.doCommandPlugPostStatusInternet(deviceKey, plugStatus);
                 if (suc)
                 {
                     IEspDevicePlug plugDevice = (IEspDevicePlug)device;
@@ -82,7 +77,7 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             case REMOTE:
                 IEspStatusRemote remoteStatus = (IEspStatusRemote)status;
                 IEspCommandRemotePostStatusInternet remoteCommand = new EspCommandRemotePostStatusInternet();
-                suc = remoteCommand.doCommandRemotePostStatusInternet(deviceKey, remoteStatus, deviceRouter);
+                suc = remoteCommand.doCommandRemotePostStatusInternet(deviceKey, remoteStatus);
                 if (suc)
                 {
                     IEspDeviceRemote remote = (IEspDeviceRemote)device;
@@ -94,7 +89,7 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             case PLUGS:
                 IEspStatusPlugs plugsStatus = (IEspStatusPlugs)status;
                 IEspCommandPlugsPostStatusInternet plugsCommand = new EspCommandPlugsPostStatusInternet();
-                suc = plugsCommand.doCommandPlugsPostStatusInternet(deviceKey, plugsStatus, deviceRouter);
+                suc = plugsCommand.doCommandPlugsPostStatusInternet(deviceKey, plugsStatus);
                 if (suc)
                 {
                     IEspDevicePlugs plugs = (IEspDevicePlugs)device;
@@ -146,19 +141,19 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             {
                 IEspStatusLight lightStatus = (IEspStatusLight)status;
                 IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
-                lightCommand.doCommandLightPostStatusInternet(device.getKey(), lightStatus, device.getRouter());
+                lightCommand.doCommandLightPostStatusInternet(device.getKey(), lightStatus);
             }
             else if (status instanceof IEspStatusPlug)
             {
                 IEspStatusPlug plugStatus = (IEspStatusPlug)status;
                 IEspCommandPlugPostStatusInternet plugCommand = new EspCommandPlugPostStatusInternet();
-                plugCommand.doCommandPlugPostStatusInternet(device.getKey(), plugStatus, device.getRouter());
+                plugCommand.doCommandPlugPostStatusInternet(device.getKey(), plugStatus);
             }
             else if (status instanceof IEspStatusRemote)
             {
                 IEspStatusRemote remoteStatus = (IEspStatusRemote)status;
                 IEspCommandRemotePostStatusInternet remoteCommand = new EspCommandRemotePostStatusInternet();
-                remoteCommand.doCommandRemotePostStatusInternet(device.getKey(), remoteStatus, device.getRouter());
+                remoteCommand.doCommandRemotePostStatusInternet(device.getKey(), remoteStatus);
             }
         }
     }

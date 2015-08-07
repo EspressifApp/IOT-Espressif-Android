@@ -71,9 +71,10 @@ public class BSSIDUtil
     {
         return genDeviceNameByBSSID("ESP_", BSSID);
     }
-
+    
     /**
      * generate Device Name By BSSID
+     * 
      * @param prefix the prefix of the name
      * @param BSSID
      * @return prefix + "XXXXXX", "XXXXXX" is the last 6 of BSSID
@@ -120,6 +121,7 @@ public class BSSIDUtil
     
     /**
      * restore the bssid from esptouch result
+     * 
      * @param BSSID like 18fe34abcdef
      * @return like 18:fe:34:ab:cd:ef
      */
@@ -135,5 +137,17 @@ public class BSSIDUtil
             }
         }
         return sb.toString();
+    }
+    
+    /**
+     * check whether the bssid is belong to ESP device
+     * 
+     * @param BSSID the bssid to be checked
+     * @return whether the bssid is belong to ESP device
+     */
+    public static boolean isEspDevice(String BSSID)
+    {
+        // ESP wifi's sta bssid is started with "18:fe:34"
+        return BSSID != null && (BSSID.startsWith("18:fe:34"));
     }
 }

@@ -10,13 +10,12 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.RouterUtil;
 
 public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostStatusInternet
 {
     
     @Override
-    public boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status, String router)
+    public boolean doCommandPlugsPostStatusInternet(String deviceKey, IEspStatusPlugs status)
     {
         String headerKey = Authorization;
         String headerValue = Token + " " + deviceKey;
@@ -51,11 +50,6 @@ public class EspCommandPlugsPostStatusInternet implements IEspCommandPlugsPostSt
         }
         
         String url = URL;
-        if (router != null)
-        {
-            url += "&router=" + RouterUtil.getBroadcastRouter(router);
-        }
-        
         JSONObject result = EspBaseApiUtil.Post(url, params, header);
         if (result == null)
         {

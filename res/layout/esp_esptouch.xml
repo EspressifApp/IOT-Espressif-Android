@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="15dip" >
 
@@ -51,10 +51,15 @@
         android:text="@string/esp_sss_esptouch_wifi_hint" />
 
     <TextView
-        android:id="@+id/esptouch_version"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:layout_marginTop="15dip" />
+        android:layout_marginTop="15dip"
+        android:text="@string/esp_esptouch_hint_msg" />
+
+    <TextView
+        android:id="@+id/esptouch_version"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="right|bottom" />
 
 </LinearLayout>

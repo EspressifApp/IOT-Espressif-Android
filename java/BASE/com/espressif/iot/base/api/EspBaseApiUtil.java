@@ -108,41 +108,38 @@ public class EspBaseApiUtil
     /**
      * execute GET to get JSONObject by Mesh Net
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject GetForJson(String uriStr, String router, String deviceBssid, HeaderPair... headers)
+    public static JSONObject GetForJson(String uriStr, String deviceBssid, HeaderPair... headers)
     {
-        return EspMeshNetUtil.GetForJson(uriStr, router, deviceBssid, headers);
+        return EspMeshNetUtil.GetForJson(uriStr, deviceBssid, headers);
     }
     
     /**
      * execute GET to get JSONArray by Mesh Net
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONArray result
      */
-    public static JSONArray GetForJsonArray(String uriStr, String router, String deviceBssid, HeaderPair... headers)
+    public static JSONArray GetForJsonArray(String uriStr, String deviceBssid, HeaderPair... headers)
     {
-        return EspMeshNetUtil.GetForJsonArray(uriStr, router, deviceBssid, headers);
+        return EspMeshNetUtil.GetForJsonArray(uriStr, deviceBssid, headers);
     }
     
     /**
      * execute POST to get JSONObject by Mesh Net
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject PostForJson(String uriStr, String router, String deviceBssid, JSONObject json,
+    public static JSONObject PostForJson(String uriStr, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return EspMeshNetUtil.PostForJson(uriStr, router, deviceBssid, json, headers);
+        return EspMeshNetUtil.PostForJson(uriStr, deviceBssid, json, headers);
     }
     
     /**
@@ -153,10 +150,10 @@ public class EspBaseApiUtil
      * @param headers the headers of the request
      * @return the JSONArray result
      */
-    public static JSONArray PostForJsonArray(String uriStr, String router, String deviceBssid, JSONObject json,
+    public static JSONArray PostForJsonArray(String uriStr, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return EspMeshNetUtil.PostForJsonArray(uriStr, router, deviceBssid, json, headers);
+        return EspMeshNetUtil.PostForJsonArray(uriStr, deviceBssid, json, headers);
     }
     
     /**
@@ -164,7 +161,6 @@ public class EspBaseApiUtil
      * 
      * @param client the EspSocketClient or null(if null new client will be created)
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param checkIsDeviceAvailable whether check is device available before sending request
      * @param closeClientImmdeiately whether close the client immediate after sending request
@@ -176,13 +172,12 @@ public class EspBaseApiUtil
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String deviceBssid,
         boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
         int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
     {
         return EspMeshNetUtil.GetForJson(client,
             uriStr,
-            router,
             deviceBssid,
             checkIsDeviceAvailable,
             closeClientImmdeiately,
@@ -199,7 +194,6 @@ public class EspBaseApiUtil
      * 
      * @param client the EspSocketClient or null(if null new client will be created)
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param json the json to be posted
      * @param checkIsDeviceAvailable whether check is device available before sending request
@@ -212,13 +206,12 @@ public class EspBaseApiUtil
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String deviceBssid,
         JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort,
         int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
     {
         return EspMeshNetUtil.PostForJson(client,
             uriStr,
-            router,
             deviceBssid,
             json,
             checkIsDeviceAvailable,

@@ -23,50 +23,6 @@ public class EspCommandLightGetEspnowLocal implements IEspCommandLightGetEspnowL
     
     @Override
     public List<IEspStatusEspnow> doCommandLightGetEspnowLocal(InetAddress inetAddress, String deviceBssid,
-        String router)
-    {
-        String uriString = getLocalUrl(inetAddress);
-        JSONObject jo = null;
-        if (deviceBssid == null || router == null)
-        {
-            jo = EspBaseApiUtil.Get(uriString);
-        }
-        else
-        {
-            jo = EspBaseApiUtil.GetForJson(uriString, router, deviceBssid);
-        }
-        if (jo == null)
-        {
-            return null;
-        }
-        
-        try
-        {
-            List<IEspStatusEspnow> list = new ArrayList<IEspStatusEspnow>();
-            JSONArray switchArray = jo.getJSONArray(Switches);
-            for (int i = 0; i < switchArray.length(); i++)
-            {
-                JSONObject switchJSON = switchArray.getJSONObject(i);
-                String mac = switchJSON.getString(Mac);
-                int voltage = switchJSON.getInt(VoltageMV);
-                
-                IEspStatusEspnow espnowStatus = new EspStatusEspnow();
-                espnowStatus.setMac(mac);
-                espnowStatus.setVoltage(voltage);
-                list.add(espnowStatus);
-            }
-            
-            return list;
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    @Override
-    public List<IEspStatusEspnow> doCommandLightGetEspnowLocal(InetAddress inetAddress, String deviceBssid,
         boolean isMeshDevice)
     {
         String uriString = getLocalUrl(inetAddress);
@@ -77,7 +33,7 @@ public class EspCommandLightGetEspnowLocal implements IEspCommandLightGetEspnowL
         }
         else
         {
-            jo = EspBaseApiUtil.GetForJson(uriString, null, deviceBssid);
+            jo = EspBaseApiUtil.GetForJson(uriString, deviceBssid);
         }
         if (jo == null)
         {

@@ -499,13 +499,10 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
         
         private final IEspDeviceConfigure mDeviceConfigure;
         
-        private volatile boolean mIsFirstExecuted;
-        
         public TaskActivateLocal(IEspDeviceConfigure deviceConfigure)
         {
             super(deviceConfigure.getBssid(), 20 * 1000, 5 * 1000);
             this.mDeviceConfigure = deviceConfigure;
-            this.mIsFirstExecuted = true;
         }
         
         @Override
@@ -533,12 +530,11 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     boolean discoverRequired = true;
                     
                     // init parameters
-                    String router = mDeviceConfigure.getRouter();
                     String deviceBssid = mDeviceConfigure.getBssid();
                     InetAddress inetAddress = mDeviceConfigure.getInetAddress();
                     String randomToken = mDeviceConfigure.getKey();
                     String bssid = mDeviceConfigure.getBssid();
-                    String rootDeviceBssid = mDeviceConfigure.getRootDeviceBssid();
+                    String parentDeviceBssid = mDeviceConfigure.getParentDeviceBssid();
                     IOTAddress iotAddress = null;
                     
                     if (discoverRequired)
@@ -547,19 +543,17 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                         // try to discover the device
                         iotAddress = EspBaseApiUtil.discoverDevice(deviceBssid);
                         log.debug("ActivateLocalTask:: discoverDevice finish, iotAddress:" + iotAddress);
-                        router = iotAddress != null ? iotAddress.getRouter() : null;
                         inetAddress = iotAddress != null ? iotAddress.getInetAddress() : null;
-                        rootDeviceBssid = iotAddress != null ? iotAddress.getRootBssid() : null;
+                        parentDeviceBssid = iotAddress != null ? iotAddress.getParentBssid() : null;
                         // update the inetAddress and router
                         if (iotAddress != null)
                         {
-                            mDeviceConfigure.setRouter(router);
-                            mDeviceConfigure.setRootDeviceBssid(rootDeviceBssid);
+                            mDeviceConfigure.setParentDeviceBssid(parentDeviceBssid);
                             mDeviceConfigure.setInetAddress(inetAddress);
-                            mDeviceConfigure.setIsMeshDevice(rootDeviceBssid != null);
+                            mDeviceConfigure.setIsMeshDevice(iotAddress.isMeshDevice());
                             // for the moment, we can't see the device's name while activating,
                             // so don't mind the device's name now
-                            String prefix = router != null ? "espressif_" : "ESP_";
+                            String prefix = "espressif_"; // : "ESP_";
                             String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
                             mDeviceConfigure.setName(ssid);
                         }

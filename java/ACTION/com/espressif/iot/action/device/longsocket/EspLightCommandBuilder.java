@@ -33,7 +33,7 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
     
     // it hasn't been used, let it here just for it maybe used in the future
     @Override
-    public EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress, String router)
+    public EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress)
     {
         String uriStr = "http:/" + inetAddress + "/" + "config?command=light";
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("GET", uriStr);
@@ -42,7 +42,7 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
     }
     
     @Override
-    public EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router)
+    public EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight)
     {
         String uriStr = "http:/" + inetAddress + "/" + "config?command=light";
         JSONObject requestJson = new JSONObject();
@@ -80,7 +80,7 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
     }
     
     @Override
-    public EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router)
+    public EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight)
     {
         String uriStr = "https://iot.espressif.cn/v1/datastreams/light/datapoint/?deliver_to_device=true";
         String headerKey = Authorization;
@@ -101,7 +101,6 @@ public class EspLightCommandBuilder implements IEspLightCommandBuilder
             e.printStackTrace();
             return null;
         }
-        // for Internet, we don't care whether the device is router or not, so we treat them as non-router
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity("POST", uriStr, jsonObject.toString());
         request.putHeaderParams("Connection", "keep-alive");
         request.putHeaderParams(headerKey, headerValue);

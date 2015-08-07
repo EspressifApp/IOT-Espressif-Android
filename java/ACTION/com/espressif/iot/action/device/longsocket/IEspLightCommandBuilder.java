@@ -41,20 +41,18 @@ public interface IEspLightCommandBuilder
      * build the local get status request
      * 
      * @param inetAddress the device's inetAddress
-     * @param router the router(only mesh device has it)
      * @return the local get status request
      */
-    EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress, String router);
+    EspSocketRequestBaseEntity buildLocalGetStatusRequest(InetAddress inetAddress);
     
     /**
      * build the local get status request
      * 
      * @param inetAddress the device's inetAddress
      * @param statusLight the status of light
-     * @param router the router(only mesh device has it)
      * @return the local post status request
      */
-    EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight, String router);
+    EspSocketRequestBaseEntity buildLocalPostStatusRequest(InetAddress inetAddress, IEspStatusLight statusLight);
     
     /**
      * build the Internet get status request
@@ -69,8 +67,7 @@ public interface IEspLightCommandBuilder
      * 
      * @param deviceKey the device key
      * @param statusLight the status of light
-     * @param router the router(only mesh device has it)
      * @return the Internet post status request
      */
-    EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight, String router);
+    EspSocketRequestBaseEntity buildInternetPostStatusRequest(String deviceKey, IEspStatusLight statusLight);
 }

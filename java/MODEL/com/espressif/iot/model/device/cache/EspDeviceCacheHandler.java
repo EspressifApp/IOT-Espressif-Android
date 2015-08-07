@@ -177,8 +177,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                         + "] is update(including name), serverLocalDevice:[" + serverLocalDevice + "]");
                     deviceInUser.copyInetAddress(serverLocalDevice);
                     deviceInUser.copyIsMeshDevice(serverLocalDevice);
-                    deviceInUser.copyRouter(serverLocalDevice);
-                    deviceInUser.copyRootDeviceId(serverLocalDevice);
+                    deviceInUser.copyParentDeviceBssid(serverLocalDevice);
                     
                     // it must before deviceInUser.copyDeviceState, or the Renamed state will be cleared
                     boolean isRenamed = deviceInUserState.isStateRenamed();
@@ -291,8 +290,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     // fix the bug when device is only local, the apk will crash
                     userDevice.setInetAddress(localIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localIOTAddress.isMeshDevice());
-                    userDevice.setRouter(localIOTAddress.getRouter());
-                    userDevice.setRootDeviceBssid(localIOTAddress.getRootBssid());
+                    userDevice.setParentDeviceBssid(localIOTAddress.getParentBssid());
                 }
             }
         }
@@ -349,8 +347,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     deviceState.addStateLocal();
                     userDevice.setInetAddress(localUpgradeSucIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localUpgradeSucIOTAddress.isMeshDevice());
-                    userDevice.setRouter(localUpgradeSucIOTAddress.getRouter());
-                    userDevice.setRootDeviceBssid(localUpgradeSucIOTAddress.getRootBssid());
+                    userDevice.setParentDeviceBssid(localUpgradeSucIOTAddress.getParentBssid());
                     break;
                 }
             }
@@ -628,9 +625,8 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
             IEspDeviceState deviceState = device.getDeviceState();
             if ((!deviceState.isStateLocal()) && (!deviceState.isStateInternet()))
             {
-                // clear router info
-                device.setRouter(null);
-                device.setRootDeviceBssid(null);
+                // clear parent device bssid
+                device.setParentDeviceBssid(null);
                 device.setIsMeshDevice(false);
             }
         }
@@ -666,7 +662,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         
         // handle user's sta device list
         handleSta(userDeviceList, userStaDeviceList);
-        // clear device's router info if it isn't local or internet
+        // clear parent device bssid if it isn't local or internet
         handleUserDevices(userDeviceList);
         user.unlockUserDeviceLists();
         return null;

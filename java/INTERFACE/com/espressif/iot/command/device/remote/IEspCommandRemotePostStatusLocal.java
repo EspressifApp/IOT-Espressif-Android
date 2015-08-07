@@ -10,7 +10,7 @@ public interface IEspCommandRemotePostStatusLocal extends IEspCommandLocal, IEsp
 {
     /**
      * @deprecated Use {@link } instead of it,
-     * and the deviceBssid=null and router=null when you call the method
+     * and the deviceBssid=null when you call the method
      * 
      * post the statusRemote to the Remote by Local
      * 
@@ -19,18 +19,6 @@ public interface IEspCommandRemotePostStatusLocal extends IEspCommandLocal, IEsp
      * @return whether the command executed suc
      */
     boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote);
-    
-    /**
-     * post the statusRemote to the Remote by Local
-     * 
-     * @param inetAddress the Remote's ip address
-     * @param statusRemote the status of Remote
-     * @param deviceBssid the Remote's bssid
-     * @param router the Remote's router
-     * @return whether the command executed suc
-     */
-    boolean doCommandRemotePostStatusLocal(InetAddress inetAddress, IEspStatusRemote statusRemote, String deviceBssid,
-        String router);
     
     /**
      * post the statusRemote to the Remote by Local

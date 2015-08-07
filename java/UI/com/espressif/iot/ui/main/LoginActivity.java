@@ -4,8 +4,6 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.main.LoginThirdPartyDialog.OnLoginListener;
-import com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity;
-import com.espressif.iot.ui.softap_sta_support.help.HelpSoftApStaSupportActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -33,7 +31,6 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private Button mLoginBtn;
     private Button mRegisterBtn;
-    private Button mLocalBtn;
     private Button mQuickUsageBtn;
     private TextView mThirdPartyLoginTV;
     
@@ -64,9 +61,6 @@ public class LoginActivity extends Activity implements OnClickListener
         mRegisterBtn = (Button)findViewById(R.id.login_btn_register);
         mRegisterBtn.setOnClickListener(this);
         
-        mLocalBtn = (Button)findViewById(R.id.login_local);
-        mLocalBtn.setOnClickListener(this);
-        
         // listen the auto login event
         mAutoLoginCB = (CheckBox)findViewById(R.id.login_cb_auto_login);
         
@@ -91,19 +85,6 @@ public class LoginActivity extends Activity implements OnClickListener
         {
             Intent intent = new Intent(this, RegisterActivity.class);
             startActivityForResult(intent, REQUEST_REGISTER);
-        }
-        else if (v ==  mLocalBtn)
-        {
-            Class<?> _class;
-            if (EspApplication.HELP_ON)
-            {
-                _class = HelpSoftApStaSupportActivity.class;
-            }
-            else
-            {
-                _class = SoftApStaSupportActivity.class;
-            }
-            startActivity(new Intent(this, _class));
         }
         else if (v == mQuickUsageBtn)
         {

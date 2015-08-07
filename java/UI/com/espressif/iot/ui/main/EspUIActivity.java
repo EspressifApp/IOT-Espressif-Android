@@ -136,8 +136,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private LocalBroadcastManager mBraodcastManager;
     
-    private IEspDevice mLocalRoot;
-    private IEspDevice mInternetRoot;
+    private IEspDevice mVirtuaMeshRoot;
     
     private PullToRefreshListView mStaListView;
     private List<IEspDeviceSSS> mStaList;
@@ -163,8 +162,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mShared.registerOnSharedPreferenceChangeListener(this);
         
         // Init device list
-        mLocalRoot = BEspDeviceRoot.getBuilder().getLocalRoot();
-        mInternetRoot = BEspDeviceRoot.getBuilder().getInternetRoot();
+        mVirtuaMeshRoot = BEspDeviceRoot.getBuilder().getVirtualMeshRoot();
         mDeviceListView = (PullToRefreshListView)getLayoutInflater().inflate(R.layout.esp_ui_devices_list, null);
         mDeviceList = new Vector<IEspDevice>();
         updateDeviceList();
@@ -369,6 +367,10 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private void setEditBarEnable(boolean enable)
     {
+        if (enable)
+        {
+            mPager.setCurrentItem(PAGE_ACTIVATED_DEVICES, true);
+        }
         mEditBar.setVisibility(enable ? View.VISIBLE : View.GONE);
         mDeleteSelectedBtn.setEnabled(false);
         mDeviceListView.setMode(enable ? Mode.DISABLED : Mode.PULL_FROM_START);
@@ -475,16 +477,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         if (hasMeshDevice)
         {
-            if (EspBaseApiUtil.isWifiConnected())
-            {
-                mLocalRoot.setName(EspBaseApiUtil.getWifiConnectedSsid());
-                mDeviceList.add(0, mLocalRoot);
-            }
-            if (EspBaseApiUtil.isNetworkAvailable())
-            {
-                mInternetRoot.setName("Internet Root Router");
-                mDeviceList.add(0, mInternetRoot);
-            }
+            mVirtuaMeshRoot.setName("Mesh Root");
+            mDeviceList.add(0, mVirtuaMeshRoot);
         }
     }
     

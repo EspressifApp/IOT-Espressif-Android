@@ -10,6 +10,7 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
 {
     private IEspDeviceRoot localRoot = null;
     private IEspDeviceRoot internetRoot = null;
+    private IEspDeviceRoot virtualMeshRoot = null;
     
     private BEspDeviceRoot()
     {
@@ -19,8 +20,7 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
         localRoot.setDeviceState(stateLocal);
         localRoot.setDeviceType(EspDeviceType.ROOT);
         localRoot.setKey(RandomUtil.randomString(20));
-        localRoot.setRouter(IEspDeviceRoot.LOCAL_ROUTER);
-        localRoot.setRootDeviceBssid(localRoot.getBssid());
+        localRoot.setParentDeviceBssid(null);
         localRoot.setIsMeshDevice(true);
         localRoot.setId(Long.MIN_VALUE);
         
@@ -30,8 +30,19 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
         internetRoot.setDeviceState(stateInternet);
         internetRoot.setDeviceType(EspDeviceType.ROOT);
         internetRoot.setKey(RandomUtil.randomString(20));
+        internetRoot.setParentDeviceBssid(null);
         internetRoot.setIsMeshDevice(true);
         internetRoot.setId(Long.MIN_VALUE + 1);
+        
+        virtualMeshRoot = new EspDeviceRoot();
+        EspDeviceState stateMesh = new EspDeviceState();
+        stateMesh.addStateLocal();
+        stateMesh.addStateInternet();
+        virtualMeshRoot.setDeviceState(stateMesh);
+        virtualMeshRoot.setDeviceType(EspDeviceType.ROOT);
+        virtualMeshRoot.setKey(RandomUtil.randomString(20));
+        virtualMeshRoot.setIsMeshDevice(true);
+        virtualMeshRoot.setId(Long.MIN_VALUE + 2);
     }
     
     private static class InstanceHolder
@@ -56,4 +67,9 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
         return internetRoot;
     }
 
+    @Override
+    public IEspDeviceRoot getVirtualMeshRoot()
+    {
+        return virtualMeshRoot;
+    }
 }

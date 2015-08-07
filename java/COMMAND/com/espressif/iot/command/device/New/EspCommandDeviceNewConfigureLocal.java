@@ -65,7 +65,7 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
     }
     
     @Override
-    public boolean doCommandMeshDeviceNewConfigureLocal(String router, String deviceBssid, String deviceSsid,
+    public boolean doCommandMeshDeviceNewConfigureLocal(String deviceBssid, String deviceSsid,
         WifiCipherType deviceWifiCipherType, String devicePassword, String randomToken)
     {
         JSONObject Content = new JSONObject();
@@ -98,11 +98,10 @@ public class EspCommandDeviceNewConfigureLocal implements IEspCommandDeviceNewCo
             e.printStackTrace();
         }
         String urlString = getLocalUrl(inetAddress);
-        JSONObject result = EspBaseApiUtil.PostForJson(urlString, router, deviceBssid, Request);
-        log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(router=[" + router
-            + "],deviceBssid=[" + deviceBssid + "],deviceSsid=[" + deviceSsid + "],deviceWifiCipherType=["
-            + deviceWifiCipherType + "],devicePassword=[" + devicePassword + "],randomToken=[" + randomToken + "]): "
-            + result);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, deviceBssid, Request);
+        log.debug(Thread.currentThread().toString() + "##doCommandDeviceNewConfigureLocal(deviceBssid=[" + deviceBssid
+            + "],deviceSsid=[" + deviceSsid + "],deviceWifiCipherType=[" + deviceWifiCipherType + "],devicePassword=["
+            + devicePassword + "],randomToken=[" + randomToken + "]): " + result);
         return true;
     }
     

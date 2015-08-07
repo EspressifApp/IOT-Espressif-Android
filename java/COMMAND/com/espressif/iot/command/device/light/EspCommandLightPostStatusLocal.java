@@ -40,23 +40,6 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
         return request;
     }
     
-    private boolean postLightStatus(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
-        String router)
-    {
-        String uriString = getLocalUrl(inetAddress);
-        JSONObject jsonObject = getRequestJSONObject(statusLight);
-        JSONObject result = null;
-        if (deviceBssid == null || router == null)
-        {
-            result = EspBaseApiUtil.Post(uriString, jsonObject);
-        }
-        else
-        {
-            result = EspBaseApiUtil.PostForJson(uriString, router, deviceBssid, jsonObject);
-        }
-        return (result != null);
-    }
-    
     private boolean postLightStatus2(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
         boolean isMeshDevice)
     {
@@ -69,7 +52,7 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
         }
         else
         {
-            result = EspBaseApiUtil.PostForJson(uriString, null, deviceBssid, jsonObject);
+            result = EspBaseApiUtil.PostForJson(uriString, deviceBssid, jsonObject);
         }
         return (result != null);
     }
@@ -77,23 +60,12 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
     @Override
     public boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight)
     {
-        boolean result = postLightStatus(inetAddress, statusLight, null, null);
+        boolean result = postLightStatus2(inetAddress, statusLight, null, false);
         log.debug(Thread.currentThread().toString() + "##doCommandLightPostStatusLocal(inetAddress=[" + inetAddress
             + "],statusLight=[" + statusLight + "]): " + result);
         return result;
     }
     
-    @Override
-    public boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight,
-        String deviceBssid, String router)
-    {
-        boolean result = postLightStatus(inetAddress, statusLight, deviceBssid, router);
-        log.debug(Thread.currentThread().toString() + "##doCommandLightPostStatusLocal(inetAddress=[" + inetAddress
-            + "],statusLight=[" + statusLight + "],deviceBssid=[" + deviceBssid + "],router=[" + router + "]): "
-            + result);
-        return result;
-    }
-
     @Override
     public boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight,
         String deviceBssid, boolean isMeshDevice)

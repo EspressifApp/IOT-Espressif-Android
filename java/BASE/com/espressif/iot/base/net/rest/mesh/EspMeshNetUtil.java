@@ -3,13 +3,16 @@ package com.espressif.iot.base.net.rest.mesh;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.InputStreamUtils;
@@ -17,19 +20,19 @@ import com.espressif.iot.util.MeshUtil;
 
 class EspMeshCommand
 {
-    /**
-     *  struct mesh_command {
-     *      struct { // command section
-     *          u8 f_req:1; // flow digestion request flag;
-     *          u8 f_resp:1; // flow digestion response flag;
-     *          u8 resv:6; // reserve for future
-     *      } comm;
-     *      struct { // comamnd value
-     *          u8 resv:4;
-     *          u8 f_cap:4; // current capacity
-     *      } val;
-     *  };
-     */
+   /**
+    *   struct mesh_command {
+    *       struct { // command section
+    *           u8 f_req:1; // flow digestion request flag;
+    *           u8 f_resp:1; // flow digestion response flag;
+    *           u8 resv:6; // reserve for future
+    *       } comm;
+    *       struct { // comamnd value
+    *           u8 resv:4;
+    *           u8 f_cap:4; // current capacity
+    *       } val;
+    *   };
+    */
     private char mComm;
     
     private char mVal;
@@ -79,8 +82,6 @@ public class EspMeshNetUtil
     
     private final static String MAC = "mdev_mac";
     
-    private final static String ROUTER = "router";
-    
     private final static String SIP = "sip";
     
     private final static String PORT = "sport";
@@ -112,8 +113,7 @@ public class EspMeshNetUtil
         }
     }
     
-    private static String __createIsDeviceAvailableRequestContent(String router, String deviceBssid,
-        String localInetAddress, int port)
+    private static String __createIsDeviceAvailableRequestContent(String deviceBssid, String localInetAddress, int port)
     {
         log.debug("__createIsDeviceAvailableRequestContent()");
         JSONObject json = new JSONObject();
@@ -160,12 +160,12 @@ public class EspMeshNetUtil
         return response.isRequest() && response.isResponse() && response.isFree();
     }
     
-    private static boolean __isDeviceAvailable(EspSocketClient client, String uriStr, String router,
-        String deviceBssid, String localInetAddress, int port)
+    private static boolean __isDeviceAvailable(EspSocketClient client, String uriStr, String deviceBssid,
+        String localInetAddress, int port)
     {
         log.debug("__isDeviceAvailable()");
         // create request
-        String content = __createIsDeviceAvailableRequestContent(router, deviceBssid, localInetAddress, port);
+        String content = __createIsDeviceAvailableRequestContent(deviceBssid, localInetAddress, port);
         IEspSocketRequest requestEntity = new EspSocketRequestBaseEntity(METHOD_POST, uriStr, content);
         boolean isAvailable = false;
         for (int retry = 0; !isAvailable && retry < IS_DEVICE_AVAILABLE_RETRY; retry++)
@@ -264,8 +264,8 @@ public class EspMeshNetUtil
         return client.readCommandResponse();
     }
     
-    private static JSONObject __addNecessaryElements(JSONObject json, String router, String deviceBssid,
-        String localInetAddress, int port)
+    private static JSONObject __addNecessaryElements(JSONObject json, String deviceBssid, String localInetAddress,
+        int port)
     {
         log.debug("__addNecessaryElements()");
         if (json == null)
@@ -278,7 +278,6 @@ public class EspMeshNetUtil
         }
         try
         {
-            // json.put(ROUTER, router);
             json.put(SIP, MeshUtil.getIpAddressForMesh(localInetAddress));
             json.put(PORT, MeshUtil.getPortForMesh(port));
             json.put(MAC, MeshUtil.getMacAddressForMesh(deviceBssid));
@@ -290,8 +289,8 @@ public class EspMeshNetUtil
         return json;
     }
     
-    private static JSONObject __executeForJson(EspSocketClient client, String method, String uriStr, String router,
-        String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
+    private static JSONObject __executeForJson(EspSocketClient client, String method, String uriStr,
+        String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmediately,
         int targetPort, int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout,
         HeaderPair... headers)
     {
@@ -340,7 +339,7 @@ public class EspMeshNetUtil
         int localPort = client.getLocalPort();
         
         // add necessary elements in json
-        json = __addNecessaryElements(json, router, deviceBssid, localInetAddress, localPort);
+        json = __addNecessaryElements(json, deviceBssid, localInetAddress, localPort);
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity(method, uriStr, json.toString());
         if (headers != null)
         {
@@ -352,8 +351,7 @@ public class EspMeshNetUtil
         }
         
         // check whether device is available
-        if (checkIsDeviceAvailable
-            && !__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
+        if (checkIsDeviceAvailable && !__isDeviceAvailable(client, uriStr, deviceBssid, localInetAddress, localPort))
         {
             __closeClient(client);
             return null;
@@ -390,7 +388,7 @@ public class EspMeshNetUtil
                 return null;
             }
         }
-        if (closeClientImmdeiately)
+        if (closeClientImmediately)
         {
             __closeClient(client);
         }
@@ -401,7 +399,7 @@ public class EspMeshNetUtil
         return jsonResult;
     }
     
-    private static JSONArray __executeForJsonArray(EspSocketClient client, String method, String uriStr, String router,
+    private static JSONArray __executeForJsonArray(EspSocketClient client, String method, String uriStr,
         String deviceBssid, JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately,
         int targetPort, int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout,
         HeaderPair... headers)
@@ -454,7 +452,7 @@ public class EspMeshNetUtil
         int localPort = client.getLocalPort();
         
         // add necessary elements in json
-        json = __addNecessaryElements(json, router, deviceBssid, localInetAddress, localPort);
+        json = __addNecessaryElements(json, deviceBssid, localInetAddress, localPort);
         log.debug("json = " + json);
         EspSocketRequestBaseEntity request = new EspSocketRequestBaseEntity(method, uriStr, json.toString());
         
@@ -468,8 +466,7 @@ public class EspMeshNetUtil
         }
         
         // check whether device is available
-        if (checkIsDeviceAvailable
-            && !__isDeviceAvailable(client, uriStr, router, deviceBssid, localInetAddress, localPort))
+        if (checkIsDeviceAvailable && !__isDeviceAvailable(client, uriStr, deviceBssid, localInetAddress, localPort))
         {
             __closeClient(client);
             return null;
@@ -523,13 +520,12 @@ public class EspMeshNetUtil
     }
     
     // temp method, just for mesh
-    static JSONObject executeForJson(EspSocketClient client, String method, String uriStr, String router,
-        String deviceBssid, JSONObject json, HeaderPair... headers)
+    static JSONObject executeForJson(EspSocketClient client, String method, String uriStr, String deviceBssid,
+        JSONObject json, HeaderPair... headers)
     {
         return __executeForJson(client,
             method,
             uriStr,
-            router,
             deviceBssid,
             json,
             true,
@@ -546,17 +542,15 @@ public class EspMeshNetUtil
      * execute GET to get JSONObject by Mesh Net
      * 
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject GetForJson(String uriStr, String router, String deviceBssid, HeaderPair... headers)
+    public static JSONObject GetForJson(String uriStr, String deviceBssid, HeaderPair... headers)
     {
         return __executeForJson(null,
             METHOD_GET,
             uriStr,
-            router,
             deviceBssid,
             null,
             true,
@@ -573,17 +567,15 @@ public class EspMeshNetUtil
      * execute GET to get JSONArray by Mesh Net
      * 
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONArray result
      */
-    public static JSONArray GetForJsonArray(String uriStr, String router, String deviceBssid, HeaderPair... headers)
+    public static JSONArray GetForJsonArray(String uriStr, String deviceBssid, HeaderPair... headers)
     {
         return __executeForJsonArray(null,
             METHOD_GET,
             uriStr,
-            router,
             deviceBssid,
             null,
             true,
@@ -600,18 +592,15 @@ public class EspMeshNetUtil
      * execute POST to get JSONObject by Mesh Net
      * 
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject PostForJson(String uriStr, String router, String deviceBssid, JSONObject json,
-        HeaderPair... headers)
+    public static JSONObject PostForJson(String uriStr, String deviceBssid, JSONObject json, HeaderPair... headers)
     {
         return __executeForJson(null,
             METHOD_POST,
             uriStr,
-            router,
             deviceBssid,
             json,
             true,
@@ -628,18 +617,15 @@ public class EspMeshNetUtil
      * execute POST to get JSONArray by Mesh Net
      * 
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param headers the headers of the request
      * @return the JSONArray result
      */
-    public static JSONArray PostForJsonArray(String uriStr, String router, String deviceBssid, JSONObject json,
-        HeaderPair... headers)
+    public static JSONArray PostForJsonArray(String uriStr, String deviceBssid, JSONObject json, HeaderPair... headers)
     {
         return __executeForJsonArray(null,
             METHOD_POST,
             uriStr,
-            router,
             deviceBssid,
             json,
             true,
@@ -657,7 +643,6 @@ public class EspMeshNetUtil
      * 
      * @param client the EspSocketClient or null(if null new client will be created)
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param checkIsDeviceAvailable whether check is device available before sending request
      * @param closeClientImmdeiately whether close the client immediate after sending request
@@ -669,14 +654,13 @@ public class EspMeshNetUtil
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
+    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String deviceBssid,
         boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
         int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
     {
         return __executeForJson(client,
             METHOD_GET,
             uriStr,
-            router,
             deviceBssid,
             null,
             checkIsDeviceAvailable,
@@ -694,7 +678,6 @@ public class EspMeshNetUtil
      * 
      * @param client the EspSocketClient or null(if null new client will be created)
      * @param uriStr the uri String
-     * @param router the router of the device
      * @param deviceBssid the bssid of the device
      * @param json the json to be posted
      * @param checkIsDeviceAvailable whether check is device available before sending request
@@ -707,14 +690,13 @@ public class EspMeshNetUtil
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String router, String deviceBssid,
-        JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort,
-        int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
+    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String deviceBssid, JSONObject json,
+        boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
+        int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
     {
         return __executeForJson(client,
             METHOD_POST,
             uriStr,
-            router,
             deviceBssid,
             json,
             checkIsDeviceAvailable,
@@ -776,7 +758,7 @@ public class EspMeshNetUtil
         }
         // check whether device is available
         log.debug("__GetTopoIOTAddressList(): check whether device is available");
-        if (!__isDeviceAvailable(client, uriStr, null, deviceBssid, localInetAddress, localPort))
+        if (!__isDeviceAvailable(client, uriStr, deviceBssid, localInetAddress, localPort))
         {
             __closeClient(client);
             return null;
@@ -845,7 +827,7 @@ public class EspMeshNetUtil
     
     static IOTAddress GetTopoIOTAddress(InetAddress rootInetAddress, String rootBssid, String deviceBssid)
     {
-        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList(rootInetAddress, rootBssid, null);
+        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList(rootInetAddress, rootBssid, deviceBssid);
         if (iotAddressList == null || iotAddressList.isEmpty())
         {
             log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddress(rootInetAddress=[" + rootInetAddress
@@ -865,4 +847,203 @@ public class EspMeshNetUtil
             + "],rootBssid=[" + rootBssid + "]): " + iotAddressList);
         return iotAddressList;
     }
+    
+    static List<IOTAddress> __GetSubParentTopoIOTAddressList2(EspSocketClient client, InetAddress rootInetAddress,
+        String deviceBssid, boolean isSubDevices)
+    {
+        log.debug("__GetSubParentTopoIOTAddressList2(): entrance");
+        List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
+        // build request
+        String uriStr = "http://" + rootInetAddress.getHostAddress() + "/config?command=mesh_info";
+        String method = METHOD_GET;
+        boolean checkIsDeviceAvailable = true;
+        boolean closeClientImmediately = false;
+        int targetPort = MESH_PORT;
+        // the parameter isn't used for client isn't null
+        int connectTimeout = CONNECTION_TIMEOUT;
+        int connectRetry = CONNECT_RETRY;
+        boolean isResultRead = true;
+        int soTimeout = SO_TIMEOUT;
+        // send request and receive request
+        JSONObject jsonResult =
+            __executeForJson(client,
+                method,
+                uriStr,
+                deviceBssid,
+                null,
+                checkIsDeviceAvailable,
+                closeClientImmediately,
+                targetPort,
+                connectTimeout,
+                connectRetry,
+                isResultRead,
+                soTimeout);
+        log.debug("__GetSubParentTopoIOTAddressList2(): jsonResult:" + jsonResult);
+        if (jsonResult == null)
+        {
+            // return null to extinguish device hasn't child
+            log.warn("__GetSubParentTopoIOTAddressList2(): jsonResult is null, return null");
+            return null;
+        }
+        // parse response
+        try
+        {
+            if (isSubDevices)
+            {
+                log.debug("__GetSubParentTopoIOTAddressList2(): isSubDevices = true");
+                JSONArray jsonArrayChildren = null;
+                if (!jsonResult.isNull("children"))
+                {
+                    jsonArrayChildren = jsonResult.getJSONArray("children");
+                    for (int i = 0; i < jsonArrayChildren.length(); ++i)
+                    {
+                        JSONObject jsonChild = jsonArrayChildren.getJSONObject(i);
+                        if (!jsonChild.isNull("type") && !jsonChild.isNull("mac"))
+                        {
+                            String typeStr = jsonChild.getString("type");
+                            EspDeviceType deviceTypeEnum = EspDeviceType.getEspTypeEnumByString(typeStr);
+                            if (deviceTypeEnum == null)
+                            {
+                                // no more devices, so break
+                                break;
+                            }
+                            String bssid = jsonChild.getString("mac");
+                            IOTAddress iotAddress = new IOTAddress(bssid, rootInetAddress, true);
+                            iotAddress.setParentBssid(deviceBssid);
+                            iotAddress.setEspDeviceTypeEnum(deviceTypeEnum);
+                            log.debug("__GetSubParentTopoIOTAddressList2(): iotAddress: " + iotAddress + " is added");
+                            iotAddressList.add(iotAddress);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                log.debug("__GetSubParentTopoIOTAddressList2(): isSubDevices = false");
+                JSONObject jsonParent = null;
+                if (!jsonResult.isNull("parent") && !jsonResult.isNull("type"))
+                {
+                    jsonParent = jsonResult.getJSONObject("parent");
+                    String typeStr = jsonResult.getString("type");
+                    EspDeviceType deviceTypeEnum = EspDeviceType.getEspTypeEnumByString(typeStr);
+                    if (deviceTypeEnum != null && !jsonParent.isNull("mac"))
+                    {
+                        String parentBssid = jsonParent.getString("mac");
+                        IOTAddress iotAddress = new IOTAddress(deviceBssid, rootInetAddress, true);
+                        iotAddress.setParentBssid(parentBssid);
+                        iotAddress.setEspDeviceTypeEnum(deviceTypeEnum);
+                        log.debug("__GetSubParentTopoIOTAddressList2(): iotAddress: " + iotAddress + " is added");
+                        iotAddressList.add(iotAddress);
+                    }
+                }
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return iotAddressList;
+    }
+    
+    static List<IOTAddress> __GetTopoIOTAddressList2(InetAddress rootInetAddress, String deviceBssid,
+        boolean isSubDevices)
+    {
+        log.debug("__GetTopoIOTAddressList2(): entrance");
+        List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
+        // connect to root device
+        // build base parameters
+        String uriStr = "http://" + rootInetAddress.getHostAddress();
+        // it is used just to get host by uri
+        IEspSocketRequest request1 = new EspSocketRequestBaseEntity(METHOD_GET, uriStr);
+        String host = request1.getHost();
+        EspSocketClient client = new EspSocketClient();
+        client.setSoTimeout(SO_TIMEOUT);
+        // connect
+        log.debug("__GetTopoIOTAddressList2(): connect");
+        boolean isConnectSuc = false;
+        for (int i = 0; i < CONNECT_RETRY; i++)
+        {
+            if (__connect(client, host, MESH_PORT, CONNECTION_TIMEOUT))
+            {
+                isConnectSuc = true;
+                break;
+            }
+            try
+            {
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        if (!isConnectSuc)
+        {
+            __closeClient(client);
+            return Collections.emptyList();
+        }
+        
+        int index = 0;
+        String currentBssid = deviceBssid;
+        IOTAddress next = null;
+        do
+        {
+            next = null;
+            // get sub topo list
+            List<IOTAddress> subParentIOTAddressList =
+                __GetSubParentTopoIOTAddressList2(client, rootInetAddress, currentBssid, isSubDevices);
+            if (subParentIOTAddressList == null)
+            {
+                // when some error occurs, subParentIOTAddressList will null
+                log.warn("__GetTopoIOTAddressList2(): subParentIOTAddressList is null");
+                // although the client should be closed already, close it again to make it close surely
+                __closeClient(client);
+                return iotAddressList;
+            }
+            for (IOTAddress subIOTAddress : subParentIOTAddressList)
+            {
+                // only added the device which hasn't been added
+                if (!iotAddressList.contains(subIOTAddress))
+                {
+                    iotAddressList.add(subIOTAddress);
+                }
+            }
+            // check whether the device is the last one
+            if (index < iotAddressList.size())
+            {
+                next = iotAddressList.get(index);
+                currentBssid = next.getBSSID();
+            }
+            // move to next index
+            ++index;
+        } while (next != null && isSubDevices);
+        
+        __closeClient(client);
+        return iotAddressList;
+    }
+    
+    static IOTAddress GetTopoIOTAddress2(InetAddress rootInetAddress, String deviceBssid)
+    {
+        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList2(rootInetAddress, deviceBssid, false);
+        if (iotAddressList == null || iotAddressList.isEmpty())
+        {
+            log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddress2(rootInetAddress=[" + rootInetAddress
+                + "],deviceBssid=[" + deviceBssid + "]): empty, return null");
+            return null;
+        }
+        IOTAddress iotAddress0 = iotAddressList.get(0);
+        log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddress2(rootInetAddress=[" + rootInetAddress
+            + "],deviceBssid=[" + deviceBssid + "]): " + iotAddress0);
+        return iotAddress0;
+    }
+    
+    static List<IOTAddress> GetTopoIOTAddressList2(InetAddress rootInetAddress, String rootBssid)
+    {
+        List<IOTAddress> iotAddressList = __GetTopoIOTAddressList2(rootInetAddress, rootBssid, true);
+        log.debug(Thread.currentThread().toString() + "##GetTopoIOTAddressList2(rootInetAddress=[" + rootInetAddress
+            + "],rootBssid=[" + rootBssid + "]): " + iotAddressList);
+        return iotAddressList;
+    }
+    
 }

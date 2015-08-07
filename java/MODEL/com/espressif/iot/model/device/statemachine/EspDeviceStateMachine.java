@@ -469,7 +469,6 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 String bssid = device.getBssid();
                 String deviceKey = device.getKey();
                 String latestRomVersion = device.getLatest_rom_version();
-                String router = device.getRouter();
                 boolean isMeshDevice = device.getIsMeshDevice();
                 boolean isSuc;
                 IOTAddress iotAddressResult = null;
@@ -479,7 +478,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                     // for the mesh device upgrade local suc, it will be reset, not only itself will be changed,
                     // but also other device's local state will be changed
                     localDeviceList =
-                        action.doUpgradeMeshDeviceLocal(inetAddress, bssid, deviceKey, latestRomVersion, router);
+                        action.doUpgradeMeshDeviceLocal(inetAddress, bssid, deviceKey, latestRomVersion);
                     isSuc = localDeviceList != null;
                     // get iotAddressResult from the list result
                     if (localDeviceList != null)
@@ -507,8 +506,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                     device.setRom_version(latestRomVersion);
                     device.setInetAddress(iotAddressResult.getInetAddress());
                     device.setIsMeshDevice(iotAddressResult.isMeshDevice());
-                    device.setRouter(iotAddressResult.getRouter());
-                    device.setRootDeviceBssid(iotAddressResult.getRootBssid());
+                    device.setParentDeviceBssid(iotAddressResult.getParentBssid());
                     if (device.getIsMeshDevice())
                     {
                         __transformStateMeshUpgradeLocalSuc(device, localDeviceList, Direction.SUC);

@@ -39,13 +39,6 @@ public interface IEspSocketRequest
     public String getContent();
     
     /**
-     * Get the router of the device which the request is belong to
-     * 
-     * @return the router of the device which the request is belong to
-     */
-    public String getRouter();
-    
-    /**
      * Get the origin uri
      * 
      * @return the origin uri

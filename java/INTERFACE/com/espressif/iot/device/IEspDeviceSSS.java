@@ -1,9 +1,12 @@
 package com.espressif.iot.device;
 
+import java.util.List;
+
+import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.net.IOTAddress;
 
-public interface IEspDeviceSSS extends IEspDeviceRoot
+public interface IEspDeviceSSS extends IEspDevice
 {
     /**
      * set the iotAddress of the device
@@ -29,4 +32,10 @@ public interface IEspDeviceSSS extends IEspDeviceRoot
      * @return the IEspDeviceConfigure with state Configuring
      */
     IEspDeviceConfigure createConfiguringDevice(String random40);
+    
+    /**
+     * Get all tree element of the Sta device
+     * @return
+     */
+    List<IEspDeviceTreeElement> getDeviceTreeElementList();
 }

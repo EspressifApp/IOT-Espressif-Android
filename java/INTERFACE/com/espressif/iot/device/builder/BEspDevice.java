@@ -159,8 +159,7 @@ public class BEspDevice implements IBEspDevice
             device.setDeviceType(deviceSSS.getDeviceType());
             device.setName(deviceSSS.getName());
             device.setInetAddress(deviceSSS.getInetAddress());
-            device.setRouter(deviceSSS.getRouter());
-            device.setRootDeviceBssid(deviceSSS.getRootDeviceBssid());
+            device.setParentDeviceBssid(deviceSSS.getParentDeviceBssid());
             device.setIsMeshDevice(deviceSSS.getIsMeshDevice());
         }
         

@@ -8,4 +8,6 @@ public interface IBEspDeviceRoot extends IEspObjectBuilder
     IEspDeviceRoot getLocalRoot();
     
     IEspDeviceRoot getInternetRoot();
+    
+    IEspDeviceRoot getVirtualMeshRoot();
 }

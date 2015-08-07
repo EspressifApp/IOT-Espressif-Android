@@ -35,7 +35,6 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         EspDeviceType deviceType = device.getDeviceType();
         InetAddress inetAddress = device.getInetAddress();
         String deviceBssid = device.getBssid();
-        String router = device.getRouter();
         boolean isMeshDevice = device.getIsMeshDevice();
         boolean suc = false;
         switch (deviceType)

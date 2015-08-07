@@ -204,12 +204,6 @@ public class EspPureSocketRequestBaseEntity implements IEspSocketRequest
     }
 
     @Override
-    public String getRouter()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public String getOriginUri()
     {
         throw new UnsupportedOperationException();

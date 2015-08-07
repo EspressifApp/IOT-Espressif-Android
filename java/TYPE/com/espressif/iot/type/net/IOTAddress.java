@@ -30,14 +30,9 @@ public class IOTAddress implements IEspObject
     private EspDeviceType mDeviceTypeEnum;
     
     /**
-     * the router of the device(if the device is mesh device) null(if the device isn't mesh device)
+     * the parent device's bssid(only mesh device has parent device)
      */
-    private String mRouter;
-    
-    /**
-     * the root device's bssid(only mesh device has root device)
-     */
-    private String mRootBssid;
+    private String mParentBssid;
     
     /**
      * whether the device is mesh device or not
@@ -46,19 +41,13 @@ public class IOTAddress implements IEspObject
     
     public IOTAddress(String BSSID, InetAddress inetAddress)
     {
-        this(BSSID, inetAddress, null, false);
+        this(BSSID, inetAddress, false);
     }
     
     public IOTAddress(String BSSID, InetAddress inetAddress, boolean isMeshDevice)
     {
-        this(BSSID, inetAddress, null, isMeshDevice);
-    }
-    
-    public IOTAddress(String BSSID, InetAddress inetAddress, String router, boolean isMeshDevice)
-    {
         this.mBSSID = BSSID;
         this.mInetAddress = inetAddress;
-        this.mRouter = router;
         this.mIsMeshDevice = isMeshDevice;
     }
     
@@ -80,16 +69,6 @@ public class IOTAddress implements IEspObject
     public boolean isMeshDevice()
     {
         return mIsMeshDevice;
-    }
-    
-    public void setRouter(String router)
-    {
-        this.mRouter = router;
-    }
-    
-    public String getRouter()
-    {
-        return this.mRouter;
     }
     
     public void setBSSID(String BSSID)
@@ -122,24 +101,21 @@ public class IOTAddress implements IEspObject
         return mSSID;
     }
     
-    public void setRootBssid(String rootBssid)
+    public void setParentBssid(String parentBssid)
     {
-        mRootBssid = rootBssid;
+        mParentBssid = parentBssid;
     }
     
-    public String getRootBssid()
+    public String getParentBssid()
     {
-        return mRootBssid;
+        return mParentBssid;
     }
     
     @Override
     public String toString()
     {
-        if (mRouter == null)
-            return "BSSID:" + mBSSID + ",InetAddress:" + mInetAddress + "," + "DeviceTypeEnum:" + mDeviceTypeEnum;
-        else
-            return "BSSID:" + mBSSID + ",InetAddress:" + mInetAddress + ",Router:" + mRouter + "," + "DeviceTypeEnum:"
-                + mDeviceTypeEnum;
+        return "BSSID:" + mBSSID + ",InetAddress:" + mInetAddress + "," + "DeviceTypeEnum:" + mDeviceTypeEnum + ","
+            + "mParentBssid:" + mParentBssid;
     }
     
     @Override

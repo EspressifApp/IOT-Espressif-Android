@@ -22,7 +22,7 @@ public class EspCommandDeviceReconnectLocal implements IEspCommandDeviceReconnec
     }
     
     @Override
-    public boolean doCommandReconnectLocal(String router, String deviceBssid, String apSsid, WifiCipherType type,
+    public boolean doCommandReconnectLocal(String deviceBssid, String apSsid, WifiCipherType type,
         String... apPassword)
     {
         JSONObject Content = new JSONObject();
@@ -58,7 +58,7 @@ public class EspCommandDeviceReconnectLocal implements IEspCommandDeviceReconnec
             e.printStackTrace();
         }
         String urlString = getLocalUrl(inetAddress);
-        JSONObject result = EspBaseApiUtil.PostForJson(urlString, router, deviceBssid, Request);
+        JSONObject result = EspBaseApiUtil.PostForJson(urlString, deviceBssid, Request);
         log.debug(Thread.currentThread().toString() + "##doCommandReconnectLocal(deviceBssid=[" + deviceBssid
             + "],apSsid=[" + apSsid + "],apPassword=[" + apPassword + "]): " + result);
         return result != null;

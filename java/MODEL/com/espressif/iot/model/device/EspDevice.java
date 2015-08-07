@@ -2,6 +2,7 @@ package com.espressif.iot.model.device;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -19,7 +20,6 @@ import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.timer.EspDeviceTimer;
-import com.espressif.iot.util.RouterUtil;
 
 public class EspDevice implements IEspDevice, Cloneable
 {
@@ -51,11 +51,7 @@ public class EspDevice implements IEspDevice, Cloneable
     
     protected boolean mIsMeshDevice;
     
-    protected String mRouter;
-    
-    protected long mRootDeviceId;
-    
-    protected String mRootDeviceBssid;
+    protected String mParentDeviceBssid;
     
     protected List<EspDeviceTimer> mTimerList;
     
@@ -248,39 +244,15 @@ public class EspDevice implements IEspDevice, Cloneable
     }
     
     @Override
-    public void setRootDeviceId(long rootDeviceId)
+    public void setParentDeviceBssid(String parentBssid)
     {
-        this.mRootDeviceId = rootDeviceId;
+        this.mParentDeviceBssid = parentBssid;
     }
     
     @Override
-    public long getRootDeviceId()
+    public String getParentDeviceBssid()
     {
-        return this.mRootDeviceId;
-    }
-    
-    @Override
-    public void setRouter(String router)
-    {
-        this.mRouter = router;
-    }
-    
-    @Override
-    public String getRouter()
-    {
-        return this.mRouter;
-    }
-    
-    @Override
-    public void setRootDeviceBssid(String rootBssid)
-    {
-        this.mRootDeviceBssid = rootBssid;
-    }
-    
-    @Override
-    public String getRootDeviceBssid()
-    {
-        return this.mRootDeviceBssid;
+        return this.mParentDeviceBssid;
     }
     
     @Override
@@ -426,21 +398,16 @@ public class EspDevice implements IEspDevice, Cloneable
     }
     
     @Override
-    public void copyRootDeviceId(IEspDevice device)
-    {
-        this.mRootDeviceId = device.getRootDeviceId();
-    }
-    
-    @Override
-    public void copyRouter(IEspDevice device)
-    {
-        this.mRouter = device.getRouter();
-    }
-    
-    @Override
     public void copyIsMeshDevice(IEspDevice device)
     {
         this.mIsMeshDevice = device.getIsMeshDevice();
+    }
+    
+
+    @Override
+    public void copyParentDeviceBssid(IEspDevice device)
+    {
+        this.mParentDeviceBssid = device.getParentDeviceBssid();
     }
     
     @Override
@@ -486,94 +453,13 @@ public class EspDevice implements IEspDevice, Cloneable
         // + "],mLatestRomVersion=[" + mLatestRomVersion + "],mTimeStamp=[" + mTimeStamp + "],mUserId=[" + mUserId
         // + "],_isDeviceRefreshed=[" + _isDeviceRefreshed + "],mDeviceType=[" + mDeviceType + "],mDeviceState=["
         // + mDeviceState + "],mInetAddress=[" + mInetAddress + "])";
-        return "EspDevice: (mBssid=[" + mBssid + "],mRootDeviceBssid=[" + mRootDeviceBssid + "]mDeviceId=[" + mDeviceId
+        return "EspDevice: (mBssid=[" + mBssid + "],mParentDeviceBssid=[" + mParentDeviceBssid + "]mDeviceId=[" + mDeviceId
             + "],mDeviceName=[" + mDeviceName + "],mDeviceState=[" + mDeviceState + "],mIsMeshDevice=[" + mIsMeshDevice
-            + "],mRouter=[" + mRouter + "],mInetAddress=[" + mInetAddress + "])";
+            + "],mInetAddress=[" + mInetAddress + "])";
         
     }
     
-    private List<IEspDeviceTreeElement> __getDeviceTreeElementListByRouter(List<IEspDevice> allDeviceList)
-    {
-        if (!allDeviceList.contains(this))
-        {
-            throw new IllegalStateException("allDeviceList don't contain current device");
-        }
-        String router = null;
-        String routerTemp = null;
-        String parentRouter = null;
-        String parentDeviceKey = null;
-        boolean hasParent = false;
-        boolean hasChild = false;
-        int level = -1;
-        int currentLevel = -1;
-        // get routerList
-        List<String> routerList = new ArrayList<String>();
-        for (IEspDevice deviceInList : allDeviceList)
-        {
-            router = deviceInList.getRouter();
-            if (router != null)
-            {
-                routerList.add(router);
-            }
-        }
-        List<String> allChildRouterList = RouterUtil.getAllChildRouterList(routerList, mRouter);
-        // all of its child and itself device list, don't forget to add itself
-        List<IEspDevice> allChildAndSelfDeviceList = new ArrayList<IEspDevice>();
-        for (IEspDevice deviceInList : allDeviceList)
-        {
-            router = deviceInList.getRouter();
-            if (router != null && allChildRouterList.contains(router))
-            {
-                allChildAndSelfDeviceList.add(deviceInList);
-            }
-        }
-        // don't forget to add itself
-        allChildAndSelfDeviceList.add(this);
-        // build deviceTreeElementList
-        List<IEspDeviceTreeElement> deviceTreeElementList = new ArrayList<IEspDeviceTreeElement>();
-        for (IEspDevice deviceInList : allChildAndSelfDeviceList)
-        {
-            router = deviceInList.getRouter();
-            // don't forget to clear dirty info
-            parentRouter = null;
-            parentDeviceKey = null;
-            hasParent = false;
-            hasChild = false;
-            level = -1;
-            if (router != null)
-            {
-                level = RouterUtil.getRouterLevel(router);
-                if (currentLevel == -1 && deviceInList.equals(this))
-                {
-                    // set current level to set relative level later
-                    currentLevel = level;
-                }
-                parentRouter = RouterUtil.getParentRouter(routerList, router);
-                for (IEspDevice deviceInList2 : allChildAndSelfDeviceList)
-                {
-                    routerTemp = deviceInList2.getRouter();
-                    if (routerTemp != null && routerTemp.equals(parentRouter))
-                    {
-                        parentDeviceKey = deviceInList2.getKey();
-                        break;
-                    }
-                }
-                hasParent = parentRouter != null;
-                hasChild = !RouterUtil.getDirectChildRouterList(routerList, router).isEmpty();
-                IEspDeviceTreeElement deviceTreeElement =
-                    new EspDeviceTreeElement(deviceInList, parentDeviceKey, hasParent, hasChild, level);
-                deviceTreeElementList.add(deviceTreeElement);
-            }
-        }
-        // set relative level
-        for (IEspDeviceTreeElement deviceTreeElemenInList : deviceTreeElementList)
-        {
-            deviceTreeElemenInList.setRelativeLevel(currentLevel);
-        }
-        return deviceTreeElementList;
-    }
-    
-    private List<IEspDeviceTreeElement> __getDeviceTreeElementListByBssid(List<IEspDevice> allDeviceList)
+    private List<IEspDeviceTreeElement> __getDeviceTreeElementListByBssid2(List<IEspDevice> allDeviceList)
     {
         if (!allDeviceList.contains(this))
         {
@@ -583,86 +469,98 @@ public class EspDevice implements IEspDevice, Cloneable
         {
             throw new IllegalStateException("the device isn't mesh device");
         }
-        // internet tell us the root device id while local tell us the root device bssid
-        // fill root device bssid if it is null and root device id isn't -1
-        for (IEspDevice outDevice : allDeviceList)
+        
+        // filter mesh devices
+        List<IEspDevice> allMeshDeviceList = new ArrayList<IEspDevice>();
+        for (IEspDevice device : allDeviceList)
         {
-            // only process mesh device
-            if (!outDevice.getIsMeshDevice())
+            if (device.getIsMeshDevice())
             {
-                continue;
+                allMeshDeviceList.add(device);
             }
-            // fill root device bssid
-            long outRootDeviceId = outDevice.getRootDeviceId();
-            if (outDevice.getRootDeviceBssid() == null && outRootDeviceId != -1)
+        }
+        
+        int allDeviceCount = allMeshDeviceList.size();
+        int[] levelArray = new int[allDeviceCount];
+        Arrays.fill(levelArray, -1);
+        boolean[] hasChildArray = new boolean[allDeviceCount];
+        Arrays.fill(hasChildArray, false);
+        String[] parentKeyArray = new String[allDeviceCount];
+        Arrays.fill(parentKeyArray, null);
+        boolean[] hasProcessedArray = new boolean[allDeviceCount];
+        Arrays.fill(hasProcessedArray, false);
+        
+        // set device tree element from top to bottom
+        // set level 1
+        for (int index = 0; index < allDeviceCount; ++index)
+        {
+            IEspDevice device = allMeshDeviceList.get(index);
+            if (this.equals(device))
             {
-                for (IEspDevice inDevice : allDeviceList)
+                levelArray[index] = 1;
+                break;
+            }
+        }
+        int currentLevel = 1;
+        boolean isContinue = false;
+        do
+        {
+            isContinue = false;
+            int parentIndex;
+            do
+            {
+                parentIndex = -1;
+                // get one device of specific level
+                for (int i = 0; i < allDeviceCount; ++i)
                 {
-                    if (outRootDeviceId == inDevice.getId())
+                    if (levelArray[i] == currentLevel && !hasProcessedArray[i])
                     {
-                        String outRootDeviceBssid = inDevice.getBssid();
-                        outDevice.setRootDeviceBssid(outRootDeviceBssid);
+                        hasProcessedArray[i] = true;
+                        parentIndex = i;
+                        isContinue = true;
                         break;
                     }
                 }
-            }
-        }
-        
-        // define final level is just to make code readable
-        final int rootLevel = 1;
-        final int childLevel = 2;
-        
+                if (parentIndex != -1)
+                {
+                    IEspDevice parentDevice = allMeshDeviceList.get(parentIndex);
+                    String parentBssid = parentDevice.getBssid();
+                    String parentKey = parentDevice.getKey();
+                    boolean parentHasChild = false;
+                    // set the child device info
+                    for (int childIndex = 0; childIndex < allDeviceCount; ++childIndex)
+                    {
+                        IEspDevice childDevice = allMeshDeviceList.get(childIndex);
+                        String childParentBssid = childDevice.getParentDeviceBssid();
+                        if (parentBssid.equals(childParentBssid))
+                        {
+                            parentHasChild = true;
+                            levelArray[childIndex] = currentLevel + 1;
+                            parentKeyArray[childIndex] = parentKey;
+                        }
+                    }
+                    
+                    // set the parent device info
+                    hasChildArray[parentIndex] = parentHasChild;
+                }
+            } while (parentIndex != -1);
+            ++currentLevel;
+        } while (isContinue);
         // build deviceTreeElementList
         List<IEspDeviceTreeElement> deviceTreeElementList = new ArrayList<IEspDeviceTreeElement>();
-        String rootDeviceKey = null;
-        boolean isRootHasChild = false;
-        
-        // root device
-        if (this.getBssid().equals(this.getRootDeviceBssid()))
+        for (int i = 0; i < allDeviceCount; ++i)
         {
-            rootDeviceKey = this.getKey();
-            for (IEspDevice device : allDeviceList)
+            int level = levelArray[i];
+            if (level != -1)
             {
-                // check whether the device is valid and isn't this device
-                if (!device.getIsMeshDevice() || device.equals(this) || !device.getRootDeviceBssid().equals(mBssid))
-                {
-                    continue;
-                }
-                // child device tree element
-                IEspDeviceTreeElement child = new EspDeviceTreeElement(device, rootDeviceKey, true, false, childLevel);
-                deviceTreeElementList.add(child);
-                isRootHasChild = true;
+                IEspDevice device = allMeshDeviceList.get(i);
+                String parentDeviceKey = parentKeyArray[i];
+                boolean hasParent = level != 1;
+                boolean hasChild = hasChildArray[i];
+                IEspDeviceTreeElement deviceTreeElement =
+                    new EspDeviceTreeElement(device, parentDeviceKey, hasParent, hasChild, level);
+                deviceTreeElementList.add(deviceTreeElement);
             }
-            
-            // root device tree element
-            IEspDeviceTreeElement root = new EspDeviceTreeElement(this, null, false, isRootHasChild, rootLevel);
-            deviceTreeElementList.add(root);
-        }
-        // non root device
-        else
-        {
-            // root device tree element
-            IEspDevice rootDevice = null;
-            for (IEspDevice device : allDeviceList)
-            {
-                if (this.getRootDeviceBssid().equals(device.getBssid()))
-                {
-                    rootDevice = device;
-                    break;
-                }
-            }
-            if (rootDevice == null)
-            {
-                throw new IllegalStateException();
-            }
-            // root device's child is this device
-            isRootHasChild = true;
-            rootDeviceKey = rootDevice.getKey();
-            IEspDeviceTreeElement root = new EspDeviceTreeElement(rootDevice, null, false, isRootHasChild, rootLevel);
-            deviceTreeElementList.add(root);
-            // child device tree element
-            IEspDeviceTreeElement child = new EspDeviceTreeElement(this, rootDeviceKey, true, false, childLevel);
-            deviceTreeElementList.add(child);
         }
         return deviceTreeElementList;
     }
@@ -670,7 +568,7 @@ public class EspDevice implements IEspDevice, Cloneable
     @Override
     public List<IEspDeviceTreeElement> getDeviceTreeElementList(List<IEspDevice> allDeviceList)
     {
-        return __getDeviceTreeElementListByBssid(allDeviceList);
+        return __getDeviceTreeElementListByBssid2(allDeviceList);
     }
     
     @Override
@@ -684,5 +582,4 @@ public class EspDevice implements IEspDevice, Cloneable
     {
         return mEspnowStatusList;
     }
-    
 }

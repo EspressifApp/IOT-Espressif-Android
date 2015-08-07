@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.IOTAddress;
-import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.InputStreamUtils;
 import com.espressif.iot.util.MeshUtil;
 
@@ -276,11 +275,11 @@ public class MeshTypeUtil
      * 
      * @param respStr the response String
      * @param iotAddressList the IOTAddress list where the new IOTAddress belong to device is added
-     * @param rootDeviceBssid the bssid of root device
+     * @param parentDeviceBssid the bssid of parent device
      * @return whether there's more device bssids to be received
      */
     static boolean extractDeviceIOTAddresses(String respStr, InetAddress rootInetAddress, List<IOTAddress> iotAddressList,
-        String rootDeviceBssid)
+        String parentDeviceBssid)
     {
         int respLen = respStr.length();
         if (respLen < CMD_LEN + MAC_LEN)
@@ -309,8 +308,8 @@ public class MeshTypeUtil
             IOTAddress iotAddress = new IOTAddress(staBssid, rootInetAddress, true);
             // the default device type is light
             iotAddress.setEspDeviceTypeEnum(EspDeviceType.LIGHT);
-            // don't forget to set root bssid
-            iotAddress.setRootBssid(rootDeviceBssid);
+            // don't forget to set parent bssid
+            iotAddress.setParentBssid(parentDeviceBssid);
             // add the bssid if the device list doesn't contain it
             if (!iotAddressList.contains(staBssid))
             {
@@ -326,7 +325,7 @@ public class MeshTypeUtil
         boolean isMoreBssidExist = true;
         for (IOTAddress iotAddress : iotAddressList)
         {
-            if (iotAddress.getBSSID().equals(rootDeviceBssid))
+            if (iotAddress.getBSSID().equals(parentDeviceBssid))
             {
                 isMoreBssidExist = false;
                 break;
@@ -370,7 +369,7 @@ public class MeshTypeUtil
             log.error("extractDeviceIOTAddress(): typeValue:" + typeValue);
             IOTAddress iotAddress = new IOTAddress(staBssid, rootInetAddress, true);
             // don't forget to set root bssid
-            iotAddress.setRootBssid(rootDeviceBssid);
+            iotAddress.setParentBssid(rootDeviceBssid);
             // the default device type is light
             iotAddress.setEspDeviceTypeEnum(EspDeviceType.LIGHT);
             return iotAddress;

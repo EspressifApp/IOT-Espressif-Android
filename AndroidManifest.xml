@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="9"
-    android:versionName="v0.9.8" >
+    android:versionCode="10"
+    android:versionName="v0.9.9" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -113,12 +113,6 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.device.timer.DevicePlugsLoopPeriodTimerEditActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.softap_sta_support.SoftApStaSupportActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.softap_sta_support.SSSDeviceRootActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.help.HelpActivity"

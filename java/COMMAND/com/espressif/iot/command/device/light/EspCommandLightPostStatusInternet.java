@@ -8,13 +8,12 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.RouterUtil;
 
 public class EspCommandLightPostStatusInternet implements IEspCommandLightPostStatusInternet
 {
     private final static Logger log = Logger.getLogger(EspCommandLightPostStatusInternet.class);
     
-    private boolean postCurrentLightStatus(String deviceKey, IEspStatusLight statusLight, String router)
+    private boolean postCurrentLightStatus(String deviceKey, IEspStatusLight statusLight)
     {
         JSONObject jsonObject = new JSONObject();
         JSONObject jsonObjectX = new JSONObject();
@@ -38,11 +37,6 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
         }
         HeaderPair header = new HeaderPair(headerKey, headerValue);
         String url = URL;
-        if (router != null)
-        {
-            url += "&router=" + RouterUtil.getBroadcastRouter(router);
-        }
-        
         result = EspBaseApiUtil.Post(url, jsonObject, header);
         if (result == null)
         {
@@ -75,13 +69,7 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
     @Override
     public boolean doCommandLightPostStatusInternet(String deviceKey, IEspStatusLight statusLight)
     {
-        return doCommandLightPostStatusInternet(deviceKey, statusLight, null);
-    }
-    
-    @Override
-    public boolean doCommandLightPostStatusInternet(String deviceKey, IEspStatusLight statusLight, String router)
-    {
-        boolean result = postCurrentLightStatus(deviceKey, statusLight, router);
+        boolean result = postCurrentLightStatus(deviceKey, statusLight);
         log.debug(Thread.currentThread().toString() + "##doCommandLightPostStatusInternet(deviceKey=[" + deviceKey
             + "],statusLight=[" + statusLight + "]): " + result);
         return result;

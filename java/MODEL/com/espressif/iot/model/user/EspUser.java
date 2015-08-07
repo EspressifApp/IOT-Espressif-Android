@@ -53,7 +53,6 @@ import com.espressif.iot.action.user.IEspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.IEspActionUserLoginDB;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserRegisterInternet;
-import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.IOTUserDBManager;
@@ -70,7 +69,6 @@ import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine.Direction;
 import com.espressif.iot.device.upgrade.IEspDeviceCheckCompatibility;
 import com.espressif.iot.device.upgrade.IEspDeviceGetUpgradeTypeResult;
-import com.espressif.iot.model.adt.tree.EspDeviceTreeElement;
 import com.espressif.iot.model.device.statemachine.EspDeviceStateMachine;
 import com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler;
 import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler;
@@ -81,6 +79,7 @@ import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
+import com.espressif.iot.type.device.esptouch.EsptouchResult;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
@@ -94,7 +93,6 @@ import com.espressif.iot.type.user.EspRegisterResult;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.RandomUtil;
-import com.espressif.iot.util.RouterUtil;
 import com.espressif.iot.util.TimeUtil;
 
 public class EspUser implements IEspUser
@@ -325,13 +323,18 @@ public class EspUser implements IEspUser
     @Override
     public IEspDevice getUserDevice(String deviceKey)
     {
-        // Check Root router device
+        // Check Virtual Root router device
         IEspDevice deviceRoot = BEspDeviceRoot.getBuilder().getLocalRoot();
         if (deviceKey.equals(deviceRoot.getKey()))
         {
             return deviceRoot;
         }
         deviceRoot = BEspDeviceRoot.getBuilder().getInternetRoot();
+        if (deviceKey.equals(deviceRoot.getKey()))
+        {
+            return deviceRoot;
+        }
+        deviceRoot = BEspDeviceRoot.getBuilder().getVirtualMeshRoot();
         if (deviceKey.equals(deviceRoot.getKey()))
         {
             return deviceRoot;
@@ -645,7 +648,7 @@ public class EspUser implements IEspUser
     // "espressif_" + MAC address's 6 places
     private boolean isESPMeshDevice(String SSID)
     {
-        for (int i=0; i<MESH_DEVICE_SSID_PREFIX.length; i++)
+        for (int i = 0; i < MESH_DEVICE_SSID_PREFIX.length; i++)
         {
             if (SSID.startsWith(MESH_DEVICE_SSID_PREFIX[i]))
             {
@@ -859,60 +862,6 @@ public class EspUser implements IEspUser
             }
             return result;
         }
-    }
-    
-    @Override
-    public List<IEspDeviceTreeElement> getAllDeviceTreeElementList()
-    {
-        String router = null;
-        String routerTemp = null;
-        String parentRouter = null;
-        String parentDeviceKey = null;
-        boolean hasParent = false;
-        boolean hasChild = false;
-        int level = -1;
-        // get routerList
-        List<String> routerList = new ArrayList<String>();
-        for (IEspDevice deviceInList : getAllDeviceList())
-        {
-            router = deviceInList.getRouter();
-            if (router != null)
-            {
-                routerList.add(router);
-            }
-        }
-        // build deviceTreeElementList
-        List<IEspDeviceTreeElement> deviceTreeElementList = new ArrayList<IEspDeviceTreeElement>();
-        for (IEspDevice deviceInList : getAllDeviceList())
-        {
-            router = deviceInList.getRouter();
-            // don't forget to clear dirty info
-            parentRouter = null;
-            parentDeviceKey = null;
-            hasParent = false;
-            hasChild = false;
-            level = -1;
-            if (router != null)
-            {
-                level = RouterUtil.getRouterLevel(router);
-                parentRouter = RouterUtil.getParentRouter(routerList, router);
-                for (IEspDevice deviceInList2 : getAllDeviceList())
-                {
-                    routerTemp = deviceInList2.getRouter();
-                    if (routerTemp != null && routerTemp.equals(parentRouter))
-                    {
-                        parentDeviceKey = deviceInList2.getKey();
-                        break;
-                    }
-                }
-                hasParent = parentRouter != null;
-                hasChild = !RouterUtil.getDirectChildRouterList(routerList, router).isEmpty();
-                IEspDeviceTreeElement deviceTreeElement =
-                    new EspDeviceTreeElement(deviceInList, parentDeviceKey, hasParent, hasChild, level);
-                deviceTreeElementList.add(deviceTreeElement);
-            }
-        }
-        return deviceTreeElementList;
     }
     
     @Override
@@ -1136,8 +1085,8 @@ public class EspUser implements IEspUser
         return true;
     }
     
-    private List<IEsptouchResult> doEsptouchTaskSynAddDeviceAsyn(final String apSsid, final String apBssid, final String apPassword,
-        final boolean isSsidHidden, boolean requiredActivate)
+    private List<IEsptouchResult> doEsptouchTaskSynAddDeviceAsyn(final String apSsid, final String apBssid,
+        final String apPassword, final boolean isSsidHidden, boolean requiredActivate)
     {
         log.debug("doEsptouchTaskSynAddDeviceAsyn entrance");
         List<IEsptouchResult> esptouchResultList =
@@ -1147,8 +1096,21 @@ public class EspUser implements IEspUser
         if (requiredActivate)
         {
             log.debug("doEsptouchTaskSynAddDeviceAsyn add sta device list last discovered");
-            // clear the interrupted by esptouchResultList
-            Thread.interrupted();
+            if (!mActionDeviceEsptouch.isCancelled())
+            {
+                // clear the interrupted by esptouchResultList
+                log.debug("doEsptouchTaskSynAddDeviceAsyn clear the interrupted set by esptouch");
+                Thread.interrupted();
+            }
+            else
+            {
+                // for esptouch configured is cancelled, make first result fail
+                log.debug("doEsptouchTaskSynAddDeviceAsyn mActionDeviceEsptouch is cancelled");
+                esptouchResultList.clear();
+                IEsptouchResult failResult = new EsptouchResult(false, null, null);
+                esptouchResultList.add(failResult);
+                return esptouchResultList;
+            }
             // add sta devices
 //            List<IEspDeviceSSS> staDeviceList = getStaDeviceList();
 //            for (IEspDeviceSSS staDevice : staDeviceList)
@@ -1184,7 +1146,7 @@ public class EspUser implements IEspUser
                     break;
                 }
                 // for doActionRefreshStaDevices() can't find them,
-                // so we can't get the info like deviceType, router, etc.
+                // so we can't get the info like deviceType, etc.
                 // thus we can't make them added into staDeviceList
                 String bssid = BSSIDUtil.restoreBSSID(esptouchResult.getBssid());
                 IOTAddress iotAddress = new IOTAddress(bssid, esptouchResult.getInetAddress());

@@ -360,6 +360,7 @@
     <string name="esp_esptouch_result_over">Configure over, current connected Wi-Fi isn\'t the same as the configred Wi-Fi, please check the result by yourself</string>
     <string name="esp_esptouch_result_cancel">Cancel configure</string>
     <string name="esp_esptouch_version">EspTouch Ver : %1$s</string>
+    <string name="esp_esptouch_hint_msg">\"Please make sure that the green light of device is under twinkle slowly before click [OK]\"</string>
     
     <string name="esp_wifi_edit">Wi-Fi Edit</string>
     <string name="esp_wifi_pwd_edit">Edit</string>

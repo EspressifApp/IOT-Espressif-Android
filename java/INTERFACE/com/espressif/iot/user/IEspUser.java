@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
 
-import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
@@ -466,12 +465,6 @@ public interface IEspUser extends IEspSingletonObject
      * @param allDeviceList the list of all device belong to the IUser
      * @return the device's device tree element list
      */
-    
-    /**
-     * Get the tree element list of the user's all device
-     * @return the tree element list of the user's all device
-     */
-    List<IEspDeviceTreeElement> getAllDeviceTreeElementList();
     
     /**
      * 

@@ -55,8 +55,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         setBssid(mIOTAddress.getBSSID());
         setInetAddress(mIOTAddress.getInetAddress());
         setDeviceType(mIOTAddress.getDeviceTypeEnum());
-        setRouter(mIOTAddress.getRouter());
-        setRootDeviceBssid(mIOTAddress.getRootBssid());
+        setParentDeviceBssid(mIOTAddress.getParentBssid());
         setIsMeshDevice(iotAddress.isMeshDevice());
         setId(getNextId());
         
@@ -114,10 +113,8 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     @Override
     public List<IEspDeviceTreeElement> getDeviceTreeElementList()
     {
-        List<IEspDevice> devices = new ArrayList<IEspDevice>();
-        devices.add(this);
-        devices.addAll(BEspUser.getBuilder().getInstance().getStaDeviceList());
-        return getDeviceTreeElementList(devices);
+        List<IEspDevice> allDeviceList = BEspUser.getBuilder().getInstance().getAllDeviceList();
+        return getDeviceTreeElementList(allDeviceList);
     }
     
     @Override
@@ -126,8 +123,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         IEspDeviceConfigure device = BEspDeviceConfigure.getInstance().alloc(this.mBssid, random40);
         device.setInetAddress(mInetAddress);
         device.setIsMeshDevice(mIsMeshDevice);
-        device.setRouter(mRouter);
-        device.setRootDeviceBssid(mRootDeviceBssid);
+        device.setParentDeviceBssid(mParentDeviceBssid);
         device.setName(mDeviceName);
         return device;
     }

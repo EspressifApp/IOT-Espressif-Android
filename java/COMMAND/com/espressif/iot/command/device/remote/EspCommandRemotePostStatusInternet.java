@@ -8,14 +8,13 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusRemote;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.RouterUtil;
 
 public class EspCommandRemotePostStatusInternet implements IEspCommandRemotePostStatusInternet
 {
     
     private final static Logger log = Logger.getLogger(EspCommandRemotePostStatusInternet.class);
     
-    private boolean postCurrentRemoteStatus(String deviceKey, IEspStatusRemote statusRemote, String router)
+    private boolean postCurrentRemoteStatus(String deviceKey, IEspStatusRemote statusRemote)
     {
         JSONObject jsonObject = new JSONObject();
         JSONObject jsonObjectX = new JSONObject();
@@ -38,10 +37,6 @@ public class EspCommandRemotePostStatusInternet implements IEspCommandRemotePost
         
         HeaderPair header = new HeaderPair(headerKey, headerValue);
         String url = URL;
-        if (router != null)
-        {
-            url += "&router=" + RouterUtil.getBroadcastRouter(router);
-        }
         result = EspBaseApiUtil.Post(url, jsonObject, header);
         if (result == null)
         {
@@ -73,13 +68,7 @@ public class EspCommandRemotePostStatusInternet implements IEspCommandRemotePost
     @Override
     public boolean doCommandRemotePostStatusInternet(String deviceKey, IEspStatusRemote statusRemote)
     {
-        return doCommandRemotePostStatusInternet(deviceKey, statusRemote, null);
-    }
-    
-    @Override
-    public boolean doCommandRemotePostStatusInternet(String deviceKey, IEspStatusRemote statusRemote, String router)
-    {
-        boolean result = postCurrentRemoteStatus(deviceKey, statusRemote, router);
+        boolean result = postCurrentRemoteStatus(deviceKey, statusRemote);
         log.debug(Thread.currentThread().toString() + "##doCommandRemotePostStatusInternet(deviceKey=[" + deviceKey
             + "],statusRemote=[" + statusRemote + "]): " + result);
         return result;

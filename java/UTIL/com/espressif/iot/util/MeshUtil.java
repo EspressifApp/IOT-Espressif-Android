@@ -11,8 +11,6 @@ import java.util.Locale;
 
 public class MeshUtil
 {
-    public static String BLANK_ROUTER = "FFFFFFFF";
-    
     /**
      * Get the port for mesh usage(For mesh require port hex uppercase).
      * 

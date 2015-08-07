@@ -12,7 +12,6 @@ import android.text.TextUtils;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.device.IEspDeviceRoot;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -82,8 +81,7 @@ public class EspSSSUser
                         (WifiManager)EspApplication.sharedInstance().getSystemService(Context.WIFI_SERVICE);
                     InetAddress inetAddress = InetAddress.getByName(gateway);
                     IOTAddress iotAddress =
-                        new IOTAddress(wifiManager.getConnectionInfo().getBSSID(), inetAddress,
-                            IEspDeviceRoot.LOCAL_ROUTER, true);
+                        new IOTAddress(wifiManager.getConnectionInfo().getBSSID(), inetAddress, true);
                     iotAddress.setEspDeviceTypeEnum(EspDeviceType.ROOT);
                     iotAddress.setSSID(connectedSsid);
                     
