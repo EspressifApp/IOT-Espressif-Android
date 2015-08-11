@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/register_pager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/esp_activity_bg"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="50dip"
+    android:paddingRight="50dip" >
+
+    <EditText
+        android:id="@+id/register_username"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_account"
+        android:hint="@string/esp_register_account" />
+
+    <EditText
+        android:id="@+id/register_email"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_email"
+        android:hint="@string/esp_register_email" />
+
+    <EditText
+        android:id="@+id/register_password"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_password"
+        android:hint="@string/esp_register_input_password"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/register_password_again"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_password"
+        android:hint="@string/esp_register_input_password_again"
+        android:inputType="textPassword" />
+
+    <TextView
+        android:id="@+id/register_with_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dip"
+        android:layout_gravity="right"
+        android:text="@string/esp_register_with_phone"
+        android:textColor="@android:color/white" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dip"
+        android:orientation="horizontal"
+        android:paddingLeft="15dip"
+        android:paddingRight="15dip" >
+
+        <Button
+            android:id="@+id/register_cancel"
+            style="@style/BlueButton"
+            android:layout_gravity="left"
+            android:text="@android:string/cancel" />
+
+        <Button
+            android:id="@+id/register_register"
+            style="@style/BlueButton"
+            android:layout_gravity="right"
+            android:text="@string/esp_register_register" />
+    </FrameLayout>
+
+</LinearLayout>
