@@ -11,4 +11,10 @@ public interface IEspCommandUser
     static final String User_Email = "email";
     
     static final String User_Password = "password";
+    
+    static final String User_Phone = "phone";
+    
+    static final String KEY_STATE = "state";
+    
+    static final String KEY_CODE = "code";
 }

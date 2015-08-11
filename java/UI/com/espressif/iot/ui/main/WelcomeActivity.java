@@ -8,9 +8,10 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.ui.login.LoginActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
-import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
 import android.content.Context;
@@ -192,8 +193,10 @@ public class WelcomeActivity extends Activity
     private void login()
     {
         // Get user data from DB
-        IEspUser user = BEspUser.getBuilder().getInstance().doActionUserLoginDB();
-        if (user.isAutoLogin())
+        BEspUser.getBuilder().getInstance().doActionUserLoginDB();
+        SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN,
+            false))
         {
             // Auto login, go to device list page
             Intent autoIntent = new Intent(this, EspApplication.getEspUIActivity());

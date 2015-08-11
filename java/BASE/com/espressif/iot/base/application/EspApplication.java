@@ -1,5 +1,8 @@
 package com.espressif.iot.base.application;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import cn.sharesdk.framework.ShareSDK;
 
 import com.espressif.iot.base.net.wifi.WifiAdmin;
@@ -22,7 +25,9 @@ import com.espressif.iot.util.EspStrings;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.Signature;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.DhcpInfo;
@@ -183,6 +188,46 @@ public class EspApplication extends Application
     public static Class<?> getEspUIActivity()
     {
         return HELP_ON ? HelpEspUIActivity.class : EspUIActivity.class;
+    }
+    
+    public String getSignatureMD5()
+    {
+        String packageName = getApplicationInfo().packageName;
+        try
+        {
+            PackageInfo pi = getPackageManager().getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
+            Signature signature = (pi.signatures)[0];
+            MessageDigest digest = MessageDigest.getInstance("md5");
+            digest.update(signature.toByteArray());
+            byte[] result = digest.digest();
+            StringBuffer sb = new StringBuffer();
+            for (byte b : result)
+            {
+                int number = b & 0xff;
+                String str = Integer.toHexString(number);
+                if (str.length() == 1)
+                {
+                    sb.append("0");
+                }
+                sb.append(str);
+            }
+            
+            return sb.toString();
+        }
+        catch (NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
     }
     
 }

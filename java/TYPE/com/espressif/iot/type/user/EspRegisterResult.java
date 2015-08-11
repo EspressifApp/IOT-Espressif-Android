@@ -4,7 +4,7 @@ import org.apache.http.HttpStatus;
 
 public enum EspRegisterResult
 {
-    SUC, USER_OR_EMAIL_EXIST_ALREADY, USER_OR_EMAIL_ERR_FORMAT, NETWORK_UNACCESSIBLE;
+    SUC, USER_OR_EMAIL_EXIST_ALREADY, CONTENT_FORMAT_ERROR, NETWORK_UNACCESSIBLE;
     public static EspRegisterResult getEspLoginResult(int status)
     {
         if (status == HttpStatus.SC_OK)
@@ -17,7 +17,7 @@ public enum EspRegisterResult
         }
         else if (status == HttpStatus.SC_BAD_REQUEST)
         {
-            return USER_OR_EMAIL_ERR_FORMAT;
+            return CONTENT_FORMAT_ERROR;
         }
         else if (status == -HttpStatus.SC_OK)
         {

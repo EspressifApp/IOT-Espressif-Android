@@ -19,12 +19,10 @@ public interface IUserDBManager extends IEspDBManager
      * 
      * @param id user id
      * @param email user email
-     * @param password user password
      * @param key user key
-     * @param isPwdSaved whether the password is saved
-     * @param isAutoLogin whether it is auto login
+     * @param name user name
      */
-    void changeUserInfo(long id, String email, String password, String key, boolean isPwdSaved, boolean isAutoLogin);
+    void changeUserInfo(long id, String email, String key, String name);
     
     /**
      * get the user's device list (for greenDao use List<DeviceDB> as the return value, we have to use DeviceDB instead

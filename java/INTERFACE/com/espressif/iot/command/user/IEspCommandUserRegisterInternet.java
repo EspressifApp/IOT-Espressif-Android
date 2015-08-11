@@ -1,13 +1,9 @@
 package com.espressif.iot.command.user;
 
-import com.espressif.iot.command.IEspCommandInternet;
-import com.espressif.iot.command.IEspCommandUser;
 import com.espressif.iot.type.user.EspRegisterResult;
 
-public interface IEspCommandUserRegisterInternet extends IEspCommandUser, IEspCommandInternet
+public interface IEspCommandUserRegisterInternet extends IEspCommandUserRegister
 {
-    static final String URL = "https://iot.espressif.cn/v1/user/join/";
-    
     /**
      * Register a new account
      * 

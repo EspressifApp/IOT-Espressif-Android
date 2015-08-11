@@ -42,11 +42,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.espressif.iot.ui.main.LoginActivity"
+            android:name="com.espressif.iot.ui.login.LoginActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullScreen" />
         <activity
-            android:name="com.espressif.iot.ui.main.RegisterActivity"
+            android:name="com.espressif.iot.ui.register.RegisterActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullScreen" />
         <activity

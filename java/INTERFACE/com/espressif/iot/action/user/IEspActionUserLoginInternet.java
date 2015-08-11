@@ -11,10 +11,7 @@ public interface IEspActionUserLoginInternet extends IEspActionUser, IEspActionI
      * 
      * @param userEmail user's email
      * @param userPassword user's password
-     * @param isPwdSaved whether the password will be saved
-     * @param isAutoLogin whether it is auto login
      * @return @see EspLoginResult
      */
-    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword, boolean isPwdSaved,
-        boolean isAutoLogin);
+    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword);
 }

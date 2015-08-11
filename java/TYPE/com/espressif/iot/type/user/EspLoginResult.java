@@ -4,7 +4,8 @@ import org.apache.http.HttpStatus;
 
 public enum EspLoginResult
 {
-    SUC, PASSWORD_ERR, NOT_REGISTER, NETWORK_UNACCESSIBLE;
+    SUC, PASSWORD_ERR, NOT_REGISTER, NETWORK_UNACCESSIBLE, FAILED;
+    
     public static EspLoginResult getEspLoginResult(int status)
     {
         if (status == HttpStatus.SC_OK)
@@ -25,7 +26,7 @@ public enum EspLoginResult
         }
         else
         {
-            return null;
+            return FAILED;
         }
     }
 }

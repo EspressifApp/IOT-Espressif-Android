@@ -77,36 +77,18 @@ public interface IEspUser extends IEspSingletonObject
     String getUserKey();
     
     /**
-     * Set the password of the user
+     * Set the user name
      * 
-     * @param userPassword
+     * @param userName
      */
-    void setUserPassword(final String userPassword);
+    void setUserName(String userName);
     
     /**
-     * Get the password of the user
+     * Get the user name
      * 
-     * @return the user password
+     * @return
      */
-    String getUserPassword();
-    
-    void setIsPwdSaved(final boolean isPwdSaved);
-    
-    boolean isPwdSaved();
-    
-    /**
-     * Set whether the user is auto login
-     * 
-     * @param isAutoLogin
-     */
-    void setAutoLogin(final boolean isAutoLogin);
-    
-    /**
-     * Get whether the user is auto login
-     * 
-     * @return whether the user is auto login
-     */
-    boolean isAutoLogin();
+    String getUserName();
     
     boolean isLogin();
     
@@ -143,6 +125,7 @@ public interface IEspUser extends IEspSingletonObject
     void setLastConnectedSsid(String ssid);
     
     String getLastConnectedSsid();
+    
     /**
      * 
      * @return last selected ap's bssid or null
@@ -182,6 +165,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Save the information of the configured AP
+     * 
      * @param bssid
      * @param ssid
      * @param password
@@ -192,10 +176,8 @@ public interface IEspUser extends IEspSingletonObject
     /**
      * save the user info in local db
      * 
-     * @param isPwdSaved whether the password is saved
-     * @param isAutoLogin whether it is to skip login process
      */
-    Void saveUserInfoInDB(final boolean isPwdSaved, final boolean isAutoLogin);
+    Void saveUserInfoInDB();
     
     /**
      * configure the new device to an AP accessible to Internet (if configure suc, save the device into local db with
@@ -319,12 +301,9 @@ public interface IEspUser extends IEspSingletonObject
      * 
      * @param userEmail user's email
      * @param userPassword user's password
-     * @param isPwdSaved whether the password will be saved
-     * @param isAutoLogin whether it is auto login
      * @return @see EspLoginResult
      */
-    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword, boolean isPwdSaved,
-        boolean isAutoLogin);
+    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword);
     
     /**
      * Third-party login
@@ -335,7 +314,16 @@ public interface IEspUser extends IEspSingletonObject
     EspLoginResult doActionThirdPartyLoginInternet(EspThirdPartyLoginPlat espPlat);
     
     /**
-     * register user account by Internet
+     * Login with phone number
+     * 
+     * @param phoneNumber
+     * @param password
+     * @return
+     */
+    EspLoginResult doActionUserLoginPhone(String phoneNumber, String password);
+    
+    /**
+     * register user account with email by Internet
      * 
      * @param userName user's name
      * @param userEmail user's email
@@ -345,7 +333,18 @@ public interface IEspUser extends IEspSingletonObject
     EspRegisterResult doActionUserRegisterInternet(String userName, String userEmail, String userPassword);
     
     /**
+     * Register user account with phone number
+     * 
+     * @param phoneNumber
+     * @param captchaCode
+     * @param userPassword
+     * @return
+     */
+    EspRegisterResult doActionUserRegisterPhone(String phoneNumber, String captchaCode, String userPassword);
+    
+    /**
      * Check whether the user name has registered on server
+     * 
      * @param userName
      * @return
      */
@@ -353,6 +352,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Check whether the email has registered on server
+     * 
      * @param email
      * @return
      */
@@ -400,6 +400,14 @@ public interface IEspUser extends IEspSingletonObject
      * @return get shared device success or failed
      */
     boolean doActionActivateSharedDevice(String sharedDeviceKey);
+    
+    /**
+     * Get sms captcha code from server
+     * 
+     * @param phoneNumber
+     * @return
+     */
+    boolean doActionGetSmsCaptchaCode(String phoneNumber);
     
     /**
      * check the compatibility between app and device
@@ -462,6 +470,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the device's device tree element list
+     * 
      * @param allDeviceList the list of all device belong to the IUser
      * @return the device's device tree element list
      */
@@ -475,6 +484,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the origin sta device list, don't call it or it will make a Woo surprise
+     * 
      * @return the origin sta device list
      */
     List<IEspDeviceSSS> __getOriginStaDeviceList();
@@ -488,30 +498,32 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the origin device list, don't call it or it will make a Woo surprise
+     * 
      * @return the origin device list
      */
     List<IEspDevice> __getOriginDeviceList();
     
     /**
      * Get the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
+     * 
      * @return the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
      */
     List<IEspDevice> getAllDeviceList();
     
     /**
      * Get the softap device list except the device belong to {@link #getAllDeviceList()}
+     * 
      * @return the IEspDeviceNew list except the device belong to {@link #getAllDeviceList()}
      */
     List<IEspDeviceNew> getSoftapDeviceList();
+    
     /**
-     * before the user's device list or sta device list will be changed,
-     * lock the device list and sta device list
+     * before the user's device list or sta device list will be changed, lock the device list and sta device list
      */
     void lockUserDeviceLists();
     
     /**
-     * after the user's device list or sta device list change finished,
-     * unlock the device list and sta device list
+     * after the user's device list or sta device list change finished, unlock the device list and sta device list
      */
     void unlockUserDeviceLists();
     

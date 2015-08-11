@@ -10,9 +10,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.text.TextUtils;
 
+import com.espressif.iot.action.IEspActionUserRegisterPhoneInternet;
 import com.espressif.iot.action.device.New.EspActionDeviceNewGetInfoLocal;
 import com.espressif.iot.action.device.New.IEspActionDeviceNewGetInfoLocal;
 import com.espressif.iot.action.device.common.EspActionDeviceActivateSharedInternet;
@@ -42,18 +45,24 @@ import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
 import com.espressif.iot.action.device.humiture.EspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.device.humiture.IEspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.user.EspActionFindAccountInternet;
+import com.espressif.iot.action.user.EspActionGetSmsCaptchaCodeInternet;
 import com.espressif.iot.action.user.EspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.EspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.EspActionUserLoginDB;
 import com.espressif.iot.action.user.EspActionUserLoginInternet;
+import com.espressif.iot.action.user.EspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterInternet;
+import com.espressif.iot.action.user.EspActionUserRegisterPhoneInternet;
 import com.espressif.iot.action.user.IEspActionFindAccountnternet;
+import com.espressif.iot.action.user.IEspActionGetSmsCaptchaCodeInternet;
 import com.espressif.iot.action.user.IEspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserDevicesUpdated;
 import com.espressif.iot.action.user.IEspActionUserLoginDB;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
+import com.espressif.iot.action.user.IEspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.IEspActionUserRegisterInternet;
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.IOTUserDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
@@ -92,6 +101,7 @@ import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspRegisterResult;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.EspStrings;
 import com.espressif.iot.util.RandomUtil;
 import com.espressif.iot.util.TimeUtil;
 
@@ -104,13 +114,9 @@ public class EspUser implements IEspUser
     
     private String mUserKey;
     
+    private String mUserName;
+    
     private String mUserEmail;
-    
-    private String mUserPassword;
-    
-    private boolean mIsPwdSaved;
-    
-    private boolean mAutoLogin;
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
     
@@ -129,21 +135,13 @@ public class EspUser implements IEspUser
     @Override
     public String toString()
     {
-        return "[id=" + mUserId + ",key=" + mUserKey + ",email=" + mUserEmail + ",isPwdSaved=" + mIsPwdSaved
-            + ",mAutoLogin=" + mAutoLogin + ",password=" + mUserPassword + "]";
+        return "[id=" + mUserId + ",key=" + mUserKey + ",email=" + mUserEmail + "]";
     }
     
     @Override
-    public Void saveUserInfoInDB(final boolean isPwdSaved, final boolean isAutoLogin)
+    public Void saveUserInfoInDB()
     {
-        this.mIsPwdSaved = isPwdSaved;
-        this.mAutoLogin = isAutoLogin;
-        IOTUserDBManager.getInstance().changeUserInfo(mUserId,
-            mUserEmail,
-            mUserPassword,
-            mUserKey,
-            isPwdSaved,
-            isAutoLogin);
+        IOTUserDBManager.getInstance().changeUserInfo(mUserId, mUserEmail, mUserKey, mUserName);
         return null;
     }
     
@@ -184,39 +182,15 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public void setUserPassword(String userPassword)
+    public void setUserName(String userName)
     {
-        this.mUserPassword = userPassword;
+        mUserName = userName;
     }
     
     @Override
-    public String getUserPassword()
+    public String getUserName()
     {
-        return this.mUserPassword;
-    }
-    
-    @Override
-    public void setIsPwdSaved(boolean isPwdSaved)
-    {
-        this.mIsPwdSaved = isPwdSaved;
-    }
-    
-    @Override
-    public boolean isPwdSaved()
-    {
-        return this.mIsPwdSaved;
-    }
-    
-    @Override
-    public void setAutoLogin(boolean autoLogin)
-    {
-        this.mAutoLogin = autoLogin;
-    }
-    
-    @Override
-    public boolean isAutoLogin()
-    {
-        return this.mAutoLogin;
+        return mUserName;
     }
     
     @Override
@@ -575,11 +549,10 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword, boolean isPwdSaved,
-        boolean isAutoLogin)
+    public EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword)
     {
         IEspActionUserLoginInternet action = new EspActionUserLoginInternet();
-        EspLoginResult result = action.doActionUserLoginInternet(userEmail, userPassword, isPwdSaved, isAutoLogin);
+        EspLoginResult result = action.doActionUserLoginInternet(userEmail, userPassword);
         if (result == EspLoginResult.SUC)
         {
             __loadUserDeviceList();
@@ -600,11 +573,25 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public EspLoginResult doActionUserLoginPhone(String phoneNumber, String password)
+    {
+        IEspActionUserLoginPhoneInternet action = new EspActionUserLoginPhoneInternet();
+        EspLoginResult result = action.doActionUserLoginPhone(phoneNumber, password);
+        if (result == EspLoginResult.SUC)
+        {
+            __loadUserDeviceList();
+        }
+        return result;
+    }
+    
+    @Override
     public IEspUser doActionUserLoginDB()
     {
         IEspActionUserLoginDB action = new EspActionUserLoginDB();
         IEspUser result = action.doActionUserLoginDB();
-        if (result.isAutoLogin())
+        SharedPreferences shared =
+            EspApplication.sharedInstance().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false))
         {
             __loadUserDeviceList();
         }
@@ -622,6 +609,13 @@ public class EspUser implements IEspUser
     {
         IEspActionUserRegisterInternet action = new EspActionUserRegisterInternet();
         return action.doActionUserRegisterInternet(userName, userEmail, userPassword);
+    }
+    
+    @Override
+    public EspRegisterResult doActionUserRegisterPhone(String phoneNumber, String captchaCode, String userPassword)
+    {
+        IEspActionUserRegisterPhoneInternet action = new EspActionUserRegisterPhoneInternet();
+        return action.doActionUserRegisterPhone(phoneNumber, captchaCode, userPassword);
     }
     
     @Override
@@ -763,6 +757,13 @@ public class EspUser implements IEspUser
     {
         IEspActionDeviceActivateSharedInternet action = new EspActionDeviceActivateSharedInternet();
         return action.doActionDeviceActivateSharedInternet(mUserId, mUserKey, sharedDeviceKey);
+    }
+    
+    @Override
+    public boolean doActionGetSmsCaptchaCode(String phoneNumber)
+    {
+        IEspActionGetSmsCaptchaCodeInternet action = new EspActionGetSmsCaptchaCodeInternet();
+        return action.doActionGetSmsCaptchaCode(phoneNumber);
     }
     
     @Override

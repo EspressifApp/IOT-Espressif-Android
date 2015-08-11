@@ -60,11 +60,11 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.ui.settings.SettingsFragment.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.flammable.EspCommandFlammableGetStatusListInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.upgrade.apk.UpgradeManagerApkOnline.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.ui.main.RegisterActivity.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.ui.register.RegisterActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.main.EspUIActivity.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.ui.main.LoginThirdPartyDialog.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.ui.login.LoginThirdPartyDialog.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.main.WelcomeActivity.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.ui.main.LoginActivity.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.ui.login.LoginActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.device.timer.DeviceTimersActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.help.HelpEspUIActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.configure.DeviceConfigureActivity.class).setLevel(Level.DEBUG);

@@ -33,6 +33,7 @@ import com.espressif.iot.ui.device.DevicePlugsActivity;
 import com.espressif.iot.ui.device.DeviceRemoteActivity;
 import com.espressif.iot.ui.device.DeviceRootRouterActivity;
 import com.espressif.iot.ui.device.DeviceVoltageActivity;
+import com.espressif.iot.ui.login.LoginActivity;
 import com.espressif.iot.ui.settings.SettingsActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
 import com.espressif.iot.ui.view.EspViewPager;

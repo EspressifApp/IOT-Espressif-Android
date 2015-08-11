@@ -47,6 +47,12 @@ public class EspStrings
         public static final String REGISTER_NAME_PASSWORD = "register_name_password";
         
         /**
+         * The Intent value name of extra account phone number that RegisterActivity return to LoginActivity when
+         * register success
+         */
+        public static final String REGISTER_NAME_PHONE = "register_name_phone";
+
+        /**
          * The settings SharedPreferences xml name
          */
         public static final String SETTINGS_NAME = "settings";
@@ -87,14 +93,6 @@ public class EspStrings
         
         public static final String DEVICE_TIMER_PLUGS_VALUE_KEY = "plugs_value";
         
-        /**
-         * The XML for save skip mac user name
-         */
-        public static final String MAC_USER = "mac_user";
-        
-        /**
-         * The key of shared value skip mac user name
-         */
-        public static final String MAC_USER_NAME_KEY = "mac_user_name";
+        public static final String KEY_AUTO_LOGIN = "auto_login";
     }
 }

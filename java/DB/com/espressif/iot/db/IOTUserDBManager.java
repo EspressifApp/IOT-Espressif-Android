@@ -45,29 +45,23 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
      * 
      * @param id user's id
      * @param email user's email
-     * @param password user's password
      * @param key user's key
-     * @param isPwdSaved whether it is saved password
-     * @param isAutoLogin whether it is auto login in
+     * @param name user name
      */
     @Override
-    public void changeUserInfo(long id, String email, String password, String key, boolean isPwdSaved,
-        boolean isAutoLogin)
+    public void changeUserInfo(long id, String email, String key, String name)
     {
         log.info(Thread.currentThread().toString() + "##changeUserInfo(id=[" + id + "],email=[" + email
-            + "],password=[" + password + "],key=[" + key + "],isPwdSaved=[" + isPwdSaved + "],isAutoLogin=["
-            + isAutoLogin + "])");
+            + "],key=[" + key + "]");
         Query<UserDB> query = userDao.queryBuilder().where(Properties.IsLastLogin.eq(true)).build();
         UserDB result = query.unique();
         if (result != null)
         {
             // clear the old login info
             result.setIsLastLogin(false);
-            result.setIsPwdSaved(false);
-            result.setIsAutoLogin(false);
             userDao.update(result);
         }
-        result = new UserDB(id, email, password, key, true, isPwdSaved, isAutoLogin);
+        result = new UserDB(id, email, key, name, true);
         userDao.insertOrReplace(result);
     }
     
@@ -79,29 +73,12 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
     @Override
     public IUserDB load()
     {
-        Query<UserDB> query = userDao.queryBuilder().where(Properties.IsAutoLogin.eq(true)).build();
         UserDB result = null;
+        
+        Query<UserDB> query = userDao.queryBuilder().where(Properties.IsLastLogin.eq(true)).build();
         result = query.unique();
         if (result != null)
         {
-            // isSkip is set
-            log.debug(Thread.currentThread().toString() + "##load(): " + result);
-            return result;
-        }
-        query = userDao.queryBuilder().where(Properties.IsPwdSaved.eq(true)).build();
-        result = query.unique();
-        if (result != null)
-        {
-            // isPwdSaved is set
-            log.debug(Thread.currentThread().toString() + "##load(): " + result);
-            return result;
-        }
-        query = userDao.queryBuilder().where(Properties.IsLastLogin.eq(true)).build();
-        result = query.unique();
-        if (result != null)
-        {
-            // forget the password
-            result.setPassword("");
             log.debug(Thread.currentThread().toString() + "##load(): " + result);
             return result;
         }

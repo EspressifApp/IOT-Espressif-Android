@@ -9,7 +9,7 @@
         android:id="@+id/login_edt_account"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/esp_login_email"
+        android:hint="@string/esp_login_account"
         android:inputType="textEmailAddress" />
 
     <EditText

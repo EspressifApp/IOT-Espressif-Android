@@ -41,6 +41,7 @@ public class EspCommandThirdPartyLoginInternet implements IEspCommandThirdPartyL
             
             JSONObject userJSON = jsonResult.getJSONObject(USER);
             long userId = userJSON.getLong(Id);
+            String userName = userJSON.getString(User_Name);
             String email = userJSON.getString(User_Email);
             JSONObject keyJSON = jsonResult.getJSONObject(Key);
             String userKey = keyJSON.getString(Token);
@@ -48,8 +49,8 @@ public class EspCommandThirdPartyLoginInternet implements IEspCommandThirdPartyL
             IEspUser user = BEspUser.getBuilder().getInstance();
             user.setUserKey(userKey);
             user.setUserId(userId);
+            user.setUserName(userName);
             user.setUserEmail(email);
-            user.setUserPassword("");
             
             return EspLoginResult.SUC;
         }
