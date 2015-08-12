@@ -189,45 +189,4 @@ public class EspApplication extends Application
     {
         return HELP_ON ? HelpEspUIActivity.class : EspUIActivity.class;
     }
-    
-    public String getSignatureMD5()
-    {
-        String packageName = getApplicationInfo().packageName;
-        try
-        {
-            PackageInfo pi = getPackageManager().getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
-            Signature signature = (pi.signatures)[0];
-            MessageDigest digest = MessageDigest.getInstance("md5");
-            digest.update(signature.toByteArray());
-            byte[] result = digest.digest();
-            StringBuffer sb = new StringBuffer();
-            for (byte b : result)
-            {
-                int number = b & 0xff;
-                String str = Integer.toHexString(number);
-                if (str.length() == 1)
-                {
-                    sb.append("0");
-                }
-                sb.append(str);
-            }
-            
-            return sb.toString();
-        }
-        catch (NameNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            e.printStackTrace();
-        }
-        catch (NullPointerException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
 }

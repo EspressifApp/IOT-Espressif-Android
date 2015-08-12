@@ -11,11 +11,11 @@ public class EspCommandGetSmsCaptchaCodeInternet implements IEspCommandGetSmsCap
 {
     
     @Override
-    public boolean doCommandGetSmsCaptchaCode(String phoneNumber, String codeToken)
+    public boolean doCommandGetSmsCaptchaCode(String phoneNumber, String resourceToken)
     {
         String url = URL + phoneNumber;
         String headerKey = Authorization;
-        String headerValue = Token + " " + codeToken;
+        String headerValue = Token + " " + resourceToken;
         HeaderPair header = new HeaderPair(headerKey, headerValue);
         
         JSONObject result = EspBaseApiUtil.Get(url, header);
