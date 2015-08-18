@@ -1,6 +1,7 @@
 package com.espressif.iot.ui.register;
 
 import com.espressif.iot.R;
+import com.espressif.iot.model.user.EspCaptcha;
 import com.espressif.iot.type.user.EspRegisterResult;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -100,7 +101,7 @@ public class RegisterPhoneFragment extends Fragment implements OnClickListener
                 protected Boolean doInBackground(String... params)
                 {
                     String number = params[0];
-                    return mUser.doActionGetSmsCaptchaCode(number);
+                    return mUser.doActionGetSmsCaptchaCode(number, EspCaptcha.STATE_REGISTER);
                 }
             }.execute(mPhoneET.getText().toString());
             

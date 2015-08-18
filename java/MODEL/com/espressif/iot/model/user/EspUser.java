@@ -760,10 +760,10 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public boolean doActionGetSmsCaptchaCode(String phoneNumber)
+    public boolean doActionGetSmsCaptchaCode(String phoneNumber, String state)
     {
         IEspActionGetSmsCaptchaCodeInternet action = new EspActionGetSmsCaptchaCodeInternet();
-        return action.doActionGetSmsCaptchaCode(phoneNumber);
+        return action.doActionGetSmsCaptchaCode(phoneNumber, state);
     }
     
     @Override

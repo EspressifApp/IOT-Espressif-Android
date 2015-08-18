@@ -7,11 +7,11 @@ public class EspActionGetSmsCaptchaCodeInternet implements IEspActionGetSmsCaptc
 {
     
     @Override
-    public boolean doActionGetSmsCaptchaCode(String phoneNumber)
+    public boolean doActionGetSmsCaptchaCode(String phoneNumber, String state)
     {
         IEspCommandGetSmsCaptchaCodeInternet command = new EspCommandGetSmsCaptchaCodeInternet();
         String resourceKey = getResourceKey();
-        return command.doCommandGetSmsCaptchaCode(phoneNumber, resourceKey);
+        return command.doCommandGetSmsCaptchaCode(phoneNumber, resourceKey, state);
     }
     
     private String getResourceKey()

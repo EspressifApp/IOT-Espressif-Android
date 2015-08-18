@@ -10,10 +10,15 @@ import com.espressif.iot.type.net.HeaderPair;
 public class EspCommandGetSmsCaptchaCodeInternet implements IEspCommandGetSmsCaptchaCodeInternet
 {
     
-    @Override
-    public boolean doCommandGetSmsCaptchaCode(String phoneNumber, String resourceToken)
+    private String getUrl(String phoneNumber, String state)
     {
-        String url = URL + phoneNumber;
+        return URL + "?state=" + state + "&phone=" + phoneNumber;
+    }
+    
+    @Override
+    public boolean doCommandGetSmsCaptchaCode(String phoneNumber, String resourceToken, String state)
+    {
+        String url = getUrl(phoneNumber, state);
         String headerKey = Authorization;
         String headerValue = Token + " " + resourceToken;
         HeaderPair header = new HeaderPair(headerKey, headerValue);

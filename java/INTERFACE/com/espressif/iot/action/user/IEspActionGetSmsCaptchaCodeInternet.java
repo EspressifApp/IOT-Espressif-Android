@@ -9,7 +9,8 @@ public interface IEspActionGetSmsCaptchaCodeInternet extends IEspActionUser, IEs
      * Get sms captcha code from server
      * 
      * @param phoneNumber
+     * @param state
      * @return
      */
-    boolean doActionGetSmsCaptchaCode(String phoneNumber);
+    boolean doActionGetSmsCaptchaCode(String phoneNumber, String state);
 }

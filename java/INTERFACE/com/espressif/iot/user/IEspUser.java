@@ -405,9 +405,10 @@ public interface IEspUser extends IEspSingletonObject
      * Get sms captcha code from server
      * 
      * @param phoneNumber
+     * @param state @see EspCaptcha
      * @return
      */
-    boolean doActionGetSmsCaptchaCode(String phoneNumber);
+    boolean doActionGetSmsCaptchaCode(String phoneNumber, String state);
     
     /**
      * check the compatibility between app and device
