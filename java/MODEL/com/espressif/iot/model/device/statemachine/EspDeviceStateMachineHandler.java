@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.db.IOTDeviceDBManager;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
@@ -723,6 +724,10 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 public void run()
                 {
                     log.debug("ActivateInternetTask suc:: entrance");
+                    // delete the exist devices whose bssid is the same
+                    IOTDeviceDBManager deviceDBManager = IOTDeviceDBManager.getInstance();
+                    deviceDBManager.deleteDevicesByBssid(mDeviceResult.getBssid());
+                    
                     EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
                     stateMachine.transformState(mDeviceResult, Direction.SUC);
                     stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), true);

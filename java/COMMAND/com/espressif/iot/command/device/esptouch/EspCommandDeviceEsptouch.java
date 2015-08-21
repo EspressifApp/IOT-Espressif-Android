@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.type.device.esptouch.EsptouchTask;
+import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.type.device.esptouch.IEsptouchTask;
 
@@ -27,6 +28,19 @@ public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
     public List<IEsptouchResult> doCommandDeviceEsptouch(int expectTaskResultCount, String apSsid, String apBssid,
         String apPassword, boolean isSsidHidden, int timeoutMillisecond)
     {
+        return doCommandDeviceEsptouch(expectTaskResultCount,
+            apSsid,
+            apBssid,
+            apPassword,
+            isSsidHidden,
+            timeoutMillisecond,
+            null);
+    }
+    
+    @Override
+    public List<IEsptouchResult> doCommandDeviceEsptouch(int expectTaskResultCount, String apSsid, String apBssid,
+        String apPassword, boolean isSsidHidden, int timeoutMillisecond, IEsptouchListener esptouchListener)
+    {
         synchronized (mLock)
         {
             if (mIsCancelled)
@@ -35,6 +49,7 @@ public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
             }
             Context context = EspApplication.sharedInstance().getContext();
             mEsptouchTask = new EsptouchTask(apSsid, apBssid, apPassword, isSsidHidden, timeoutMillisecond, context);
+            mEsptouchTask.setEsptouchListener(esptouchListener);
         }
         return mEsptouchTask.executeForResults(expectTaskResultCount);
     }
@@ -42,6 +57,13 @@ public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
     @Override
     public List<IEsptouchResult> doCommandDeviceEsptouch(int expectTaskResultCount, String apSsid, String apBssid,
         String apPassword, boolean isSsidHidden)
+    {
+        return doCommandDeviceEsptouch(expectTaskResultCount, apSsid, apBssid, apPassword, isSsidHidden, null);
+    }
+    
+    @Override
+    public List<IEsptouchResult> doCommandDeviceEsptouch(int expectTaskResultCount, String apSsid, String apBssid,
+        String apPassword, boolean isSsidHidden, IEsptouchListener esptouchListener)
     {
         synchronized (mLock)
         {
@@ -51,6 +73,7 @@ public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
             }
             Context context = EspApplication.sharedInstance().getContext();
             mEsptouchTask = new EsptouchTask(apSsid, apBssid, apPassword, isSsidHidden, context);
+            mEsptouchTask.setEsptouchListener(esptouchListener);
         }
         return mEsptouchTask.executeForResults(expectTaskResultCount);
     }
@@ -76,5 +99,4 @@ public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
             mIsCancelled = true;
         }
     }
-    
 }

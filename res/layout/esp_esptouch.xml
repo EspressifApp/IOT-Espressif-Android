@@ -30,6 +30,13 @@
         android:text="@string/esp_sss_esptouch_is_hidden" />
 
     <CheckBox
+        android:id="@+id/multiple_devices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/esp_configure_multiple_devices" />
+
+    <CheckBox
         android:id="@+id/activate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

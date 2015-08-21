@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/esp_activity_bg"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="50dip"
+    android:paddingRight="50dip" >
+
+    <EditText
+        android:id="@+id/register_phone"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_empty"
+        android:hint="@string/esp_register_phone"
+        android:inputType="phone" />
+
+    <Button
+        android:id="@+id/register_get_captcha_btn"
+        style="@style/YellowButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="15dip"
+        android:singleLine="true"
+        android:text="@string/esp_register_get_sms_captcha_code"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/register_captcha_code"
+        style="@style/RegisterEditText"
+        android:gravity="center"
+        android:hint="@string/esp_register_captcha_code" />
+
+    <EditText
+        android:id="@+id/register_password"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_password"
+        android:hint="@string/esp_register_input_password"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/register_password_again"
+        style="@style/RegisterEditText"
+        android:drawableLeft="@drawable/esp_register_icon_password"
+        android:hint="@string/esp_register_input_password_again"
+        android:inputType="textPassword" />
+
+    <TextView
+        android:id="@+id/register_with_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="15dip"
+        android:text="@string/esp_register_with_email"
+        android:textColor="@android:color/white" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dip"
+        android:orientation="horizontal"
+        android:paddingLeft="15dip"
+        android:paddingRight="15dip" >
+
+        <Button
+            android:id="@+id/register_cancel"
+            style="@style/BlueButton"
+            android:layout_gravity="left"
+            android:text="@android:string/cancel" />
+
+        <Button
+            android:id="@+id/register_register"
+            style="@style/BlueButton"
+            android:layout_gravity="right"
+            android:text="@string/esp_register_register" />
+    </FrameLayout>
+
+</LinearLayout>

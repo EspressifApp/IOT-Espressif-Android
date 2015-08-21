@@ -1,4 +1,4 @@
-package com.espressif.iot.ui.main;
+package com.espressif.iot.ui.login;
 
 import java.util.HashMap;
 
@@ -12,6 +12,8 @@ import com.espressif.iot.R;
 import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.view.NoBgDialog;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -175,13 +177,20 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
         String token = plat.getDb().getToken();
         String userId = plat.getDb().getUserId();
         
-        EspThirdPartyLoginPlat espPlat = new EspThirdPartyLoginPlat();
+        final EspThirdPartyLoginPlat espPlat = new EspThirdPartyLoginPlat();
         espPlat.setAccessToken(token);
         espPlat.setState(state);
         espPlat.setOpenId(userId);
         
         new LoginTask(mContext)
         {
+            @Override
+            public EspLoginResult doLogin()
+            {
+                IEspUser user = BEspUser.getBuilder().getInstance();
+                return user.doActionThirdPartyLoginInternet(espPlat);
+            }
+            
             @Override
             public void loginResult(EspLoginResult result)
             {
@@ -190,6 +199,6 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
                     mLoginListener.onLoginComplete(result);
                 }
             }
-        }.execute(espPlat);
+        }.execute();
     }
 }

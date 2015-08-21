@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="esp_login_email">Enter Email</string>
+    <string name="esp_login_account">Enter Email</string>
     <string name="esp_login_password">Enter Password</string>
     <string name="esp_login_auto_login">Auto Login</string>
     <string name="esp_login_skip">Skip</string>
@@ -12,9 +12,10 @@
     <string name="esp_login_result_network_unaccessible">Network is unaccassible</string>
     <string name="esp_login_result_not_register">This email is not register</string>
     <string name="esp_login_result_password_error">Password error</string>
+    <string name="esp_login_result_failed">Account or password error</string>
     <string name="esp_login_quick_usage">Quick Usage</string>
     <string name="esp_login_third_party"><u>Third-party login</u></string>
-    <string name="esp_login_email_hint">Please enter email</string>
+    <string name="esp_login_email_hint">Please enter legal email</string>
     <string name="esp_login_password_hint">Please enter password</string>
 
     <string name="esp_third_party_weibo">Weibo</string>
@@ -37,6 +38,16 @@
     <string name="esp_register_result_network_unaccessible">Network is unaccassible</string>
     <string name="esp_register_result_account_format_error">User Name or Email format error</string>
     <string name="esp_register_result_account_exist">User Name or Email is existed</string>
+    <string name="esp_register_result_phone_exist">Phone number is existed</string>
+    <string name="esp_register_phone">Phone number</string>
+    <string name="esp_register_result_phont_code_error">Phone number or chaptcha code error</string>
+    <string name="esp_register_captcha_code">Captcha code</string>
+    <string name="esp_register_get_sms_captcha_code">Get Sms captcha code</string>
+    <string name="esp_register_with_email"><u>Register with Email</u></string>
+    <string name="esp_register_with_phone"><u>Register with phone number</u></string>
+    <string name="esp_register_phone_number_toast">Please input phone number</string>
+    <string name="esp_register_captcha_code_toast">Please input captcha code</string>
+    <string name="esp_register_get_sms_captcha_code_again">Get Sms captcha code after %1$d seconds</string>
 
     <string name="esp_skip_wifi_toast">The first skip, please open Wi-Fi</string>
     <string name="esp_skip_result_failed">Skip failed</string>
@@ -109,6 +120,7 @@
 
     <string name="esp_configure_title">Device Configure</string>
     <string name="esp_configure_activate">Activate device</string>
+    <string name="esp_configure_multiple_devices">Multiple devices</string>
     <string name="esp_configure_mesh">Mesh configure</string>
     <string name="esp_configure_wifi_select_hint">Please select Wi-Fi</string>
     <string name="esp_configure_wifi_password_hint">Input Wi-Fi password</string>
@@ -361,6 +373,7 @@
     <string name="esp_esptouch_result_cancel">Cancel configure</string>
     <string name="esp_esptouch_version">EspTouch Ver : %1$s</string>
     <string name="esp_esptouch_hint_msg">\"Please make sure that the green light of device is under twinkle slowly before click [OK]\"</string>
+    <string name="esp_esptouch_connect_wifi">"%1$s is connected to Wi-Fi"</string>
     
     <string name="esp_wifi_edit">Wi-Fi Edit</string>
     <string name="esp_wifi_pwd_edit">Edit</string>

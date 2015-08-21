@@ -26,7 +26,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
@@ -43,12 +42,13 @@ import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
-import com.espressif.iot.ui.main.LoginTask;
-import com.espressif.iot.ui.main.RegisterActivity;
-import com.espressif.iot.ui.main.LoginThirdPartyDialog;
-import com.espressif.iot.ui.main.LoginThirdPartyDialog.OnLoginListener;
+import com.espressif.iot.ui.login.LoginTask;
+import com.espressif.iot.ui.login.LoginThirdPartyDialog;
+import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
+import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.AccountUtil;
 import com.espressif.iot.util.EspStrings;
 
 public class SettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener
@@ -121,8 +121,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAccountRegisterPre = findPreference(KEY_ACCOUNT_REGISTER);
         if (mUser.isLogin())
         {
-            String userEmail = mUser.getUserEmail();
-            mAccountPre.setTitle(userEmail);
+            mAccountPre.setTitle(mUser.getUserName());
+            mAccountPre.setSummary(mUser.getUserEmail());
             
             getPreferenceScreen().removePreference(mAccountRegisterPre);
         }
@@ -136,7 +136,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
         
         mAutoLoginPre = (CheckBoxPreference)findPreference(KEY_ACCOUNT_AUTO_LOGIN);
-        mAutoLoginPre.setChecked(mUser.isAutoLogin());
+        mAutoLoginPre.setChecked(mShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false));
         mAutoLoginPre.setOnPreferenceChangeListener(this);
         mAutoLoginPre.setEnabled(mUser.isLogin());
         
@@ -256,7 +256,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         if (preference == mAutoLoginPre)
         {
             boolean autoLogin = (Boolean)newValue;
-            mUser.saveUserInfoInDB(false, autoLogin);
+            mShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, autoLogin).commit();
             return true;
         }
         else if (preference == mAutoRefreshDevicePre)
@@ -288,7 +288,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     private void showLoginDialog()
     {
         View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
-        final EditText emailEdT = (EditText)view.findViewById(R.id.login_edt_account);
+        final EditText accountEdT = (EditText)view.findViewById(R.id.login_edt_account);
         final EditText pwdEdt = (EditText)view.findViewById(R.id.login_edt_password);
         final TextView thirdPartyLoginTV = (TextView)view.findViewById(R.id.login_text_third_party);
         
@@ -300,12 +300,9 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
                 @Override
                 public void onClick(DialogInterface dialog, int which)
                 {
-                    String email = emailEdT.getText().toString();
+                    String account = accountEdT.getText().toString();
                     String password = pwdEdt.getText().toString();
-                    if (!TextUtils.isEmpty(email))
-                    {
-                        login(email, password);
-                    }
+                    login(account, password);
                 }
             })
             .show();
@@ -335,10 +332,32 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
     };
     
-    private void login(final String email, final String password)
+    private void login(final String account, final String password)
     {
-        new LoginTask(getActivity(), email, password, mAutoLoginPre.isChecked())
+        final int accountType = AccountUtil.getAccountType(account);
+        if (accountType == AccountUtil.TYPE_NONE)
         {
+            Toast.makeText(getActivity(), R.string.esp_login_email_hint, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        new LoginTask(getActivity())
+        {
+            @Override
+            public EspLoginResult doLogin()
+            {
+                if (accountType == AccountUtil.TYPE_EMAIL)
+                {
+                    return mUser.doActionUserLoginInternet(account, password);
+                }
+                else if (accountType == AccountUtil.TYPE_PHONE)
+                {
+                    return mUser.doActionUserLoginPhone(account, password);
+                }
+                
+                return null;
+            }
+            
             public void loginResult(EspLoginResult result)
             {
                 if (result == EspLoginResult.SUC)
@@ -346,13 +365,14 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
                     loginSuc();
                 }
             }
+
         }.execute();
     }
     
     private void loginSuc()
     {
-        mAccountPre.setTitle(mUser.getUserEmail());
-        mAccountPre.setSummary("");
+        mAccountPre.setTitle(mUser.getUserName());
+        mAccountPre.setSummary(mUser.getUserEmail());
         mAutoLoginPre.setEnabled(true);
         
         Preference registerPre = findPreference(KEY_ACCOUNT_REGISTER);

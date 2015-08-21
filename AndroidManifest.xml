@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="10"
-    android:versionName="v0.9.9" >
+    android:versionCode="11"
+    android:versionName="v0.9.10" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -42,11 +42,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.espressif.iot.ui.main.LoginActivity"
+            android:name="com.espressif.iot.ui.login.LoginActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullScreen" />
         <activity
-            android:name="com.espressif.iot.ui.main.RegisterActivity"
+            android:name="com.espressif.iot.ui.register.RegisterActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullScreen" />
         <activity
@@ -70,7 +70,9 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.device.DeviceLightActivity"
-            android:screenOrientation="portrait" />
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name="com.espressif.iot.ui.device.DeviceFlammableActivity"
             android:screenOrientation="portrait"
@@ -136,7 +138,9 @@
             android:theme="@style/AppThemeDark" />
         <activity
             android:name="com.espressif.iot.ui.help.HelpDeviceLightActivity"
-            android:screenOrientation="portrait" />
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name="com.espressif.iot.ui.help.HelpDevicePlugActivity"
             android:screenOrientation="portrait" />

@@ -274,8 +274,11 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             statusLight.setRed(parseRGBtoLightValue(Color.red(color)));
             statusLight.setGreen(parseRGBtoLightValue(Color.green(color)));
             statusLight.setBlue(parseRGBtoLightValue(Color.blue(color)));
-            statusLight.setCWhite(mLightCWhiteBar.getProgress());
-            statusLight.setWWhite(mLightWWhiteBar.getProgress());
+            // clear CW and WW
+            mLightCWhiteBar.setProgress(0);
+            mLightWWhiteBar.setProgress(0);
+            statusLight.setCWhite(0);
+            statusLight.setWWhite(0);
             
             IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
             String bssid = mDeviceLight.getBssid();
@@ -305,8 +308,9 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         statusLight.setRed(parseRGBtoLightValue(Color.red(color)));
         statusLight.setGreen(parseRGBtoLightValue(Color.green(color)));
         statusLight.setBlue(parseRGBtoLightValue(Color.blue(color)));
-        statusLight.setCWhite(mLightCWhiteBar.getProgress());
-        statusLight.setWWhite(mLightWWhiteBar.getProgress());
+        // clear CW and WW
+        statusLight.setCWhite(0);
+        statusLight.setWWhite(0);
         
         IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
         String bssid = mDeviceLight.getBssid();

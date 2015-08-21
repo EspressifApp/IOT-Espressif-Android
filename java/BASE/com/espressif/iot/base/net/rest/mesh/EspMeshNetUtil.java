@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -20,27 +19,41 @@ import com.espressif.iot.util.MeshUtil;
 
 class EspMeshCommand
 {
-   /**
-    *   struct mesh_command {
-    *       struct { // command section
-    *           u8 f_req:1; // flow digestion request flag;
-    *           u8 f_resp:1; // flow digestion response flag;
-    *           u8 resv:6; // reserve for future
-    *       } comm;
-    *       struct { // comamnd value
-    *           u8 resv:4;
-    *           u8 f_cap:4; // current capacity
-    *       } val;
-    *   };
-    */
+    // struct command_value {
+    // struct {
+    // uint16_t f_req:1; // flow request
+    // uint16_t f_resp:1; // flow response
+    // uint16_t s_router:1; // spread router information
+    // uint16_t m_add:1; // MAC route table add
+    // uint16_t m_del:1; // MAC route table delete
+    // uint16_t m_topo:1; // used to get topology
+    // uint16_t resv:10; // reserve for fulture
+    // } comm;
+    // union {
+    // struct {
+    // uint16_t resv:12;
+    // uint16_t f_cap:4; // current flow capacity
+    // } flow;
+    // struct {
+    // uint16_t len;
+    // } router_info;
+    // struct {
+    // uint16_t len;
+    // } dev_mac_info;
+    // struct {
+    // uint16_t len;
+    // } topology_info;
+    // } val;
+    // };
+    
     private char mComm;
     
     private char mVal;
     
     public EspMeshCommand(String command)
     {
-        this.mComm = command.charAt(0);
-        this.mVal = command.charAt(1);
+        this.mComm = (char)((command.charAt(0)) | command.charAt(1) << 8);
+        this.mVal = (char)((command.charAt(2)) | command.charAt(3) << 8);
     }
     
     public boolean isRequest()
@@ -102,7 +115,7 @@ public class EspMeshNetUtil
     
     private static void __closeClient(EspSocketClient client)
     {
-        log.info("__closeClient " + client.getTargetAddress());
+        log.info("__closeClient " + client.getTargetAddress() + ",local port:" + client.getLocalPort());
         try
         {
             client.close();
@@ -136,7 +149,7 @@ public class EspMeshNetUtil
              */
             // String commandValueStr = MeshUtil.ascii2String("1");
             // commandValueStr += MeshUtil.ascii2String("0");
-            String commandValueStr = InputStreamUtils.byte2String(new byte[] {1, 0});
+            String commandValueStr = InputStreamUtils.byte2String(new byte[] {1, 0, 0, 0});
             _content = commandValueStr;
             json.put("command", "XXX");
         }
@@ -157,7 +170,8 @@ public class EspMeshNetUtil
             log.warn("__checkIsDeviceAvailable(): responseCommand is null, return false");
         }
         EspMeshCommand response = new EspMeshCommand(responseCommand);
-        return response.isRequest() && response.isResponse() && response.isFree();
+        boolean isDeviceAvailable = response.isRequest() && response.isResponse() && response.isFree();
+        return isDeviceAvailable;
     }
     
     private static boolean __isDeviceAvailable(EspSocketClient client, String uriStr, String deviceBssid,
@@ -848,7 +862,20 @@ public class EspMeshNetUtil
         return iotAddressList;
     }
     
-    static List<IOTAddress> __GetSubParentTopoIOTAddressList2(EspSocketClient client, InetAddress rootInetAddress,
+    private static class SubParentTopoResult
+    {
+        SubParentTopoResult()
+        {
+            iotAddressList = null;
+            totalNum = -1;
+        }
+        
+        List<IOTAddress> iotAddressList;
+        
+        int totalNum;
+    }
+    
+    static SubParentTopoResult __GetSubParentTopoIOTAddressList2(EspSocketClient client, InetAddress rootInetAddress,
         String deviceBssid, boolean isSubDevices)
     {
         log.debug("__GetSubParentTopoIOTAddressList2(): entrance");
@@ -886,6 +913,7 @@ public class EspMeshNetUtil
             return null;
         }
         // parse response
+        int totalNum = -1;
         try
         {
             if (isSubDevices)
@@ -916,6 +944,12 @@ public class EspMeshNetUtil
                         }
                     }
                 }
+                if (!jsonResult.isNull("num"))
+                {
+                    String numStr = jsonResult.getString("num");
+                    totalNum = Integer.parseInt(numStr);
+                    log.debug("__GetSubParentTopoIOTAddressList2(): totalNum: " + totalNum);
+                }
             }
             else
             {
@@ -943,7 +977,11 @@ public class EspMeshNetUtil
             e.printStackTrace();
         }
         
-        return iotAddressList;
+        SubParentTopoResult result = new SubParentTopoResult();
+        result.iotAddressList = iotAddressList;
+        result.totalNum = totalNum;
+        
+        return result;
     }
     
     static List<IOTAddress> __GetTopoIOTAddressList2(InetAddress rootInetAddress, String deviceBssid,
@@ -987,12 +1025,27 @@ public class EspMeshNetUtil
         int index = 0;
         String currentBssid = deviceBssid;
         IOTAddress next = null;
+        int totalNum = -1;
+        boolean isMoreDevice = false;
         do
         {
             next = null;
             // get sub topo list
-            List<IOTAddress> subParentIOTAddressList =
+            SubParentTopoResult subParentTopoResult =
                 __GetSubParentTopoIOTAddressList2(client, rootInetAddress, currentBssid, isSubDevices);
+            
+            List<IOTAddress> subParentIOTAddressList = null;
+            
+            if (subParentTopoResult != null)
+            {
+                // update totalNum if necessary, totalNum should be init only once
+                if (isSubDevices && iotAddressList.isEmpty() && subParentTopoResult.totalNum != -1)
+                {
+                    totalNum = subParentTopoResult.totalNum;
+                }
+                subParentIOTAddressList = subParentTopoResult.iotAddressList;
+            }
+            
             if (subParentIOTAddressList == null)
             {
                 // when some error occurs, subParentIOTAddressList will null
@@ -1017,7 +1070,9 @@ public class EspMeshNetUtil
             }
             // move to next index
             ++index;
-        } while (next != null && isSubDevices);
+            // check whether there's more device, here 1 means root device
+            isMoreDevice = iotAddressList.size() + 1 < totalNum;
+        } while (next != null && isSubDevices && isMoreDevice);
         
         __closeClient(client);
         return iotAddressList;

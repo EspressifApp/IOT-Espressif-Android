@@ -132,7 +132,6 @@ public class EsptouchTaskParameter implements IEsptouchTaskParameter
     {
         int count = __getNextDatagramCount();
         return "234." + count + "." + count + "." + count;
-//        return "255.255.255.255";
     }
     
     @Override

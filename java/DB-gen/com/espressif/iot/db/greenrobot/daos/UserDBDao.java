@@ -29,17 +29,12 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
         
         public final static Property Email = new Property(1, String.class, "email", false, "EMAIL");
         
-        public final static Property Password = new Property(2, String.class, "password", false, "PASSWORD");
+        public final static Property Key = new Property(2, String.class, "key", false, "KEY");
         
-        public final static Property Key = new Property(3, String.class, "key", false, "KEY");
+        public final static Property Name = new Property(3, String.class, "name", false, "NAME");
         
         public final static Property IsLastLogin =
             new Property(4, boolean.class, "isLastLogin", false, "IS_LAST_LOGIN");
-        
-        public final static Property IsPwdSaved = new Property(5, boolean.class, "isPwdSaved", false, "IS_PWD_SAVED");
-        
-        public final static Property IsAutoLogin =
-            new Property(6, boolean.class, "isAutoLogin", false, "IS_AUTO_LOGIN");
     };
     
     private DaoSession daoSession;
@@ -62,11 +57,9 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
         db.execSQL("CREATE TABLE " + constraint + "'USER_DB' (" + //
             "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
             "'EMAIL' TEXT NOT NULL ," + // 1: email
-            "'PASSWORD' TEXT NOT NULL ," + // 2: password
-            "'KEY' TEXT NOT NULL ," + // 3: key
-            "'IS_LAST_LOGIN' INTEGER NOT NULL ," + // 4: isLastLogin
-            "'IS_PWD_SAVED' INTEGER NOT NULL ," + // 5: isPwdSaved
-            "'IS_AUTO_LOGIN' INTEGER NOT NULL );"); // 6: isAutoLogin
+            "'KEY' TEXT NOT NULL ," + // 2: key
+            "'NAME' TEXT NOT NULL ," + // 3: name
+            "'IS_LAST_LOGIN' INTEGER NOT NULL );"); // 4: isLastLogin
     }
     
     /** Drops the underlying database table. */
@@ -83,11 +76,9 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
         stmt.clearBindings();
         stmt.bindLong(1, entity.getId());
         stmt.bindString(2, entity.getEmail());
-        stmt.bindString(3, entity.getPassword());
-        stmt.bindString(4, entity.getKey());
+        stmt.bindString(3, entity.getKey());
+        stmt.bindString(4, entity.getName());
         stmt.bindLong(5, entity.getIsLastLogin() ? 1l : 0l);
-        stmt.bindLong(6, entity.getIsPwdSaved() ? 1l : 0l);
-        stmt.bindLong(7, entity.getIsAutoLogin() ? 1l : 0l);
     }
     
     @Override
@@ -111,11 +102,9 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
         UserDB entity = new UserDB( //
             cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // email
-            cursor.getString(offset + 2), // password
-            cursor.getString(offset + 3), // key
-            cursor.getShort(offset + 4) != 0, // isLastLogin
-            cursor.getShort(offset + 5) != 0, // isPwdSaved
-            cursor.getShort(offset + 6) != 0 // isAutoLogin
+            cursor.getString(offset + 2), // key
+            cursor.getString(offset + 3), // name
+            cursor.getShort(offset + 4) != 0 // isLastLogin
             );
         return entity;
     }
@@ -126,11 +115,9 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
     {
         entity.setId(cursor.getLong(offset + 0));
         entity.setEmail(cursor.getString(offset + 1));
-        entity.setPassword(cursor.getString(offset + 2));
-        entity.setKey(cursor.getString(offset + 3));
+        entity.setKey(cursor.getString(offset + 2));
+        entity.setName(cursor.getString(offset + 3));
         entity.setIsLastLogin(cursor.getShort(offset + 4) != 0);
-        entity.setIsPwdSaved(cursor.getShort(offset + 5) != 0);
-        entity.setIsAutoLogin(cursor.getShort(offset + 6) != 0);
     }
     
     /** @inheritdoc */

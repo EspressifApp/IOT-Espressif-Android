@@ -46,7 +46,14 @@ public class EspCommandLightGetEspnowLocal implements IEspCommandLightGetEspnowL
             JSONArray switchArray = jo.getJSONArray(Switches);
             for (int i = 0; i < switchArray.length(); i++)
             {
+                
                 JSONObject switchJSON = switchArray.getJSONObject(i);
+                // check whether the espnow result is valid
+                String status = switchJSON.getString(Status);
+                if (!status.equals(StatusOK))
+                {
+                    continue;
+                }
                 String mac = switchJSON.getString(Mac);
                 int voltage = switchJSON.getInt(VoltageMV);
                 

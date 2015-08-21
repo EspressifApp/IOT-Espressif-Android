@@ -1,8 +1,4 @@
-package com.espressif.iot.ui.main;
-
-import java.lang.ref.WeakReference;
-
-import org.apache.log4j.Logger;
+package com.espressif.iot.ui.register;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
@@ -12,27 +8,27 @@ import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
+import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class RegisterActivity extends Activity implements OnClickListener, OnFocusChangeListener
+public class RegisterEmailFragment extends Fragment implements OnClickListener, OnFocusChangeListener
 {
-    private static final Logger log = Logger.getLogger(RegisterActivity.class);
+    public static final String TAG = "RegisterEmailFragment";
     
     private IEspUser mUser;
     
@@ -40,53 +36,67 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     private EditText mEmailEdt;
     private EditText mPasswordEdt;
     private EditText mPasswordAgainEdt;
+    private TextView mWithPhoneTV;
     
     private Button mCancelBtn;
     private Button mRegisterBtn;
     
-    private static final int PASSOWRD_WORDS_NUMBER_MIN = 6;
-    
-    private RegisterHandler mHandler;
+    private Handler mHandler;
     
     private static final int FIND_USERNAME_EXIST = 0;
     private static final int FIND_EMAIL_EXIST = 1;
     
+    private RegisterActivity mActivity;
+    
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onAttach(Activity activity)
+    {
+        super.onAttach(activity);
+        
+        mActivity = (RegisterActivity)activity;
+    }
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         
-        setContentView(R.layout.register_activity);
-        
         mUser = BEspUser.getBuilder().getInstance();
-        mHandler = new RegisterHandler(this);
-        
-        init();
-    }
-    
-    private void init()
-    {
-        mUsernameEdt = (EditText)findViewById(R.id.register_username);
-        mUsernameEdt.addTextChangedListener(new FilterSpaceTextListener(mUsernameEdt));
-        mUsernameEdt.setOnFocusChangeListener(this);
-        
-        mEmailEdt = (EditText)findViewById(R.id.register_email);
-        mEmailEdt.addTextChangedListener(new FilterSpaceTextListener(mEmailEdt));
-        mEmailEdt.setOnFocusChangeListener(this);
-        
-        mPasswordEdt = (EditText)findViewById(R.id.register_password);
-        mPasswordAgainEdt = (EditText)findViewById(R.id.register_password_again);
-        
-        mCancelBtn = (Button)findViewById(R.id.register_cancel);
-        mCancelBtn.setOnClickListener(this);
-        mRegisterBtn = (Button)findViewById(R.id.register_register);
-        mRegisterBtn.setOnClickListener(this);
+        mHandler = new Handler();
     }
     
     @Override
-    protected void onDestroy()
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        super.onDestroy();
+        View view = inflater.inflate(R.layout.register_email_fragment, null);
+        
+        mUsernameEdt = (EditText)view.findViewById(R.id.register_username);
+        mUsernameEdt.addTextChangedListener(new FilterSpaceTextListener(mUsernameEdt));
+        mUsernameEdt.setOnFocusChangeListener(this);
+        
+        mEmailEdt = (EditText)view.findViewById(R.id.register_email);
+        mEmailEdt.addTextChangedListener(new FilterSpaceTextListener(mEmailEdt));
+        mEmailEdt.setOnFocusChangeListener(this);
+        
+        mPasswordEdt = (EditText)view.findViewById(R.id.register_password);
+        mPasswordAgainEdt = (EditText)view.findViewById(R.id.register_password_again);
+        
+        mWithPhoneTV = (TextView)view.findViewById(R.id.register_with_phone);
+        mWithPhoneTV.setOnClickListener(this);
+        mWithPhoneTV.setVisibility(View.GONE);
+        
+        mCancelBtn = (Button)view.findViewById(R.id.register_cancel);
+        mCancelBtn.setOnClickListener(this);
+        mRegisterBtn = (Button)view.findViewById(R.id.register_register);
+        mRegisterBtn.setOnClickListener(this);
+        
+        return view;
+    }
+    
+    @Override
+    public void onDestroyView()
+    {
+        super.onDestroyView();
         
         if (mUsernameEdt.getTag() != null)
         {
@@ -105,44 +115,71 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
     {
         if (v == mCancelBtn)
         {
-            finish();
+            getActivity().finish();
         }
         else if (v == mRegisterBtn)
         {
-            if (!checkAccount())
-            {
-                Toast.makeText(RegisterActivity.this, R.string.esp_register_account_email_toast, Toast.LENGTH_LONG)
-                    .show();
-                return;
-            }
-            if (mUsernameEdt.hasFocus())
-            {
-                mUsernameEdt.clearFocus();
-            }
-            
-            if (mPasswordEdt.getText().length() < PASSOWRD_WORDS_NUMBER_MIN)
-            {
-                Toast.makeText(RegisterActivity.this, R.string.esp_register_input_password, Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (!checkPassword())
-            {
-                Toast.makeText(RegisterActivity.this, R.string.esp_register_same_password_toast, Toast.LENGTH_LONG)
-                    .show();
-                return;
-            }
-            if (mEmailEdt.hasFocus())
-            {
-                mEmailEdt.clearFocus();
-            }
-            
-            String username = mUsernameEdt.getText().toString();
-            String email = mEmailEdt.getText().toString();
-            String password = mPasswordEdt.getText().toString();
-            new RegisterTask(username, email, password).execute();
+            registerEmail();
+        }
+        else if (v == mWithPhoneTV)
+        {
+            mActivity.showFragment(RegisterPhoneFragment.TAG);
         }
     }
     
+    private void registerEmail()
+    {
+        if (!checkAccount())
+        {
+            Toast.makeText(getActivity(), R.string.esp_register_account_email_toast, Toast.LENGTH_LONG)
+                .show();
+            return;
+        }
+        if (mUsernameEdt.hasFocus())
+        {
+            mUsernameEdt.clearFocus();
+        }
+        
+        if (!mActivity.checkPassword(mPasswordEdt, mPasswordAgainEdt))
+        {
+            return;
+        }
+        
+        if (mEmailEdt.hasFocus())
+        {
+            mEmailEdt.clearFocus();
+        }
+        
+        final String username = mUsernameEdt.getText().toString();
+        final String email = mEmailEdt.getText().toString();
+        final String password = mPasswordEdt.getText().toString();
+        new RegisterTaskAbs(getActivity())
+        {
+            
+            @Override
+            protected EspRegisterResult doRegister()
+            {
+                return mUser.doActionUserRegisterInternet(username, email, password);
+            }
+            
+            @Override
+            protected void registerResult(EspRegisterResult result)
+            {
+                switch (result)
+                {
+                    case SUC:
+                        registerSuccess(email, password);
+                        break;
+                    case NETWORK_UNACCESSIBLE:
+                    case CONTENT_FORMAT_ERROR:
+                    case USER_OR_EMAIL_EXIST_ALREADY:
+                        registerFailed(result);
+                        break;
+                }
+            }
+        }.execute();
+    }
+
     @Override
     public void onFocusChange(View v, boolean hasFocus)
     {
@@ -313,131 +350,29 @@ public class RegisterActivity extends Activity implements OnClickListener, OnFoc
         }
     }
     
-    /**
-     * Check two input password same
-     * 
-     * @return
-     */
-    private boolean checkPassword()
+    private void registerSuccess(String email, String password)
     {
-        final String password = mPasswordEdt.getText().toString();
-        final String passwordAgain = mPasswordAgainEdt.getText().toString();
-        if (TextUtils.isEmpty(password) && TextUtils.isEmpty(passwordAgain))
-        {
-            // passwords are both empty
-            return true;
-        }
-        else if (!TextUtils.isEmpty(password) && TextUtils.isEmpty(passwordAgain))
-        {
-            // one password is empty
-            return false;
-        }
-        else if (TextUtils.isEmpty(password) && !TextUtils.isEmpty(passwordAgain))
-        {
-            // one password is empty
-            return false;
-        }
-        else
-        {
-            // passwords are both not empty
-            return password.equals(passwordAgain);
-        }
-    }
-    
-    private class RegisterTask extends AsyncTask<Void, Void, EspRegisterResult>
-    {
-        private Context mContext;
-        
-        private String mUserName;
-        
-        private String mEmail;
-        
-        private String mPassword;
-        
-        private ProgressDialog mDialog;
-        
-        public RegisterTask(String userName, String email, String password)
-        {
-            mContext = RegisterActivity.this;
-            mUserName = userName;
-            mEmail = email;
-            mPassword = password;
-        }
-        
-        @Override
-        protected void onPreExecute()
-        {
-            mDialog = new ProgressDialog(mContext);
-            mDialog.setMessage(getString(R.string.esp_login_progress_message));
-            mDialog.setCancelable(false);
-            mDialog.setCanceledOnTouchOutside(false);
-            mDialog.show();
-        }
-        
-        @Override
-        protected EspRegisterResult doInBackground(Void... params)
-        {
-            return mUser.doActionUserRegisterInternet(mUserName, mEmail, mPassword);
-        }
-        
-        @Override
-        protected void onPostExecute(EspRegisterResult result)
-        {
-            mDialog.dismiss();
-            mDialog = null;
-            
-            switch (result)
-            {
-                case SUC:
-                    registerSuccess(R.string.esp_register_result_success, mEmail, mPassword);
-                    break;
-                case NETWORK_UNACCESSIBLE:
-                    registerFailed(R.string.esp_register_result_network_unaccessible);
-                    break;
-                case USER_OR_EMAIL_ERR_FORMAT:
-                    registerFailed(R.string.esp_register_result_account_format_error);
-                    break;
-                case USER_OR_EMAIL_EXIST_ALREADY:
-                    registerFailed(R.string.esp_register_result_account_exist);
-                    break;
-            }
-        }
-    }
-    
-    private void registerSuccess(int msg, String email, String password)
-    {
-        log.debug("registerSuccess");
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         Intent data = new Intent();
         data.putExtra(EspStrings.Key.REGISTER_NAME_EMAIL, email);
         data.putExtra(EspStrings.Key.REGISTER_NAME_PASSWORD, password);
-        setResult(RESULT_OK, data);
-        finish();
+        mActivity.registerSuccess(R.string.esp_register_result_success, data);
     }
     
-    private void registerFailed(int msg)
+    private void registerFailed(EspRegisterResult result)
     {
-        log.debug("registerFailed");
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-    }
-    
-    private static class RegisterHandler extends Handler
-    {
-        private WeakReference<RegisterActivity> mActivity;
-        
-        public RegisterHandler(RegisterActivity activity)
+        switch (result)
         {
-            mActivity = new WeakReference<RegisterActivity>(activity);
-        }
-        
-        @Override
-        public void handleMessage(Message msg)
-        {
-            RegisterActivity activity = mActivity.get();
-            if (activity == null)
-            {
-                return;
-            }
+            case NETWORK_UNACCESSIBLE:
+                mActivity.registerFailed(R.string.esp_register_result_network_unaccessible);
+                break;
+            case CONTENT_FORMAT_ERROR:
+                mActivity.registerFailed(R.string.esp_register_result_account_format_error);
+                break;
+            case USER_OR_EMAIL_EXIST_ALREADY:
+                mActivity.registerFailed(R.string.esp_register_result_account_exist);
+                break;
+            case SUC:
+                break;
         }
     }
 }

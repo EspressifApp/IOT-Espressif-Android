@@ -1,15 +1,19 @@
-package com.espressif.iot.ui.main;
+package com.espressif.iot.ui.login;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.type.user.EspLoginResult;
-import com.espressif.iot.ui.main.LoginThirdPartyDialog.OnLoginListener;
+import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
+import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.AccountUtil;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -116,21 +120,36 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private void login()
     {
-        String email = mEmailEdt.getText().toString();
-        if (TextUtils.isEmpty(email))
+        final String account = mEmailEdt.getText().toString();
+        final int accountType = AccountUtil.getAccountType(account);
+        if (accountType == AccountUtil.TYPE_NONE)
         {
             Toast.makeText(this, R.string.esp_login_email_hint, Toast.LENGTH_SHORT).show();
             return;
         }
-        String password = mPasswordEdt.getText().toString();
+        final String password = mPasswordEdt.getText().toString();
         if (TextUtils.isEmpty(password))
         {
             Toast.makeText(this, R.string.esp_login_password_hint, Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean autoLogin = mAutoLoginCB.isChecked();
-        new LoginTask(this, email, password, autoLogin)
+        new LoginTask(this)
         {
+            @Override
+            public EspLoginResult doLogin()
+            {
+                if (accountType == AccountUtil.TYPE_EMAIL)
+                {
+                    return mUser.doActionUserLoginInternet(account, password);
+                }
+                else if (accountType == AccountUtil.TYPE_PHONE)
+                {
+                    return mUser.doActionUserLoginPhone(account, password);
+                }
+                
+                return null;
+            }
+            
             @Override
             public void loginResult(EspLoginResult result)
             {
@@ -157,8 +176,12 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private void loginSuccess()
     {
+        SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        shared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).commit();
+        
         Intent intent = new Intent(this, EspApplication.getEspUIActivity());
         startActivity(intent);
         finish();
     }
+ 
 }

@@ -159,6 +159,17 @@ public class EspMeshDiscoverUtil
                 log.warn("discoverIOTMeshDevices():: more than one device in allDeviceSet,"
                     + " but we just trust the first one");
             }
+            if (allDeviceSet.size() == 0)
+            {
+                for(IOTAddress rootDevice : rootDeviceSet)
+                {
+                    if(rootDevice.getBSSID().equals(deviceBssid))
+                    {
+                        allDeviceSet.add(rootDevice);
+                        break;
+                    }
+                }
+            }
             log.debug("discoverIOTMeshDevices(): allDeviceSet(targetDeviceSet)=" + allDeviceSet);
             return allDeviceSet;
         }

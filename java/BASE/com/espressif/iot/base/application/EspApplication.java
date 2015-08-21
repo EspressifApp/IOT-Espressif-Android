@@ -43,7 +43,7 @@ public class EspApplication extends Application
         return instance;
     }
     
-    public static boolean GOOGLE_PALY_VERSION = false;
+    public static boolean GOOGLE_PALY_VERSION = true;
     
     @Override
     public void onCreate()
@@ -184,5 +184,4 @@ public class EspApplication extends Application
     {
         return HELP_ON ? HelpEspUIActivity.class : EspUIActivity.class;
     }
-    
 }

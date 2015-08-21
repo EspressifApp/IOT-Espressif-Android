@@ -36,14 +36,15 @@ public class EspCommandUserLoginInternet implements IEspCommandUserLoginInternet
             {
                 JSONObject userJSON = jsonObjectResult.getJSONObject(USER);
                 long userId = userJSON.getLong(Id);
+                String userName = userJSON.getString(User_Name);
                 JSONObject keyJSON = jsonObjectResult.getJSONObject(Key);
                 String userKey = keyJSON.getString(Token);
                 
                 IEspUser user = BEspUser.getBuilder().getInstance();
                 user.setUserKey(userKey);
                 user.setUserId(userId);
+                user.setUserName(userName);
                 user.setUserEmail(userEmail);
-                user.setUserPassword(userPassword);
             }
             else
             {

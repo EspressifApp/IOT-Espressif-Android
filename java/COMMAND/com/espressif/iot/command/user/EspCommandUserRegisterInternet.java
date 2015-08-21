@@ -37,7 +37,6 @@ public class EspCommandUserRegisterInternet implements IEspCommandUserRegisterIn
             {
                 IEspUser user = BEspUser.getBuilder().getInstance();
                 user.setUserEmail(userEmail);
-                user.setUserPassword(userPassword);
             }
             EspRegisterResult result = EspRegisterResult.getEspLoginResult(status);
             log.debug(Thread.currentThread().toString() + "##doCommandUserRegisterInternet(userName=[" + userName

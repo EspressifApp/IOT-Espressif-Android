@@ -152,4 +152,34 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
                 + "]): the device isn't exist");
         }
     }
+
+    @Override
+    public void deleteDevicesByDeviceId(long deviceId)
+    {
+        Query<DeviceDB> query = deviceDao.queryBuilder().where(Properties.Id.eq(deviceId)).build();
+        DeviceDB result = query.unique();
+        if (result != null)
+        {
+            String bssid = result.getBssid();
+            deleteDevicesByBssid(bssid);
+        }
+        else
+        {
+            log.debug(Thread.currentThread().toString() + "##deleteDevicesByDeviceId(deviceId=[" + deviceId
+                + "]): the device isn't exist");
+        }
+    }
+    
+    @Override
+    public void deleteDevicesByBssid(String bssid)
+    {
+        Query<DeviceDB> query = deviceDao.queryBuilder().where(Properties.Bssid.eq(bssid)).build();
+        List<DeviceDB> deviceList = query.list();
+        if (!deviceList.isEmpty())
+        {
+            deviceDao.deleteInTx(deviceList);
+            log.info(Thread.currentThread().toString() + "##deleteDevicesByDeviceId(bssid=" + bssid + "]):"
+                + deviceList);
+        }
+    }
 }

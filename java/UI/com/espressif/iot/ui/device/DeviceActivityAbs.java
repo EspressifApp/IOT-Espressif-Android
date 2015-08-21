@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
+import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
@@ -19,8 +20,9 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
-import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
+import com.espressif.iot.ui.help.HelpDeviceLightActivity;
+import com.espressif.iot.ui.help.HelpDevicePlugActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.settings.SettingsActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
@@ -55,6 +57,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
 {
     private static final Logger log = Logger.getLogger(DeviceActivityAbs.class);
     
+    public static IEspDevice DirectConnectDevice;
+    
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
     protected static final int MENU_ID_UPGRADE_LOCAL = 0x1002;
@@ -78,6 +82,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     private TreeView mTreeView;
     private ImageView mSwapView;
     
+    private boolean mShowChildren;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -85,9 +91,10 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
+        boolean isDirectConnectMode = intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_DIRECT_CONNECT, false);
         
         mUser = BEspUser.getBuilder().getInstance();
-        IEspDevice device = mUser.getUserDevice(deviceKey);
+        IEspDevice device = isDirectConnectMode ? DirectConnectDevice : mUser.getUserDevice(deviceKey);
         if (device instanceof IEspDeviceSSS)
         {
             mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
@@ -96,6 +103,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         {
             mIEspDevice = device;
         }
+        
+        mShowChildren =
+            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, true) && mIEspDevice.getIsMeshDevice();
         
         setTitle(mIEspDevice.getName());
         
@@ -106,6 +116,14 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         checkHelpHandlerInit();
         
         initViews();
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        
+        DirectConnectDevice = null;
     }
     
     private void checkDeviceCompatibility()
@@ -135,10 +153,10 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         setContentView(R.layout.device_ui_container);
         
         mPager = (EspViewPager)findViewById(R.id.device_ui_pager);
-        mPager.setInterceptTouchEvent(mIEspDevice.getIsMeshDevice());
+        mPager.setInterceptTouchEvent(mShowChildren);
         
         mMeshView = getLayoutInflater().inflate(R.layout.device_mesh_children_list, null);
-        if (mIEspDevice.getIsMeshDevice())
+        if (mShowChildren)
         {
             initTreeView();
             
@@ -182,14 +200,17 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         public void onLastLevelItemClick(IEspDeviceTreeElement element, int position)
         {
             IEspDevice device = element.getCurrentDevice();
+            Class<?> cls = null;
             switch (device.getDeviceType())
             {
                 case PLUG:
-                case LIGHT:
-                case REMOTE:
-                    new DeviceDialogBuilder(DeviceActivityAbs.this, device).show();
+                    cls = EspApplication.HELP_ON ? HelpDevicePlugActivity.class : DevicePlugActivity.class;
                     break;
-                
+                case LIGHT:
+                    cls = EspApplication.HELP_ON ? HelpDeviceLightActivity.class : DeviceLightActivity.class;
+                    break;
+                    
+                case REMOTE:
                 case FLAMMABLE:
                 case HUMITURE:
                 case VOLTAGE:
@@ -197,6 +218,14 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 case NEW:
                 case PLUGS:
                     break;
+            }
+            
+            if (cls != null)
+            {
+                Intent intent = new Intent(getBaseContext(), cls);
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
+                startActivity(intent);
             }
         }
         

@@ -124,7 +124,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceConfigureDialogAbs 
                 case RESULT_SUC:
                     Toast.makeText(mActivity, R.string.esp_configure_direct_result_suc, Toast.LENGTH_LONG).show();
                     mDialog.dismiss();
-                    mActivity.showLocalDeviceDialog(mDeviceSSS, mCacheSsid);
+                    mActivity.showLocalDevice(mDeviceSSS, mCacheSsid);
                     break;
             }
         }

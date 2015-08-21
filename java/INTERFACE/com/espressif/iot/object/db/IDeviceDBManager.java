@@ -30,6 +30,19 @@ public interface IDeviceDBManager extends IEspDBManager
     void delete(long deviceId);
     
     /**
+     * delete the devices whose bssid is the same with the device whose bssid is deviceId 
+     * 
+     * @param deviceId the device's id
+     */
+    void deleteDevicesByDeviceId(long deviceId);
+    
+    /**
+     * delete the devices by bssid
+     * @param bssid the devices' bssid to be deleted
+     */
+    void deleteDevicesByBssid(String bssid);
+    
+    /**
      * insert the activating device
      * 
      * @param key the temp random40 key

@@ -13,6 +13,7 @@ import com.espressif.iot.esptouch.udp.UDPSocketServer;
 import com.espressif.iot.esptouch.util.ByteUtil;
 import com.espressif.iot.esptouch.util.EspNetUtil;
 import com.espressif.iot.type.device.esptouch.EsptouchResult;
+import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 
 import android.content.Context;
@@ -57,6 +58,8 @@ public class __EsptouchTask implements __IEsptouchTask
     private IEsptouchTaskParameter mParameter;
     
     private volatile Map<String, Integer> mBssidTaskSucCountMap;
+    
+    private IEsptouchListener mEsptouchListener;
     
     public __EsptouchTask(String apSsid, String apBssid, String apPassword, Context context,
         IEsptouchTaskParameter parameter, boolean isSsidHidden)
@@ -126,8 +129,12 @@ public class __EsptouchTask implements __IEsptouchTask
                 {
                     Log.d(TAG, "__putEsptouchResult(): put one more result");
                 }
-                IEsptouchResult esptouchResult = new EsptouchResult(isSuc, bssid, inetAddress);
+                final IEsptouchResult esptouchResult = new EsptouchResult(isSuc, bssid, inetAddress);
                 mEsptouchResultList.add(esptouchResult);
+                if (mEsptouchListener != null)
+                {
+                    mEsptouchListener.onEsptouchResultAdded(esptouchResult);
+                }
             }
         }
     }
@@ -142,6 +149,7 @@ public class __EsptouchTask implements __IEsptouchTask
                 esptouchResultFail.setIsCancelled(mIsCancelled.get());
                 mEsptouchResultList.add(esptouchResultFail);
             }
+            
             return mEsptouchResultList;
         }
     }
@@ -394,6 +402,12 @@ public class __EsptouchTask implements __IEsptouchTask
         }
         this.__interrupt();
         return __getEsptouchResultList();
+    }
+    
+    @Override
+    public void setEsptouchListener(IEsptouchListener esptouchListener)
+    {
+        mEsptouchListener = esptouchListener;
     }
     
 }

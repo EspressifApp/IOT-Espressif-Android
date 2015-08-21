@@ -122,7 +122,7 @@ public class EspActionDeviceNewActivateInternet implements IEspActionDeviceNewAc
         if (device != null)
         {
             IOTDeviceDBManager iotDeviceDBManager = IOTDeviceDBManager.getInstance();
-            iotDeviceDBManager.delete(negativeDeviceId);
+            iotDeviceDBManager.deleteDevicesByDeviceId(negativeDeviceId);
         }
         log.debug(Thread.currentThread().toString() + "##doActionDeviceNewActivateInternet(userId=[" + userId
             + "],userKey=[" + userKey + "],randomToken=[" + randomToken + "],negativeDeviceId=[" + negativeDeviceId

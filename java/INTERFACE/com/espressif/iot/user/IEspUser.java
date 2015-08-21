@@ -15,6 +15,7 @@ import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
+import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.net.WifiCipherType;
@@ -77,36 +78,18 @@ public interface IEspUser extends IEspSingletonObject
     String getUserKey();
     
     /**
-     * Set the password of the user
+     * Set the user name
      * 
-     * @param userPassword
+     * @param userName
      */
-    void setUserPassword(final String userPassword);
+    void setUserName(String userName);
     
     /**
-     * Get the password of the user
+     * Get the user name
      * 
-     * @return the user password
+     * @return
      */
-    String getUserPassword();
-    
-    void setIsPwdSaved(final boolean isPwdSaved);
-    
-    boolean isPwdSaved();
-    
-    /**
-     * Set whether the user is auto login
-     * 
-     * @param isAutoLogin
-     */
-    void setAutoLogin(final boolean isAutoLogin);
-    
-    /**
-     * Get whether the user is auto login
-     * 
-     * @return whether the user is auto login
-     */
-    boolean isAutoLogin();
+    String getUserName();
     
     boolean isLogin();
     
@@ -143,6 +126,7 @@ public interface IEspUser extends IEspSingletonObject
     void setLastConnectedSsid(String ssid);
     
     String getLastConnectedSsid();
+    
     /**
      * 
      * @return last selected ap's bssid or null
@@ -182,6 +166,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Save the information of the configured AP
+     * 
      * @param bssid
      * @param ssid
      * @param password
@@ -192,10 +177,8 @@ public interface IEspUser extends IEspSingletonObject
     /**
      * save the user info in local db
      * 
-     * @param isPwdSaved whether the password is saved
-     * @param isAutoLogin whether it is to skip login process
      */
-    Void saveUserInfoInDB(final boolean isPwdSaved, final boolean isAutoLogin);
+    Void saveUserInfoInDB();
     
     /**
      * configure the new device to an AP accessible to Internet (if configure suc, save the device into local db with
@@ -319,12 +302,9 @@ public interface IEspUser extends IEspSingletonObject
      * 
      * @param userEmail user's email
      * @param userPassword user's password
-     * @param isPwdSaved whether the password will be saved
-     * @param isAutoLogin whether it is auto login
      * @return @see EspLoginResult
      */
-    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword, boolean isPwdSaved,
-        boolean isAutoLogin);
+    EspLoginResult doActionUserLoginInternet(String userEmail, String userPassword);
     
     /**
      * Third-party login
@@ -335,7 +315,16 @@ public interface IEspUser extends IEspSingletonObject
     EspLoginResult doActionThirdPartyLoginInternet(EspThirdPartyLoginPlat espPlat);
     
     /**
-     * register user account by Internet
+     * Login with phone number
+     * 
+     * @param phoneNumber
+     * @param password
+     * @return
+     */
+    EspLoginResult doActionUserLoginPhone(String phoneNumber, String password);
+    
+    /**
+     * register user account with email by Internet
      * 
      * @param userName user's name
      * @param userEmail user's email
@@ -345,7 +334,18 @@ public interface IEspUser extends IEspSingletonObject
     EspRegisterResult doActionUserRegisterInternet(String userName, String userEmail, String userPassword);
     
     /**
+     * Register user account with phone number
+     * 
+     * @param phoneNumber
+     * @param captchaCode
+     * @param userPassword
+     * @return
+     */
+    EspRegisterResult doActionUserRegisterPhone(String phoneNumber, String captchaCode, String userPassword);
+    
+    /**
      * Check whether the user name has registered on server
+     * 
      * @param userName
      * @return
      */
@@ -353,6 +353,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Check whether the email has registered on server
+     * 
      * @param email
      * @return
      */
@@ -400,6 +401,15 @@ public interface IEspUser extends IEspSingletonObject
      * @return get shared device success or failed
      */
     boolean doActionActivateSharedDevice(String sharedDeviceKey);
+    
+    /**
+     * Get sms captcha code from server
+     * 
+     * @param phoneNumber
+     * @param state @see EspCaptcha
+     * @return
+     */
+    boolean doActionGetSmsCaptchaCode(String phoneNumber, String state);
     
     /**
      * check the compatibility between app and device
@@ -462,6 +472,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the device's device tree element list
+     * 
      * @param allDeviceList the list of all device belong to the IUser
      * @return the device's device tree element list
      */
@@ -475,6 +486,7 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the origin sta device list, don't call it or it will make a Woo surprise
+     * 
      * @return the origin sta device list
      */
     List<IEspDeviceSSS> __getOriginStaDeviceList();
@@ -488,30 +500,32 @@ public interface IEspUser extends IEspSingletonObject
     
     /**
      * Get the origin device list, don't call it or it will make a Woo surprise
+     * 
      * @return the origin device list
      */
     List<IEspDevice> __getOriginDeviceList();
     
     /**
      * Get the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
+     * 
      * @return the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
      */
     List<IEspDevice> getAllDeviceList();
     
     /**
      * Get the softap device list except the device belong to {@link #getAllDeviceList()}
+     * 
      * @return the IEspDeviceNew list except the device belong to {@link #getAllDeviceList()}
      */
     List<IEspDeviceNew> getSoftapDeviceList();
+    
     /**
-     * before the user's device list or sta device list will be changed,
-     * lock the device list and sta device list
+     * before the user's device list or sta device list will be changed, lock the device list and sta device list
      */
     void lockUserDeviceLists();
     
     /**
-     * after the user's device list or sta device list change finished,
-     * unlock the device list and sta device list
+     * after the user's device list or sta device list change finished, unlock the device list and sta device list
      */
     void unlockUserDeviceLists();
     
@@ -524,6 +538,36 @@ public interface IEspUser extends IEspSingletonObject
     boolean addDeviceSyn(final IEspDeviceSSS device);
     
     /**
+     * add one device in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
+     * will make device available on server. the task is syn
+     * 
+     * @param apSsid the Ap's ssid
+     * @param apBssid the Ap's bssid
+     * @param apPassword the Ap's password
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param requiredActivate whether activate the devices automatically
+     * @return whether the task started suc
+     */
+    boolean addDeviceSyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate);
+    
+    /**
+     * add one device in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
+     * will make device available on server. the task is syn
+     * 
+     * @param apSsid the Ap's ssid
+     * @param apBssid the Ap's bssid
+     * @param apPassword the Ap's password
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param requiredActivate whether activate the devices automatically
+     * @param esptouchListener when one device is connected to the Ap, it will be called back
+     * 
+     * @return whether the task started suc
+     */
+    boolean addDeviceSyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate, IEsptouchListener esptouchListener);
+    
+    /**
      * add all devices in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
      * will make device avaliable on server. all of the tasks are syn.
      * 
@@ -531,13 +575,30 @@ public interface IEspUser extends IEspSingletonObject
      * @param apBssid the Ap's bssid
      * @param apPassword the Ap's password
      * @param isSsidHidden whether the Ap's ssid is hidden
-     * @param requiredActivate whehter activate the devices automatically
+     * @param requiredActivate whether activate the devices automatically
      * 
      * @return whether the task started suc(if there's another task executing, it will return false,and don't start the
      *         task)
      */
     boolean addDevicesSyn(final String apSsid, final String apBssid, final String apPassword,
         final boolean isSsidHidden, final boolean requiredActivate);
+    
+    /**
+     * add all devices in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
+     * will make device avaliable on server. all of the tasks are syn.
+     * 
+     * @param apSsid the Ap's ssid
+     * @param apBssid the Ap's bssid
+     * @param apPassword the Ap's password
+     * @param isSsidHidden whether the Ap's ssid is hidden
+     * @param requiredActivate whether activate the devices automatically
+     * @param esptouchListener when one device is connected to the Ap, it will be called back
+     * 
+     * @return whether the task started suc(if there's another task executing, it will return false,and don't start the
+     *         task)
+     */
+    boolean addDevicesSyn(final String apSsid, final String apBssid, final String apPassword,
+        final boolean isSsidHidden, final boolean requiredActivate, IEsptouchListener esptouchListener);
     
     /**
      * add device(make device is available on server) asyn

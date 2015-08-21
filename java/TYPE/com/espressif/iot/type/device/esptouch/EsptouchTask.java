@@ -37,7 +37,7 @@ public class EsptouchTask implements IEsptouchTask
      * @param apBssid the Ap's bssid
      * @param apPassword the Ap's password
      * @param isSsidHidden whether the Ap's ssid is hidden
-     * @param timeoutMillisecond(it should be >= 10000+8000) millisecond of total timeout
+     * @param timeoutMillisecond(it should be >= 15000+6000) millisecond of total timeout
      * @param context the Context of the Application
      */
     public EsptouchTask(String apSsid, String apBssid, String apPassword, boolean isSsidHidden, int timeoutMillisecond,
@@ -76,5 +76,11 @@ public class EsptouchTask implements IEsptouchTask
             expectTaskResultCount = Integer.MAX_VALUE;
         }
         return _mEsptouchTask.executeForResults(expectTaskResultCount);
+    }
+
+    @Override
+    public void setEsptouchListener(IEsptouchListener esptouchListener)
+    {
+        _mEsptouchTask.setEsptouchListener(esptouchListener);
     }
 }

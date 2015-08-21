@@ -28,9 +28,12 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
+import com.espressif.iot.type.device.esptouch.IEsptouchListener;
+import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.BSSIDUtil;
 
 public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedChangeListener, OnClickListener
 {
@@ -38,13 +41,14 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private WifiManager mWifiManager;
     
-    private static final String ESPTOUCH_VERSION = "v0.3.4";
+    private static final String ESPTOUCH_VERSION = "v0.3.4.2";
     
     private TextView mSsidTV;
     private EditText mPasswordEdT;
     private CheckBox mShowPwdCB;
     private CheckBox mIsHideSsidCB;
     private CheckBox mActivateCB;
+    private CheckBox mMultipleDevicesCB;
     private Button mConfirmBtn;
     private TextView mWifiHintTV;
     private TextView mEspTouchVersionTV;
@@ -80,6 +84,8 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         
         mIsHideSsidCB = (CheckBox)findViewById(R.id.is_hidden);
         mActivateCB = (CheckBox)findViewById(R.id.activate);
+        mMultipleDevicesCB = (CheckBox)findViewById(R.id.multiple_devices);
+        
         if (!mUser.isLogin())
         {
             mActivateCB.setChecked(false);
@@ -193,6 +199,27 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         
     };
     
+    private IEsptouchListener mEsptouchListener = new IEsptouchListener()
+    {
+        
+        @Override
+        public void onEsptouchResultAdded(final IEsptouchResult result)
+        {
+            runOnUiThread(new Runnable()
+            {
+                
+                @Override
+                public void run()
+                {
+                    String bssid = BSSIDUtil.restoreBSSID(result.getBssid());
+                    String text = getString(R.string.esp_esptouch_connect_wifi, bssid);
+                    Toast.makeText(DeviceEspTouchActivity.this, text, Toast.LENGTH_LONG).show();
+                }
+                
+            });
+        }
+    };
+    
     private void doEspTouch()
     {
         final String bssid = getConnectionBssid();
@@ -206,7 +233,13 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             @Override
             protected Boolean doInBackground(Void... params)
             {
-                return mUser.addDevicesSyn(ssid, bssid, password, mIsHideSsidCB.isChecked(), mActivateCB.isChecked());
+                boolean isMultipleDevices = mMultipleDevicesCB.isChecked();
+                boolean isSsidHidden = mIsHideSsidCB.isChecked();
+                boolean requiredActivate = mActivateCB.isChecked();
+                if (isMultipleDevices)
+                    return mUser.addDevicesSyn(ssid, bssid, password, isSsidHidden, requiredActivate, mEsptouchListener);
+                else
+                    return mUser.addDeviceSyn(ssid, bssid, password, isSsidHidden, requiredActivate, mEsptouchListener);
             }
             
             @Override

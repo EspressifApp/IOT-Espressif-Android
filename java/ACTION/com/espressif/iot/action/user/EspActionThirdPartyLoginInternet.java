@@ -18,7 +18,7 @@ public class EspActionThirdPartyLoginInternet implements IEspActionThirdPartyLog
         if (loginResult == EspLoginResult.SUC)
         {
             IEspUser user = BEspUser.getBuilder().getInstance();
-            user.saveUserInfoInDB(false, true);
+            user.saveUserInfoInDB();
         }
         return loginResult;
     }

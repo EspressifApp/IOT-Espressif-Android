@@ -22,16 +22,12 @@ public class UserDB implements IUserDB
     private String email;
     
     /** Not-null value. */
-    private String password;
-    
-    /** Not-null value. */
     private String key;
     
+    /** Not-null value. */
+    private String name;
+    
     private boolean isLastLogin;
-    
-    private boolean isPwdSaved;
-    
-    private boolean isAutoLogin;
     
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -53,16 +49,13 @@ public class UserDB implements IUserDB
         this.id = id;
     }
     
-    public UserDB(long id, String email, String password, String key, boolean isLastLogin, boolean isPwdSaved,
-        boolean isAutoLogin)
+    public UserDB(long id, String email, String key, String name, boolean isLastLogin)
     {
         this.id = id;
         this.email = email;
-        this.password = password;
         this.key = key;
+        this.name = name;
         this.isLastLogin = isLastLogin;
-        this.isPwdSaved = isPwdSaved;
-        this.isAutoLogin = isAutoLogin;
     }
     
     /** called by internal mechanisms, do not call yourself. */
@@ -95,18 +88,6 @@ public class UserDB implements IUserDB
     }
     
     /** Not-null value. */
-    public String getPassword()
-    {
-        return password;
-    }
-    
-    /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setPassword(String password)
-    {
-        this.password = password;
-    }
-    
-    /** Not-null value. */
     public String getKey()
     {
         return key;
@@ -118,6 +99,18 @@ public class UserDB implements IUserDB
         this.key = key;
     }
     
+    /** Not-null value. */
+    public String getName()
+    {
+        return name;
+    }
+    
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+    
     public boolean getIsLastLogin()
     {
         return isLastLogin;
@@ -126,26 +119,6 @@ public class UserDB implements IUserDB
     public void setIsLastLogin(boolean isLastLogin)
     {
         this.isLastLogin = isLastLogin;
-    }
-    
-    public boolean getIsPwdSaved()
-    {
-        return isPwdSaved;
-    }
-    
-    public void setIsPwdSaved(boolean isPwdSaved)
-    {
-        this.isPwdSaved = isPwdSaved;
-    }
-    
-    public boolean getIsAutoLogin()
-    {
-        return isAutoLogin;
-    }
-    
-    public void setIsAutoLogin(boolean isAutoLogin)
-    {
-        this.isAutoLogin = isAutoLogin;
     }
     
     /**

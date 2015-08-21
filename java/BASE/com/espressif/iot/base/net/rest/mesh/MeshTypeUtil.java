@@ -22,7 +22,7 @@ public class MeshTypeUtil
     
     private static final int TYPE_LEN = 2;
     
-    private static final int CMD_LEN = 2;
+    private static final int CMD_LEN = 4;
     
     private static final int MAC_LEN = 6;
     
@@ -46,8 +46,8 @@ public class MeshTypeUtil
         
         MeshCommand(String cmd)
         {
-            command = cmd.charAt(0);
-            union = cmd.charAt(1);
+            command = (char)((cmd.charAt(0)) | cmd.charAt(1) << 8);
+            union = (char)((cmd.charAt(2)) | cmd.charAt(3) << 8);
         }
         
         public boolean isRequest()
@@ -99,32 +99,32 @@ public class MeshTypeUtil
         }
     }
     
-    //  struct command_value {
-    //      struct {
-    //          uint8_t f_req:1; // flow request
-    //          uint8_t f_resp:1; // flow response
-    //          uint8_t s_router:1; // spread router information
-    //          uint8_t m_add:1; // MAC route table add
-    //          uint8_t m_del:1; // MAC route table delete
-    //          uint8_t m_topo:1; // used to get topology
-    //          uint8_t resv:2; // reserve for fulture
-    //      } comm;
-    //      union {
-    //          struct {
-    //              uint8_t resv:4;
-    //              uint8_t f_cap:4; // current flow capacity
-    //          } flow;
-    //          struct {
-    //              uint8_t len;
-    //          } router_info;
-    //          struct {
-    //              uint8_t len;
-    //          } dev_mac_info;
-    //          struct {
-    //              uint8_t len;
-    //          } topology_info;
-    //      } val;
-    //  }
+    // struct command_value {
+    // struct {
+    // uint16_t f_req:1; // flow request
+    // uint16_t f_resp:1; // flow response
+    // uint16_t s_router:1; // spread router information
+    // uint16_t m_add:1; // MAC route table add
+    // uint16_t m_del:1; // MAC route table delete
+    // uint16_t m_topo:1; // used to get topology
+    // uint16_t resv:10; // reserve for fulture
+    // } comm;
+    // union {
+    // struct {
+    // uint16_t resv:12;
+    // uint16_t f_cap:4; // current flow capacity
+    // } flow;
+    // struct {
+    // uint16_t len;
+    // } router_info;
+    // struct {
+    // uint16_t len;
+    // } dev_mac_info;
+    // struct {
+    // uint16_t len;
+    // } topology_info;
+    // } val;
+    // };
     
     // create mesh command by bytes
     private static String createRequestContent(byte[] bytes)
@@ -167,8 +167,8 @@ public class MeshTypeUtil
      */
     static String createIsDeviceAvailableRequestContent()
     {
-        // command.f_req = 0x01, command.union = 0
-        return createRequestContent(new byte[] {F_REQ, 0});
+        // command.f_req = 0x01 0x00, command.union = 0x00 0x00
+        return createRequestContent(new byte[] {F_REQ, 0, 0, 0});
     }
     
     /**

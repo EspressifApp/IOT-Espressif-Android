@@ -10,14 +10,18 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.WifiCipherType;
-import com.espressif.iot.ui.device.dialog.DeviceDialogBuilder;
-import com.espressif.iot.ui.device.dialog.EspDeviceDialogInterface;
+import com.espressif.iot.ui.device.DeviceActivityAbs;
+import com.espressif.iot.ui.device.DeviceLightActivity;
+import com.espressif.iot.ui.device.DevicePlugActivity;
+import com.espressif.iot.ui.help.HelpDeviceLightActivity;
+import com.espressif.iot.ui.help.HelpDevicePlugActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -31,6 +35,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.wifi.ScanResult;
@@ -87,6 +92,8 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
      */
     private boolean mShowConfigureDialog;
     
+    private String mCacheSSID;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -124,6 +131,12 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         if (!mShowConfigureDialog && !checkHelpModeOn())
         {
             sendRefreshMessage();
+        }
+        
+        if (!TextUtils.isEmpty(mCacheSSID))
+        {
+            EspBaseApiUtil.enableConnected(mCacheSSID);
+            mCacheSSID = null;
         }
     }
     
@@ -504,27 +517,32 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         new DeviceDirectConnectProgressDialog(this, device).show();
     }
     
-    public void showLocalDeviceDialog(IEspDeviceSSS device, final String cacheSsid)
+    public void showLocalDevice(IEspDeviceSSS device, final String cacheSsid)
     {
-        setIsShowConfigureDialog(true);
-        removeRefreshMessage();
-        
-        EspDeviceDialogInterface deviceDialog = new DeviceDialogBuilder(this, device).show();
-        deviceDialog.setOnDissmissedListener(new EspDeviceDialogInterface.OnDissmissedListener()
+        Class<?> cls = null;
+        switch (device.getDeviceType())
         {
-            
-            @Override
-            public void onDissmissed(DialogInterface dialog)
-            {
-                if (!TextUtils.isEmpty(cacheSsid))
-                {
-                    EspBaseApiUtil.enableConnected(cacheSsid);
-                }
+            case PLUG:
+                cls = EspApplication.HELP_ON ? HelpDevicePlugActivity.class : DevicePlugActivity.class;
+                break;
+            case LIGHT:
+                cls = EspApplication.HELP_ON ? HelpDeviceLightActivity.class : DeviceLightActivity.class;
+                break;
                 
-                setIsShowConfigureDialog(false);
-                resetRefreshMessage();
-            }
-        });
+            default:
+                break;
+        }
+        
+        if (cls != null)
+        {
+            mCacheSSID = cacheSsid;
+            Intent intent = new Intent(getBaseContext(), cls);
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_DIRECT_CONNECT, true);
+            DeviceActivityAbs.DirectConnectDevice = device;
+            startActivity(intent);
+        }
     }
     
     @Override

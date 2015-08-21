@@ -500,17 +500,14 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         // c. handle others (just copy device state, rom version and device name)
         for (IEspDevice stateMachineDevice : stateMachineDeviceList)
         {
-            System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others");
             if (userDeviceList.contains(stateMachineDevice))
             {
-                System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others contained");
                 IEspDevice userDevice = userDeviceList.get(userDeviceList.indexOf(stateMachineDevice));
                 userDevice.copyDeviceState(stateMachineDevice);
                 userDevice.copyDeviceRomVersion(stateMachineDevice);
                 userDevice.copyDeviceName(stateMachineDevice);
                 if (!stateMachineDevice.getDeviceState().isStateClear())
                 {
-                    System.out.println("bh c. stateMachineDevice: " + stateMachineDevice + " handle others saveInDB");
                     log.error("userDevice: " + userDevice + ",stateMachineDevice: " + stateMachineDevice);
                     // don't forget to save in db
                     userDevice.saveInDB();

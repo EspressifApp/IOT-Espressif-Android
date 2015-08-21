@@ -1,9 +1,6 @@
 package com.espressif.iot.ui.device;
 
 import com.espressif.iot.R;
-import com.espressif.iot.ui.device.dialog.DeviceLightDialog;
-import com.espressif.iot.ui.device.dialog.DevicePlugDialog;
-import com.espressif.iot.ui.device.dialog.DeviceRemoteDialog;
 
 import android.os.Bundle;
 import android.view.View;
@@ -56,15 +53,15 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
     {
         if (v == mPlugBtn)
         {
-            new DevicePlugDialog(this, mIEspDevice).show();
+//            new DevicePlugDialog(this, mIEspDevice).show();
         }
         else if (v == mLightBtn)
         {
-            new DeviceLightDialog(this, mIEspDevice).show();
+//            new DeviceLightDialog(this, mIEspDevice).show();
         }
         else if (v == mRemoteBtn)
         {
-            new DeviceRemoteDialog(this, mIEspDevice).show();
+//            new DeviceRemoteDialog(this, mIEspDevice).show();
         }
     }
 }

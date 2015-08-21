@@ -3,6 +3,7 @@ package com.espressif.iot.model.device;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -467,7 +468,7 @@ public class EspDevice implements IEspDevice, Cloneable
         }
         if (!this.getIsMeshDevice())
         {
-            throw new IllegalStateException("the device isn't mesh device");
+            return Collections.emptyList();
         }
         
         // filter mesh devices

@@ -35,18 +35,6 @@ public interface IUserDB extends IEspDBObject
     void setEmail(String email);
     
     /**
-     * get the user's password
-     * @return the user's password
-     */
-    String getPassword();
-    
-    /**
-     * set the user's password
-     * @param password the user's password
-     */
-    void setPassword(String password);
-    
-    /**
      * get the user's key
      * @return the user's key
      */
@@ -59,6 +47,19 @@ public interface IUserDB extends IEspDBObject
     void setKey(String key);
     
     /**
+     * get user name
+     * @return user name
+     */
+    String getName();
+    
+    /**
+     * set user name
+     * 
+     * @param name
+     */
+    void setName(String name);
+    
+    /**
      * get whether the user is last login
      * @return whether the user is last login
      */
@@ -69,29 +70,5 @@ public interface IUserDB extends IEspDBObject
      * @param isLastLogin whether the user is last login
      */
     void setIsLastLogin(boolean isLastLogin);
-    
-    /**
-     * get whether the user's password is saved
-     * @return whether the user's password is saved
-     */
-    boolean getIsPwdSaved();
-    
-    /**
-     * set whether the user's password is saved
-     * @param isPwdSaved whether the user's password is saved
-     */
-    void setIsPwdSaved(boolean isPwdSaved);
-    
-    /**
-     * get whether the user is auto login
-     * @return whether the user is auto login
-     */
-    boolean getIsAutoLogin();
-    
-    /**
-     * set whether the user is auto login
-     * @param isAutoLogin whether the user is auto login
-     */
-    void setIsAutoLogin(boolean isAutoLogin);
     
 }

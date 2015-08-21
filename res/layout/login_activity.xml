@@ -22,7 +22,7 @@
         style="@style/LoginEditText"
         android:layout_marginTop="35dip"
         android:drawableLeft="@drawable/esp_login_icon_email"
-        android:hint="@string/esp_login_email"
+        android:hint="@string/esp_login_account"
         android:inputType="textEmailAddress" />
 
     <EditText

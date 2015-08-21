@@ -44,12 +44,10 @@ public class BEspUser implements IBEspUser
         IUserDB userDB = IOTUserDBManager.getInstance().load();
         if (userDB != null)
         {
-            instanceSingleton.setIsPwdSaved(userDB.getIsPwdSaved());
-            instanceSingleton.setAutoLogin(userDB.getIsAutoLogin());
             instanceSingleton.setUserId(userDB.getId());
             instanceSingleton.setUserKey(userDB.getKey());
             instanceSingleton.setUserEmail(userDB.getEmail());
-            instanceSingleton.setUserPassword(userDB.getPassword());
+            instanceSingleton.setUserName(userDB.getName());
         }
         return instanceSingleton;
     }

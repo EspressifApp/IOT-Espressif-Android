@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="esp_login_email">输入邮箱</string>
+    <string name="esp_login_account">输入邮箱</string>
     <string name="esp_login_password">输入密码</string>
     <string name="esp_login_auto_login">自动登录</string>
     <string name="esp_login_skip">跳过</string>
@@ -12,9 +12,10 @@
     <string name="esp_login_result_network_unaccessible">网络不可用</string>
     <string name="esp_login_result_not_register">邮箱未注册</string>
     <string name="esp_login_result_password_error">密码错误</string>
+    <string name="esp_login_result_failed">用户名或密码错误</string>
     <string name="esp_login_quick_usage">快速使用</string>
     <string name="esp_login_third_party"><u>使用第三方登录</u></string>
-    <string name="esp_login_email_hint">请输入邮箱</string>
+    <string name="esp_login_email_hint">请输入正确的邮箱</string>
     <string name="esp_login_password_hint">请输入密码</string>
 
     <string name="esp_third_party_weibo">微博</string>
@@ -37,6 +38,16 @@
     <string name="esp_register_result_network_unaccessible">网络不可用</string>
     <string name="esp_register_result_account_format_error">用户名或邮箱格式不合规则</string>
     <string name="esp_register_result_account_exist">用户名或邮箱已被注册</string>
+    <string name="esp_register_result_phone_exist">该手机号已被注册</string>
+    <string name="esp_register_result_phont_code_error">手机号或验证码错误</string>
+    <string name="esp_register_phone">手机号</string>
+    <string name="esp_register_captcha_code">验证码</string>
+    <string name="esp_register_get_sms_captcha_code">获取短信验证码</string>
+    <string name="esp_register_with_email"><u>使用邮箱注册</u></string>
+    <string name="esp_register_with_phone"><u>使用手机号注册</u></string>
+    <string name="esp_register_phone_number_toast">请输入手机号</string>
+    <string name="esp_register_captcha_code_toast">请输入验证码</string>
+    <string name="esp_register_get_sms_captcha_code_again">%1$d 秒后可再次获取验证码</string>
 
     <string name="esp_skip_wifi_toast">第一次跳过请打开Wi-Fi</string>
     <string name="esp_skip_result_failed">跳过失败</string>
@@ -109,6 +120,7 @@
 
     <string name="esp_configure_title">设备配置</string>
     <string name="esp_configure_activate">激活设备</string>
+    <string name="esp_configure_multiple_devices">多个设备</string>
     <string name="esp_configure_mesh">组网配置</string>
     <string name="esp_configure_wifi_select_hint">请选择Wi-Fi</string>
     <string name="esp_configure_wifi_password_hint">输入Wi-Fi密码</string>
@@ -361,6 +373,7 @@
     <string name="esp_esptouch_result_cancel">取消配置</string>
     <string name="esp_esptouch_version">EspTouch版本 : %1$s</string>
     <string name="esp_esptouch_hint_msg">“点击[确定]前请确认设备的绿灯处于慢闪状态”</string>
+    <string name="esp_esptouch_connect_wifi">"%1$s 已连接到Wi-Fi"</string>
     
     <string name="esp_wifi_edit">Wi-Fi编辑</string>
     <string name="esp_wifi_pwd_edit">编辑</string>
