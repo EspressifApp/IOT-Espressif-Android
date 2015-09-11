@@ -264,16 +264,6 @@ public class EspDeviceNew extends EspDevice implements IEspDeviceNew
     }
     
     @Override
-    public String toString()
-    {
-        String parentResult = super.toString();
-        return parentResult;
-        // return parentResult.substring(0, parentResult.length() - 2) + "],mRssi=[" + mRssi + "],mWifiCipherType=["
-        // + mWifiCipherType + "],mSsid=[" + mSsid + "],mApSsid=[" + mApSsid + "],mApWifiCipherType=["
-        // + mApWifiCipherType + "],mApPassword=[" + mApPassword + ")";
-    }
-    
-    @Override
     public boolean getIsMeshDevice()
     {
         if (TextUtils.isEmpty(mSsid))

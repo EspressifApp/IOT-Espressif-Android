@@ -239,14 +239,6 @@
         android:layout_margin="25dip"
         android:visibility="gone" />
 
-    <CheckBox
-        android:id="@+id/control_child_cb"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dip"
-        android:text="@string/esp_device_control_child"
-        android:visibility="gone" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

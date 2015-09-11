@@ -1,14 +1,9 @@
 package com.espressif.iot.ui.main;
 
 import java.lang.ref.WeakReference;
-import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 
@@ -19,29 +14,24 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
+import com.espressif.iot.model.device.sort.DeviceSortor;
+import com.espressif.iot.model.device.sort.DeviceSortor.DeviceSortType;
 import com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler;
+import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
 import com.espressif.iot.ui.configure.DeviceEspTouchActivity;
-import com.espressif.iot.ui.configure.WifiConfigureActivity;
-import com.espressif.iot.ui.device.DeviceFlammableActivity;
-import com.espressif.iot.ui.device.DeviceHumitureActivity;
-import com.espressif.iot.ui.device.DeviceLightActivity;
-import com.espressif.iot.ui.device.DevicePlugActivity;
-import com.espressif.iot.ui.device.DevicePlugsActivity;
-import com.espressif.iot.ui.device.DeviceRemoteActivity;
-import com.espressif.iot.ui.device.DeviceRootRouterActivity;
-import com.espressif.iot.ui.device.DeviceVoltageActivity;
+import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.login.LoginActivity;
+import com.espressif.iot.ui.scene.EspSceneActivity;
 import com.espressif.iot.ui.settings.SettingsActivity;
-import com.espressif.iot.ui.view.EspPagerAdapter;
-import com.espressif.iot.ui.view.EspViewPager;
+import com.espressif.iot.ui.view.DeviceAdapter;
+import com.espressif.iot.ui.view.DeviceAdapter.OnEditCheckedChangeListener;
+import com.espressif.iot.ui.view.menu.IEspBottomMenu;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
-import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
-import com.google.zxing.qrcode.ui.ShareCaptureActivity;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
@@ -57,6 +47,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -64,69 +55,70 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.BaseAdapter;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.ListView;
-import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<ListView>,
     OnSharedPreferenceChangeListener, OnItemClickListener, OnItemLongClickListener, OnClickListener,
-    OnCheckedChangeListener, OnPageChangeListener
+    OnEditCheckedChangeListener, OnCheckedChangeListener, OnItemSelectedListener
 {
     private static final Logger log = Logger.getLogger(EspUIActivity.class);
     
     protected IEspUser mUser;
     
-    private static final int MENU_ID_GET_SHARE = 0;
-    private static final int MENU_ID_CONFIGURE = 1;
-    private static final int MENU_ID_SETTINGS = 2;
-    private static final int MENU_ID_LOGOUT = 3;
+    private static final int MENU_ID_ADD_DEVICE = 1;
     private static final int MENU_ID_EDIT = 4;
-    private static final int MENU_ID_WIFI = 5;
+    private static final int MENU_ID_SCENE = 5;
     
+    protected List<IEspDevice> mAllDeviceList;
     protected PullToRefreshListView mDeviceListView;
     private DeviceAdapter mDeviceAdapter;
-    protected List<IEspDevice> mDeviceList;
+    
+    private static final int POPUPMENU_ID_RENAME = 1;
+    private static final int POPUPMENU_ID_DELETE = 2;
+    private static final int POPUPMENU_ID_ACTIVATE = 3;
     
     /**
      * Whether the refresh task is running
      */
     private boolean mRefreshing;
-    
-    private SharedPreferences mShared;
-    
     private Handler mAutoRefreshHandler;
     private static final int MSG_AUTO_REFRESH = 0;
+    
+    private SharedPreferences mShared;
     
     /**
      * This activity is in the foreground or background
      */
     private boolean mActivityVisible;
-    
     private boolean mIsDevicesUpdatedNecessary = false;
+    private boolean mIsDevicesPullRefreshUpdated = false;
     
     private View mEditBar;
     private Button mSelectAllBtn;
     private Button mDeleteSelectedBtn;
+    
     private Set<IEspDevice> mEditCheckedDevices;
     
     protected View mConfigureBtn;
@@ -134,22 +126,21 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     protected final static int REQUEST_HELP = 0x10;
     protected final static int REQUEST_DEVICE = 0x11;
     private static final int REQUEST_ESPTOUCH = 0x12;
+    private static final int REQUEST_SETTINGS = 0x13;
     
     private LocalBroadcastManager mBraodcastManager;
     
     private IEspDevice mVirtuaMeshRoot;
     
-    private PullToRefreshListView mStaListView;
-    private List<IEspDeviceSSS> mStaList;
-    private StaAdapter mStaAdapter;
+    private ToggleButton mDeviceVisibleCB;
     
-    private boolean mStaScanning;
+    private Spinner mDeviceSortSpinner;
+    private DeviceSortType mSortType;
+    private static final int POSITION_SORT_DEVICE_NAME = 0;
+    private static final int POSITION_SORT_ACTIVATE_TIME = 1;
     
-    private static final int PAGE_ACTIVATED_DEVICES = 0;
-    private static final int PAGE_STA_DEVICES = 1;
-    
-    private RadioGroup mTabs;
-    private EspViewPager mPager;
+    private SharedPreferences mNewDevicesShared;
+    private Set<String> mNewDevicesSet;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -162,24 +153,32 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShared.registerOnSharedPreferenceChangeListener(this);
         
+        mNewDevicesShared = getSharedPreferences(EspStrings.Key.NAME_NEW_ACTIVATED_DEVICES, Context.MODE_PRIVATE);
+        mNewDevicesShared.registerOnSharedPreferenceChangeListener(this);
+        mNewDevicesSet = mUser.getNewActivatedDevices();
+        
+        // Init top panel
+        mDeviceVisibleCB = (ToggleButton)findViewById(R.id.device_visible_check);
+        mDeviceVisibleCB.setOnCheckedChangeListener(this);
+        
+        mSortType = DeviceSortType.DEVICE_NAME;
+        mDeviceSortSpinner = (Spinner)findViewById(R.id.device_sort_spinner);
+        String[] sortOptions = getResources().getStringArray(R.array.esp_ui_device_sort);
+        ArrayAdapter<String> sortAdapter =
+            new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sortOptions);
+        mDeviceSortSpinner.setAdapter(sortAdapter);
+        mDeviceSortSpinner.setOnItemSelectedListener(this);
+        
         // Init device list
         mVirtuaMeshRoot = BEspDeviceRoot.getBuilder().getVirtualMeshRoot();
-        mDeviceListView = (PullToRefreshListView)getLayoutInflater().inflate(R.layout.esp_ui_devices_list, null);
-        mDeviceList = new Vector<IEspDevice>();
+        mDeviceListView = (PullToRefreshListView)findViewById(R.id.devices_list);
+        mAllDeviceList = new Vector<IEspDevice>();
         updateDeviceList();
-        mDeviceAdapter = new DeviceAdapter(this);
+        mDeviceAdapter = new EspDeviceAdapter(this, mAllDeviceList);
         mDeviceListView.setAdapter(mDeviceAdapter);
         mDeviceListView.setOnRefreshListener(this);
         mDeviceListView.setOnItemClickListener(this);
         mDeviceListView.getRefreshableView().setOnItemLongClickListener(this);
-        
-        mStaListView = (PullToRefreshListView)getLayoutInflater().inflate(R.layout.esp_ui_devices_list, null);
-        mStaList = new Vector<IEspDeviceSSS>();
-        mStaAdapter = new StaAdapter();
-        mStaListView.setAdapter(mStaAdapter);
-        mStaListView.setOnRefreshListener(this);
-        mStaListView.setOnItemClickListener(this);
-        mStaListView.getRefreshableView().setOnItemLongClickListener(this);
         
         // Init edit bar
         mEditBar = findViewById(R.id.edit_bar);
@@ -187,20 +186,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mSelectAllBtn.setOnClickListener(this);
         mDeleteSelectedBtn = (Button)findViewById(R.id.delete_selected_btn);
         mDeleteSelectedBtn.setOnClickListener(this);
-        mEditCheckedDevices = new HashSet<IEspDevice>();
-        
-        // Init Pager
-        mPager = (EspViewPager)findViewById(R.id.esp_ui_pager);
-        mPager.setInterceptTouchEvent(true);
-        List<View> viewList = new ArrayList<View>();
-        viewList.add(mDeviceListView);
-        viewList.add(mStaListView);
-        EspPagerAdapter pagerAdapter = new EspPagerAdapter(viewList);
-        mPager.setAdapter(pagerAdapter);
-        mPager.setOnPageChangeListener(this);
-        
-        mTabs = (RadioGroup)findViewById(R.id.pager_tab_group);
-        mTabs.setOnCheckedChangeListener(this);
+        mEditCheckedDevices = mDeviceAdapter.getEditCheckedDevices();
+        mDeviceAdapter.setOnEditCheckedChangeListener(this);
         
         mAutoRefreshHandler = new AutoRefreshHandler(this);
         // Get auto refresh settings data
@@ -219,11 +206,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         // Init title bar
         setTitle(R.string.esp_ui_title);
-        setTitleLeftIcon(R.drawable.esp_icon_add);
+        setTitleLeftIcon(0);
+        setTitleRightIcon(R.drawable.esp_menu_icon_settings);
         setTitleProgressing();
         
         mRefreshing = false;
-        mStaScanning = false;
         if (mUser.isLogin())
         {
             refresh();
@@ -232,6 +219,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         {
             scanSta();
         }
+        
+        EspGroupHandler.getInstance().call();
     }
     
     private void setTitleProgressing()
@@ -240,7 +229,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         int progressPadding = getResources().getDimensionPixelSize(R.dimen.esp_activity_ui_progress_padding);
         setTitleContentView(progressbar, progressPadding, progressPadding, progressPadding, progressPadding);
     }
-
+    
     @Override
     protected void onStart()
     {
@@ -250,47 +239,24 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         // onReceive(Context context, Intent intent) need all of the four sentences
         if (mIsDevicesUpdatedNecessary)
         {
-            mUser.doActionDevicesUpdated(false);
+            if (mIsDevicesPullRefreshUpdated)
+            {
+                mUser.doActionDevicesUpdated(false);
+            }
             mUser.doActionDevicesUpdated(true);
         }
         // when the UI is showed, show the newest device list need the follow two sentences
         updateDeviceList();
         mDeviceAdapter.notifyDataSetChanged();
-        updateStaList();
-        mStaAdapter.notifyDataSetChanged();
         if (mIsDevicesUpdatedNecessary)
         {
             mDeviceListView.onRefreshComplete();
-            mStaListView.onRefreshComplete();
-            mStaScanning = false;
             mRefreshing = false;
             mIsDevicesUpdatedNecessary = false;
+            mIsDevicesPullRefreshUpdated = false;
         }
     }
     
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        
-        checkAccountLogin();
-    }
-    
-    private void checkAccountLogin()
-    {
-        if (mUser.isLogin())
-        {
-            mPager.setInterceptTouchEvent(true);
-            mTabs.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            mPager.setInterceptTouchEvent(false);
-            mPager.setCurrentItem(PAGE_STA_DEVICES);
-            mTabs.setVisibility(View.GONE);
-        }
-    }
-
     @Override
     protected void onStop()
     {
@@ -303,7 +269,9 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     {
         super.onDestroy();
         mShared.unregisterOnSharedPreferenceChangeListener(this);
+        mNewDevicesShared.unregisterOnSharedPreferenceChangeListener(this);
         mBraodcastManager.unregisterReceiver(mReciever);
+        EspGroupHandler.getInstance().finish();
     }
     
     @Override
@@ -314,7 +282,18 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             if (resultCode == RESULT_OK)
             {
                 updateDeviceList();
-                updateStaList();
+                return;
+            }
+        }
+        else if (requestCode == REQUEST_SETTINGS)
+        {
+            if (resultCode == SettingsActivity.RESULT_CODE_LOGOUT)
+            {
+                // cancel all task in thread pool before the activity is finished
+                EspBaseApiUtil.cancelAllTask();
+                EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
                 return;
             }
         }
@@ -322,17 +301,12 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     }
     
     @Override
-    protected void onCreateBottomItems(IEspBottomBar bottombar)
+    protected void onCreateBottomItems(IEspBottomMenu bottomMenu)
     {
         mConfigureBtn =
-            bottombar.addBottomItem(MENU_ID_CONFIGURE,
-                R.drawable.esp_menu_icon_configure,
-                R.string.esp_ui_menu_configure);
-        bottombar.addBottomItem(MENU_ID_GET_SHARE, R.drawable.esp_menu_icon_camera, R.string.esp_ui_menu_get_share);
-        bottombar.addBottomItem(MENU_ID_SETTINGS, R.drawable.esp_menu_icon_settings, R.string.esp_ui_menu_settings);
-        bottombar.addBottomItem(MENU_ID_EDIT, R.drawable.esp_menu_icon_edit, R.string.esp_ui_menu_edit);
-        bottombar.addBottomItem(MENU_ID_WIFI, R.drawable.esp_menu_icon_wifi, R.string.esp_ui_menu_wifi);
-        bottombar.addBottomItem(MENU_ID_LOGOUT, R.drawable.esp_menu_icon_logout, R.string.esp_ui_menu_logout);
+            bottomMenu.addBottomItem(MENU_ID_ADD_DEVICE, R.drawable.esp_icon_add, R.string.esp_ui_menu_add_device);
+        bottomMenu.addBottomItem(MENU_ID_SCENE, R.drawable.esp_menu_icon_scene, R.string.esp_ui_menu_scene);
+        bottomMenu.addBottomItem(MENU_ID_EDIT, R.drawable.esp_menu_icon_edit, R.string.esp_ui_menu_edit);
     }
     
     @Override
@@ -340,24 +314,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     {
         switch (itemId)
         {
-            case MENU_ID_GET_SHARE:
-                startActivity(new Intent(this, ShareCaptureActivity.class));
+            case MENU_ID_ADD_DEVICE:
+                startActivityForResult(new Intent(this, DeviceEspTouchActivity.class), REQUEST_ESPTOUCH);
                 break;
-            case MENU_ID_CONFIGURE:
-                gotoConfigure();
-                break;
-            case MENU_ID_SETTINGS:
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            case MENU_ID_LOGOUT:
-                // cancel all task in thread pool before the activity is finished
-                EspBaseApiUtil.cancelAllTask();
-                EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
-                startActivity(new Intent(this, LoginActivity.class));
-                finish();
-                break;
-            case MENU_ID_WIFI:
-                startActivity(new Intent(this, WifiConfigureActivity.class));
+            case MENU_ID_SCENE:
+                startActivity(new Intent(this, EspSceneActivity.class));
                 break;
             case MENU_ID_EDIT:
                 boolean bottomBarEnable = mEditBar.getVisibility() == View.VISIBLE;
@@ -368,10 +329,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private void setEditBarEnable(boolean enable)
     {
-        if (enable)
-        {
-            mPager.setCurrentItem(PAGE_ACTIVATED_DEVICES, true);
-        }
         mEditBar.setVisibility(enable ? View.VISIBLE : View.GONE);
         mDeleteSelectedBtn.setEnabled(false);
         mDeviceListView.setMode(enable ? Mode.DISABLED : Mode.PULL_FROM_START);
@@ -396,12 +353,21 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 sendAutoRefreshMessage(autoTime);
             }
         }
+        else if (key.equals(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE))
+        {
+            updateDeviceList();
+        }
+        else if (key.equals(mUser.getUserKey()))
+        {
+            mNewDevicesSet = mUser.getNewActivatedDevices();
+            mDeviceAdapter.notifyDataSetChanged();
+        }
     }
     
     @Override
-    protected void onTitleLeftIconClick()
+    protected void onTitleRightIconClick(View rightIcon)
     {
-        startActivityForResult(new Intent(this, DeviceEspTouchActivity.class), REQUEST_ESPTOUCH);
+        startActivityForResult(new Intent(this, SettingsActivity.class), REQUEST_SETTINGS);
     }
     
     @Override
@@ -409,11 +375,14 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     {
         if (view == mDeviceListView)
         {
-            refresh();
-        }
-        else if (view == mStaListView)
-        {
-            scanSta();
+            if (mUser.isLogin())
+            {
+                refresh();
+            }
+            else
+            {
+                scanSta();
+            }
         }
     }
     
@@ -443,6 +412,14 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
     }
     
+    private void scanSta()
+    {
+        if (!mRefreshing)
+        {
+            mUser.doActionRefreshStaDevices(false);
+        }
+    }
+    
     private boolean isNetworkAvailabale()
     {
         ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
@@ -459,314 +436,39 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private void updateDeviceList()
     {
-        mDeviceList.clear();
+        mAllDeviceList.clear();
         boolean hasMeshDevice = false;
-        List<IEspDevice> list = mUser.getDeviceList();
+        List<IEspDevice> list = mUser.getAllDeviceList();
         for (int i = 0; i < list.size(); i++)
         {
             IEspDevice device = list.get(i);
-            if (!device.getDeviceState().isStateDeleted())
+            IEspDeviceState state = device.getDeviceState();
+            if (!state.isStateDeleted())
             {
                 if (device.getIsMeshDevice())
                 {
                     hasMeshDevice = true;
                 }
-                mDeviceList.add(device);
+                if (!mDeviceVisibleCB.isChecked())
+                {
+                    if (!state.isStateLocal() && !state.isStateInternet())
+                    {
+                        continue;
+                    }
+                }
+                
+                mAllDeviceList.add(device);
             }
         }
-        sortDevicesByState(mDeviceList);
         
-        if (hasMeshDevice)
+        new DeviceSortor().sort(mAllDeviceList, mSortType);
+        
+        boolean showMeshTree = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
+        if (hasMeshDevice && showMeshTree)
         {
             mVirtuaMeshRoot.setName("Mesh Root");
-            mDeviceList.add(0, mVirtuaMeshRoot);
+            mAllDeviceList.add(0, mVirtuaMeshRoot);
         }
-    }
-    
-    private void sortDevicesByState(List<IEspDevice> devices)
-    {
-        Comparator<IEspDevice> comparator = new Comparator<IEspDevice>()
-        {
-            
-            @Override
-            public int compare(IEspDevice lhs, IEspDevice rhs)
-            {
-                // Sort by state
-                Integer l = getStateCompareValue(lhs);
-                int result = l.compareTo(getStateCompareValue(rhs));
-                
-                // Same state, sort by device name
-                if (result == 0)
-                {
-                    String lName = lhs.getName().toUpperCase(Locale.US);
-                    String rName = rhs.getName().toUpperCase(Locale.US);
-                    if(lName.equals(rName))
-                    {
-                        result = 0;
-                    }
-                    else
-                    {
-                        // order device by it name
-                        List<String> lrNameList = new ArrayList<String>();
-                        lrNameList.add(lName);
-                        lrNameList.add(rName);
-                        Collections.sort(lrNameList, Collator.getInstance(Locale.getDefault()));
-                        if (lrNameList.get(0).equals(lName))
-                        {
-                            result = -1;
-                        }
-                        else
-                        {
-                            result = 1;
-                        }
-                    }
-                    
-                }
-                
-                // Same device name, sort by bssid
-                if (result == 0)
-                {
-                    result = lhs.getBssid().compareTo(rhs.getBssid());
-                }
-                
-                return result;
-            }
-        };
-        
-        Collections.sort(devices, comparator);
-    }
-    
-    private int getStateCompareValue(IEspDevice device)
-    {
-        switch (device.getDeviceState().getDeviceState())
-        {
-            case ACTIVATING:
-                return 1;
-                
-            case UPGRADING_INTERNET:
-            case UPGRADING_LOCAL:
-                return 2;
-                
-            case CONFIGURING:
-                return 3;
-                
-            case INTERNET:
-            case LOCAL:
-                return 4;
-                
-            case OFFLINE:
-                return 5;
-                
-            default:
-                return 10;
-            
-        }
-    }
-    
-    private class DeviceAdapter extends BaseAdapter
-    {
-        private LayoutInflater mInflater;
-        
-        private boolean mEditable = false;
-        
-        public DeviceAdapter(Activity activity)
-        {
-            mInflater = activity.getLayoutInflater();
-        }
-        
-        @Override
-        public int getCount()
-        {
-            return mDeviceList.size();
-        }
-        
-        @Override
-        public Object getItem(int position)
-        {
-            return mDeviceList.get(position);
-        }
-        
-        @Override
-        public long getItemId(int position)
-        {
-            return mDeviceList.get(position).getId();
-        }
-        
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            final IEspDevice device = mDeviceList.get(position);
-            
-            if (convertView == null)
-            {
-                convertView = mInflater.inflate(R.layout.device_layout, null);
-            }
-            
-            convertView.setTag(device);
-            
-            // Set icon
-            ImageView iconIV = (ImageView)convertView.findViewById(R.id.device_icon);
-            iconIV.setBackgroundResource(R.drawable.esp_device_icon_general);
-            
-            // Set device name
-            TextView nameTV = (TextView)convertView.findViewById(R.id.device_name);
-            nameTV.setText(device.getName());
-            
-            // Set state
-            IEspDeviceState state = device.getDeviceState();
-            
-            TextView statusTV = (TextView)convertView.findViewById(R.id.device_status_text);
-            switch (state.getDeviceState())
-            {
-                case UPGRADING_LOCAL:
-                    statusTV.setText(R.string.esp_ui_status_upgrading_local);
-                    break;
-                case UPGRADING_INTERNET:
-                    statusTV.setText(R.string.esp_ui_status_upgrading_online);
-                    break;
-                case OFFLINE:
-                    statusTV.setText(R.string.esp_ui_status_offline);
-                    break;
-                case NEW:
-                case ACTIVATING:
-                    statusTV.setText(R.string.esp_ui_status_activating);
-                    break;
-                case LOCAL:
-                    statusTV.setText(R.string.esp_ui_status_local);
-                    break;
-                case INTERNET:
-                    statusTV.setText(R.string.esp_ui_status_online);
-                    break;
-                
-                case CLEAR:
-                case CONFIGURING:
-                case DELETED:
-                case RENAMED:
-                    // shouldn't goto here
-                    log.error("EspUIActivity getView status wrong: " + device);
-                    statusTV.setText(state.getDeviceState().toString());
-                    break;
-            }
-            statusTV.append(" | " + device.getDeviceType());
-            
-            ImageView statusIV = (ImageView)convertView.findViewById(R.id.device_status);
-            if (state.isStateInternet() || state.isStateLocal())
-            {
-                statusIV.setBackgroundResource(R.drawable.esp_device_status_online);
-            }
-            else
-            {
-                statusIV.setBackgroundResource(R.drawable.esp_device_status_offline);
-            }
-            
-            final CheckBox editCB = (CheckBox)convertView.findViewById(R.id.edit_check);
-            editCB.setChecked(mEditCheckedDevices.contains(device) ? true : false);
-            editCB.setOnClickListener(new View.OnClickListener()
-            {
-                
-                @Override
-                public void onClick(View v)
-                {
-                    boolean isChecked = editCB.isChecked();
-                    if (isChecked)
-                    {
-                        mEditCheckedDevices.add(device);
-                    }
-                    else
-                    {
-                        mEditCheckedDevices.remove(device);
-                    }
-                    
-                    mDeleteSelectedBtn.setEnabled(!mEditCheckedDevices.isEmpty());
-                }
-            });
-            
-            if (mEditable)
-            {
-                statusIV.setVisibility(View.GONE);
-                editCB.setVisibility(View.VISIBLE);
-            }
-            else
-            {
-                statusIV.setVisibility(View.VISIBLE);
-                editCB.setVisibility(View.GONE);
-            }
-            
-            return convertView;
-        }
-        
-        public void setEditable(boolean editable)
-        {
-            mEditable = editable;
-        }
-    }
-    
-    private void scanSta()
-    {
-        if (!mStaScanning && !mRefreshing)
-        {
-            mUser.doActionRefreshStaDevices(false);
-        }
-    }
-    
-    private void updateStaList()
-    {
-        List<IEspDeviceSSS> stas = mUser.getStaDeviceList();
-        mStaList.clear();
-        mStaList.addAll(stas);
-    }
-    
-    private class StaAdapter extends BaseAdapter
-    {
-        
-        @Override
-        public int getCount()
-        {
-            return mStaList.size();
-        }
-        
-        @Override
-        public Object getItem(int position)
-        {
-            return mStaList.get(position);
-        }
-        
-        @Override
-        public long getItemId(int position)
-        {
-            return mStaList.get(position).getId();
-        }
-        
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            IEspDeviceSSS device = mStaList.get(position);
-            
-            if (convertView == null)
-            {
-                convertView = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, null);
-            }
-            
-            convertView.setTag(device);
-            
-            TextView nameTV = (TextView)convertView.findViewById(android.R.id.text1);
-            TextView typeTV = (TextView)convertView.findViewById(android.R.id.text2);
-            
-            String name;
-            if (device.getName() == null) {
-                name = BSSIDUtil.genDeviceNameByBSSID(device.getBssid());
-            }
-            else
-            {
-                name = device.getName();
-            }
-            
-            nameTV.setText(name);
-            typeTV.setText(device.getDeviceType().toString());
-            
-            return convertView;
-        }
-        
     }
     
     private BroadcastReceiver mReciever = new BroadcastReceiver()
@@ -810,12 +512,12 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 mDeviceAdapter.notifyDataSetChanged();
                 mDeviceListView.onRefreshComplete();
                 
-                updateStaList();
-                mStaAdapter.notifyDataSetChanged();
-                mStaListView.onRefreshComplete();
-                
                 mRefreshing = false;
-                mStaScanning = false;
+                
+                if (mIsDevicesUpdatedNecessary)
+                {
+                    mIsDevicesPullRefreshUpdated = true;
+                }
             }
             else if (action.equals(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE))
             {
@@ -823,9 +525,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 mUser.doActionDevicesUpdated(true);
                 updateDeviceList();
                 mDeviceAdapter.notifyDataSetChanged();
-                
-                updateStaList();
-                mStaAdapter.notifyDataSetChanged();
                 
                 checkHelpConfigure();
             }
@@ -874,11 +573,10 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         if (v == mSelectAllBtn)
         {
             /*
-             * If all devices are selected, cancel all the select.
-             * else select all devices.
+             * If all devices are selected, cancel all the select. else select all devices.
              */
             boolean allSelected = true;
-            for (IEspDevice device : mDeviceList)
+            for (IEspDevice device : mAllDeviceList)
             {
                 if (mEditCheckedDevices.contains(device))
                 {
@@ -896,7 +594,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             }
             else
             {
-                mEditCheckedDevices.addAll(mDeviceList);
+                mEditCheckedDevices.addAll(mAllDeviceList);
             }
             
             mDeleteSelectedBtn.setEnabled(!mEditCheckedDevices.isEmpty());
@@ -921,17 +619,44 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     }
     
     @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+    {
+        if (buttonView == mDeviceVisibleCB)
+        {
+            updateDeviceList();
+            mDeviceAdapter.notifyDataSetChanged();
+        }
+    }
+    
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+    {
+        switch(position)
+        {
+            case POSITION_SORT_DEVICE_NAME:
+                mSortType = DeviceSortType.DEVICE_NAME;
+                break;
+            case POSITION_SORT_ACTIVATE_TIME:
+                mSortType = DeviceSortType.ACTIVATED_TIME;
+                break;
+        }
+        
+        updateDeviceList();
+        mDeviceAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent)
+    {
+    }
+    
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
         if (parent == mDeviceListView.getRefreshableView())
         {
             IEspDevice device = (IEspDevice)view.getTag();
             gotoUseDevice(device);
-        }
-        else if (parent == mStaListView.getRefreshableView())
-        {
-            IEspDeviceSSS deviceSSS = (IEspDeviceSSS)view.getTag();
-            gotoUseDevice(deviceSSS);
         }
     }
     
@@ -941,82 +666,48 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         if (parent == mDeviceListView.getRefreshableView())
         {
             IEspDevice device = (IEspDevice)view.getTag();
-            if (!isDeviceEditable(device))
-            {
-                Toast.makeText(this, R.string.esp_ui_edit_forbidden_toast, Toast.LENGTH_SHORT).show();
-                return true;
-            }
             
-            new AlertDialog.Builder(this).setItems(R.array.esp_ui_device_dialog_items, new ListItemDialogListener(device))
-                .show();
-            
-            return true;
-        }
-        else if (parent == mStaListView.getRefreshableView())
-        {
-            final IEspDeviceSSS deviceSSS = (IEspDeviceSSS)view.getTag();
-            PopupMenu popupMenu = new PopupMenu(this, view);
-            Menu menu = popupMenu.getMenu();
-            menu.add(Menu.NONE, 0, 0, R.string.esp_configure_activate);
-            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+            if (device.isActivated())
             {
-                
-                @Override
-                public boolean onMenuItemClick(MenuItem item)
+                if (!isDeviceEditable(device))
                 {
-                    activateDevice(deviceSSS);
+                    Toast.makeText(this, R.string.esp_ui_edit_forbidden_toast, Toast.LENGTH_SHORT).show();
                     return true;
                 }
-            });
-            if (mUser.isLogin())
-            {
+                
+                PopupMenu popupMenu = new PopupMenu(this, view);
+                Menu menu = popupMenu.getMenu();
+                menu.add(Menu.NONE, POPUPMENU_ID_RENAME, 0, R.string.esp_ui_device_popupmenu_rename);
+                menu.add(Menu.NONE, POPUPMENU_ID_DELETE, 0, R.string.esp_ui_device_popupmenu_delete);
+                popupMenu.setOnMenuItemClickListener(new ListItemMenuListener(this, device));
                 popupMenu.show();
+                
+                return true;
             }
-            return true;
+            else
+            {
+                if (mUser.isLogin() && device.getDeviceType() != EspDeviceType.ROOT)
+                {
+                    PopupMenu popupMenu = new PopupMenu(this, view);
+                    Menu menu = popupMenu.getMenu();
+                    menu.add(Menu.NONE, POPUPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
+                    popupMenu.setOnMenuItemClickListener(new ListItemMenuListener(this, device));
+                    popupMenu.show();
+                }
+                return true;
+                
+            }
         }
         
         return false;
-
     }
     
     @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId)
+    public void onEditCheckedChanged(CheckBox checkBox, IEspDevice device, boolean isChecked)
     {
-        switch(checkedId)
-        {
-            case R.id.tab_activated_device:
-                mPager.setCurrentItem(PAGE_ACTIVATED_DEVICES);
-                break;
-            case R.id.tab_sta_device:
-                mPager.setCurrentItem(PAGE_STA_DEVICES);
-                break;
-        }
+        mDeleteSelectedBtn.setEnabled(!mEditCheckedDevices.isEmpty());
     }
     
-    @Override
-    public void onPageSelected(int selection)
-    {
-        switch (selection)
-        {
-            case PAGE_ACTIVATED_DEVICES:
-                mTabs.check(R.id.tab_activated_device);
-                break;
-            case PAGE_STA_DEVICES:
-                mTabs.check(R.id.tab_sta_device);
-                break;
-        }
-    }
-    
-    @Override
-    public void onPageScrollStateChanged(int arg0)
-    {
-    }
-    
-    @Override
-    public void onPageScrolled(int arg0, float arg1, int arg2)
-    {
-    }
-
     protected void gotoConfigure()
     {
         Intent intent = new Intent(this, DeviceConfigureActivity.class);
@@ -1042,81 +733,21 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             return false;
         }
         
-        Class<?> _class = getDeviceClass(device);
+        Class<?> _class = DeviceActivityAbs.getDeviceClass(device);
         if (_class != null)
         {
             Intent intent = new Intent(this, _class);
             intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
             startActivityForResult(intent, REQUEST_DEVICE);
+            mUser.deleteNewActivatedDevice(device.getKey());
             return true;
         }
         
         return false;
     }
     
-    protected Class<?> getDeviceClass(IEspDevice device)
+    private boolean isDeviceEditable(IEspDevice device)
     {
-        IEspDeviceState state = device.getDeviceState();
-        Class<?> _class = null;
-        switch (device.getDeviceType())
-        {
-            case PLUG:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DevicePlugActivity.class;
-                }
-                break;
-            case LIGHT:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DeviceLightActivity.class;
-                }
-                break;
-            case FLAMMABLE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = DeviceFlammableActivity.class;
-                }
-                break;
-            case HUMITURE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = DeviceHumitureActivity.class;
-                }
-                break;
-            case VOLTAGE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = DeviceVoltageActivity.class;
-                }
-                break;
-            case REMOTE:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DeviceRemoteActivity.class;
-                }
-                break;
-            case PLUGS:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DevicePlugsActivity.class;
-                }
-                break;
-            case ROOT:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DeviceRootRouterActivity.class;
-                }
-                break;
-            case NEW:
-                log.warn("Click on NEW device, it shouldn't happen");
-                break;
-        }
-        
-        return _class;
-    }
-    
-    private boolean isDeviceEditable(IEspDevice device) {
         if (device.getDeviceType() == EspDeviceType.ROOT)
         {
             return false;
@@ -1131,41 +762,68 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         return true;
     }
     
-    private class ListItemDialogListener implements DialogInterface.OnClickListener
+    private class EspDeviceAdapter extends DeviceAdapter
     {
-        private final int ITEM_RENAME_POSITION = 0;
-        
-        private final int ITEM_DELETE_POSITION = 1;
-        
-        private IEspDevice mItemDevice;
-        
-        public ListItemDialogListener(IEspDevice device)
+
+        public EspDeviceAdapter(Activity activity, List<IEspDevice> list)
         {
+            super(activity, list);
+        }
+        
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            convertView = super.getView(position, convertView, parent);
+            
+            IEspDevice device = (IEspDevice)convertView.getTag();
+            
+            TextView contentTV = (TextView)convertView.findViewById(R.id.content_text);
+            contentTV.setTextColor(Color.RED);
+            contentTV.setText("NEW");
+            boolean newActivated = mNewDevicesSet.contains(device.getKey());
+            contentTV.setVisibility(newActivated ? View.VISIBLE : View.GONE);
+            
+            return convertView;
+        }
+        
+    }
+    
+    private class ListItemMenuListener implements PopupMenu.OnMenuItemClickListener
+    {
+        private IEspDevice mItemDevice;
+        private Context mContext;
+        
+        public ListItemMenuListener(Context context, IEspDevice device)
+        {
+            mContext = context;
             mItemDevice = device;
         }
         
         @Override
-        public void onClick(DialogInterface dialog, int which)
+        public boolean onMenuItemClick(MenuItem item)
         {
-            switch (which)
+            switch(item.getItemId())
             {
-                case ITEM_RENAME_POSITION:
+                case POPUPMENU_ID_RENAME:
                     showRenameDialog();
-                    break;
-                case ITEM_DELETE_POSITION:
+                    return true;
+                case POPUPMENU_ID_DELETE:
                     showDeleteDialog();
-                    break;
+                    return true;
+                case POPUPMENU_ID_ACTIVATE:
+                    activateDevice();
+                    return true;
             }
+            return false;
         }
         
         private void showRenameDialog()
         {
-            Context context = EspUIActivity.this;
-            final EditText nameEdit = new EditText(context);
+            final EditText nameEdit = new EditText(mContext);
             nameEdit.setSingleLine();
             LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
             nameEdit.setLayoutParams(lp);
-            new AlertDialog.Builder(context).setView(nameEdit)
+            new AlertDialog.Builder(mContext).setView(nameEdit)
                 .setTitle(mItemDevice.getName())
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
                 {
@@ -1183,8 +841,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         private void showDeleteDialog()
         {
-            Context context = EspUIActivity.this;
-            new AlertDialog.Builder(context).setTitle(mItemDevice.getName())
+            new AlertDialog.Builder(mContext).setTitle(mItemDevice.getName())
                 .setMessage(R.string.esp_ui_delete_message)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
@@ -1197,6 +854,34 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                     }
                 })
                 .show();
+        }
+        
+        private void activateDevice()
+        {
+            final ProgressDialog dialog = new ProgressDialog(mContext);
+            dialog.setCancelable(false);
+            dialog.setMessage(getString(R.string.esp_ui_status_activating));
+            dialog.show();
+            new AsyncTask<Void, Void, Boolean>()
+            {
+                
+                @Override
+                protected Boolean doInBackground(Void... params)
+                {
+                    boolean isSuc = mUser.addDeviceSyn((IEspDeviceSSS)mItemDevice);
+                    mUser.doActionRefreshStaDevices(true);
+                    return isSuc;
+                }
+                
+                protected void onPostExecute(Boolean result)
+                {
+                    int msgRes = result ? R.string.esp_ui_device_activate_suc : R.string.esp_ui_device_activate_failed;
+                    Toast.makeText(mContext, msgRes, Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                    updateDeviceList();
+                    mDeviceAdapter.notifyDataSetChanged();
+                }
+            }.execute();
         }
     }
     
@@ -1269,17 +954,17 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         else if (!mHelpMachine.isHelpOn())
         {
             new AlertDialog.Builder(this).setMessage(R.string.esp_ui_exit_message)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-            {
-                
-                @Override
-                public void onClick(DialogInterface dialog, int which)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
                 {
-                    System.exit(0);
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+                    
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        System.exit(0);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
         }
         else
         {
@@ -1287,45 +972,12 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
     }
     
-    private void activateDevice(final IEspDeviceSSS device)
+    protected void checkHelpConfigure()
     {
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setCancelable(false);
-        dialog.setMessage(getString(R.string.esp_ui_status_activating));
-        dialog.show();
-        new AsyncTask<Void, Void, Boolean>()
-        {
-
-            @Override
-            protected Boolean doInBackground(Void... params)
-            {
-                boolean isSuc = mUser.addDeviceSyn(device);
-                mUser.doActionRefreshStaDevices(true);
-                return isSuc;
-            }
-            
-            protected void onPostExecute(Boolean result) {
-                toastActivateResult(result);
-                dialog.dismiss();
-                updateDeviceList();
-                mDeviceAdapter.notifyDataSetChanged();
-                updateStaList();
-                mStaAdapter.notifyDataSetChanged();
-            }
-        }.execute();
     }
     
-    private void toastActivateResult(boolean suc)
+    protected boolean checkHelpClickDeviceType(EspDeviceType type)
     {
-        int msgRes = suc ? R.string.esp_ui_device_activate_suc : R.string.esp_ui_device_activate_failed;
-        Toast.makeText(this, msgRes, Toast.LENGTH_LONG).show();
-    }
-    
-    protected void checkHelpConfigure(){
-    }
-    
-    protected boolean checkHelpClickDeviceType(EspDeviceType type){
         return false;
     }
-
 }

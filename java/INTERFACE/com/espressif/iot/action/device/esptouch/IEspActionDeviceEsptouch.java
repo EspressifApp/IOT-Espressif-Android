@@ -108,4 +108,16 @@ public interface IEspActionDeviceEsptouch extends IEspActionUnactivated
      * @return whether exist Action Device Esptouch running
      */
     boolean isExecuted();
+    
+    /**
+     * finish esptouch instantly
+     */
+    void done();
+    
+    /**
+     * check whether the esptouch is done
+     * 
+     * @return whether the esptouch is done
+     */
+    boolean isDone();
 }

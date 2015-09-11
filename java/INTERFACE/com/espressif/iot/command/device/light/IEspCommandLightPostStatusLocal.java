@@ -12,7 +12,7 @@ public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspC
      * @deprecated Use {@link #doCommandLightPostStatusLocal(InetAddress, IEspStatusLight, String, String)} instead of it,
      * and the deviceBssid=null when you call the method
      * 
-     * post the statusPlug to the Light by Local
+     * post the statusLight to the Light by Local
      * 
      * @param inetAddress the Light's ip address
      * @param statusLight the status of Light
@@ -21,7 +21,7 @@ public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspC
     boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight);
     
     /**
-     * post the statusPlug to the Light by Local
+     * post the statusLight to the Light by Local
      * 
      * @param inetAddress the Light's ip address
      * @param statusLight the status of Light
@@ -31,4 +31,16 @@ public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspC
      */
     boolean doCommandLightPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight, String deviceBssid,
         boolean isMeshDevice);
+    
+    /**
+     * post the statusLight to the Light by Local Instantly(without response)
+     * 
+     * @param inetAddress the Light's ip address
+     * @param statusLight the status of Light
+     * @param deviceBssid the Light's bssid
+     * @param isMeshDevice whether the Light is mesh device
+     * @param disconnectedCallback disconnected callback
+     */
+    void doCommandLightPostStatusLocalInstantly(InetAddress inetAddress, IEspStatusLight statusLight,
+        String deviceBssid, boolean isMeshDevice, Runnable disconnectedCallback);
 }

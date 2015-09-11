@@ -14,8 +14,10 @@
     <dimen name="header_footer_left_right_padding">24dp</dimen>
     <dimen name="header_footer_top_bottom_padding">12dp</dimen>
 
-    <dimen name="esp_activity_bottom_bar_height">50dip</dimen>
-    <dimen name="esp_activity_bottom_item_padding">5dip</dimen>
+    <dimen name="esp_bottom_bar_height">65dip</dimen>
+    <dimen name="esp_bottom_item_padding">3dip</dimen>
+    <dimen name="esp_bottom_item_width">68dip</dimen>
+    <dimen name="esp_bottom_item_height">65dip</dimen>
     <dimen name="esp_activity_title_min_height">50dip</dimen>
 
     <dimen name="esp_activity_ui_progress_padding">5dip</dimen>

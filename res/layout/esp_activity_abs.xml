@@ -60,18 +60,17 @@
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="0dip"
-            android:layout_weight="1" >
-        </FrameLayout>
+            android:layout_weight="1" />
 
         <LinearLayout
             android:id="@+id/bottom_bar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/esp_activity_bottom_bar_height"
+            android:layout_height="@dimen/esp_bottom_bar_height"
             android:background="@color/esp_actionbar_color"
-            android:gravity="center_vertical"
+            android:paddingTop="3dip"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:visibility="gone" >
-        </LinearLayout>
+            android:visibility="gone" />
     </LinearLayout>
 
     <FrameLayout

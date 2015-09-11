@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 

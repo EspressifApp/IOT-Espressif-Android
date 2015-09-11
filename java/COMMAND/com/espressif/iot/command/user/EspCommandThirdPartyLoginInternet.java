@@ -5,8 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.type.user.EspLoginResult;
+import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 

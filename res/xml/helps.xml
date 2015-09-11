@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/esp_help_configure_device" />
-
-    <Preference
-        android:key="esp_help_configure"
-        android:title="@string/esp_help_configure" />
+    <PreferenceCategory
+        android:key="esp_help_configure_category"
+        android:title="@string/esp_help_configure_device" >
+        <Preference
+            android:key="esp_help_configure"
+            android:title="@string/esp_help_configure" />
+    </PreferenceCategory>
 
     <Preference
         android:key="esp_help_mesh_configure"

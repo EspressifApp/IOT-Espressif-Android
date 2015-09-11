@@ -11,6 +11,7 @@ import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeLocal;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeOnline;
@@ -21,8 +22,12 @@ import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
+import com.espressif.iot.ui.help.HelpDeviceFlammableActivity;
+import com.espressif.iot.ui.help.HelpDeviceHumitureActivity;
 import com.espressif.iot.ui.help.HelpDeviceLightActivity;
 import com.espressif.iot.ui.help.HelpDevicePlugActivity;
+import com.espressif.iot.ui.help.HelpDevicePlugsActivity;
+import com.espressif.iot.ui.help.HelpDeviceVoltageActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.settings.SettingsActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
@@ -37,9 +42,11 @@ import com.google.zxing.qrcode.ui.CreateQRImageHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -57,7 +64,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
 {
     private static final Logger log = Logger.getLogger(DeviceActivityAbs.class);
     
-    public static IEspDevice DirectConnectDevice;
+    public static IEspDevice TEMP_DEVICE;
     
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
@@ -91,10 +98,10 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
-        boolean isDirectConnectMode = intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_DIRECT_CONNECT, false);
+        boolean isTempDeviceMode = intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, false);
         
         mUser = BEspUser.getBuilder().getInstance();
-        IEspDevice device = isDirectConnectMode ? DirectConnectDevice : mUser.getUserDevice(deviceKey);
+        IEspDevice device = isTempDeviceMode ? TEMP_DEVICE : mUser.getUserDevice(deviceKey);
         if (device instanceof IEspDeviceSSS)
         {
             mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
@@ -104,14 +111,19 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             mIEspDevice = device;
         }
         
+        SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShowChildren =
-            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, true) && mIEspDevice.getIsMeshDevice();
+            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, true) && mIEspDevice.getIsMeshDevice()
+                && shared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
         
         setTitle(mIEspDevice.getName());
         
         checkDeviceCompatibility();
         
-        setTitleRightIcon(R.drawable.esp_icon_menu_moreoverflow);
+        if (!isDeviceArray())
+        {
+            setTitleRightIcon(R.drawable.esp_icon_menu_moreoverflow);
+        }
         
         checkHelpHandlerInit();
         
@@ -123,7 +135,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     {
         super.onDestroy();
         
-        DirectConnectDevice = null;
+        TEMP_DEVICE = null;
     }
     
     private void checkDeviceCompatibility()
@@ -251,7 +263,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     }
     
     @Override
-    protected void onTitleRightIconClick()
+    protected void onTitleRightIconClick(View rightIcon)
     {
         openOptionsMenu();
     }
@@ -390,6 +402,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
+        if (isDeviceArray())
+        {
+            return super.onCreateOptionsMenu(menu);
+        }
+        
         if (mIEspDevice.getIsOwner())
         {
             menu.add(Menu.NONE, MENU_ID_SHARE_DEVICE, 0, R.string.esp_device_menu_share)
@@ -410,6 +427,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
+        if (isDeviceArray())
+        {
+            return super.onPrepareOptionsMenu(menu);
+        }
+        
         log.debug("onPrepareOptionsMenu mIEspDevice state = " + mIEspDevice.getDeviceState());
         switch (mUser.getDeviceUpgradeTypeResult(mIEspDevice))
         {
@@ -577,12 +599,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     {
         new DeviceTask(this).execute(status);
     }
-    
-    protected void executePost(final IEspDeviceStatus status, boolean broadcast)
-    {
-        new DeviceTask(this, broadcast).execute(status);
-    }
-    
     /**
      * Get current status of device
      */
@@ -599,18 +615,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         private int mCommand;
         
-        private Boolean mBroadcast;
-        
         public DeviceTask(Activity activity)
         {
             mActivity = activity;
-            mBroadcast = null;
-        }
-        
-        public DeviceTask(Activity activity, boolean broadcast)
-        {
-            mActivity = activity;
-            mBroadcast = broadcast;
         }
         
         @Override
@@ -630,13 +637,24 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 log.debug(mIEspDevice.getName() + " Post status");
                 IEspDeviceStatus status = params[0];
                 mCommand = COMMAND_POST;
-                if (mBroadcast == null)
+                if (isDeviceArray())
                 {
-                    return mUser.doActionPostDeviceStatus(mIEspDevice, status);
+                    IEspDeviceArray deviceArray = (IEspDeviceArray)mIEspDevice;
+                    List<IEspDevice> devices = deviceArray.getDeviceList();
+                    for (IEspDevice device : devices)
+                    {
+                        IEspDeviceState state = device.getDeviceState();
+                        if (state.isStateInternet() || state.isStateLocal())
+                        {
+                            mUser.doActionPostDeviceStatus(device, status);
+                        }
+                    }
+                    
+                    return true;
                 }
                 else
                 {
-                    return mUser.doActionPostDeviceStatus(mIEspDevice, status, mBroadcast);
+                    return mUser.doActionPostDeviceStatus(mIEspDevice, status);
                 }
             }
             else
@@ -644,7 +662,14 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 // execute Get status
                 log.debug(mIEspDevice.getName() + " Get status");
                 mCommand = COMMAND_GET;
-                return mUser.doActionGetDeviceStatus(mIEspDevice);
+                if (mIEspDevice instanceof IEspDeviceArray)
+                {
+                    return true;
+                }
+                else
+                {
+                    return mUser.doActionGetDeviceStatus(mIEspDevice);
+                }
             }
         }
         
@@ -681,6 +706,89 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             cancel(true);
             mDialog = null;
         }
+    }
+    
+    public static Intent getDeviceIntent(Context context, IEspDevice device)
+    {
+        Class<?> cls = getDeviceClass(device);
+        if (cls != null)
+        {
+            Intent intent = new Intent(context, cls);
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
+            return intent;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public static Class<?> getDeviceClass(IEspDevice device)
+    {
+        IEspDeviceState state = device.getDeviceState();
+        Class<?> _class = null;
+        boolean helpOn = EspApplication.HELP_ON;
+        switch (device.getDeviceType())
+        {
+            case PLUG:
+                if (state.isStateInternet() || state.isStateLocal())
+                {
+                    _class = helpOn ? DevicePlugActivity.class : HelpDevicePlugActivity.class;
+                }
+                break;
+            case LIGHT:
+                if (state.isStateInternet() || state.isStateLocal())
+                {
+                    _class = helpOn ? DeviceLightActivity.class : HelpDeviceLightActivity.class;
+                }
+                break;
+            case FLAMMABLE:
+                if (state.isStateInternet() || state.isStateOffline())
+                {
+                    _class = helpOn ? DeviceFlammableActivity.class : HelpDeviceFlammableActivity.class;
+                }
+                break;
+            case HUMITURE:
+                if (state.isStateInternet() || state.isStateOffline())
+                {
+                    _class = helpOn ? DeviceHumitureActivity.class : HelpDeviceHumitureActivity.class;
+                }
+                break;
+            case VOLTAGE:
+                if (state.isStateInternet() || state.isStateOffline())
+                {
+                    _class = helpOn ? DeviceVoltageActivity.class : HelpDeviceVoltageActivity.class;
+                }
+                break;
+            case REMOTE:
+                if (state.isStateInternet() || state.isStateLocal())
+                {
+                    _class = DeviceRemoteActivity.class;
+                }
+                break;
+            case PLUGS:
+                if (state.isStateInternet() || state.isStateLocal())
+                {
+                    _class = helpOn ? DevicePlugsActivity.class : HelpDevicePlugsActivity.class;
+                }
+                break;
+            case ROOT:
+                if (state.isStateInternet() || state.isStateLocal())
+                {
+                    _class = DeviceRootRouterActivity.class;
+                }
+                break;
+            case NEW:
+                log.warn("Click on NEW device, it shouldn't happen");
+                break;
+        }
+        
+        return _class;
+    }
+    
+    protected boolean isDeviceArray()
+    {
+        return mIEspDevice instanceof IEspDeviceArray;
     }
     
     // *************About help below***********//

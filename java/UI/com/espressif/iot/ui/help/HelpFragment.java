@@ -65,6 +65,9 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         {
             getPreferenceScreen().removePreference(mUseRemoteHelpPre);
         }
+        
+        Preference configureCategory = getPreferenceScreen().findPreference("esp_help_configure_category");
+        getPreferenceScreen().removePreference(configureCategory);
     }
     
     @Override

@@ -142,4 +142,17 @@ public interface IDeviceDB extends IEspDBObject
      */
     void setUserId(long userId);
     
+    /**
+     * Get the activated time on server
+     * 
+     * @return
+     */
+    long getActivatedTime();
+    
+    /**
+     * Set the activated time on server
+     * 
+     * @param activatedTime
+     */
+    void setActivatedTime(long activatedTime);
 }

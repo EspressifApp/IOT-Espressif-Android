@@ -1,14 +1,14 @@
 package com.espressif.iot.ui.device;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.espressif.iot.R;
-import com.espressif.iot.action.device.longsocket.EspDeviceLongSocketLight;
-import com.espressif.iot.action.device.longsocket.IEspDeviceLongSocketLight;
-import com.espressif.iot.base.net.longsocket.IEspLongSocket.EspLongSocketDisconnected;
 import com.espressif.iot.device.IEspDeviceLight;
-import com.espressif.iot.type.device.EspDeviceType;
+import com.espressif.iot.model.longsocket2.EspLongSocket;
+import com.espressif.iot.model.longsocket2.IEspLongSocket;
+import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
@@ -32,7 +32,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
 
 public class DeviceLightActivity extends DeviceActivityAbs implements OnClickListener, OnSeekBarChangeListener,
-     OnColorChangedListener, OnFocusChangeListener, EspLongSocketDisconnected
+     OnColorChangedListener, OnFocusChangeListener
 {
     // range of period is 1000~10000
     private static final int PERIOD_MIN = IEspDeviceLight.PERIOD_MIN;
@@ -61,12 +61,13 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     private View mColorDisplay;
     
     private Button mConfirmBtn;
-    private CheckBox mControlChildCB;
     private CheckBox mSwitch;
     
     private IEspDeviceLight mDeviceLight;
     
     protected View mLightLayout;
+    
+    private IEspLongSocket mLongSocket;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -142,9 +143,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         
         mConfirmBtn = (Button)view.findViewById(R.id.light_confirm_btn);
         mConfirmBtn.setOnClickListener(this);
-        mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
-        mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
-        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         
@@ -231,7 +229,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 return;
             }
             
-            if (mDeviceLight.getIsMeshDevice())
+            if (mDeviceLight.getIsMeshDevice() || isDeviceArray())
             {
                 Toast.makeText(this, R.string.esp_device_light_continuous_control_forbidden, Toast.LENGTH_SHORT).show();
             }
@@ -245,53 +243,14 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     @Override
     public void onColorChangeStart(View v, int color)
     {
-        new Thread()
-        {
-            public void run()
-            {
-                IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
-                if (mDeviceLight.getDeviceState().isStateLocal())
-                {
-                    lightPlayer.connectLightLocal(mDeviceLight.getInetAddress(), DeviceLightActivity.this);
-                }
-                else if (mDeviceLight.getDeviceState().isStateInternet())
-                {
-                    lightPlayer.connectLightInternet(mDeviceLight.getKey(), DeviceLightActivity.this);
-                }
-            }
-        }.start();
+        mLongSocket = EspLongSocket.createInstance();
+        mLongSocket.start();
         
         mColorDisplay.setBackgroundColor(color);
         
         mLightRedBar.setProgress(parseRGBtoLightValue(Color.red(color)));
         mLightGreenBar.setProgress(parseRGBtoLightValue(Color.green(color)));
         mLightBlueBar.setProgress(parseRGBtoLightValue(Color.blue(color)));
-        
-        if (mDeviceLight.getDeviceType() == EspDeviceType.LIGHT)
-        {
-            IEspStatusLight statusLight = new EspStatusLight();
-            statusLight.setPeriod(getProgressLightPeriod());
-            statusLight.setRed(parseRGBtoLightValue(Color.red(color)));
-            statusLight.setGreen(parseRGBtoLightValue(Color.green(color)));
-            statusLight.setBlue(parseRGBtoLightValue(Color.blue(color)));
-            // clear CW and WW
-            mLightCWhiteBar.setProgress(0);
-            mLightWWhiteBar.setProgress(0);
-            statusLight.setCWhite(0);
-            statusLight.setWWhite(0);
-            
-            IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
-            String bssid = mDeviceLight.getBssid();
-            boolean isMeshDevice = mDeviceLight.getIsMeshDevice();
-            if (mDeviceLight.getDeviceState().isStateLocal())
-            {
-                lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
-            }
-            else if (mDeviceLight.getDeviceState().isStateInternet())
-            {
-                lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
-            }
-        }
     }
 
     @Override
@@ -312,45 +271,54 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         statusLight.setCWhite(0);
         statusLight.setWWhite(0);
         
-        IEspDeviceLongSocketLight lightPlayer = EspDeviceLongSocketLight.getInstance();
-        String bssid = mDeviceLight.getBssid();
         boolean isMeshDevice = mDeviceLight.getIsMeshDevice();
-        if (mDeviceLight.getDeviceState().isStateLocal())
+        Runnable disconnectedCallback = new Runnable()
         {
-            lightPlayer.addLigthtStatusLocal(statusLight, bssid, isMeshDevice);
+            
+            @Override
+            public void run()
+            {
+                runOnUiThread(new Runnable()
+                {
+                    
+                    @Override
+                    public void run()
+                    {
+                        new AlertDialog.Builder(DeviceLightActivity.this).setTitle(R.string.esp_device_light_disconnect_msg)
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    DeviceLightActivity.this.finish();
+                                }
+                            })
+                            .show();
+                    }
+                });
+            }
+            
+        };
+        
+        String deviceKey = mDeviceLight.getKey();
+        InetAddress inetAddress = mDeviceLight.getInetAddress();
+        String bssid = mDeviceLight.getBssid();
+        IEspDeviceState state = mDeviceLight.getDeviceState();
+        
+        if (isMeshDevice)
+        {
+            mLongSocket.addMeshStatus(deviceKey, inetAddress, bssid, statusLight, state, disconnectedCallback);
         }
-        else if (mDeviceLight.getDeviceState().isStateInternet())
+        else
         {
-            lightPlayer.addLigthStatusInternet(statusLight, bssid, isMeshDevice);
+            mLongSocket.addStatus(deviceKey, inetAddress, statusLight, state, disconnectedCallback);
         }
     }
     
     @Override
     public void onColorChangeEnd(View v, int color)
     {
-        EspDeviceLongSocketLight.getInstance().finish();
-    }
-    
-    @Override
-    public void onEspLongSocketDisconnected()
-    {
-        runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                new AlertDialog.Builder(DeviceLightActivity.this).setTitle(R.string.esp_device_light_disconnect_msg)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            DeviceLightActivity.this.finish();
-                        }
-                    })
-                    .show();
-            }
-        });
+        mLongSocket.stop();
     }
     
     private void swapColorSelectView()
@@ -362,14 +330,12 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     
     private void executeStatus(IEspStatusLight status)
     {
-        if (mIEspDevice.getIsMeshDevice() && mControlChildCB.isChecked())
+        if (isDeviceArray())
         {
-            executePost(status, true);
+            mDeviceLight.setStatusLight(status);
         }
-        else
-        {
-            executePost(status);
-        }
+        
+        executePost(status);
     }
     
     @Override
@@ -397,6 +363,16 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mLightBlueBar.setProgress(blue);
         mLightCWhiteBar.setProgress(cwhite);
         mLightWWhiteBar.setProgress(wwhite);
+        
+        // Set switch on or off
+        if (red > 0 || green > 0|| blue > 0 || cwhite > 0 || wwhite > 0)
+        {
+            mSwitch.setChecked(true);
+        }
+        else
+        {
+            mSwitch.setChecked(false);
+        }
         
         checkHelpExecuteFinish(command, result);
         

@@ -4,32 +4,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <RadioGroup
-        android:id="@+id/pager_tab_group"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="5dip" >
 
-        <RadioButton
-            android:id="@+id/tab_activated_device"
-            style="@style/EspUITab"
-            android:layout_width="0dip"
+        <ToggleButton
+            android:id="@+id/device_visible_check"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:checked="true"
-            android:text="@string/esp_ui_tab_activated_devices" />
+            android:textOn="@string/esp_ui_device_all_visible"
+            android:textOff="@string/esp_ui_device_usable_visible" />
 
-        <RadioButton
-            android:id="@+id/tab_sta_device"
-            style="@style/EspUITab"
+        <Space
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/esp_ui_tab_sta_devices" />
-    </RadioGroup>
+            android:layout_height="1dip"
+            android:layout_weight="1" />
 
-    <com.espressif.iot.ui.view.EspViewPager
-        android:id="@+id/esp_ui_pager"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_ui_device_sort_by" />
+
+        <Spinner
+            android:id="@+id/device_sort_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <com.handmark.pulltorefresh.library.PullToRefreshListView
+        android:id="@+id/devices_list"
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1" />

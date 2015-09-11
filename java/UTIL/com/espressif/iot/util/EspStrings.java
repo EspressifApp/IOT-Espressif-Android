@@ -30,6 +30,11 @@ public class EspStrings
          * when login successfully in Settings, send this broadcast to refresh devices from server
          */
         public static final String LOGIN_NEW_ACCOUNT = "LOGIN_NEW_ACCOUNT";
+        
+        /**
+         * Send local broadcast when create a group on server successfully
+         */
+        public static final String CREATE_NEW_CLOUD_GROUP = "CREATE_NEW_CLOUD_GROUP";
     }
     
     public static final class Key
@@ -72,6 +77,8 @@ public class EspStrings
          */
         public static final String SETTINGS_KEY_DEVICE_AUTO_REFRESH = "settings_device_auto_refresh";
         
+        public static final String SETTINGS_KEY_SHOW_MESH_TREE = "settings_show_mesh_tree";
+        
         public static final String SETTINGS_KEY_STORE_LOG = "settings_store_log";
         
         /**
@@ -90,9 +97,9 @@ public class EspStrings
         public static final String DEVICE_KEY_SHOW_CHILDREN = "show_children";
         
         /**
-        * The Intent value name of extra whether direct connect mode
+        * The Intent value name of extra whether temp device mode
         */
-        public static final String DEVICE_KEY_DIRECT_CONNECT = "direct_connect";
+        public static final String DEVICE_KEY_TEMP_DEVICE = "temp_device";
         /**
          * The Intent value name of extra Device Timer ID
          */
@@ -103,5 +110,20 @@ public class EspStrings
         public static final String DEVICE_TIMER_PLUGS_VALUE_KEY = "plugs_value";
         
         public static final String KEY_AUTO_LOGIN = "auto_login";
+        
+        /**
+         * The group id before created
+         */
+        public static final String KEY_GROUP_ID_OLD = "old_group_id";
+        
+        /**
+         * The group id after created
+         */
+        public static final String KEY_GROUP_ID_NEW = "new_group_id";
+        
+        /**
+         * The SharedPreferences name of new devices
+         */
+        public static final String NAME_NEW_ACTIVATED_DEVICES = "new_activated_devices";
     }
 }

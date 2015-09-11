@@ -109,7 +109,7 @@ public class WifiConfigureActivity extends EspActivityAbs
             TextView wifiTV = (TextView)convertView.findViewById(R.id.wifi_ssid);
             wifiTV.setText(apInfo.ssid);
             ImageView wifiIcon = (ImageView)convertView.findViewById(R.id.wifi_icon);
-            wifiIcon.setImageResource(R.drawable.esp_device_status_online);
+            wifiIcon.setImageResource(R.drawable.esp_device_signal_4);
             Button editBtn = (Button)convertView.findViewById(R.id.wifi_edit);
             editBtn.setOnClickListener(new OnClickListener()
             {

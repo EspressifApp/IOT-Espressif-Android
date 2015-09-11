@@ -6,19 +6,20 @@ import com.espressif.iot.ui.main.EspActivityAbs;
 import android.app.FragmentManager;
 import android.os.Bundle;
 
-public class SettingsActivity extends EspActivityAbs {
-
+public class SettingsActivity extends EspActivityAbs
+{
+    public static final int RESULT_CODE_LOGOUT = 100;
+    
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-
+        
         setContentView(R.layout.fragment_container);
-
+        
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, new SettingsFragment())
-                .commit();
-
+        fragmentManager.beginTransaction().replace(R.id.fragment_container, new SettingsFragment()).commit();
+        
         setTitle(R.string.esp_settings);
     }
 }

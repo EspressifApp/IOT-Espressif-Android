@@ -188,6 +188,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     else
                     {
                         deviceInUser.copyDeviceName(serverLocalDevice);
+                        deviceInUser.copyActivatedTime(serverLocalDevice);
                     }
                     deviceInUser.copyDeviceState(serverLocalDevice);
                     // don't forget to add Renamed State
@@ -506,6 +507,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 userDevice.copyDeviceState(stateMachineDevice);
                 userDevice.copyDeviceRomVersion(stateMachineDevice);
                 userDevice.copyDeviceName(stateMachineDevice);
+                userDevice.copyActivatedTime(stateMachineDevice);
                 if (!stateMachineDevice.getDeviceState().isStateClear())
                 {
                     log.error("userDevice: " + userDevice + ",stateMachineDevice: " + stateMachineDevice);
@@ -603,7 +605,8 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
             {
                 // generate ssid by bssid and whether the device is mesh
                 String bssid = staDevice.getBSSID();
-                String prefix = staDevice.isMeshDevice() ? "espressif_" : "ESP_";
+//                String prefix = staDevice.isMeshDevice() ? "espressif_" : "ESP_";
+                String prefix = "ESP_";
                 String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
                 staDevice.setSSID(ssid);
                 // generate IEspDeviceSSS and add it into userStaDeviceList
@@ -629,6 +632,27 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
+    private void removeRedundantUserStaDevices(List<IEspDevice> userDeviceList, List<IEspDeviceSSS> userStaDeviceList)
+    {
+        // when userDeviceList and userStaDeviceList has the same bssid device,
+        // remove the device from userStaDeviceList
+        for (int indexDevice = 0; indexDevice < userDeviceList.size(); ++indexDevice)
+        {
+            IEspDevice userDevice = userDeviceList.get(indexDevice);
+            String deviceBssid = userDevice.getBssid();
+            for (int indexStaDevice = 0; indexStaDevice < userStaDeviceList.size(); ++indexStaDevice)
+            {
+                IEspDevice userStaDevice = userStaDeviceList.get(indexStaDevice);
+                String staDeviceBssid = userStaDevice.getBssid();
+                if (deviceBssid.equals(staDeviceBssid))
+                {
+                    userStaDeviceList.remove(indexStaDevice--);
+                    break;
+                }
+            }
+        }
+    }
+    
     @Override
     public synchronized Void handleUninterruptible(boolean isStateMachine)
     {
@@ -642,6 +666,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         {
             handleStatemachine(userDeviceList);
         }
+        
         else
         {
             boolean isExecuted = handleServerLocal(userDeviceList);
@@ -657,12 +682,20 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         // handle device in CLEAR state
         __handleClearList(userDeviceList);
         
-        // handle user's sta device list
-        handleSta(userDeviceList, userStaDeviceList);
+        if (!isStateMachine)
+        {
+            // handle user's sta device list
+            handleSta(userDeviceList, userStaDeviceList);
+        }
+        
         // clear parent device bssid if it isn't local or internet
         handleUserDevices(userDeviceList);
+        
+        // remove the redundant user sta devices
+        removeRedundantUserStaDevices(userDeviceList, userStaDeviceList);
+        
         user.unlockUserDeviceLists();
         return null;
     }
-    
+
 }

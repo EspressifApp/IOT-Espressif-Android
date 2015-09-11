@@ -17,10 +17,11 @@ public interface IDeviceDBManager extends IEspDBManager
      * @param rom_version the current sdk rom version
      * @param latest_rom_version the latest sdk rom version
      * @param timestamp the UTC millisecond timestamp when the device is activated
+     * @param activatedTime the UTC millisecond time activated at server
      * @param userId the user's id
      */
     void insertOrReplace(long deviceId, String key, String bssid, int type, int state, boolean isOwner, String name,
-        String rom_version, String latest_rom_version, long timestamp, long userId);
+        String rom_version, String latest_rom_version, long timestamp, long activatedTime, long userId);
     
     /**
      * delete the device in local db

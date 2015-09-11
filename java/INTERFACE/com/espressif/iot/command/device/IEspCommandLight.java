@@ -29,4 +29,7 @@ public interface IEspCommandLight extends IEspCommandDevice
     static final String VoltageMV = "voltagemv";
     
     static final String StatusOK = "OK";
+
+    static final String Response = "response";
+
 }

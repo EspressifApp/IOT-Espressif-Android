@@ -11,12 +11,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
-import com.espressif.iot.action.user.EspActionUserDevicesUpdated;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.cache.IEspDeviceCache;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
 
 public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
@@ -326,7 +327,8 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
                 broadcastManager.sendBroadcast(intent);
                 break;
             case STATE_MACHINE_BACKSTATE:
-                new EspActionUserDevicesUpdated().doActionDevicesUpdated(true);
+                IEspUser user = BEspUser.getBuilder().getInstance();
+                user.doActionDevicesUpdated(true);
                 break;
         }
         

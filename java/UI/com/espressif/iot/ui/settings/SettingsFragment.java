@@ -23,6 +23,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,12 +37,13 @@ import android.widget.Toast;
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.log.LogConfigurator;
 import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
+import com.espressif.iot.ui.configure.WifiConfigureActivity;
 import com.espressif.iot.ui.login.LoginTask;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
@@ -55,18 +57,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
 {
     private final Logger log = Logger.getLogger(getClass());
     
-    private static final String KEY_ACCOUNT = "account";
-    private static final String KEY_ACCOUNT_REGISTER = "account_register";
-    private static final String KEY_ACCOUNT_AUTO_LOGIN = "account_auto_login";
-    private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
-    private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
-    private static final String KEY_VERSION_NAME = "version_name";
-    private static final String KEY_VERSION_UPGRADE = "version_upgrade";
-    private static final String KEY_VERSION_LOG = "version_log";
-    private static final String KEY_STORE_LOG = "store_log";
-    private static final String KEY_READ_LOG = "read_log";
-    private static final String KEY_CLEAR_LOG = "clear_log";
-    
     private static final String DEFAULT_VERSION_LOG_URL = "file:///android_asset/html/en_us/update.html";
     /**
      * The url for WebView
@@ -79,17 +69,47 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private static final int REQUEST_REGISTER = 1000;
     
+    private static final String KEY_ACCOUNT_CATEGORY = "account_category";
+    private static final String KEY_ACCOUNT = "account";
+    private static final String KEY_ACCOUNT_REGISTER = "account_register";
+    private static final String KEY_ACCOUNT_AUTO_LOGIN = "account_auto_login";
+    private static final String KEY_ACCOUNT_LOGOUT = "account_logout";
+    
+    private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
+    private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
+    private static final String KEY_SHOW_MESH_TREE = "device_show_mesh_tree";
+    
+    private static final String KEY_VERSION_CATEGORY = "version_category";
+    private static final String KEY_VERSION_NAME = "version_name";
+    private static final String KEY_VERSION_UPGRADE = "version_upgrade";
+    private static final String KEY_VERSION_LOG = "version_log";
+    
+    private static final String KEY_STORE_LOG = "store_log";
+    private static final String KEY_READ_LOG = "read_log";
+    private static final String KEY_CLEAR_LOG = "clear_log";
+    
+    private static final String KEY_WIFI_EDIT = "wifi_edit";
+    
+    private PreferenceCategory mAccountCategory;
     private Preference mAccountPre;
     private Preference mAccountRegisterPre;
     private CheckBoxPreference mAutoLoginPre;
+    private Preference mAccountLogoutPre;
+    
     private ListPreference mAutoRefreshDevicePre;
     private ListPreference mAutoConfigureDevicePre;
+    private CheckBoxPreference mShowMeshTreePre;
+    
+    private PreferenceCategory mVersionCategory;
     private Preference mVersionNamePre;
     private Preference mVersionUpgradePre;
     private Preference mVersionLogPre;
+    
     private CheckBoxPreference mStoreLogPre;
     private Preference mReadLogPre;
     private Preference mClearLogPre;
+    
+    private Preference mWifiEditPre;
     
     private IEspUser mUser;
     
@@ -117,28 +137,15 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
         
         // About Account
+        mAccountCategory = (PreferenceCategory)findPreference(KEY_ACCOUNT_CATEGORY);
         mAccountPre = findPreference(KEY_ACCOUNT);
-        mAccountRegisterPre = findPreference(KEY_ACCOUNT_REGISTER);
-        if (mUser.isLogin())
-        {
-            mAccountPre.setTitle(mUser.getUserName());
-            mAccountPre.setSummary(mUser.getUserEmail());
-            
-            getPreferenceScreen().removePreference(mAccountRegisterPre);
-        }
-        else
-        {
-            mAccountPre.setTitle(R.string.esp_settings_account_not_login);
-            mAccountPre.setSummary(R.string.esp_settings_account_not_login_summary);
-        }
-        
-        mThirdPartyLoginDialog = new LoginThirdPartyDialog(getActivity());
-        mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
-        
         mAutoLoginPre = (CheckBoxPreference)findPreference(KEY_ACCOUNT_AUTO_LOGIN);
         mAutoLoginPre.setChecked(mShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false));
         mAutoLoginPre.setOnPreferenceChangeListener(this);
-        mAutoLoginPre.setEnabled(mUser.isLogin());
+        onLoginChanged(mUser.isLogin());
+        
+        mThirdPartyLoginDialog = new LoginThirdPartyDialog(getActivity());
+        mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
         
         // About Device
         mAutoRefreshDevicePre = (ListPreference)findPreference(KEY_AUTO_REFRESH_DEVICE);
@@ -146,6 +153,10 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAutoRefreshDevicePre.setValue(autoRefreshTime);
         mAutoRefreshDevicePre.setSummary(mAutoRefreshDevicePre.getEntry());
         mAutoRefreshDevicePre.setOnPreferenceChangeListener(this);
+        mShowMeshTreePre = (CheckBoxPreference)findPreference(KEY_SHOW_MESH_TREE);
+        boolean showMeshTree = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
+        mShowMeshTreePre.setChecked(showMeshTree);
+        mShowMeshTreePre.setOnPreferenceChangeListener(this);
         
         mAutoConfigureDevicePre = (ListPreference)findPreference(KEY_AUTO_CONFIGURE_DEVICE);
         int defaultAutoConfigureValue = DeviceConfigureActivity.DEFAULT_AUTO_CONFIGRUE_VALUE;
@@ -156,14 +167,15 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAutoConfigureDevicePre.setOnPreferenceChangeListener(this);
         
         // About Version
+        mVersionCategory = (PreferenceCategory)findPreference(KEY_VERSION_CATEGORY);
         mVersionNamePre = findPreference(KEY_VERSION_NAME);
         String versionName = EspApplication.sharedInstance().getVersionName();
         mVersionNamePre.setSummary(versionName);
         
         mVersionUpgradePre = findPreference(KEY_VERSION_UPGRADE);
-        if (mVersionUpgradePre != null && EspApplication.GOOGLE_PALY_VERSION)
+        if (mVersionUpgradePre != null && !EspApplication.SUPPORT_APK_UPGRADE)
         {
-            getPreferenceScreen().removePreference(mVersionUpgradePre);
+            mVersionCategory.removePreference(mVersionUpgradePre);
         }
         
         mVersionLogPre = findPreference(KEY_VERSION_LOG);
@@ -180,6 +192,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mLogAdapter =
             new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1, mLogList);
         mLogDialog = new AlertDialog.Builder(getActivity()).setAdapter(mLogAdapter, null).create();
+        
+        mWifiEditPre = findPreference(KEY_WIFI_EDIT);
     }
     
     @Override
@@ -246,6 +260,16 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             startActivityForResult(i, REQUEST_REGISTER);
             return true;
         }
+        else if (preference == mAccountLogoutPre)
+        {
+            getActivity().setResult(SettingsActivity.RESULT_CODE_LOGOUT);
+            getActivity().finish();
+        }
+        else if (preference == mWifiEditPre)
+        {
+            startActivity(new Intent(getActivity(), WifiConfigureActivity.class));
+            return true;
+        }
         
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
@@ -275,6 +299,12 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             mShared.edit().putInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, Integer.parseInt(value)).commit();
             return true;
         }
+        else if (preference == mShowMeshTreePre)
+        {
+            boolean showMeshTree = (Boolean)newValue;
+            mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, showMeshTree).commit();
+            return true;
+        }
         else if (preference == mStoreLogPre)
         {
             onStoreDebugLogChanged((Boolean) newValue);
@@ -285,6 +315,44 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     }
     
     //******** About Account *********//
+    private void onLoginChanged(boolean isLogin)
+    {
+        if (isLogin)
+        {
+            mAccountPre.setTitle(mUser.getUserName());
+            mAccountPre.setSummary(mUser.getUserEmail());
+            mAutoLoginPre.setEnabled(true);
+            
+            mAccountRegisterPre = mAccountCategory.findPreference(KEY_ACCOUNT_REGISTER);
+            if (mAccountRegisterPre != null)
+            {
+                mAccountCategory.removePreference(mAccountRegisterPre);
+            }
+            
+            mAccountLogoutPre = new Preference(getActivity());
+            mAccountLogoutPre.setKey(KEY_ACCOUNT_LOGOUT);
+            mAccountLogoutPre.setTitle(R.string.esp_settings_account_logout);
+            mAccountCategory.addPreference(mAccountLogoutPre);
+        }
+        else
+        {
+            mAccountPre.setTitle(R.string.esp_settings_account_not_login);
+            mAccountPre.setSummary(R.string.esp_settings_account_not_login_summary);
+            mAutoLoginPre.setEnabled(false);
+            
+            mAccountLogoutPre = mAccountCategory.findPreference(KEY_ACCOUNT_LOGOUT);
+            if (mAccountLogoutPre != null)
+            {
+                mAccountCategory.removePreference(mAccountLogoutPre);
+            }
+            
+            mAccountRegisterPre = new Preference(getActivity());
+            mAccountRegisterPre.setKey(KEY_ACCOUNT_REGISTER);
+            mAccountRegisterPre.setTitle(R.string.esp_settings_account_register);
+            mAccountCategory.addPreference(mAccountRegisterPre);
+        }
+    }
+    
     private void showLoginDialog()
     {
         View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
@@ -371,15 +439,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private void loginSuc()
     {
-        mAccountPre.setTitle(mUser.getUserName());
-        mAccountPre.setSummary(mUser.getUserEmail());
-        mAutoLoginPre.setEnabled(true);
-        
-        Preference registerPre = findPreference(KEY_ACCOUNT_REGISTER);
-        if (registerPre != null)
-        {
-            getPreferenceScreen().removePreference(registerPre);
-        }
+        onLoginChanged(true);
         
         mBroadcastManager.sendBroadcast(new Intent(EspStrings.Action.LOGIN_NEW_ACCOUNT));
     }

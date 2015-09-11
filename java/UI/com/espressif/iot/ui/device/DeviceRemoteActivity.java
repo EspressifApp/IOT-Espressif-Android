@@ -22,7 +22,6 @@ public class DeviceRemoteActivity extends DeviceActivityAbs implements OnClickLi
     private EditText mRepeatEdt;
     
     private Button mConfirmBtn;
-    private CheckBox mControlChildCB;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,8 +47,6 @@ public class DeviceRemoteActivity extends DeviceActivityAbs implements OnClickLi
         
         mConfirmBtn = (Button)view.findViewById(R.id.remote_confirm_btn);
         mConfirmBtn.setOnClickListener(this);
-        mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
-        mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
         
         return view;
     }
@@ -101,14 +98,7 @@ public class DeviceRemoteActivity extends DeviceActivityAbs implements OnClickLi
         status.setCommand(Integer.parseInt(command));
         status.setRepeat(Integer.parseInt(repeat));
         
-        if (mIEspDevice.getIsMeshDevice() && mControlChildCB.isChecked())
-        {
-            executePost(status, true);
-        }
-        else
-        {
-            executePost(status);
-        }
+        executePost(status);
     }
     
     @Override

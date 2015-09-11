@@ -16,8 +16,10 @@ import com.espressif.iot.command.device.common.IEspCommandDeviceSynchronizeInter
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.cache.IEspDeviceCache;
 import com.espressif.iot.device.cache.IEspDeviceCache.NotifyType;
+import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.device.EspDevice;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
+import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.net.IOTAddress;
 
@@ -32,18 +34,35 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
         return command.doCommandDeviceDiscoverLocal();
     }
     
-    private List<IEspDevice> doCommandDeviceSynchronizeInternet(String userKey)
+    private List<IEspGroup> doCommandGroupSynchronizeInternet(String userKey)
     {
         IEspCommandDeviceSynchronizeInternet action = new EspCommandDeviceSynchronizeInternet();
-        return action.doCommandDeviceSynchronizeInternet(userKey);
+        return action.doCommandGroupSynchronizeInternet(userKey);
+    }
+    
+    private List<IEspDevice> getDevicesFromGroupList(List<IEspGroup> groupList)
+    {
+        List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
+        for (IEspGroup group : groupList)
+        {
+            List<IEspDevice> deviceListInGroup = group.getDeviceList();
+            for (IEspDevice deviceInList : deviceListInGroup)
+            {
+                if (!deviceList.contains(deviceInList))
+                {
+                    deviceList.add(deviceInList);
+                }
+            }
+        }
+        return deviceList;
     }
     
     private void __doActionDeviceSynchronizeInterentDiscoverLocal(final String userKey, boolean serverRequired,
         boolean localRequired)
     {
         // internet variables
-        Callable<List<IEspDevice>> taskInternet = null;
-        Future<List<IEspDevice>> futureInternet = null;
+        Callable<List<IEspGroup>> taskInternet = null;
+        Future<List<IEspGroup>> futureInternet = null;
         // local variables
         List<IOTAddress> iotAddressList = new ArrayList<IOTAddress>();
         Callable<List<IOTAddress>> taskLocal = null;
@@ -52,17 +71,17 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
         // task Internet
         if (serverRequired)
         {
-            taskInternet = new Callable<List<IEspDevice>>()
+            taskInternet = new Callable<List<IEspGroup>>()
             {
                 
                 @Override
-                public List<IEspDevice> call()
+                public List<IEspGroup> call()
                     throws Exception
                 {
                     log.debug(Thread.currentThread().toString()
                         + "##__doActionDeviceSynchronizeInterentDiscoverLocal(userKey=[" + userKey
                         + "]): doCommandDeviceSynchronizeInternet()");
-                    return doCommandDeviceSynchronizeInternet(userKey);
+                    return doCommandGroupSynchronizeInternet(userKey);
                 }
                 
             };
@@ -201,10 +220,17 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                 }
             }
             
+            List<IEspGroup> internetResult0 = null;
             List<IEspDevice> internetResult = null;
             if (serverRequired)
             {
-                internetResult = futureInternet.get();
+                internetResult0 = futureInternet.get();
+            }
+            if (internetResult0 != null)
+            {
+                // update cloud groups
+                EspGroupHandler.getInstance().updateSynchronizeCloudGroups(internetResult0);
+                internetResult = getDevicesFromGroupList(internetResult0);
             }
             
             // Internet unaccessible or serverRequired = false

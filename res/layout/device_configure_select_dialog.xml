@@ -5,10 +5,6 @@
     android:orientation="vertical" >
 
     <include
-        android:id="@+id/device_mesh_content"
-        layout="@layout/device_configure_mesh_select_dialog" />
-
-    <include
         android:id="@+id/device_configrue_content"
         layout="@layout/device_configure_settings_dialog" />
 

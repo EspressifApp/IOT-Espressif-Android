@@ -32,12 +32,6 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
     @Override
     public boolean doActionDevicePostStatusInternet(IEspDevice device, IEspDeviceStatus status)
     {
-        return doActionDevicePostStatusInternet(device, status, false);
-    }
-    
-    @Override
-    public boolean doActionDevicePostStatusInternet(IEspDevice device, IEspDeviceStatus status, boolean isBroadcast)
-    {
         EspDeviceType deviceType = device.getDeviceType();
         String deviceKey = device.getKey();
         boolean suc = false;

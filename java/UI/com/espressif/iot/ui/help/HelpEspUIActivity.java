@@ -43,8 +43,8 @@ import com.espressif.iot.type.help.HelpStepUsePlugs;
 import com.espressif.iot.type.help.HelpStepUseRemote;
 import com.espressif.iot.type.help.HelpStepUseVoltage;
 import com.espressif.iot.type.help.HelpType;
-import com.espressif.iot.ui.device.DeviceRootRouterActivity;
 import com.espressif.iot.ui.main.EspUIActivity;
+import com.espressif.iot.ui.view.menu.IEspBottomMenu;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfigure, IEspHelpUIUsePlug,
@@ -57,7 +57,9 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
     private final static int HELP_FIND_UPGRADE_ONLINE = 2;
     
     private final static int REQUEST_CONFIGURE = 0x20;
-        
+    
+    private final static int MENU_ID_HELP = 10;
+    
     private HelpHandler mHelpHandler;
     
     @Override
@@ -65,8 +67,27 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
     {
         super.onCreate(savedInstanceState);
         
-        setTitleRightIcon(R.drawable.esp_icon_help);
         mHelpHandler = new HelpHandler(this);
+    }
+    
+    @Override
+    protected void onCreateBottomItems(IEspBottomMenu bottomMenu)
+    {
+        super.onCreateBottomItems(bottomMenu);
+        
+        bottomMenu.addBottomItem(MENU_ID_HELP, R.drawable.esp_icon_help, R.string.esp_ui_menu_help);
+    }
+    
+    @Override
+    protected void onBottomItemClick(View v, int itemId)
+    {
+        if (itemId == MENU_ID_HELP)
+        {
+            startActivityForResult(new Intent(this, HelpActivity.class), REQUEST_HELP);
+            return;
+        }
+        
+        super.onBottomItemClick(v, itemId);
     }
     
     @Override
@@ -78,68 +99,6 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
         }
         
         return super.onItemLongClick(parent, view, position, id);
-    }
-    
-    @Override
-    protected Class<?> getDeviceClass(IEspDevice device)
-    {
-        IEspDeviceState state = device.getDeviceState();
-        Class<?> _class = null;
-        switch (device.getDeviceType())
-        {
-            case PLUG:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = HelpDevicePlugActivity.class;
-                }
-                break;
-            case LIGHT:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = HelpDeviceLightActivity.class;
-                }
-                break;
-            case FLAMMABLE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = HelpDeviceFlammableActivity.class;
-                }
-                break;
-            case HUMITURE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = HelpDeviceHumitureActivity.class;
-                }
-                break;
-            case VOLTAGE:
-                if (state.isStateInternet() || state.isStateOffline())
-                {
-                    _class = HelpDeviceVoltageActivity.class;
-                }
-                break;
-            case REMOTE:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                }
-                break;
-            case PLUGS:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = HelpDevicePlugsActivity.class;
-                }
-                break;
-            case ROOT:
-                if (state.isStateInternet() || state.isStateLocal())
-                {
-                    _class = DeviceRootRouterActivity.class;
-                }
-                break;
-            case NEW:
-                log.warn("Click on NEW device, it shouldn't happen");
-                break;
-        }
-        
-        return _class;
     }
     
     @Override
@@ -171,12 +130,6 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
     protected boolean checkHelpClickDeviceType(EspDeviceType type)
     {
         return mHelpMachine.isHelpOn() && !onHelpDeviceClick(type);
-    }
-    
-    @Override
-    protected void onTitleRightIconClick()
-    {
-        startActivityForResult(new Intent(this, HelpActivity.class), REQUEST_HELP);
     }
     
     @Override
@@ -668,9 +621,9 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
      */
     private void useDeviceHelpStart(EspDeviceType type)
     {
-        for (int i = 0; i < mDeviceList.size(); i++)
+        for (int i = 0; i < mAllDeviceList.size(); i++)
         {
-            IEspDevice device = mDeviceList.get(i);
+            IEspDevice device = mAllDeviceList.get(i);
             if (device.getDeviceType() == type)
             {
                 if (type == EspDeviceType.FLAMMABLE || type == EspDeviceType.HUMITURE)
@@ -691,9 +644,9 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
      */
     private void useDeviceHelpFindOnline(EspDeviceType type)
     {
-        for (int i = 0; i < mDeviceList.size(); i++)
+        for (int i = 0; i < mAllDeviceList.size(); i++)
         {
-            IEspDevice device = mDeviceList.get(i);
+            IEspDevice device = mAllDeviceList.get(i);
             if (device.getDeviceType() == type)
             {
                 IEspDeviceState state = device.getDeviceState();
@@ -828,9 +781,9 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
      */
     private IEspDevice findHelpUpgradDevice(int upgradeType, boolean checkState)
     {
-        for (int i = 0; i < mDeviceList.size(); i++)
+        for (int i = 0; i < mAllDeviceList.size(); i++)
         {
-            IEspDevice device = mDeviceList.get(i);
+            IEspDevice device = mAllDeviceList.get(i);
             
             if (upgradeType == HELP_FIND_UPGRADE_LOCAL)
             {

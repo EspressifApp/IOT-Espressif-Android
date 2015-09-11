@@ -14,7 +14,6 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
     private IEspDevicePlug mDevicePlug;
     
     protected CheckBox mPlugSwitch;
-    private CheckBox mControlChildCB;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -37,9 +36,6 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         View view = getLayoutInflater().inflate(R.layout.device_activity_plug, null);
         mPlugSwitch = (CheckBox)view.findViewById(R.id.plug_switch);
         mPlugSwitch.setOnClickListener(this);
-        mControlChildCB = (CheckBox)view.findViewById(R.id.control_child_cb);
-        mControlChildCB.setVisibility(mIEspDevice.getIsMeshDevice() ? View.VISIBLE : View.GONE);
-        mControlChildCB.setVisibility(View.GONE); // hide mesh child checkbox
         
         return view;
     }
@@ -53,14 +49,12 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
             EspStatusPlug status = new EspStatusPlug();
             status.setIsOn(isOn);
             
-            if (mIEspDevice.getIsMeshDevice() && mControlChildCB.isChecked())
+            if (isDeviceArray())
             {
-                executePost(status, true);
+                mDevicePlug.setStatusPlug(status);
             }
-            else
-            {
-                executePost(status);
-            }
+            
+            executePost(status);
         }
     }
     

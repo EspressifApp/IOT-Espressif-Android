@@ -2,6 +2,7 @@ package com.espressif.iot.user;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -10,19 +11,20 @@ import android.net.wifi.ScanResult;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
-import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
+import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.object.IEspSingletonObject;
-import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
+import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspRegisterResult;
+import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 
 public interface IEspUser extends IEspSingletonObject
 {
@@ -181,6 +183,18 @@ public interface IEspUser extends IEspSingletonObject
     Void saveUserInfoInDB();
     
     /**
+     * Get group list of user
+     * 
+     * @return a new List
+     */
+    List<IEspGroup> getGroupList();
+    
+    /**
+     * Load group from db
+     */
+    void loadGroupDB();
+    
+    /**
      * configure the new device to an AP accessible to Internet (if configure suc, save the device into local db with
      * negative device id)
      * 
@@ -199,16 +213,6 @@ public interface IEspUser extends IEspSingletonObject
      * @return whether the post action is suc
      */
     boolean doActionPostDeviceStatus(final IEspDevice device, final IEspDeviceStatus status);
-    
-    /**
-     * post the status to device(via local or internet) if local it will use local first
-     * 
-     * @param device the device
-     * @param status the new status
-     * @param isBroadcast whether post the status to its child or not
-     * @return whether the post action is suc
-     */
-    boolean doActionPostDeviceStatus(final IEspDevice device, final IEspDeviceStatus status, boolean isBroadcast);
     
     /**
      * get the current status of device(via local or internet) if local it will use local first
@@ -461,7 +465,7 @@ public interface IEspUser extends IEspSingletonObject
      * @param device
      * @return the information of the SoftAP
      */
-    DeviceInfo doActionDeviceNewConnect(IEspDeviceNew device);
+    IOTAddress doActionDeviceNewConnect(IEspDeviceNew device);
     
     /**
      * Sleep or Reboot the device
@@ -628,4 +632,68 @@ public interface IEspUser extends IEspSingletonObject
      * cancel all tasks about adding devices
      */
     void cancelAllAddDevices();
+    
+    /**
+     * all devices are added already confirmed by user
+     */
+    void doneAllAddDevices();
+    
+    /**
+     * Create a new group
+     * 
+     * @param groupName
+     */
+    void doActionGroupCreate(String groupName);
+    
+    /**
+     * Rename a group
+     * 
+     * @param group
+     * @param newName
+     */
+    void doActionGroupRename(IEspGroup group, String newName);
+    
+    /**
+     * Delete group
+     * 
+     * @param group
+     */
+    void doActionGroupDelete(IEspGroup group);
+    
+    /**
+     * Move the device into the group
+     * 
+     * @param device
+     * @param group
+     */
+    void doActionGroupDeviceMoveInto(IEspDevice device, IEspGroup group);
+    
+    /**
+     * Remove device from the group
+     * 
+     * @param device
+     * @param group
+     */
+    void doActionGroupDeviceRemove(IEspDevice device, IEspGroup group);
+    
+    /**
+     * Get the devices never used after activated
+     * 
+     * @return
+     */
+    Set<String> getNewActivatedDevices();
+    
+    /**
+     * Add new device which never used
+     * 
+     * @param deviceKey
+     */
+    void saveNewActivatedDevice(String deviceKey);
+    
+    /**
+     * Remove new device which never used
+     * 
+     * @param deviceKey
+     */
+    void deleteNewActivatedDevice(String deviceKey);
 }

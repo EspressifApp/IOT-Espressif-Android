@@ -15,7 +15,6 @@ public class AccountUtil
         try
         {
             Long.parseLong(account);
-//            return TYPE_PHONE;
         }
         catch (NumberFormatException e)
         {

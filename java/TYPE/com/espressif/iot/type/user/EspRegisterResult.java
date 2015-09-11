@@ -5,6 +5,7 @@ import org.apache.http.HttpStatus;
 public enum EspRegisterResult
 {
     SUC, USER_OR_EMAIL_EXIST_ALREADY, CONTENT_FORMAT_ERROR, NETWORK_UNACCESSIBLE;
+    
     public static EspRegisterResult getEspLoginResult(int status)
     {
         if (status == HttpStatus.SC_OK)

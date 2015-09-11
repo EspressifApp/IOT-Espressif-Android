@@ -11,6 +11,7 @@ import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -101,6 +102,7 @@ public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs impl
                 // Configure success
                 mDialog.setMessage(mActivity.getString(R.string.esp_configure_result_success));
                 mDialog.dismiss();
+                mActivity.setResult(Activity.RESULT_OK);
                 mActivity.finish();
                 
                 connectAP();

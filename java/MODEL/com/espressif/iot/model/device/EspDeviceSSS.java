@@ -1,6 +1,5 @@
 package com.espressif.iot.model.device;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
@@ -17,7 +16,6 @@ import com.espressif.iot.type.device.status.EspStatusPlugs;
 import com.espressif.iot.type.device.status.EspStatusRemote;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.user.builder.BEspUser;
-import com.espressif.iot.util.RandomUtil;
 
 /**
  * Support SoftAP and Station device
@@ -40,7 +38,6 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
     
     public EspDeviceSSS(IOTAddress iotAddress)
     {
-        setKey(RandomUtil.randomString(20));
         init(iotAddress);
     }
     
@@ -57,6 +54,7 @@ public class EspDeviceSSS extends EspDevice implements IEspDeviceSSS
         setDeviceType(mIOTAddress.getDeviceTypeEnum());
         setParentDeviceBssid(mIOTAddress.getParentBssid());
         setIsMeshDevice(iotAddress.isMeshDevice());
+        setKey(mIOTAddress.getBSSID());
         setId(getNextId());
         
         EspDeviceType deviceType = mIOTAddress.getDeviceTypeEnum();

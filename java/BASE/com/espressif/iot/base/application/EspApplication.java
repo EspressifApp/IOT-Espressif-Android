@@ -5,6 +5,7 @@ import cn.sharesdk.framework.ShareSDK;
 import com.espressif.iot.base.net.wifi.WifiAdmin;
 import com.espressif.iot.base.threadpool.CachedThreadPool;
 import com.espressif.iot.base.time.EspTimeManager;
+import com.espressif.iot.db.EspGroupDBManager;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.IOTDeviceDBManager;
 import com.espressif.iot.db.IOTDownloadIdValueDBManager;
@@ -43,7 +44,7 @@ public class EspApplication extends Application
         return instance;
     }
     
-    public static boolean GOOGLE_PALY_VERSION = true;
+    public static boolean SUPPORT_APK_UPGRADE = true;
     
     @Override
     public void onCreate()
@@ -152,6 +153,7 @@ public class EspApplication extends Application
         DaoSession daoSession = daoMaster.newSession();
         IOTUserDBManager.init(daoSession);
         IOTDeviceDBManager.init(daoSession);
+        EspGroupDBManager.init(daoSession);
         IOTApDBManager.init(daoSession);
         IOTDownloadIdValueDBManager.init(daoSession);
         // data and data directory using seperate session for they maybe take long time

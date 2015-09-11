@@ -9,13 +9,13 @@ import java.util.Vector;
 
 import android.text.TextUtils;
 
+import com.espressif.iot.action.device.common.upgrade.EspDeviceUpgradeParser;
+import com.espressif.iot.action.device.common.upgrade.IEspDeviceUpgradeInfo;
+import com.espressif.iot.action.device.common.upgrade.IEspDeviceUpgradeParser;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.db.IOTDeviceDBManager;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.upgrade.IEspDeviceUpgradeInfo;
-import com.espressif.iot.device.upgrade.IEspDeviceUpgradeParser;
 import com.espressif.iot.model.adt.tree.EspDeviceTreeElement;
-import com.espressif.iot.model.device.upgrade.EspDeviceUpgradeParser;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
@@ -39,6 +39,8 @@ public class EspDevice implements IEspDevice, Cloneable
     protected String mLatestRomVersion;
     
     protected long mTimeStamp;
+    
+    protected long mActivatedTime;
     
     protected long mUserId;
     
@@ -164,6 +166,18 @@ public class EspDevice implements IEspDevice, Cloneable
     public void setTimestamp(long timestamp)
     {
         this.mTimeStamp = timestamp;
+    }
+    
+    @Override
+    public long getActivatedTime()
+    {
+        return mActivatedTime;
+    }
+    
+    @Override
+    public void setActivatedTime(long activatedAt)
+    {
+        mActivatedTime = activatedAt;
     }
     
     @Override
@@ -302,6 +316,7 @@ public class EspDevice implements IEspDevice, Cloneable
             mRomVersion,
             mLatestRomVersion,
             mTimeStamp,
+            mActivatedTime,
             mUserId);
     }
     
@@ -418,6 +433,12 @@ public class EspDevice implements IEspDevice, Cloneable
     }
     
     @Override
+    public void copyActivatedTime(IEspDevice device)
+    {
+        mActivatedTime = device.getActivatedTime();
+    }
+    
+    @Override
     public boolean equals(Object o)
     {
         // check the type
@@ -449,15 +470,9 @@ public class EspDevice implements IEspDevice, Cloneable
     @Override
     public String toString()
     {
-        // return "EspDevice: (mBssid=[" + mBssid + "],mDeviceId=[" + mDeviceId + "],mDeviceKey=[" + mDeviceKey
-        // + "],mIsOwner=[" + mIsOwner + "],mDeviceName=[" + mDeviceName + "],mRomVersion=[" + mRomVersion
-        // + "],mLatestRomVersion=[" + mLatestRomVersion + "],mTimeStamp=[" + mTimeStamp + "],mUserId=[" + mUserId
-        // + "],_isDeviceRefreshed=[" + _isDeviceRefreshed + "],mDeviceType=[" + mDeviceType + "],mDeviceState=["
-        // + mDeviceState + "],mInetAddress=[" + mInetAddress + "])";
-        return "EspDevice: (mBssid=[" + mBssid + "],mParentDeviceBssid=[" + mParentDeviceBssid + "]mDeviceId=[" + mDeviceId
-            + "],mDeviceName=[" + mDeviceName + "],mDeviceState=[" + mDeviceState + "],mIsMeshDevice=[" + mIsMeshDevice
-            + "],mInetAddress=[" + mInetAddress + "])";
-        
+        return "EspDevice: (mBssid=[" + mBssid + "],mParentDeviceBssid=[" + mParentDeviceBssid + "]mDeviceId=["
+            + mDeviceId + "],mDeviceName=[" + mDeviceName + "],mDeviceState=[" + mDeviceState + "],mIsMeshDevice=["
+            + mIsMeshDevice + "],mInetAddress=[" + mInetAddress + "])";
     }
     
     private List<IEspDeviceTreeElement> __getDeviceTreeElementListByBssid2(List<IEspDevice> allDeviceList)

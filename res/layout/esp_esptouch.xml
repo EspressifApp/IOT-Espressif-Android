@@ -14,20 +14,20 @@
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/esp_sss_esptouch_password"
+        android:hint="@string/esp_esptouch_password"
         android:inputType="textPassword" />
 
     <CheckBox
         android:id="@+id/show_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/esp_sss_esptouch_show_password" />
+        android:text="@string/esp_esptouch_show_password" />
 
     <CheckBox
         android:id="@+id/is_hidden"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/esp_sss_esptouch_is_hidden" />
+        android:text="@string/esp_esptouch_is_hidden" />
 
     <CheckBox
         android:id="@+id/multiple_devices"
@@ -55,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/esp_sss_esptouch_wifi_hint" />
+        android:text="@string/esp_esptouch_wifi_hint" />
 
     <TextView
         android:layout_width="match_parent"

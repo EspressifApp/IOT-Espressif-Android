@@ -36,8 +36,6 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
     private EditText mWifiPasswordEdt;
     private CheckBox mShowPasswordCheck;
     
-    protected View mMeshContent;
-    
     public DeviceConfigureSettingsDialog(DeviceConfigureActivity activity, IEspDeviceNew device)
     {
         super(activity, device);
@@ -61,9 +59,6 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
         mShowPasswordCheck = (CheckBox)view.findViewById(R.id.wifi_show_password_check);
         mShowPasswordCheck.setOnCheckedChangeListener(mShowPasswordListener);
         mShowPasswordCheck.setChecked(true);
-        
-        mMeshContent = view.findViewById(R.id.device_mesh_content);
-        mMeshContent.setVisibility(View.GONE);
         
         mDialog =
             new AlertDialog.Builder(mActivity).setTitle(mDevice.getSsid())

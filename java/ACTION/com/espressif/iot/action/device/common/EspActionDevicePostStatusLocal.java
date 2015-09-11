@@ -30,13 +30,8 @@ import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 
 public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatusLocal
 {
-    private boolean __doActionDevicePostStatusLocal(IEspDevice device, IEspDeviceStatus status, boolean isBroadcast)
+    private boolean __doActionDevicePostStatusLocal(IEspDevice device, IEspDeviceStatus status)
     {
-        if (isBroadcast && !device.getIsMeshDevice())
-        {
-            throw new IllegalArgumentException("only mesh device support broadcast action");
-        }
-        
         EspDeviceType deviceType = device.getDeviceType();
         InetAddress inetAddress = device.getInetAddress();
         String deviceBssid = device.getBssid();
@@ -95,7 +90,8 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
             case REMOTE:
                 IEspStatusRemote remoteStatus = (IEspStatusRemote)status;
                 IEspCommandRemotePostStatusLocal remoteCommand = new EspCommandRemotePostStatusLocal();
-                suc = remoteCommand.doCommandRemotePostStatusLocal(inetAddress, remoteStatus, deviceBssid, isMeshDevice);
+                suc =
+                    remoteCommand.doCommandRemotePostStatusLocal(inetAddress, remoteStatus, deviceBssid, isMeshDevice);
                 if (suc)
                 {
                     IEspStatusRemote statusRemote;
@@ -148,13 +144,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
     @Override
     public boolean doActionDevicePostStatusLocal(IEspDevice device, IEspDeviceStatus status)
     {
-        return __doActionDevicePostStatusLocal(device, status, false);
-    }
-    
-    @Override
-    public boolean doActionDevicePostStatusLocal(IEspDevice device, IEspDeviceStatus status, boolean isBroadcast)
-    {
-        return __doActionDevicePostStatusLocal(device, status, isBroadcast);
+        return __doActionDevicePostStatusLocal(device, status);
     }
     
     private void doRootRouterCommandLocal(IEspDeviceRoot device, IEspDeviceStatus status)
@@ -173,6 +163,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
     private class RootStatusRunnable implements Runnable
     {
         private IEspDevice device;
+        
         private IEspDeviceStatus status;
         
         public RootStatusRunnable(IEspDevice device, IEspDeviceStatus status)

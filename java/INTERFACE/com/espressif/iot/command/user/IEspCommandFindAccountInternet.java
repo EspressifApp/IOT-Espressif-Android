@@ -8,6 +8,7 @@ public interface IEspCommandFindAccountInternet extends IEspCommandUser, IEspCom
     static final String URL = "https://iot.espressif.cn/v1/user/find/";
     
     static final int RESULT_FOUND = 200;
+    
     static final int RESULT_NOT_FOUND = 404;
     
     boolean doCommandFindUsernametInternet(String userName);

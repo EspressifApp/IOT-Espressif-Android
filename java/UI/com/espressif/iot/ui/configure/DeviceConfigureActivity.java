@@ -6,16 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
-import com.espressif.iot.type.device.DeviceInfo;
-import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.device.DeviceLightActivity;
@@ -32,15 +28,12 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -52,7 +45,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -62,10 +54,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceConfigureActivity extends EspActivityAbs implements OnItemClickListener,
-    OnRefreshListener<ListView>, OnItemLongClickListener, OnSharedPreferenceChangeListener
+    OnRefreshListener<ListView>, OnSharedPreferenceChangeListener
 {
-    private final Logger log = Logger.getLogger(DeviceConfigureActivity.class);
-    
     private IEspUser mUser;
     
     /**
@@ -80,6 +70,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     private Handler mHandler;
     
     private SharedPreferences mShared;
+    
     private int mAutoConfigureValue;
     
     public static final int DEFAULT_AUTO_CONFIGRUE_VALUE = -30;
@@ -109,7 +100,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         
         mSoftApListView = (PullToRefreshListView)findViewById(R.id.softap_list);
         mSoftApListView.setOnItemClickListener(this);
-//        mSoftApListView.getRefreshableView().setOnItemLongClickListener(this);
         mSoftApList = new Vector<IEspDeviceNew>();
         mSoftApAdapter = new SoftApAdapter(this);
         mSoftApListView.setAdapter(mSoftApAdapter);
@@ -424,7 +414,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             TextView deviceRssiTV = (TextView)convertView.findViewById(R.id.device_status_text);
             deviceRssiTV.setText("RSSI: " + deviceNew.getRssi());
             
-            ImageView meshIcon = (ImageView)convertView.findViewById(R.id.device_status);
+            ImageView meshIcon = (ImageView)convertView.findViewById(R.id.device_status1);
             boolean isMesh = deviceNew.getIsMeshDevice();
             if (isMesh)
             {
@@ -488,7 +478,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 return true;
             }
             
-            switch(item.getItemId())
+            switch (item.getItemId())
             {
                 case POPMENU_ID_ACTIVATE:
                     showConfigureSettingsDialog(mPopDevice);
@@ -509,7 +499,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     
     public void showConfigureProgressDialog(IEspDeviceNew device, ApInfo apInfo)
     {
-        new DeviceConfigureProgressDialog(this, device, apInfo).show(); 
+        new DeviceConfigureProgressDialog(this, device, apInfo).show();
     }
     
     public void showDirectConnectProgressDialog(IEspDeviceNew device)
@@ -528,7 +518,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             case LIGHT:
                 cls = EspApplication.HELP_ON ? HelpDeviceLightActivity.class : DeviceLightActivity.class;
                 break;
-                
+            
             default:
                 break;
         }
@@ -539,135 +529,12 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             Intent intent = new Intent(getBaseContext(), cls);
             intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
             intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-            intent.putExtra(EspStrings.Key.DEVICE_KEY_DIRECT_CONNECT, true);
-            DeviceActivityAbs.DirectConnectDevice = device;
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, true);
+            DeviceActivityAbs.TEMP_DEVICE = device;
             startActivity(intent);
         }
     }
     
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
-    {
-        final IEspDeviceNew device = mSoftApList.get(position - LIST_HEADER_COUNT);
-        new AlertDialog.Builder(this).setTitle(device.getName())
-            .setMessage(R.string.esp_configure_softap_connect_message)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-            {
-                
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    showSoftApDialog(device);
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
-        return true;
-    }
-    
-    private void showSoftApDialog(final IEspDeviceNew device)
-    {
-        final View view = getLayoutInflater().inflate(R.layout.device_softap_dialog, null);
-        final AlertDialog dialog =
-            new AlertDialog.Builder(this).setTitle(device.getName())
-                .setView(view)
-                .setPositiveButton(R.string.esp_configure_softap_close, new DialogInterface.OnClickListener()
-                {
-                    
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        // Get device type from saved view tag
-                        Object tag = view.getTag();
-                        log.info("The closed softap dialog view tag = " + tag);
-                        if (tag != null)
-                        {
-                            EspDeviceType type = (EspDeviceType)tag;
-                            mUser.doActionDeviceSleepRebootLocal(type);
-                        }
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .setCancelable(false)
-                .show();
-        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);
-        
-        final String connectedSSID = EspBaseApiUtil.getWifiConnectedSsid();
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
-        {
-            
-            @Override
-            public void onDismiss(DialogInterface dialog)
-            {
-                log.info("Reconnect wifi ssid = " + connectedSSID);
-                EspBaseApiUtil.enableConnected(connectedSSID);
-            }
-        });
-        
-        new ConnectSoftApTask(dialog, view).execute(device);
-    }
-    
-    private class ConnectSoftApTask extends AsyncTask<IEspDeviceNew, Void, DeviceInfo>
-    {
-        
-        private AlertDialog mDialog;
-        
-        private View mView;
-        
-        public ConnectSoftApTask(AlertDialog dialog, View view)
-        {
-            mDialog = dialog;
-            mView = view;
-        }
-        
-        @Override
-        protected DeviceInfo doInBackground(IEspDeviceNew... params)
-        {
-            IEspDeviceNew device = params[0];
-            return mUser.doActionDeviceNewConnect(device);
-        }
-        
-        @Override
-        protected void onPostExecute(DeviceInfo result)
-        {
-            mView.findViewById(R.id.progress_bar).setVisibility(View.GONE);
-            mView.findViewById(R.id.device_info_container).setVisibility(View.VISIBLE);
-            TextView versionTV = (TextView)mView.findViewById(R.id.device_version);
-            TextView typeTV = (TextView)mView.findViewById(R.id.device_type);
-            TextView authorizedTV = (TextView)mView.findViewById(R.id.device_authorized);
-            if (result == null)
-            {
-                String failedStr = getString(R.string.esp_configure_softap_getinfo_failed);
-                versionTV.setText(getString(R.string.esp_configure_softap_version, failedStr));
-                typeTV.setText(getString(R.string.esp_configure_softap_type, failedStr));
-                authorizedTV.setText(getString(R.string.esp_configure_softap_authorized, failedStr));
-            }
-            else
-            {
-                // Save the device type in view tag
-                mView.setTag(EspDeviceType.getEspTypeEnumByString(result.getType()));
-                
-                versionTV.setText(getString(R.string.esp_configure_softap_version, result.getVersion()));
-                typeTV.setText(getString(R.string.esp_configure_softap_type, result.getType()));
-                String authorizedStr;
-                if (result.isAuthorized())
-                {
-                    authorizedStr = getString(R.string.esp_configure_softap_authorized_yes);
-                }
-                else
-                {
-                    authorizedStr = getString(R.string.esp_configure_softap_authorized_no);
-                }
-                authorizedTV.setText(getString(R.string.esp_configure_softap_authorized, authorizedStr));
-                
-                mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
-            }
-            
-            mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(true);
-        }
-    }
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
     {
@@ -677,10 +544,12 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         }
     }
     
-    protected void checkHelpModeConfigureClear() {
+    protected void checkHelpModeConfigureClear()
+    {
     }
     
-    protected void checkHelpModeConfigureRetry() {
+    protected void checkHelpModeConfigureRetry()
+    {
     }
     
     protected boolean checkHelpModeOn()

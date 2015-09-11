@@ -115,7 +115,7 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
         }
         DeviceDB deviceDB =
             new DeviceDB(deviceId, key, bssid, type, state, true, name, rom_version, latest_rom_version, timestamp,
-                userId);
+                0, userId);
         log.info(Thread.currentThread().toString() + "##insertActivactingDevice(deviceId=[" + deviceId + "],bssid=["
             + bssid + "],type=[" + type + "],state=[" + state + "],isOwner=[" + true + "],name=[" + name
             + "],rom_version=[" + rom_version + "],latest_rom_version=[" + latest_rom_version + "],timestamp=["
@@ -125,11 +125,12 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
     
     @Override
     public synchronized void insertOrReplace(long deviceId, String key, String bssid, int type, int state,
-        boolean isOwner, String name, String rom_version, String latest_rom_version, long timestamp, long userId)
+        boolean isOwner, String name, String rom_version, String latest_rom_version, long timestamp,
+        long activatedTime, long userId)
     {
         DeviceDB deviceDB =
             new DeviceDB(deviceId, key, bssid, type, state, isOwner, name, rom_version, latest_rom_version, timestamp,
-                userId);
+                activatedTime, userId);
         deviceDao.insertOrReplace(deviceDB);
         log.info(Thread.currentThread().toString() + "##insertOrReplace(deviceId=[" + deviceId + "],bssid=[" + bssid
             + "],type=[" + type + "],state=[" + state + "],isOwner=[" + isOwner + "],name=[" + name + "],timestamp=["

@@ -39,17 +39,13 @@ public class WelcomeActivity extends Activity
     private ImageView mMainIV;
     
     private ViewPager mPager;
-    
     private PagerAdapter mPagerAdapter;
-    
     private List<View> mPagerViewList;
     
     private final static String NAME_USE_INFO = "use_info";
-    
     private final static String KEY_LAST_USE_VERSION_CODE = "key_last_use_version_code";
     
     private final static int MSG_SHOW_PAGER = 0x10;
-    
     private final static int MSG_LOGIN = 0x11;
     
     private Handler mHandler;

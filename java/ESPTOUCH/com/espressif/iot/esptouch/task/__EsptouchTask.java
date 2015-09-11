@@ -382,25 +382,29 @@ public class __EsptouchTask implements __IEsptouchTask
             }
         }
         
-        // wait the udp response without sending udp broadcast
-        try
+        if (!mIsInterrupt)
         {
-            Thread.sleep(mParameter.getWaitUdpReceivingMillisecond());
-        }
-        catch (InterruptedException e)
-        {
-            // receive the udp broadcast or the user interrupt the task
-            if (this.mIsSuc)
+            // wait the udp response without sending udp broadcast
+            try
             {
-                return __getEsptouchResultList();
+                Thread.sleep(mParameter.getWaitUdpReceivingMillisecond());
             }
-            else
+            catch (InterruptedException e)
             {
-                this.__interrupt();
-                return __getEsptouchResultList();
+                // receive the udp broadcast or the user interrupt the task
+                if (this.mIsSuc)
+                {
+                    return __getEsptouchResultList();
+                }
+                else
+                {
+                    this.__interrupt();
+                    return __getEsptouchResultList();
+                }
             }
+            this.__interrupt();
         }
-        this.__interrupt();
+        
         return __getEsptouchResultList();
     }
     

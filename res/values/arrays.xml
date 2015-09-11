@@ -81,20 +81,6 @@
         <item>Delete</item>
     </string-array>
 
-    <string-array name="esp_ui_device_dialog_items">
-        <item>Rename</item>
-        <item>Delete</item>
-    </string-array>
-
-    <string-array name="esp_sss_device_configure_options">
-        <item>Direct Connect</item>
-        <!-- <item>Mesh Configure</item> -->
-    </string-array>
-
-    <string-array name="esp_sss_device_use_options">
-        <item>Upgrade device</item>
-    </string-array>
-    
     <integer-array name="esp_touch_taskResultCount">
         <item>0</item>
         <item>1</item>
@@ -103,5 +89,9 @@
         <item>4</item>
         <item>5</item>
     </integer-array>
-    
+
+    <string-array name="esp_ui_device_sort">
+        <item>Device name</item>
+        <item>Activated time</item>
+    </string-array>
 </resources>

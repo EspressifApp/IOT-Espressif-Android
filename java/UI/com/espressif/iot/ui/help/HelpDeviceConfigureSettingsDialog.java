@@ -1,7 +1,5 @@
 package com.espressif.iot.ui.help;
 
-import android.view.View;
-
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
 import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
@@ -19,17 +17,6 @@ public class HelpDeviceConfigureSettingsDialog extends DeviceConfigureSettingsDi
         
         mActivity = activity;
         mHelpMachine = EspHelpStateMachine.getInstance();
-    }
-    
-    @Override
-    public void show()
-    {
-        super.show();
-        
-        if (mHelpMachine.isHelpModeConfigure())
-        {
-            mMeshContent.setVisibility(View.GONE);
-        }
     }
     
     @Override

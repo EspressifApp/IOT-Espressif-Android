@@ -11,6 +11,7 @@ import de.greenrobot.dao.internal.DaoConfig;
 
 import com.espressif.iot.db.greenrobot.daos.UserDB;
 import com.espressif.iot.db.greenrobot.daos.DeviceDB;
+import com.espressif.iot.db.greenrobot.daos.GroupDB;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.db.greenrobot.daos.DownloadIdValueDB;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDB;
@@ -18,6 +19,7 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
 
 import com.espressif.iot.db.greenrobot.daos.UserDBDao;
 import com.espressif.iot.db.greenrobot.daos.DeviceDBDao;
+import com.espressif.iot.db.greenrobot.daos.GroupDBDao;
 import com.espressif.iot.db.greenrobot.daos.ApDBDao;
 import com.espressif.iot.db.greenrobot.daos.DownloadIdValueDBDao;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDBDao;
@@ -37,6 +39,8 @@ public class DaoSession extends AbstractDaoSession
     
     private final DaoConfig deviceDBDaoConfig;
     
+    private final DaoConfig groupDBDaoConfig;
+    
     private final DaoConfig apDBDaoConfig;
     
     private final DaoConfig downloadIdValueDBDaoConfig;
@@ -48,6 +52,8 @@ public class DaoSession extends AbstractDaoSession
     private final UserDBDao userDBDao;
     
     private final DeviceDBDao deviceDBDao;
+    
+    private final GroupDBDao groupDBDao;
     
     private final ApDBDao apDBDao;
     
@@ -68,6 +74,9 @@ public class DaoSession extends AbstractDaoSession
         deviceDBDaoConfig = daoConfigMap.get(DeviceDBDao.class).clone();
         deviceDBDaoConfig.initIdentityScope(type);
         
+        groupDBDaoConfig = daoConfigMap.get(GroupDBDao.class).clone();
+        groupDBDaoConfig.initIdentityScope(type);
+        
         apDBDaoConfig = daoConfigMap.get(ApDBDao.class).clone();
         apDBDaoConfig.initIdentityScope(type);
         
@@ -82,6 +91,7 @@ public class DaoSession extends AbstractDaoSession
         
         userDBDao = new UserDBDao(userDBDaoConfig, this);
         deviceDBDao = new DeviceDBDao(deviceDBDaoConfig, this);
+        groupDBDao = new GroupDBDao(groupDBDaoConfig, this);
         apDBDao = new ApDBDao(apDBDaoConfig, this);
         downloadIdValueDBDao = new DownloadIdValueDBDao(downloadIdValueDBDaoConfig, this);
         genericDataDirectoryDBDao = new GenericDataDirectoryDBDao(genericDataDirectoryDBDaoConfig, this);
@@ -89,6 +99,7 @@ public class DaoSession extends AbstractDaoSession
         
         registerDao(UserDB.class, userDBDao);
         registerDao(DeviceDB.class, deviceDBDao);
+        registerDao(GroupDB.class, groupDBDao);
         registerDao(ApDB.class, apDBDao);
         registerDao(DownloadIdValueDB.class, downloadIdValueDBDao);
         registerDao(GenericDataDirectoryDB.class, genericDataDirectoryDBDao);
@@ -99,6 +110,7 @@ public class DaoSession extends AbstractDaoSession
     {
         userDBDaoConfig.getIdentityScope().clear();
         deviceDBDaoConfig.getIdentityScope().clear();
+        groupDBDaoConfig.getIdentityScope().clear();
         apDBDaoConfig.getIdentityScope().clear();
         downloadIdValueDBDaoConfig.getIdentityScope().clear();
         genericDataDirectoryDBDaoConfig.getIdentityScope().clear();
@@ -113,6 +125,11 @@ public class DaoSession extends AbstractDaoSession
     public DeviceDBDao getDeviceDBDao()
     {
         return deviceDBDao;
+    }
+    
+    public GroupDBDao getGroupDBDao()
+    {
+        return groupDBDao;
     }
     
     public ApDBDao getApDBDao()

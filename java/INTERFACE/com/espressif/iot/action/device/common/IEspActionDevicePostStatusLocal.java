@@ -9,6 +9,7 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 public interface IEspActionDevicePostStatusLocal extends IEspActionActivated, IEspActionUnactivated, IEspActionLocal
 {
     static final int FIRST_CHILD_LEVEL = 2;
+    
     /**
      * post the status to device via local
      * 
@@ -18,13 +19,4 @@ public interface IEspActionDevicePostStatusLocal extends IEspActionActivated, IE
      */
     boolean doActionDevicePostStatusLocal(final IEspDevice device, final IEspDeviceStatus status);
     
-    /**
-     * post the status to device( maybe including its child device) via local
-     * 
-     * @param device the device
-     * @param status the new status
-     * @param isBroadcast whether post the status to its child or not
-     * @return whether the post action is suc
-     */
-    boolean doActionDevicePostStatusLocal(final IEspDevice device, final IEspDeviceStatus status, boolean isBroadcast);
 }

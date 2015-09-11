@@ -1,6 +1,6 @@
 package com.espressif.iot.base.upgrade;
 
-import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.base.upgrade.apk.UpgradeManagerApkOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 

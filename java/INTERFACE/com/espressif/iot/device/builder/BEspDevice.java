@@ -2,12 +2,16 @@ package com.espressif.iot.device.builder;
 
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.model.device.EspDeviceSSS;
+import com.espressif.iot.model.device.array.EspDeviceLightArray;
+import com.espressif.iot.model.device.array.EspDevicePlugArray;
 import com.espressif.iot.object.db.IDeviceDB;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.util.RandomUtil;
 
 public class BEspDevice implements IBEspDevice
 {
@@ -100,17 +104,62 @@ public class BEspDevice implements IBEspDevice
         String latest_rom_version = deviceDB.getLatest_rom_version();
         long userId = deviceDB.getUserId();
         long timestamp = deviceDB.getTimestamp();
-        return alloc(deviceName,
-            deviceId,
-            deviceKey,
-            isOwner,
-            bssid,
-            state,
-            ptype,
-            rom_version,
-            latest_rom_version,
-            userId,
-            timestamp);
+        long activatedTime = deviceDB.getActivatedTime();
+        IEspDevice device =
+            alloc(deviceName,
+                deviceId,
+                deviceKey,
+                isOwner,
+                bssid,
+                state,
+                ptype,
+                rom_version,
+                latest_rom_version,
+                userId,
+                timestamp);
+        device.setActivatedTime(activatedTime);
+        
+        return device;
+    }
+    
+    public static IEspDeviceArray createDeviceArray(EspDeviceType deviceType)
+    {
+        switch(deviceType)
+        {
+            case LIGHT:
+                EspDeviceLightArray lightArray = new EspDeviceLightArray();
+                lightArray.setName(deviceType.toString());
+                lightArray.setDeviceType(deviceType);
+                lightArray.setKey(RandomUtil.randomString(41));
+                lightArray.setIsMeshDevice(false);
+                IEspDeviceState lightState = new EspDeviceState();
+                lightState.addStateInternet();
+                lightState.addStateLocal();
+                lightArray.setDeviceState(lightState);
+                return lightArray;
+            case PLUG:
+                EspDevicePlugArray plugArray = new EspDevicePlugArray();
+                plugArray.setName(deviceType.toString());
+                plugArray.setDeviceType(deviceType);
+                plugArray.setKey(RandomUtil.randomString(41));
+                plugArray.setIsMeshDevice(false);
+                IEspDeviceState plugState = new EspDeviceState();
+                plugState.addStateInternet();
+                plugState.addStateLocal();
+                plugArray.setDeviceState(plugState);
+                return plugArray;
+                
+            case FLAMMABLE:
+            case HUMITURE:
+            case NEW:
+            case PLUGS:
+            case REMOTE:
+            case ROOT:
+            case VOLTAGE:
+                break;
+        }
+        
+        return null;
     }
     
     public static IEspDeviceSSS createSSSDevice(IOTAddress iotAddress)

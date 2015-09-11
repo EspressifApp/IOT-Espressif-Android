@@ -13,11 +13,4 @@
         android:background="@drawable/esp_plug"
         android:button="@null" />
 
-    <CheckBox
-        android:id="@+id/control_child_cb"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/esp_device_control_child"
-        android:visibility="gone" />
-
 </LinearLayout>

@@ -15,19 +15,19 @@ import com.espressif.iot.action.device.common.EspActionDeviceDeleteInternet;
 import com.espressif.iot.action.device.common.EspActionDeviceRenameInternet;
 import com.espressif.iot.action.device.common.IEspActionDeviceDeleteInternet;
 import com.espressif.iot.action.device.common.IEspActionDeviceRenameInternet;
+import com.espressif.iot.action.device.common.upgrade.EspActionDeviceUpgradeLocal;
+import com.espressif.iot.action.device.common.upgrade.EspActionDeviceUpgradeOnline;
+import com.espressif.iot.action.device.common.upgrade.IEspActionDeviceUpgradeLocal;
+import com.espressif.iot.action.device.common.upgrade.IEspActionDeviceUpgradeOnline;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
-import com.espressif.iot.device.upgrade.IEspDeviceDoUpgradeLocal;
-import com.espressif.iot.device.upgrade.IEspDeviceDoUpgradeOnline;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
 import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateInternet;
 import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateLocal;
-import com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeLocal;
-import com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeOnline;
 import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.IEspDeviceState;
@@ -206,6 +206,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 {
                     apDBManager.updateApInfo(deviceNew.getBssid(), true);
                     
+                    user.saveNewActivatedDevice(result.getKey());
                     transformState(result, Direction.SUC);
                     __transformHelpStateMachine(device.getBssid(), true);
                     return result;
@@ -422,7 +423,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 throws Exception
             {
                 // do upgrade device online action(tell the Server to upgrade the device, and wait device upgrade suc)
-                IEspDeviceDoUpgradeOnline action = new EspDeviceDoUpgradeOnline();
+                IEspActionDeviceUpgradeOnline action = new EspActionDeviceUpgradeOnline();
                 String deviceKey = device.getKey();
                 String latestRomVersion = device.getLatest_rom_version();
                 IEspDevice result = action.doUpgradeOnline(deviceKey, latestRomVersion);
@@ -464,7 +465,7 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 throws Exception
             {
                 // do upgrade device online action(tell the Server to upgrade the device, and wait device upgrade suc)
-                IEspDeviceDoUpgradeLocal action = new EspDeviceDoUpgradeLocal();
+                IEspActionDeviceUpgradeLocal action = new EspActionDeviceUpgradeLocal();
                 InetAddress inetAddress = device.getInetAddress();
                 String bssid = device.getBssid();
                 String deviceKey = device.getKey();

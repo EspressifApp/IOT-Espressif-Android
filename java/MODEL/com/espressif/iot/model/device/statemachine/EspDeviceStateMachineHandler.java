@@ -554,7 +554,7 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                             mDeviceConfigure.setIsMeshDevice(iotAddress.isMeshDevice());
                             // for the moment, we can't see the device's name while activating,
                             // so don't mind the device's name now
-                            String prefix = "espressif_"; // : "ESP_";
+                            String prefix = "ESP_"; // : "ESP_";
                             String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
                             mDeviceConfigure.setName(ssid);
                         }
@@ -731,6 +731,10 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
                     stateMachine.transformState(mDeviceResult, Direction.SUC);
                     stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), true);
+                    
+                    // save new activated device key to make new device different from others
+                    IEspUser user = BEspUser.getBuilder().getInstance();
+                    user.saveNewActivatedDevice(mDeviceResult.getKey());
                 }
                 
             };

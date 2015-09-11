@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.espressif.iot.ui.view.TouchPointMoveLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="horizontal" >
+
+        <ListView
+            android:id="@+id/device_list"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="5" />
+
+        <View
+            android:layout_width="1dip"
+            android:layout_height="match_parent"
+            android:background="#999999" />
+
+        <LinearLayout
+            android:id="@+id/scene_content"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:id="@+id/scene_add_btn"
+                android:layout_width="match_parent"
+                android:layout_height="50dip"
+                android:layout_margin="5dip"
+                android:background="@drawable/esp_button_blue"
+                android:scaleType="centerInside"
+                android:src="@drawable/esp_scene_add_normal" />
+
+            <ListView
+                android:id="@+id/scene_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+    </LinearLayout>
+
+</com.espressif.iot.ui.view.TouchPointMoveLayout>

@@ -30,8 +30,8 @@ public class EspCommandLightGetEspnowInternet implements IEspCommandLightGetEspn
         }
         try
         {
-            int status = result.getInt(Status);
-            if (status != HttpStatus.SC_OK)
+            int statusInt = result.getInt(Status);
+            if (statusInt != HttpStatus.SC_OK)
             {
                 return null;
             }
@@ -41,6 +41,12 @@ public class EspCommandLightGetEspnowInternet implements IEspCommandLightGetEspn
             for (int i = 0; i < switchArray.length(); i++)
             {
                 JSONObject switchJSON = switchArray.getJSONObject(i);
+                // check whether the espnow result is valid
+                String status = switchJSON.getString(Status);
+                if (!status.equals(StatusOK))
+                {
+                    continue;
+                }
                 String mac = switchJSON.getString(Mac);
                 int voltage = switchJSON.getInt(VoltageMV);
                 

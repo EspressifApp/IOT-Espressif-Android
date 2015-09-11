@@ -11,7 +11,6 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
-import com.espressif.iot.type.device.DeviceInfo;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.BSSIDUtil;
 
@@ -74,18 +73,18 @@ public class DeviceDirectConnectProgressDialog extends DeviceConfigureDialogAbs 
         @Override
         protected Integer doInBackground(Void... params)
         {
-            DeviceInfo deviceInfo = mUser.doActionDeviceNewConnect(mDevice);
+            IOTAddress deviceIOTAddress = mUser.doActionDeviceNewConnect(mDevice);
             if (isCancelled())
             {
                 // check cancel
                 return RESULT_FAILED;
             }
             
-            if (deviceInfo == null)
+            if (deviceIOTAddress == null)
             {
                 return RESULT_FAILED;
             }
-            else if (deviceInfo.isTypeUnknow())
+            else if (!deviceIOTAddress.getDeviceTypeEnum().isLocalSupport())
             {
                 return RESULT_NOT_SUPPORT;
             }

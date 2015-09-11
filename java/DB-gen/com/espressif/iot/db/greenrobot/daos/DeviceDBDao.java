@@ -51,7 +51,10 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         
         public final static Property Timestamp = new Property(9, long.class, "timestamp", false, "TIMESTAMP");
         
-        public final static Property UserId = new Property(10, long.class, "userId", false, "USER_ID");
+        public final static Property ActivatedTime = new Property(10, long.class, "activatedTime", false,
+            "ACTIVATED_TIME");
+        
+        public final static Property UserId = new Property(11, long.class, "userId", false, "USER_ID");
     };
     
     private DaoSession daoSession;
@@ -84,7 +87,8 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
             "'ROM_VERSION' TEXT," + // 7: rom_version
             "'LATEST_ROM_VERSION' TEXT," + // 8: latest_rom_version
             "'TIMESTAMP' INTEGER NOT NULL ," + // 9: timestamp
-            "'USER_ID' INTEGER NOT NULL );"); // 10: userId
+            "'ACTIVATED_TIME' INTEGER NOT NULL ," + // 10: activatedTime
+            "'USER_ID' INTEGER NOT NULL );"); // 11: userId
     }
     
     /** Drops the underlying database table. */
@@ -119,7 +123,8 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
             stmt.bindString(9, latest_rom_version);
         }
         stmt.bindLong(10, entity.getTimestamp());
-        stmt.bindLong(11, entity.getUserId());
+        stmt.bindLong(11, entity.getActivatedTime());
+        stmt.bindLong(12, entity.getUserId());
     }
     
     @Override
@@ -151,7 +156,8 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
             cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // rom_version
             cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // latest_rom_version
             cursor.getLong(offset + 9), // timestamp
-            cursor.getLong(offset + 10) // userId
+            cursor.getLong(offset + 10), // activatedTime
+            cursor.getLong(offset + 11) // userId
             );
         return entity;
     }
@@ -170,7 +176,8 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         entity.setRom_version(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
         entity.setLatest_rom_version(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
         entity.setTimestamp(cursor.getLong(offset + 9));
-        entity.setUserId(cursor.getLong(offset + 10));
+        entity.setActivatedTime(cursor.getLong(offset + 10));
+        entity.setUserId(cursor.getLong(offset + 11));
     }
     
     /** @inheritdoc */

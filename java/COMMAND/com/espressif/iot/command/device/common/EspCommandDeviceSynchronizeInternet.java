@@ -12,6 +12,8 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.builder.BEspDevice;
+import com.espressif.iot.group.IEspGroup;
+import com.espressif.iot.group.builder.BEspGroup;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.HeaderPair;
@@ -47,7 +49,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
         {
             try
             {
-                int status = Integer.parseInt(jsonObjectResult.getString(Status));
+                int status = jsonObjectResult.getInt(Status);
                 if (status == HttpStatus.SC_OK)
                 {
                     log.debug("getJSONArrayDeviceInfo() suc");
@@ -108,10 +110,10 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
         }
     }
     
-    private List<IEspDevice> setUserServerSyncDeviceAndGroup(JSONArray groupsJsonArray, long currentTime)
+    private List<IEspGroup> setUserServerSyncGroup(JSONArray groupsJsonArray, long currentTime)
     {
+        List<IEspGroup> groupList = new ArrayList<IEspGroup>();
         List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
-        // List<EspGroup> groupList = new ArrayList<EspGroup>();
         
         for (int gi = 0; gi < groupsJsonArray.length(); gi++)
         {
@@ -119,13 +121,12 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
             {
                 JSONObject groupJSON = groupsJsonArray.getJSONObject(gi);
                 
-                // final long groupId = groupJSON.getLong("id");
-                // final String groupName = groupJSON.getString("name");
-                // EspGroup espGroup = new EspGroup();
-                // espGroup.setID(groupId);
-                // espGroup.setName(groupName);
-                // espGroup.saveInDB();
-                // groupList.add(espGroup);
+                long groupId = groupJSON.getLong(Id);
+                String groupName = groupJSON.getString(Name);
+                IEspGroup espGroup = BEspGroup.getInstance().alloc();
+                espGroup.setId(groupId);
+                espGroup.setName(groupName);
+                groupList.add(espGroup);
                 
                 JSONArray devicesJsonArray = groupJSON.getJSONArray(Devices);
                 for (int i = 0; i < devicesJsonArray.length(); i++)
@@ -207,6 +208,9 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                             latest_rom_version,
                             userId);
                     
+                    long activatedTime = deviceJsonObject.getLong(Activated_At) * TimeUtil.ONE_SECOND_LONG_VALUE;
+                    device.setActivatedTime(activatedTime);
+                    
                     boolean isParentMdevMacValid = !deviceJsonObject.isNull(Parent_Mdev_Mac);
                     String parentBssid = null;
                     if (isParentMdevMacValid)
@@ -229,29 +233,67 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     }
                     device.setIsMeshDevice(parentBssid != null);
                     
-                    // device.setGroupId(groupId);
-                    
                     if (!deviceList.contains(device))
                     {
                         deviceList.add(device);
+                        espGroup.addDevice(device);
                     }
-                    
+                    else
+                    {
+                        for (IEspDevice deviceInList : deviceList)
+                        {
+                            if (deviceInList.equals(device))
+                            {
+                                espGroup.addDevice(deviceInList);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             catch (JSONException e)
             {
                 e.printStackTrace();
-                return deviceList;
+                return groupList;
             }
         }
         
-        // User.getInstance().setServerSyncGroupList(groupList);
-        // User.getInstance().setDeviceSynchronizedList(deviceList);
+        return groupList;
+    }
+    
+    private List<IEspDevice> getDevicesFromGroupList(List<IEspGroup> groupList)
+    {
+        List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
+        for (IEspGroup group : groupList)
+        {
+            List<IEspDevice> deviceListInGroup = group.getDeviceList();
+            for (IEspDevice deviceInList : deviceListInGroup)
+            {
+                if (!deviceList.contains(deviceInList))
+                {
+                    deviceList.add(deviceInList);
+                }
+            }
+        }
         return deviceList;
     }
     
     @Override
     public List<IEspDevice> doCommandDeviceSynchronizeInternet(String userKey)
+    {
+        List<IEspGroup> groupList = doCommandGroupSynchronizeInternet(userKey);
+        if (groupList == null)
+        {
+            return null;
+        }
+        else
+        {
+            return getDevicesFromGroupList(groupList);
+        }
+    }
+
+    @Override
+    public List<IEspGroup> doCommandGroupSynchronizeInternet(String userKey)
     {
         long currentTime = EspBaseApiUtil.getUTCTimeLong();
         if (currentTime == Long.MIN_VALUE)
@@ -266,9 +308,8 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
         }
         else
         {
-            return setUserServerSyncDeviceAndGroup(groupsJsonArray, currentTime);
+            return setUserServerSyncGroup(groupsJsonArray, currentTime);
         }
-        
     }
     
 }

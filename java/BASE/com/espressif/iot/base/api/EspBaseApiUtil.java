@@ -5,17 +5,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutorService;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
 
-import com.espressif.iot.base.net.rest.EspHttpDownloadUtil;
-import com.espressif.iot.base.net.rest.EspHttpDownloadUtil.ProgressUpdateListener;
-import com.espressif.iot.base.net.rest.EspHttpUtil;
-import com.espressif.iot.base.net.rest.mesh.EspMeshDiscoverUtil;
-import com.espressif.iot.base.net.rest.mesh.EspMeshNetUtil;
-import com.espressif.iot.base.net.rest.mesh.EspSocketClient;
+import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil;
+import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.base.net.rest2.EspHttpUtil;
+import com.espressif.iot.base.net.rest2.EspMeshDiscoverUtil;
+import com.espressif.iot.base.net.rest2.EspMeshHttpUtil;
 import com.espressif.iot.base.net.wifi.WifiAdmin;
 import com.espressif.iot.base.threadpool.CachedThreadPool;
 import com.espressif.iot.base.time.EspTimeManager;
@@ -104,6 +102,35 @@ public class EspBaseApiUtil
     {
         return EspHttpUtil.Post(url, json, headers);
     }
+
+    /**
+     * post request instantly(without receiving response)
+     * 
+     * @param url the url string
+     * @param headers the head-key and head-value pair
+     * @param json the JSONObject
+     * @param disconnectedCallback disconnected callback
+     * @return the JSONObject
+     */
+    public static void PostInstantly(String url, JSONObject json, Runnable disconnectedCallback, HeaderPair... headers)
+    {
+        EspHttpUtil.PostInstantly(url, json, disconnectedCallback, headers);
+    }
+    
+    /**
+     * post request instantly(without receiving response) to mesh device
+     * 
+     * @param urlt the url string
+     * @param deviceBssid the device's bssid
+     * @param json the JSONObject
+     * @param disconnectedCallback disconnected callback
+     * @param headers the head-key and head-value pair
+     */
+    public static void PostForJsonInstantly(String url, String deviceBssid, JSONObject json,
+        Runnable disconnectedCallback, HeaderPair... headers)
+    {
+        EspMeshHttpUtil.PostForJsonInstantly(url, deviceBssid, json, disconnectedCallback, headers);
+    }
     
     /**
      * execute GET to get JSONObject by Mesh Net
@@ -114,19 +141,7 @@ public class EspBaseApiUtil
      */
     public static JSONObject GetForJson(String uriStr, String deviceBssid, HeaderPair... headers)
     {
-        return EspMeshNetUtil.GetForJson(uriStr, deviceBssid, headers);
-    }
-    
-    /**
-     * execute GET to get JSONArray by Mesh Net
-     * @param uriStr the uri String
-     * @param deviceBssid the bssid of the device
-     * @param headers the headers of the request
-     * @return the JSONArray result
-     */
-    public static JSONArray GetForJsonArray(String uriStr, String deviceBssid, HeaderPair... headers)
-    {
-        return EspMeshNetUtil.GetForJsonArray(uriStr, deviceBssid, headers);
+        return EspMeshHttpUtil.GetForJson(uriStr, deviceBssid, headers);
     }
     
     /**
@@ -139,89 +154,7 @@ public class EspBaseApiUtil
     public static JSONObject PostForJson(String uriStr, String deviceBssid, JSONObject json,
         HeaderPair... headers)
     {
-        return EspMeshNetUtil.PostForJson(uriStr, deviceBssid, json, headers);
-    }
-    
-    /**
-     * execute POST to get JSONArray by Mesh Net
-     * @param uriStr the uri String
-     * @param router the router of the device
-     * @param deviceBssid the bssid of the device
-     * @param headers the headers of the request
-     * @return the JSONArray result
-     */
-    public static JSONArray PostForJsonArray(String uriStr, String deviceBssid, JSONObject json,
-        HeaderPair... headers)
-    {
-        return EspMeshNetUtil.PostForJsonArray(uriStr, deviceBssid, json, headers);
-    }
-    
-    /**
-     * execute GET to get JSONObject by Mesh Net
-     * 
-     * @param client the EspSocketClient or null(if null new client will be created)
-     * @param uriStr the uri String
-     * @param deviceBssid the bssid of the device
-     * @param checkIsDeviceAvailable whether check is device available before sending request
-     * @param closeClientImmdeiately whether close the client immediate after sending request
-     * @param targetPort the port of the target
-     * @param connectTimeout connection timeout in milliseconds
-     * @param connectRetry connect retry time
-     * @param isResultRead whether the result will be read
-     * @param soTimeout socket read timeout
-     * @param headers the headers of the request
-     * @return the JSONObject result
-     */
-    public static JSONObject GetForJson(EspSocketClient client, String uriStr, String deviceBssid,
-        boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort, int connectTimeout,
-        int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
-    {
-        return EspMeshNetUtil.GetForJson(client,
-            uriStr,
-            deviceBssid,
-            checkIsDeviceAvailable,
-            closeClientImmdeiately,
-            targetPort,
-            connectTimeout,
-            connectRetry,
-            isResultRead,
-            soTimeout,
-            headers);
-    }
-    
-    /**
-     * execute POST to get JSONObject by Mesh Net
-     * 
-     * @param client the EspSocketClient or null(if null new client will be created)
-     * @param uriStr the uri String
-     * @param deviceBssid the bssid of the device
-     * @param json the json to be posted
-     * @param checkIsDeviceAvailable whether check is device available before sending request
-     * @param closeClientImmdeiately whether close the client immediate after sending request
-     * @param targetPort the port of the target
-     * @param connectTimeout connection timeout in milliseconds
-     * @param connectRetry connect retry time
-     * @param isResultRead whether the result will be read
-     * @param soTimeout socket read timeout
-     * @param headers the headers of the request
-     * @return the JSONObject result
-     */
-    public static JSONObject PostForJson(EspSocketClient client, String uriStr, String deviceBssid,
-        JSONObject json, boolean checkIsDeviceAvailable, boolean closeClientImmdeiately, int targetPort,
-        int connectTimeout, int connectRetry, boolean isResultRead, int soTimeout, HeaderPair... headers)
-    {
-        return EspMeshNetUtil.PostForJson(client,
-            uriStr,
-            deviceBssid,
-            json,
-            checkIsDeviceAvailable,
-            closeClientImmdeiately,
-            targetPort,
-            connectTimeout,
-            connectRetry,
-            isResultRead,
-            soTimeout,
-            headers);
+        return EspMeshHttpUtil.PostForJson(uriStr, deviceBssid, json, headers);
     }
     
     /**

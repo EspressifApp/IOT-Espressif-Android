@@ -6,8 +6,8 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import com.espressif.iot.R;
-import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.type.user.EspLoginResult;
+import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 
 public abstract class LoginTask extends AsyncTask<EspThirdPartyLoginPlat, Void, EspLoginResult>
 {
@@ -52,6 +52,7 @@ public abstract class LoginTask extends AsyncTask<EspThirdPartyLoginPlat, Void, 
                 break;
             default :
                 msgRes = R.string.esp_login_result_failed;
+                break;
         }
         
         Toast.makeText(mContext, msgRes, Toast.LENGTH_LONG).show();

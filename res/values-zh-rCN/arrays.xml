@@ -80,18 +80,9 @@
     <string-array name="esp_device_timer_oprate_options">
         <item>删除</item>
     </string-array>
-    
-    <string-array name="esp_ui_device_dialog_items">
-        <item>重命名设备</item>
-        <item>删除设备</item>
-    </string-array>
 
-    <string-array name="esp_sss_device_configure_options">
-        <item>直连</item>
-       <!-- <item>组网配置</item> -->
-    </string-array>
-
-    <string-array name="esp_sss_device_use_options">
-        <item>设备升级</item>
+    <string-array name="esp_ui_device_sort">
+        <item>设备名</item>
+        <item>激活时间</item>
     </string-array>
 </resources>

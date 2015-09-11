@@ -33,4 +33,24 @@
         android:gravity="center_horizontal"
         android:text="@string/esp_third_party_qq" />
 
+    <TextView
+        android:id="@+id/facebook_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip"
+        android:drawableTop="@drawable/logo_facebook"
+        android:gravity="center_horizontal"
+        android:text="@string/esp_third_party_facebook"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/twitter_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dip"
+        android:drawableTop="@drawable/logo_twitter"
+        android:gravity="center_horizontal"
+        android:text="@string/esp_third_party_twitter"
+        android:visibility="gone" />
+
 </LinearLayout>

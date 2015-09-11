@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="esp_actionbar_color">#ff36bfdc</color>
-    <color name="esp_actionbar_split_color">#ff46818e</color>
     
     <color name="esp_text_hint_color">#dddddd</color>
     
@@ -14,7 +13,8 @@
     <color name="esp_help_frame_background_dark">#99000000</color>
     <color name="esp_help_hint_message_frame_bg">#55000000</color>
     
-    <color name="esp_ui_tab_normal">#ff23afcd</color>
-    <color name="esp_ui_tab_selected">#ff1a98b3</color>
-    <color name="esp_ui_tab_stroke">#ff0a6d82</color>
+    <color name="esp_scene_move_view_background">#80ffffff</color>
+    <color name="esp_scene_background_intersects">#70000000</color>
+    <color name="esp_scene_background_selected">#40000000</color>
+    <color name="esp_scene_fragment_background">#f9ffffff</color>
 </resources>

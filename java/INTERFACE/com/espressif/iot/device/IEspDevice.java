@@ -135,6 +135,20 @@ public interface IEspDevice extends IEspObject
     void setTimestamp(long timestamp);
     
     /**
+     * Get activated time on server
+     * 
+     * @return activate time
+     */
+    long getActivatedTime();
+    
+    /**
+     * Set activated time on server
+     * 
+     * @param activatedAt
+     */
+    void setActivatedTime(long activatedAt);
+    
+    /**
      * Get the user id of this device
      * 
      * @return user id
@@ -342,6 +356,13 @@ public interface IEspDevice extends IEspObject
      * @param device
      */
     void copyTimestamp(IEspDevice device);
+    
+    /**
+     * Copy the device activated time on server from another device
+     * 
+     * @param device
+     */
+    void copyActivatedTime(IEspDevice device);
     
     /**
      * Get the device's device tree element list

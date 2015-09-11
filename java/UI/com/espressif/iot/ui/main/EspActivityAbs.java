@@ -1,26 +1,33 @@
 package com.espressif.iot.ui.main;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.espressif.iot.R;
 import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
 import com.espressif.iot.help.ui.IEspHelpUI;
 import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
+import com.espressif.iot.ui.view.menu.IEspBottomMenu;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +56,8 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     public static final int InputType_PAssWORD_NORMAL = InputType.TYPE_CLASS_TEXT
         | InputType.TYPE_TEXT_VARIATION_PASSWORD;
     
+    private int mScreenWidth;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -70,12 +79,47 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         setTitleLeftIcon(R.drawable.esp_icon_back);
         
         mHelpContainer = (FrameLayout)findViewById(R.id.help_container);
+        
+        Point point = new Point();
+        getWindowManager().getDefaultDisplay().getSize(point);
+        mScreenWidth = point.x;
     }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        onCreateBottomItems(new EspBottomBar(this));
+        EspBottomMenu bottomMenu = new EspBottomMenu(this);
+        onCreateBottomItems(bottomMenu);
+        
+        int width = getResources().getDimensionPixelSize(R.dimen.esp_bottom_item_width);
+        int height = getResources().getDimensionPixelSize(R.dimen.esp_bottom_item_height);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, height);
+        
+        int visibleItemCount = mScreenWidth / width;
+        final List<View> items = bottomMenu.getItemViews();
+        if (items.size() <= visibleItemCount)
+        {
+            if (items.size() > 0)
+            {
+                int margin = (mScreenWidth - (width * items.size())) / items.size() / 2;
+                lp.setMargins(margin, 0, margin, 0);
+            }
+            for (View view : items)
+            {
+                mBottomView.addView(view, lp);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < visibleItemCount - 1; i++)
+            {
+                View item = items.get(i);
+                mBottomView.addView(item, lp);
+            }
+            TextView moreItem = bottomMenu.createMoreOverflowItemView(visibleItemCount);
+            mBottomView.addView(moreItem, lp);
+        }
+        
         return super.onCreateOptionsMenu(menu);
     }
     
@@ -121,7 +165,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
      * 
      * @param iconId
      */
-    protected void setTitleLeftIcon(int iconId)
+    public void setTitleLeftIcon(int iconId)
     {
         mLeftIcon.setImageResource(iconId);
         if (iconId == 0)
@@ -139,7 +183,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
      * 
      * @param iconId
      */
-    protected void setTitleRightIcon(int iconId)
+    public void setTitleRightIcon(int iconId)
     {
         mRightIcon.setImageResource(iconId);
         if (iconId == 0)
@@ -184,107 +228,153 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         mTitleView.setVisibility(View.GONE);
     }
     
-    /**
-     * Add item to bottom bar
-     * 
-     * @param itemId
-     * @param iconId
-     * @param name
-     * @return the item View
-     */
-    private View addBottomItem(int itemId, int iconId, CharSequence name)
-    {
-        if (mBottomView.getVisibility() != View.VISIBLE)
-        {
-            mBottomView.setVisibility(View.VISIBLE);
-        }
-        
-        ImageView item = new ImageView(this);
-        item.setId(itemId);
-        item.setMaxHeight(getResources().getDimensionPixelSize(R.dimen.esp_activity_bottom_bar_height));
-        item.setAdjustViewBounds(true);
-        item.setScaleType(ScaleType.CENTER_INSIDE);
-        item.setImageResource(iconId);
-        item.setBackgroundResource(R.drawable.esp_activity_icon_background);
-        item.setContentDescription(name);
-        item.setOnClickListener(mBottomItemClickListener);
-        item.setOnLongClickListener(mBottomItemLongClickListener);
-        int padding = getResources().getDimensionPixelSize(R.dimen.esp_activity_bottom_item_padding);
-        item.setPadding(padding, padding, padding, padding);
-        LinearLayout.LayoutParams lp =
-            new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, 1);
-        mBottomView.addView(item, lp);
-        
-        return item;
-    }
-    
-    private static class EspBottomBar implements IEspBottomBar
+    private class EspBottomMenu implements IEspBottomMenu
     {
         private EspActivityAbs mActivity;
+        private List<View> mBottomItems;
         
-        public EspBottomBar(EspActivityAbs activity)
+        public EspBottomMenu(EspActivityAbs activity)
         {
             mActivity = activity;
+            mBottomItems = new ArrayList<View>();
         }
         
         @Override
-        public View addBottomItem(int itemId, int iconId)
+        public View addBottomItem(int itemId, int iconRes)
         {
-            return mActivity.addBottomItem(itemId, iconId, "");
+            return addBottomItem(itemId, iconRes, "");
         }
         
         @Override
-        public View addBottomItem(int itemId, int iconId, int nameId)
+        public View addBottomItem(int itemId, int iconRes, int titleId)
         {
-            return mActivity.addBottomItem(itemId, iconId, mActivity.getString(nameId));
+            return addBottomItem(itemId, iconRes, mActivity.getString(titleId));
         }
         
         @Override
-        public View addBottomItem(int itemId, int iconId, CharSequence name)
+        public View addBottomItem(int itemId, int iconRes, CharSequence title)
         {
-            return mActivity.addBottomItem(itemId, iconId, name);
+            if (mBottomView.getVisibility() != View.VISIBLE)
+            {
+                mBottomView.setVisibility(View.VISIBLE);
+            }
+            
+            TextView item = createItemView(itemId, iconRes, title);
+            mBottomItems.add(item);
+            
+            return item;
         }
         
+        private TextView createItemView(int itemId, int iconRes, CharSequence title)
+        {
+            TextView item = new TextView(mActivity);
+            item.setId(itemId);
+            item.setBackgroundResource(R.drawable.esp_activity_icon_background);
+            item.setCompoundDrawablesWithIntrinsicBounds(0, iconRes, 0, 0);
+            item.setText(title);
+            item.setContentDescription(title);
+            int padding = getResources().getDimensionPixelSize(R.dimen.esp_bottom_item_padding);
+            item.setPadding(padding, padding, padding, padding);
+            item.setGravity(Gravity.CENTER_HORIZONTAL);
+            item.setTextColor(Color.WHITE);
+            item.setSingleLine();
+            item.setEllipsize(TextUtils.TruncateAt.END);
+            item.setOnClickListener(mBottomItemClickListener);
+            item.setOnLongClickListener(mBottomItemLongClickListener);
+            
+            return item;
+        }
+        
+        public TextView createMoreOverflowItemView(final int firstMoreItemIndex)
+        {
+            TextView moreItem =
+                createItemView(Integer.MAX_VALUE,
+                    R.drawable.esp_icon_menu_moreoverflow,
+                    mActivity.getString(R.string.esp_activity_bottom_item_more_overflow));
+            moreItem.setOnClickListener(new View.OnClickListener()
+            {
+                
+                @Override
+                public void onClick(View v)
+                {
+                    ((PopupMenu)v.getTag()).show();
+                }
+            });
+            
+            PopupMenu popupMenu = new PopupMenu(mActivity, moreItem);
+            Menu menu = popupMenu.getMenu();
+            for (int i = firstMoreItemIndex - 1; i < mBottomItems.size(); i++)
+            {
+                View item = mBottomItems.get(i);
+                menu.add(Menu.NONE, item.getId(), 0, item.getContentDescription());
+            }
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+            {
+                
+                @Override
+                public boolean onMenuItemClick(MenuItem item)
+                {
+                    int id = item.getItemId();
+                    for (View v : mBottomItems)
+                    {
+                        if (v.getId() == id)
+                        {
+                            onBottomItemClick(v, id);
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+            moreItem.setTag(popupMenu);
+            
+            return moreItem;
+        }
+        
+        public List<View> getItemViews()
+        {
+            return mBottomItems;
+        }
+        
+        private View.OnClickListener mBottomItemClickListener = new View.OnClickListener()
+        {
+            
+            @Override
+            public void onClick(View v)
+            {
+                onBottomItemClick(v, v.getId());
+            }
+        };
+        
+        private Toast mBottomItemToast;
+        
+        private View.OnLongClickListener mBottomItemLongClickListener = new View.OnLongClickListener()
+        {
+            
+            @Override
+            public boolean onLongClick(View v)
+            {
+                if (mBottomItemToast != null)
+                {
+                    mBottomItemToast.cancel();
+                    mBottomItemToast = null;
+                }
+                CharSequence contentDescription = v.getContentDescription();
+                if (!TextUtils.isEmpty(contentDescription))
+                {
+                    mBottomItemToast = Toast.makeText(v.getContext(), contentDescription, Toast.LENGTH_SHORT);
+                    mBottomItemToast.show();
+                    return true;
+                }
+                return false;
+            }
+        };
     }
-    
-    private View.OnClickListener mBottomItemClickListener = new View.OnClickListener()
-    {
-        
-        @Override
-        public void onClick(View v)
-        {
-            onBottomItemClick(v, v.getId());
-        }
-    };
-    
-    private Toast mBottomItemToast;
-    
-    private View.OnLongClickListener mBottomItemLongClickListener = new View.OnLongClickListener()
-    {
-        
-        @Override
-        public boolean onLongClick(View v)
-        {
-            if (mBottomItemToast != null)
-            {
-                mBottomItemToast.cancel();
-                mBottomItemToast = null;
-            }
-            CharSequence contentDescription = v.getContentDescription();
-            if (!TextUtils.isEmpty(contentDescription))
-            {
-                mBottomItemToast = Toast.makeText(v.getContext(), contentDescription, Toast.LENGTH_SHORT);
-                mBottomItemToast.show();
-                return true;
-            }
-            return false;
-        }
-    };
     
     /**
      * This function will be used in onCreateOptionsMenu(Menu menu), can addBottomItem here
      */
-    protected void onCreateBottomItems(IEspBottomBar bottombar)
+    protected void onCreateBottomItems(IEspBottomMenu bottomMenu)
     {
     }
     
@@ -306,11 +396,11 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         {
             if (v == mLeftIcon)
             {
-                onTitleLeftIconClick();
+                onTitleLeftIconClick(mLeftIcon);
             }
             else if (v == mRightIcon)
             {
-                onTitleRightIconClick();
+                onTitleRightIconClick(mRightIcon);
             }
         }
     };
@@ -328,7 +418,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     /**
      * The title bar left icon click listener
      */
-    protected void onTitleLeftIconClick()
+    protected void onTitleLeftIconClick(View leftIcon)
     {
         onBackPressed();
     }
@@ -336,7 +426,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     /**
      * The title bar right icon click listener
      */
-    protected void onTitleRightIconClick()
+    protected void onTitleRightIconClick(View rightIcon)
     {
     }
     

@@ -2,6 +2,7 @@ package com.espressif.iot.action.device.common;
 
 import com.espressif.iot.action.IEspActionDevice;
 import com.espressif.iot.action.IEspActionInternet;
+import com.espressif.iot.device.IEspDevice;
 
 public interface IEspActionDeviceActivateSharedInternet extends IEspActionInternet, IEspActionDevice
 {
@@ -11,7 +12,7 @@ public interface IEspActionDeviceActivateSharedInternet extends IEspActionIntern
      * @param userId the user id
      * @param userKey the user need get the device
      * @param sharedDeviceKey the shared device key
-     * @return whether activate shared device success
+     * @return the activate shared device
      */
-    boolean doActionDeviceActivateSharedInternet(long userId, String userKey, String sharedDeviceKey);
+    IEspDevice doActionDeviceActivateSharedInternet(long userId, String userKey, String sharedDeviceKey);
 }

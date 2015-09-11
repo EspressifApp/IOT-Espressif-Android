@@ -38,6 +38,8 @@ public class DeviceDB implements IDeviceDB
     
     private long timestamp;
     
+    private long activatedTime;
+    
     private long userId;
     
     /** Used to resolve relations */
@@ -63,7 +65,7 @@ public class DeviceDB implements IDeviceDB
     }
     
     public DeviceDB(long id, String key, String bssid, int type, int state, boolean isOwner, String name,
-        String rom_version, String latest_rom_version, long timestamp, long userId)
+        String rom_version, String latest_rom_version, long timestamp, long activatedTime, long userId)
     {
         this.id = id;
         this.key = key;
@@ -75,6 +77,7 @@ public class DeviceDB implements IDeviceDB
         this.rom_version = rom_version;
         this.latest_rom_version = latest_rom_version;
         this.timestamp = timestamp;
+        this.activatedTime = activatedTime;
         this.userId = userId;
     }
     
@@ -189,6 +192,16 @@ public class DeviceDB implements IDeviceDB
     public void setTimestamp(long timestamp)
     {
         this.timestamp = timestamp;
+    }
+    
+    public long getActivatedTime()
+    {
+        return activatedTime;
+    }
+    
+    public void setActivatedTime(long activatedTime)
+    {
+        this.activatedTime = activatedTime;
     }
     
     public long getUserId()

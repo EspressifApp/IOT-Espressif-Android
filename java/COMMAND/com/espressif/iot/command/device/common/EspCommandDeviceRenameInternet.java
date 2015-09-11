@@ -39,7 +39,9 @@ public class EspCommandDeviceRenameInternet implements IEspCommandDeviceRenameIn
         try
         {
             if (result != null)
-                status = Integer.parseInt(result.getString("status"));
+            {
+                status = result.getInt(Status);
+            }
         }
         catch (JSONException e)
         {

@@ -9,8 +9,8 @@ import cn.sharesdk.framework.PlatformActionListener;
 import cn.sharesdk.framework.ShareSDK;
 
 import com.espressif.iot.R;
-import com.espressif.iot.model.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.type.user.EspLoginResult;
+import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.ui.view.NoBgDialog;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -33,10 +33,14 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
     private Platform mWeibo;
     private Platform mWeChat;
     private Platform mQQ;
+    private Platform mFacebook;
+    private Platform mTwitter;
     
     private TextView mWeiboTV;
     private TextView mWeChatTV;
     private TextView mQQTV;
+    private TextView mFacebookTV;
+    private TextView mTwitterTV;
     
     private NoBgDialog mThirdPartyLoginSelectDialog;
     private ProgressDialog mThirdPartyEnteringDialog;
@@ -60,6 +64,10 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
         mWeChat.setPlatformActionListener(this);
         mQQ = ShareSDK.getPlatform(EspThirdPartyLoginPlat.SHARESDK_NAME_QQ);
         mQQ.setPlatformActionListener(this);
+        mFacebook = ShareSDK.getPlatform(EspThirdPartyLoginPlat.SHARESDK_NAME_FACEBOOK);
+        mFacebook.setPlatformActionListener(this);
+        mTwitter = ShareSDK.getPlatform(EspThirdPartyLoginPlat.SHARESDK_NAME_TWITTER);
+        mTwitter.setPlatformActionListener(this);
         
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View content = inflater.inflate(R.layout.third_party_login_dialog, null);
@@ -69,6 +77,10 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
         mWeChatTV.setOnClickListener(this);
         mQQTV = (TextView)content.findViewById(R.id.qq_login);
         mQQTV.setOnClickListener(this);
+        mFacebookTV = (TextView)content.findViewById(R.id.facebook_login);
+        mFacebookTV.setOnClickListener(this);
+        mTwitterTV = (TextView)content.findViewById(R.id.twitter_login);
+        mTwitterTV.setOnClickListener(this);
         
         mThirdPartyLoginSelectDialog = new NoBgDialog(mContext);
         mThirdPartyLoginSelectDialog.setView(content);
@@ -113,6 +125,12 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
                 break;
             case R.id.qq_login:
                 platform = mQQ;
+                break;
+            case R.id.facebook_login:
+                platform = mFacebook;
+                break;
+            case R.id.twitter_login:
+                platform = mTwitter;
                 break;
         }
         

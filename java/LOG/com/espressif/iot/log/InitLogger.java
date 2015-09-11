@@ -9,12 +9,12 @@ public class InitLogger {
     public static void init(){
         //######content######
         ConfigureLog4J.configure();
-        Logger.getLogger(com.espressif.iot.model.device.upgrade.EspDeviceCheckCompatibility.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.action.device.common.upgrade.EspDeviceCheckCompatibility.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.device.DeviceActivityAbs.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.device.statemachine.EspDeviceStateMachine.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.device.EspDeviceConfigure.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeOnline.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.model.device.upgrade.EspDeviceDoUpgradeLocal.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.action.device.common.upgrade.EspActionDeviceUpgradeOnline.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.action.device.common.upgrade.EspActionDeviceUpgradeLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.device.cache.EspDeviceCache.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.device.EspDeviceNew.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.db.IOTDownloadIdValueDBManager.class).setLevel(Level.DEBUG);
@@ -45,7 +45,6 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.command.device.sensor.EspCommandSensorGetStatusInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.common.EspCommandDeviceDeleteInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.New.EspCommandDeviceNewActivateInternet.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.command.device.New.EspCommandDeviceNewGetInfoLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.remote.EspCommandRemotePostStatusInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.common.EspCommandDeviceDiscoverLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.common.EspCommandDeviceRenameInternet.class).setLevel(Level.DEBUG);
@@ -68,25 +67,13 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.ui.device.timer.DeviceTimersActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.help.HelpEspUIActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.configure.DeviceConfigureActivity.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspMeshCommandReadUtil.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.configure.WifiConfigureActivity.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.ui.configure.DeviceConfigureProgressDialog.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.device.New.EspActionDeviceNewActivateInternet.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspSocketUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspMeshDiscoverUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspSocketReaderUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspMeshNetUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.MeshTypeUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspPureSocketServer.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.mesh.EspSocketClient.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.MeshEspHttpUtil.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.time.EspTimeManager.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.EspHttpDownloadUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.rest.EspHttpUtil.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.net.wifi.WifiAdmin.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.threadpool.CachedThreadPool.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.net.mdns.MdnsDiscoverUtil.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.base.net.longsocket.EspLongSocket.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.base.net.udp.UdpBroadcastUtil.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.log.InitLogger.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.softap_sta_support.SSSActionDeviceUpgradeLocal.class).setLevel(Level.DEBUG);
@@ -96,14 +83,13 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.action.device.New.EspActionDeviceNewGetInfoLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.device.New.EspActionDeviceNewConfigureLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.device.common.EspActionDeviceConfigureLocal.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.action.device.longsocket.EspDeviceLongSocketLight.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.device.common.EspActionDeviceSynchronizeInterentDiscoverLocal.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.user.EspActionUserLoginDB.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.device.sensor.EspActionSensorGetStatusListInternetDB.class).setLevel(Level.DEBUG);
-        Logger.getLogger(com.espressif.iot.action.user.EspActionUserDevicesUpdated.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.user.EspActionUserRegisterInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.action.user.EspActionUserLoginInternet.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.user.EspUser.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.model.group.EspGroupHandler.class).setLevel(Level.DEBUG);
     }
 }

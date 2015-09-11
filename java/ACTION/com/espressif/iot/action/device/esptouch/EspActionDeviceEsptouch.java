@@ -15,6 +15,8 @@ public class EspActionDeviceEsptouch implements IEspActionDeviceEsptouch
     
     private IEspCommandDeviceEsptouch mCommandEsptouch;
     
+    private AtomicBoolean mIsDone = new AtomicBoolean(false);
+    
     public EspActionDeviceEsptouch()
     {
         mCommandEsptouch = new EspCommandDeviceEsptouch();
@@ -132,6 +134,19 @@ public class EspActionDeviceEsptouch implements IEspActionDeviceEsptouch
     public boolean isExecuted()
     {
         return IS_ACTION_RUNNING.get();
+    }
+    
+    @Override
+    public void done()
+    {
+        cancel();
+        mIsDone.set(true);
+    }
+    
+    @Override
+    public boolean isDone()
+    {
+        return mIsDone.get();
     }
     
 }
