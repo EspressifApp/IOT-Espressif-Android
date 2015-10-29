@@ -7,7 +7,6 @@
 	<classpathentry kind="src" path="java/ACTION"/>
 	<classpathentry kind="src" path="java/COMMAND"/>
 	<classpathentry kind="src" path="java/BASE"/>
-	<classpathentry kind="src" path="java/OPEN"/>
 	<classpathentry kind="src" path="java/DB"/>
 	<classpathentry kind="src" path="java/DB-gen"/>
 	<classpathentry kind="src" path="java/UTIL"/>
