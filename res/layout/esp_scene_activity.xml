@@ -10,11 +10,52 @@
         android:baselineAligned="false"
         android:orientation="horizontal" >
 
-        <ListView
-            android:id="@+id/device_list"
+        <RelativeLayout
             android:layout_width="0dip"
             android:layout_height="match_parent"
-            android:layout_weight="5" />
+            android:layout_weight="5" >
+
+            <LinearLayout
+                android:id="@+id/scene_button_bar"
+                style="?android:attr/buttonBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="horizontal"
+                android:visibility="gone" >
+
+                <Button
+                    android:id="@+id/scene_device_edit"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/esp_scene_menu_edit" />
+
+                <Button
+                    android:id="@+id/scene_device_control"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/esp_scene_menu_control" />
+
+                <Button
+                    android:id="@+id/scene_device_remove"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/esp_scene_menu_remove" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/device_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@id/scene_button_bar"
+                android:layout_alignParentTop="true" />
+        </RelativeLayout>
 
         <View
             android:layout_width="1dip"

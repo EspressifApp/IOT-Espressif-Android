@@ -139,7 +139,7 @@ class EspHttpClient extends DefaultHttpClient
                 else
                 {
                     // otherwise keep alive for 8 seconds when connection to device
-                    return 7 * 1000;
+                    return 10 * 1000;
                 }
             }
         });

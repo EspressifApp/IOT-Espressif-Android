@@ -154,6 +154,12 @@ public class UdpBroadcastUtil
                         hostname = UdpDataParser.filterIpAddress(receiveContent);
                         log.debug(Thread.currentThread().toString() + "##__discoverDevices(bssid=[" + bssid
                             + "]): hostname=" + hostname);
+                        if (hostname.equals("0.0.0.0"))
+                        {
+                            log.warn(Thread.currentThread().toString() + "##__discoverDevices(bssid=[" + bssid
+                                + "]): hostname is invalid");
+                            continue;
+                        }
                         responseAddr = InetAddress.getByName(hostname);
                         log.debug(receiveContent);
                         responseBSSID = UdpDataParser.filterBssid(receiveContent);
@@ -163,7 +169,11 @@ public class UdpBroadcastUtil
                         // add one response to the response list
                         IOTAddress iotAddress = new IOTAddress(responseBSSID, responseAddr, isMesh);
                         iotAddress.setEspDeviceTypeEnum(deviceType);
-                        responseList.add(iotAddress);
+
+                        if (!responseList.contains(iotAddress))
+                        {
+                            responseList.add(iotAddress);
+                        }
                     }
                 }
             } while (bssid == null);

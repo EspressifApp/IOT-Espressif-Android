@@ -11,6 +11,7 @@ import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.ui.login.LoginActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
@@ -23,7 +24,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -96,11 +96,9 @@ public class WelcomeActivity extends Activity
     
     private void initPagerItem()
     {
-        LayoutInflater inflater = getLayoutInflater();
-        
         for (int i = 0; i < 3; i++)
         {
-            ImageView pagerItem = (ImageView)inflater.inflate(R.layout.welcome_pager_item, null);
+            ImageView pagerItem = (ImageView)View.inflate(this, R.layout.welcome_pager_item, null);
             switch (i)
             {
                 case 0:
@@ -128,7 +126,7 @@ public class WelcomeActivity extends Activity
             login();
             
             int versionCode = mApplication.getVersionCode();
-            mShared.edit().putInt(KEY_LAST_USE_VERSION_CODE, versionCode).commit();
+            mShared.edit().putInt(KEY_LAST_USE_VERSION_CODE, versionCode).apply();
         }
     };
     
@@ -188,12 +186,11 @@ public class WelcomeActivity extends Activity
     
     private void login()
     {
-        // Get user data from DB
-        BEspUser.getBuilder().getInstance().doActionUserLoginDB();
         SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN,
-            false))
+        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
         {
+            // Get user data from DB
+            BEspUser.getBuilder().getInstance().doActionUserLoginDB();
             // Auto login, go to device list page
             Intent autoIntent = new Intent(this, EspApplication.getEspUIActivity());
             startActivity(autoIntent);

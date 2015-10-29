@@ -46,7 +46,7 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements OnItemClic
     @Override
     protected View initControlView()
     {
-        View view = getLayoutInflater().inflate(R.layout.device_activity_plugs, null);
+        View view = View.inflate(this, R.layout.device_activity_plugs, null);
         
         mDevicePlugs = (IEspDevicePlugs)mIEspDevice;
         mApertureList = mDevicePlugs.getApertureList();

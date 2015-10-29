@@ -56,6 +56,8 @@ public class EspDevice implements IEspDevice, Cloneable
     
     protected String mParentDeviceBssid;
     
+    protected String mRootDeviceBssid;
+    
     protected List<EspDeviceTimer> mTimerList;
     
     private List<IEspStatusEspnow> mEspnowStatusList = new ArrayList<IEspStatusEspnow>();
@@ -597,5 +599,17 @@ public class EspDevice implements IEspDevice, Cloneable
     public List<IEspStatusEspnow> getEspnowStatusList()
     {
         return mEspnowStatusList;
+    }
+    
+    @Override
+    public void setRootDeviceBssid(String rootBssid)
+    {
+        this.mRootDeviceBssid = rootBssid;
+    }
+
+    @Override
+    public String getRootDeviceBssid()
+    {
+        return mRootDeviceBssid;
     }
 }

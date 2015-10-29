@@ -16,7 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.IOTDeviceDBManager;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
@@ -28,6 +33,7 @@ import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.EspStrings;
 
 /**
  * this class is used to help EspDeviceStateMachine process
@@ -735,6 +741,12 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     // save new activated device key to make new device different from others
                     IEspUser user = BEspUser.getBuilder().getInstance();
                     user.saveNewActivatedDevice(mDeviceResult.getKey());
+                    
+                    // send device registered broadcast
+                    Context context = EspApplication.sharedInstance().getApplicationContext();
+                    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
+                    Intent intent = new Intent(EspStrings.Action.ESPTOUCH_DEVICE_REGISTERED);
+                    broadcastManager.sendBroadcast(intent);
                 }
                 
             };

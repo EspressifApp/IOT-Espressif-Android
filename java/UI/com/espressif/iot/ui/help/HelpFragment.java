@@ -13,26 +13,22 @@ import android.widget.Toast;
 public class HelpFragment extends PreferenceFragment implements IEspHelpUI
 {
     private final static String KEY_CONFIGURE_HELP = "esp_help_configure";
-    private final static String KEY_MESH_CONFIGURE_HELP = "esp_help_mesh_configure";
     private final static String KEY_USE_PLUG_HELP = "esp_help_use_plug";
     private final static String KEY_USE_PLUGS_HELP = "esp_help_use_plugs";
     private final static String KEY_USE_LIGHT_HELP = "esp_help_use_light";
     private final static String KEY_USE_HUMITURE_HELP = "esp_help_use_humiture";
     private final static String KEY_USE_FLAMMABLE_HELP = "esp_help_use_flammable";
     private final static String KEY_USE_VOLTAGE_HELP = "esp_help_use_voltage";
-    private final static String KEY_USE_REMOTE_HELP = "esp_help_use_remote";
     private final static String KEY_UPGRADE_LOCAL_HELP = "esp_help_upgrade_local";
     private final static String KEY_UPGRADE_ONLINE_HELP = "esp_help_upgrade_online";
     
     private Preference mConfigureHelpPre;
-    private Preference mMeshConfigurePre;
     private Preference mUsePlugHelpPre;
     private Preference mUsePlugsHelpPre;
     private Preference mUseLightHelpPre;
     private Preference mUseHumitureHelpPre;
     private Preference mUseFlammableHelpPre;
     private Preference mUseVoltageHelpPre;
-    private Preference mUseRemoteHelpPre;
     private Preference mUpgradeLocalPre;
     private Preference mUpgradeOnlinePre;
     
@@ -44,27 +40,14 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         addPreferencesFromResource(R.xml.helps);
         
         mConfigureHelpPre = findPreference(KEY_CONFIGURE_HELP);
-        mMeshConfigurePre = findPreference(KEY_MESH_CONFIGURE_HELP);
         mUsePlugHelpPre = findPreference(KEY_USE_PLUG_HELP);
         mUsePlugsHelpPre = findPreference(KEY_USE_PLUGS_HELP);
         mUseLightHelpPre = findPreference(KEY_USE_LIGHT_HELP);
         mUseHumitureHelpPre = findPreference(KEY_USE_HUMITURE_HELP);
         mUseFlammableHelpPre = findPreference(KEY_USE_FLAMMABLE_HELP);
         mUseVoltageHelpPre = findPreference(KEY_USE_VOLTAGE_HELP);
-        mUseRemoteHelpPre = findPreference(KEY_USE_REMOTE_HELP);
         mUpgradeLocalPre = findPreference(KEY_UPGRADE_LOCAL_HELP);
         mUpgradeOnlinePre = findPreference(KEY_UPGRADE_ONLINE_HELP);
-        
-        if (mMeshConfigurePre != null)
-        {
-            getPreferenceScreen().removePreference(mMeshConfigurePre);
-        }
-        
-        // Remote has stopped develop
-        if (mUseRemoteHelpPre != null)
-        {
-            getPreferenceScreen().removePreference(mUseRemoteHelpPre);
-        }
         
         Preference configureCategory = getPreferenceScreen().findPreference("esp_help_configure_category");
         getPreferenceScreen().removePreference(configureCategory);
@@ -83,11 +66,6 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
             {
                 Toast.makeText(getActivity(), R.string.esp_help_configure_login_msg, Toast.LENGTH_LONG).show();
             }
-            return true;
-        }
-        else if (preference == mMeshConfigurePre)
-        {
-            finishForResult(RESULT_HELP_MESH_CONFIGURE);
             return true;
         }
         else if (preference == mUsePlugHelpPre)
@@ -113,11 +91,6 @@ public class HelpFragment extends PreferenceFragment implements IEspHelpUI
         else if (preference == mUseVoltageHelpPre)
         {
             finishForResult(RESULT_HELP_USE_VOLTAGE);
-            return true;
-        }
-        else if (preference == mUseRemoteHelpPre)
-        {
-            finishForResult(RESULT_HELP_USE_REMOTE);
             return true;
         }
         else if (preference == mUsePlugsHelpPre)

@@ -309,7 +309,7 @@ public class TreeView extends ListView implements ListView.OnItemClickListener, 
                     inflater = LayoutInflater.from(context);
                 }
                 holder = new ViewHolder();
-                convertView = inflater.inflate(R.layout.tree_view_item_layout, null);
+                convertView = inflater.inflate(R.layout.tree_view_item_layout, parent, false);
                 holder.icon = (ImageView)convertView.findViewById(R.id.tree_view_item_icon);
                 holder.title = (TextView)convertView.findViewById(R.id.tree_view_item_title);
                 holder.status = (ImageView)convertView.findViewById(R.id.tree_view_item_status);

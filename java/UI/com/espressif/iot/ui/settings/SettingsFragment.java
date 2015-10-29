@@ -38,11 +38,11 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
+import com.espressif.iot.esppush.EspPushUtils;
 import com.espressif.iot.log.LogConfigurator;
 import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 import com.espressif.iot.type.user.EspLoginResult;
-import com.espressif.iot.ui.configure.DeviceConfigureActivity;
 import com.espressif.iot.ui.configure.WifiConfigureActivity;
 import com.espressif.iot.ui.login.LoginTask;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog;
@@ -52,6 +52,7 @@ import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.AccountUtil;
 import com.espressif.iot.util.EspStrings;
+import com.espressif.iot.util.EspDefaults;
 
 public class SettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener
 {
@@ -90,6 +91,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private static final String KEY_WIFI_EDIT = "wifi_edit";
     
+    private static final String KEY_MESSAGE_ESPPUSH = "message_esppush";
+    
     private PreferenceCategory mAccountCategory;
     private Preference mAccountPre;
     private Preference mAccountRegisterPre;
@@ -110,6 +113,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     private Preference mClearLogPre;
     
     private Preference mWifiEditPre;
+    
+    private CheckBoxPreference mEspPushPre;
     
     private IEspUser mUser;
     
@@ -140,7 +145,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAccountCategory = (PreferenceCategory)findPreference(KEY_ACCOUNT_CATEGORY);
         mAccountPre = findPreference(KEY_ACCOUNT);
         mAutoLoginPre = (CheckBoxPreference)findPreference(KEY_ACCOUNT_AUTO_LOGIN);
-        mAutoLoginPre.setChecked(mShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false));
+        mAutoLoginPre.setChecked(mShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN));
         mAutoLoginPre.setOnPreferenceChangeListener(this);
         onLoginChanged(mUser.isLogin());
         
@@ -149,19 +154,20 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         
         // About Device
         mAutoRefreshDevicePre = (ListPreference)findPreference(KEY_AUTO_REFRESH_DEVICE);
-        String autoRefreshTime = "" + mShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, 0);
+        String autoRefreshTime =
+            "" + mShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
         mAutoRefreshDevicePre.setValue(autoRefreshTime);
         mAutoRefreshDevicePre.setSummary(mAutoRefreshDevicePre.getEntry());
         mAutoRefreshDevicePre.setOnPreferenceChangeListener(this);
         mShowMeshTreePre = (CheckBoxPreference)findPreference(KEY_SHOW_MESH_TREE);
-        boolean showMeshTree = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
+        boolean showMeshTree =
+            mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
         mShowMeshTreePre.setChecked(showMeshTree);
         mShowMeshTreePre.setOnPreferenceChangeListener(this);
         
         mAutoConfigureDevicePre = (ListPreference)findPreference(KEY_AUTO_CONFIGURE_DEVICE);
-        int defaultAutoConfigureValue = DeviceConfigureActivity.DEFAULT_AUTO_CONFIGRUE_VALUE;
         String autoConfigureValue =
-            "" + mShared.getInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, defaultAutoConfigureValue);
+            "" + mShared.getInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, EspDefaults.AUTO_CONFIGRUE_RSSI);
         mAutoConfigureDevicePre.setValue(autoConfigureValue);
         mAutoConfigureDevicePre.setSummary(mAutoConfigureDevicePre.getEntry());
         mAutoConfigureDevicePre.setOnPreferenceChangeListener(this);
@@ -184,7 +190,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mStoreLogPre = (CheckBoxPreference)findPreference(KEY_STORE_LOG);
         mStoreLogPre.setOnPreferenceChangeListener(this);
         mReadLogPre = findPreference(KEY_READ_LOG);
-        boolean store = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, false);
+        boolean store = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, EspDefaults.STORE_LOG);
         mStoreLogPre.setChecked(store);
         mClearLogPre = findPreference(KEY_CLEAR_LOG);
         
@@ -194,6 +200,12 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mLogDialog = new AlertDialog.Builder(getActivity()).setAdapter(mLogAdapter, null).create();
         
         mWifiEditPre = findPreference(KEY_WIFI_EDIT);
+        
+        mEspPushPre = (CheckBoxPreference)findPreference(KEY_MESSAGE_ESPPUSH);
+        boolean espPushOnOff = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, EspDefaults.ESPPUSH_ON);
+        mEspPushPre.setChecked(espPushOnOff);
+        mEspPushPre.setOnPreferenceChangeListener(this);
+        mEspPushPre.setEnabled(mUser.isLogin());
     }
     
     @Override
@@ -262,8 +274,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         }
         else if (preference == mAccountLogoutPre)
         {
-            getActivity().setResult(SettingsActivity.RESULT_CODE_LOGOUT);
-            getActivity().finish();
+            logout();
         }
         else if (preference == mWifiEditPre)
         {
@@ -280,7 +291,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         if (preference == mAutoLoginPre)
         {
             boolean autoLogin = (Boolean)newValue;
-            mShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, autoLogin).commit();
+            mShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, autoLogin).apply();
             return true;
         }
         else if (preference == mAutoRefreshDevicePre)
@@ -288,7 +299,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             String time = newValue.toString();
             mAutoRefreshDevicePre.setValue(time);
             mAutoRefreshDevicePre.setSummary(mAutoRefreshDevicePre.getEntry());
-            mShared.edit().putLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, Long.parseLong(time)).commit();
+            mShared.edit().putLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, Long.parseLong(time)).apply();
             return true;
         }
         else if (preference == mAutoConfigureDevicePre)
@@ -296,18 +307,32 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             String value = newValue.toString();
             mAutoConfigureDevicePre.setValue(value);
             mAutoConfigureDevicePre.setSummary(mAutoConfigureDevicePre.getEntry());
-            mShared.edit().putInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, Integer.parseInt(value)).commit();
+            mShared.edit().putInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, Integer.parseInt(value)).apply();
             return true;
         }
         else if (preference == mShowMeshTreePre)
         {
             boolean showMeshTree = (Boolean)newValue;
-            mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, showMeshTree).commit();
+            mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, showMeshTree).apply();
             return true;
         }
         else if (preference == mStoreLogPre)
         {
             onStoreDebugLogChanged((Boolean) newValue);
+            return true;
+        }
+        else if (preference == mEspPushPre)
+        {
+            boolean onOff = (Boolean)newValue;
+            mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, onOff).apply();
+            if (onOff)
+            {
+                EspPushUtils.startPushService(getActivity());
+            }
+            else
+            {
+                EspPushUtils.stopPushService(getActivity());
+            }
             return true;
         }
         
@@ -351,11 +376,27 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             mAccountRegisterPre.setTitle(R.string.esp_settings_account_register);
             mAccountCategory.addPreference(mAccountRegisterPre);
         }
+        
+        if (mEspPushPre != null)
+        {
+            mEspPushPre.setEnabled(isLogin);
+            if (isLogin)
+            {
+                if (mEspPushPre.isChecked())
+                {
+                    EspPushUtils.startPushService(getActivity());
+                }
+                else
+                {
+                    EspPushUtils.stopPushService(getActivity());
+                }
+            }
+        }
     }
     
     private void showLoginDialog()
     {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.login_dialog, null);
+        View view = View.inflate(getActivity(), R.layout.login_dialog, null);
         final EditText accountEdT = (EditText)view.findViewById(R.id.login_edt_account);
         final EditText pwdEdt = (EditText)view.findViewById(R.id.login_edt_password);
         final TextView thirdPartyLoginTV = (TextView)view.findViewById(R.id.login_text_third_party);
@@ -442,6 +483,13 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         onLoginChanged(true);
         
         mBroadcastManager.sendBroadcast(new Intent(EspStrings.Action.LOGIN_NEW_ACCOUNT));
+    }
+    
+    private void logout()
+    {
+        mShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false).apply();
+        getActivity().setResult(SettingsActivity.RESULT_CODE_LOGOUT);
+        getActivity().finish();
     }
     
     //******** About Version *********//
@@ -663,7 +711,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
     
     private void onStoreDebugLogChanged(Boolean store)
     {
-        mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, store).commit();
+        mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, store).apply();
         Logger root = Logger.getRootLogger();
         if (store)
         {

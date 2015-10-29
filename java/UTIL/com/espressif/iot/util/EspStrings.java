@@ -1,6 +1,6 @@
 package com.espressif.iot.util;
 
-public class EspStrings
+public final class EspStrings
 {
     public static final class DB
     {
@@ -35,6 +35,27 @@ public class EspStrings
          * Send local broadcast when create a group on server successfully
          */
         public static final String CREATE_NEW_CLOUD_GROUP = "CREATE_NEW_CLOUD_GROUP";
+        
+        /**
+         * Send local broadcast when adding device by esptouch make one device conntected to the AP
+         */
+        public static final String ESPTOUCH_DEVICE_FOUND = "ESPTOUCH_DEVICE_FOUND";
+        
+        /**
+         * Send local broadcast when adding device by esptouch try to connect to server
+         */
+        public static final String ESPTOUCH_CONTACTING_SERVER = "ESPTOUCH_CONTACTING_SERVER";
+        
+        /**
+         * Send local broadcast when adding device by esptouch connect to server suc
+         */
+        public static final String ESPTOUCH_REGISTERING_DEVICES = "ESPTOUCH_REGISTERING_DEVICES";
+        
+        /**
+         * Send local broadcast when adding device by esptouch make one device registered suc
+         */
+        public static final String ESPTOUCH_DEVICE_REGISTERED = "ESPTOUCH_DEVICE_REGISTERED";
+        
     }
     
     public static final class Key
@@ -86,6 +107,8 @@ public class EspStrings
          */
         public static final String SETTINGS_KEY_DEVICE_AUTO_CONFIGURE = "settings_device_auto_configure";
         
+        public static final String SETTINGS_KEY_ESPPUSH = "settings_esppush";
+        
         /**
          * The Intent value name of extra Device Key
          */
@@ -125,5 +148,11 @@ public class EspStrings
          * The SharedPreferences name of new devices
          */
         public static final String NAME_NEW_ACTIVATED_DEVICES = "new_activated_devices";
+        
+        public static final String KEY_ESPBUTTON_TEMP_KEY = "espbutton_temp_key";
+        
+        public static final String KEY_ESPBUTTON_MAC = "espbutton_mac";
+        
+        public static final String KEY_ESPBUTTON_DEVICE_KEYS = "espbutton_device_keys";
     }
 }

@@ -18,7 +18,7 @@
     <Button
         android:id="@+id/esptouch_btn_done"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
-        android:text="Done"/>
+        android:layout_height="wrap_content"
+        android:text="@string/esp_esptouch_done_text" />
 
 </LinearLayout>

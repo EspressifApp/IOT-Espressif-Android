@@ -33,11 +33,6 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
     private boolean __doActionDevicePostStatusLocal(IEspDevice device, IEspDeviceStatus status)
     {
         EspDeviceType deviceType = device.getDeviceType();
-        InetAddress inetAddress = device.getInetAddress();
-        String deviceBssid = device.getBssid();
-        boolean isMeshDevice = device.getIsMeshDevice();
-        boolean suc = false;
-        
         switch (deviceType)
         {
             case FLAMMABLE:
@@ -47,93 +42,15 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
             case VOLTAGE:
                 break;
             case LIGHT:
-                IEspStatusLight lightStatus = (IEspStatusLight)status;
-                IEspCommandLightPostStatusLocal lightCommand = new EspCommandLightPostStatusLocal();
-                suc = lightCommand.doCommandLightPostStatusLocal(inetAddress, lightStatus, deviceBssid, isMeshDevice);
-                if (suc)
-                {
-                    IEspStatusLight statusLight;
-                    if (device instanceof IEspDeviceSSS)
-                    {
-                        statusLight = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
-                    }
-                    else
-                    {
-                        statusLight = ((IEspDeviceLight)device).getStatusLight();
-                    }
-                    statusLight.setPeriod(lightStatus.getPeriod());
-                    statusLight.setRed(lightStatus.getRed());
-                    statusLight.setGreen(lightStatus.getGreen());
-                    statusLight.setBlue(lightStatus.getBlue());
-                    statusLight.setCWhite(lightStatus.getCWhite());
-                    statusLight.setWWhite(lightStatus.getWWhite());
-                }
-                return suc;
+                return executePostLightStatusLocal(device, (IEspStatusLight)status);
             case PLUG:
-                IEspStatusPlug plugStatus = (IEspStatusPlug)status;
-                IEspCommandPlugPostStatusLocal plugCommand = new EspCommandPlugPostStatusLocal();
-                suc = plugCommand.doCommandPlugPostStatusLocal(inetAddress, plugStatus, deviceBssid, isMeshDevice);
-                if (suc)
-                {
-                    IEspStatusPlug statusPlug;
-                    if (device instanceof IEspDeviceSSS)
-                    {
-                        statusPlug = (IEspStatusPlug)((IEspDeviceSSS)device).getDeviceStatus();
-                    }
-                    else
-                    {
-                        statusPlug = ((IEspDevicePlug)device).getStatusPlug();
-                    }
-                    statusPlug.setIsOn(plugStatus.isOn());
-                }
-                return suc;
+                return executePostPlugStatusLocal(device, (IEspStatusPlug)status);
             case REMOTE:
-                IEspStatusRemote remoteStatus = (IEspStatusRemote)status;
-                IEspCommandRemotePostStatusLocal remoteCommand = new EspCommandRemotePostStatusLocal();
-                suc =
-                    remoteCommand.doCommandRemotePostStatusLocal(inetAddress, remoteStatus, deviceBssid, isMeshDevice);
-                if (suc)
-                {
-                    IEspStatusRemote statusRemote;
-                    if (device instanceof IEspDeviceSSS)
-                    {
-                        statusRemote = (IEspStatusRemote)((IEspDeviceSSS)device).getDeviceStatus();
-                    }
-                    else
-                    {
-                        statusRemote = ((IEspDeviceRemote)device).getStatusRemote();
-                    }
-                    statusRemote.setAddress(remoteStatus.getAddress());
-                    statusRemote.setCommand(remoteStatus.getCommand());
-                    statusRemote.setRepeat(remoteStatus.getRepeat());
-                }
-                return suc;
+                return executePostRemoteStatusLocal(device, (IEspStatusRemote)status);
             case PLUGS:
-                IEspStatusPlugs plugsStatus = (IEspStatusPlugs)status;
-                IEspCommandPlugsPostStatusLocal plugsCommand = new EspCommandPlugsPostStatusLocal();
-                suc = plugsCommand.doCommandPlugsPostStatusLocal(inetAddress, plugsStatus, deviceBssid, isMeshDevice);
-                if (suc)
-                {
-                    if (device instanceof IEspDevicePlugs)
-                    {
-                        IEspDevicePlugs devicePlugs = (IEspDevicePlugs)device;
-                        for (IAperture postAperture : plugsStatus.getStatusApertureList())
-                        {
-                            devicePlugs.updateApertureOnOff(postAperture);
-                        }
-                    }
-                    else if (device instanceof IEspDeviceSSS)
-                    {
-                        IEspStatusPlugs statusPlugs = (IEspStatusPlugs)((IEspDeviceSSS)device).getDeviceStatus();
-                        for (IAperture postAperture : plugsStatus.getStatusApertureList())
-                        {
-                            statusPlugs.updateApertureOnOff(postAperture);
-                        }
-                    }
-                }
-                return suc;
+                return executePostPlugsStatusLocal(device, (IEspStatusPlugs)status);
             case ROOT:
-                doRootRouterCommandLocal((IEspDeviceRoot)device, status);
+                executePostRootStatusLocal((IEspDeviceRoot)device, status);
                 return true;
             case NEW:
                 break;
@@ -147,7 +64,124 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         return __doActionDevicePostStatusLocal(device, status);
     }
     
-    private void doRootRouterCommandLocal(IEspDeviceRoot device, IEspDeviceStatus status)
+    private boolean executePostLightStatusLocal(IEspDevice device, IEspStatusLight status)
+    {
+        InetAddress inetAddress = device.getInetAddress();
+        String deviceBssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        boolean result = false;
+        
+        IEspCommandLightPostStatusLocal lightCommand = new EspCommandLightPostStatusLocal();
+        result = lightCommand.doCommandLightPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        if (result)
+        {
+            IEspStatusLight lightStatus;
+            if (device instanceof IEspDeviceSSS)
+            {
+                lightStatus = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
+            }
+            else
+            {
+                lightStatus = ((IEspDeviceLight)device).getStatusLight();
+            }
+            lightStatus.setPeriod(status.getPeriod());
+            lightStatus.setRed(status.getRed());
+            lightStatus.setGreen(status.getGreen());
+            lightStatus.setBlue(status.getBlue());
+            lightStatus.setCWhite(status.getCWhite());
+            lightStatus.setWWhite(status.getWWhite());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostPlugStatusLocal(IEspDevice device, IEspStatusPlug status)
+    {
+        InetAddress inetAddress = device.getInetAddress();
+        String deviceBssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        boolean result = false;
+        
+        IEspCommandPlugPostStatusLocal plugCommand = new EspCommandPlugPostStatusLocal();
+        result = plugCommand.doCommandPlugPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        if (result)
+        {
+            IEspStatusPlug plugStatus;
+            if (device instanceof IEspDeviceSSS)
+            {
+                plugStatus = (IEspStatusPlug)((IEspDeviceSSS)device).getDeviceStatus();
+            }
+            else
+            {
+                plugStatus = ((IEspDevicePlug)device).getStatusPlug();
+            }
+            plugStatus.setIsOn(status.isOn());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostRemoteStatusLocal(IEspDevice device, IEspStatusRemote status)
+    {
+        InetAddress inetAddress = device.getInetAddress();
+        String deviceBssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        boolean result = false;
+        
+        IEspCommandRemotePostStatusLocal remoteCommand = new EspCommandRemotePostStatusLocal();
+        result = remoteCommand.doCommandRemotePostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        if (result)
+        {
+            IEspStatusRemote remoteStatus;
+            if (device instanceof IEspDeviceSSS)
+            {
+                remoteStatus = (IEspStatusRemote)((IEspDeviceSSS)device).getDeviceStatus();
+            }
+            else
+            {
+                remoteStatus = ((IEspDeviceRemote)device).getStatusRemote();
+            }
+            remoteStatus.setAddress(remoteStatus.getAddress());
+            remoteStatus.setCommand(remoteStatus.getCommand());
+            remoteStatus.setRepeat(remoteStatus.getRepeat());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostPlugsStatusLocal(IEspDevice device, IEspStatusPlugs status)
+    {
+        InetAddress inetAddress = device.getInetAddress();
+        String deviceBssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        boolean result = false;
+        
+        IEspCommandPlugsPostStatusLocal plugsCommand = new EspCommandPlugsPostStatusLocal();
+        result = plugsCommand.doCommandPlugsPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        if (result)
+        {
+            if (device instanceof IEspDevicePlugs)
+            {
+                IEspDevicePlugs devicePlugs = (IEspDevicePlugs)device;
+                for (IAperture postAperture : status.getStatusApertureList())
+                {
+                    devicePlugs.updateApertureOnOff(postAperture);
+                }
+            }
+            else if (device instanceof IEspDeviceSSS)
+            {
+                IEspStatusPlugs plugsStatus = (IEspStatusPlugs)((IEspDeviceSSS)device).getDeviceStatus();
+                for (IAperture postAperture : status.getStatusApertureList())
+                {
+                    plugsStatus.updateApertureOnOff(postAperture);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private void executePostRootStatusLocal(IEspDeviceRoot device, IEspDeviceStatus status)
     {
         List<IEspDeviceTreeElement> childList = device.getDeviceTreeElementList();
         for (IEspDeviceTreeElement element : childList)

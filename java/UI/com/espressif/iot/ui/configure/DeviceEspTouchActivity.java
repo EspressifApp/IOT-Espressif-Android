@@ -2,6 +2,7 @@ package com.espressif.iot.ui.configure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,12 +11,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +34,7 @@ import android.widget.Toast;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.device.IEspDevice;
@@ -41,6 +44,7 @@ import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.EspStrings;
 import com.google.zxing.qrcode.ui.ShareCaptureActivity;
 
 public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedChangeListener, OnClickListener,
@@ -49,6 +53,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     private IOTApDBManager mIOTApDBManager;
     
     private WifiManager mWifiManager;
+    private LocalBroadcastManager mBraodcastManager;
     
     private static final String ESPTOUCH_VERSION = "v0.3.4.3";
     
@@ -71,6 +76,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     private static final int POPUPMENU_ID_SOFTAP_CONFIGURE = 2;
     
     private List<String> mEsptouchDeviceBssidList = new ArrayList<String>();
+    private AtomicInteger mEsptouchDeivceRegisterCount = new AtomicInteger();
     
     private static final int REQUEST_SOFTAP_CONFIGURE = 10;
     
@@ -125,12 +131,17 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         setTitle(R.string.esp_configure_add);
         setTitleRightIcon(R.drawable.esp_icon_menu_moreoverflow);
         
-        LayoutInflater layoutInflator = LayoutInflater.from(this);
-        
-        mEsptouchContentView = layoutInflator.inflate(R.layout.esptouch_dialog_content, null);
+        mEsptouchContentView = View.inflate(this, R.layout.esptouch_dialog_content, null);
         mEsptouchContentCountTV = (TextView)mEsptouchContentView.findViewById(R.id.esptouch_tv_count);
         mEsptouchContentDoneBtn = (Button)mEsptouchContentView.findViewById(R.id.esptouch_btn_done);
         
+        // register Receiver
+        mBraodcastManager = LocalBroadcastManager.getInstance(this);
+        IntentFilter filter = new IntentFilter(EspStrings.Action.ESPTOUCH_CONTACTING_SERVER);
+        filter.addAction(EspStrings.Action.ESPTOUCH_DEVICE_FOUND);
+        filter.addAction(EspStrings.Action.ESPTOUCH_DEVICE_REGISTERED);
+        filter.addAction(EspStrings.Action.ESPTOUCH_REGISTERING_DEVICES);
+        mBraodcastManager.registerReceiver(mEsptouchReceiver, filter);
     }
     
     @Override
@@ -148,6 +159,13 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         super.onPause();
         
         unregisterReceiver(mWifiReceiver);
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        mBraodcastManager.unregisterReceiver(mEsptouchReceiver);
     }
     
     @Override
@@ -264,6 +282,42 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         
     };
     
+    private BroadcastReceiver mEsptouchReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            final String action = intent.getAction();
+            final Resources resources = getResources();
+            String text = null;
+            if(action.equals(EspStrings.Action.ESPTOUCH_DEVICE_FOUND))
+            {
+                int quantity = mEsptouchDeviceBssidList.size();
+                text = resources.getQuantityString(R.plurals.esp_esptouch_device_found, quantity, quantity);
+                mEsptouchContentCountTV.setText(text);
+            }
+            else if (action.equals(EspStrings.Action.ESPTOUCH_CONTACTING_SERVER))
+            {
+                // when contacting server, make done button gone
+                mEsptouchContentDoneBtn.setVisibility(View.GONE);
+                text = resources.getString(R.string.esp_esptouch_contacting_server);
+                mEsptouchContentCountTV.setText(text);
+            }
+            else if(action.equals(EspStrings.Action.ESPTOUCH_REGISTERING_DEVICES))
+            {
+                text = resources.getString(R.string.esp_esptouch_registering_devices);
+                mEsptouchContentCountTV.setText(text);
+            }
+            else if(action.equals(EspStrings.Action.ESPTOUCH_DEVICE_REGISTERED))
+            {
+                int quantity = mEsptouchDeivceRegisterCount.incrementAndGet();
+                text = resources.getQuantityString(R.plurals.esp_esptouch_device_registered, quantity, quantity);
+                mEsptouchContentCountTV.setText(text);
+            }
+        }
+        
+    };
+    
     private IEsptouchListener mEsptouchListener = new IEsptouchListener()
     {
         
@@ -277,10 +331,11 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
                 public void run()
                 {
                     String bssid = BSSIDUtil.restoreBSSID(result.getBssid());
-//                    String text = getString(R.string.esp_esptouch_connect_wifi, bssid);
-//                    Toast.makeText(DeviceEspTouchActivity.this, text, Toast.LENGTH_LONG).show();
                     mEsptouchDeviceBssidList.add(bssid);
-                    mEsptouchContentCountTV.setText("+" + mEsptouchDeviceBssidList.size());
+                    Context context = EspApplication.sharedInstance().getApplicationContext();
+                    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
+                    Intent intent = new Intent(EspStrings.Action.ESPTOUCH_DEVICE_FOUND);
+                    broadcastManager.sendBroadcast(intent);
                 }
                 
             });
@@ -291,15 +346,16 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     {
         List<IEspDevice> deviceList = mUser.getDeviceList();
         List<String> deviceNameList = new ArrayList<String>();
-        for (String esptouchDeviceBssid : mEsptouchDeviceBssidList)
+        for (IEspDevice deviceInList : deviceList)
         {
-            for (IEspDevice deviceInList : deviceList)
+            for (String esptouchDeviceBssid : mEsptouchDeviceBssidList)
             {
                 String deviceBssid = deviceInList.getBssid();
                 if (esptouchDeviceBssid.equals(deviceBssid))
                 {
                     deviceNameList.add(deviceInList.getName());
                     mEsptouchDeviceBssidList.remove(esptouchDeviceBssid);
+                    break;
                 }
             }
         }
@@ -308,6 +364,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private void doEspTouch()
     {
+        mEsptouchDeivceRegisterCount.set(0);
         mEsptouchDeviceBssidList.clear();
         final String bssid = getConnectionBssid();
         final String ssid = EspBaseApiUtil.getWifiConnectedSsid();
@@ -389,7 +446,9 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
                 mUser.doneAllAddDevices();
             }
         });
-        mEsptouchContentCountTV.setText("+0");
+        final Resources resources = getResources();
+        final String text = resources.getString(R.string.esp_esptouch_discovering_devices);
+        mEsptouchContentCountTV.setText(text);
         dialog.setTitle(getString(R.string.esp_configure_configuring));
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE,
             getString(android.R.string.cancel),

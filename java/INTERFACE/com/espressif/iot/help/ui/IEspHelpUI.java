@@ -6,8 +6,6 @@ public interface IEspHelpUI
     
     static final int RESULT_HELP_CONFIGURE = 10;
     
-    static final int RESULT_HELP_MESH_CONFIGURE = 11;
-    
     static final int RESULT_HELP_UPGRADE_LOCAL = 20;
     
     static final int RESULT_HELP_UPGRADE_ONLINE = 21;

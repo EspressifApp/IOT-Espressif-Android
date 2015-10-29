@@ -68,7 +68,7 @@ public class RegisterEmailFragment extends Fragment implements OnClickListener, 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.register_email_fragment, null);
+        View view = inflater.inflate(R.layout.register_email_fragment, container, false);
         
         mUsernameEdt = (EditText)view.findViewById(R.id.register_username);
         mUsernameEdt.addTextChangedListener(new FilterSpaceTextListener(mUsernameEdt));

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
 
+import com.espressif.iot.command.device.espbutton.IEspButtonConfigureListener;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
@@ -295,6 +296,8 @@ public interface IEspUser extends IEspSingletonObject
      * @return @see IEspUser
      */
     IEspUser doActionUserLoginDB();
+    
+    void doActionUserLogout();
     
     /**
      * load devices of user from DB
@@ -696,4 +699,33 @@ public interface IEspUser extends IEspSingletonObject
      * @param deviceKey
      */
     void deleteNewActivatedDevice(String deviceKey);
+    
+    /**
+     * Add a new EspButton
+     * 
+     * @param tempKey
+     * @param macAddress
+     * @param permitAllRequest
+     * @param deviceList
+     * @param isBroadcast
+     * @param listener
+     * @return
+     */
+    boolean doActionEspButtonAdd(String tempKey, String macAddress, boolean permitAllRequest,
+        List<IEspDevice> deviceList, boolean isBroadcast, IEspButtonConfigureListener listener);
+    
+    /**
+     * Replace a EspButton
+     * 
+     * @param newTempKey
+     * @param newMacAddress
+     * @param permitAllRequest
+     * @param deviceList
+     * @param isBroadcast
+     * @param listener
+     * @param oldMacAddress
+     * @return
+     */
+    boolean doActionEspButtonReplace(String newTempKey, String newMacAddress, boolean permitAllRequest,
+        List<IEspDevice> deviceList, boolean isBroadcast, IEspButtonConfigureListener listener, String... oldMacAddress);
 }

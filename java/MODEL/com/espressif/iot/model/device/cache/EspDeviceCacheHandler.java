@@ -653,6 +653,54 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
+    private IEspDevice getDeviceByBssid(List<IEspDevice> deviceList, String bssid)
+    {
+        for (IEspDevice device : deviceList)
+        {
+            if (device.getBssid().equals(bssid))
+            {
+                return device;
+            }
+        }
+        
+        return null;
+    }
+
+    
+    private void setAllDevicesRootBssid(List<IEspDevice> allDeviceList)
+    {
+        for (int i = 0; i < allDeviceList.size(); i++)
+        {
+            IEspDevice device = allDeviceList.get(i);
+            IEspDevice parentDevice = null;
+            String bssid = device.getBssid();
+            String parentBssid = device.getParentDeviceBssid();
+            String rootBssid = bssid;
+            
+            do
+            {
+                // next
+                if (parentBssid != null)
+                {
+                    parentDevice = getDeviceByBssid(allDeviceList, parentBssid);
+                }
+                else
+                {
+                    break;
+                }
+                
+                // process
+                if (parentDevice != null)
+                {
+                    parentBssid = parentDevice.getParentDeviceBssid();
+                    rootBssid = parentDevice.getBssid();
+                }
+            } while (parentDevice != null);
+            // set root bssid
+            device.setRootDeviceBssid(rootBssid);
+        }
+    }
+    
     @Override
     public synchronized Void handleUninterruptible(boolean isStateMachine)
     {
@@ -694,8 +742,10 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         // remove the redundant user sta devices
         removeRedundantUserStaDevices(userDeviceList, userStaDeviceList);
         
+        List<IEspDevice> allDeviceList = user.getAllDeviceList();
+        setAllDevicesRootBssid(allDeviceList);
+        
         user.unlockUserDeviceLists();
         return null;
     }
-
 }

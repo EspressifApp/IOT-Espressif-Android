@@ -8,6 +8,7 @@ import com.espressif.iot.type.device.timer.EspDeviceTimer;
 import com.espressif.iot.type.device.timer.EspDeviceTimerJSONKey;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
@@ -59,7 +60,7 @@ public abstract class DeviceTimerEditActivityAbs extends Activity implements Esp
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
         mDevice = mUser.getUserDevice(deviceKey);
-        long timerId = intent.getLongExtra(EspStrings.Key.DEVICE_TIMER_ID_KEY, -1);
+        long timerId = intent.getLongExtra(EspStrings.Key.DEVICE_TIMER_ID_KEY, EspDefaults.DEVICE_TIMER_ID);
         if (timerId >= 0)
         {
             for (int i = 0; i < mDevice.getTimerList().size(); i++)

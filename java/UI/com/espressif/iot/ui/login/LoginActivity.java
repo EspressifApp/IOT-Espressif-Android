@@ -177,7 +177,7 @@ public class LoginActivity extends Activity implements OnClickListener
     private void loginSuccess()
     {
         SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        shared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).commit();
+        shared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).apply();
         
         Intent intent = new Intent(this, EspApplication.getEspUIActivity());
         startActivity(intent);

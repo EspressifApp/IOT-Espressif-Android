@@ -8,8 +8,6 @@ package com.espressif.iot.command;
  */
 public interface IEspCommandInternet extends IEspCommand
 {
-    static final String Authorization = "Authorization";
-    
     static final String Time_Zone = "Time-Zone";
     
     static final String Epoch = "Epoch";
@@ -23,8 +21,6 @@ public interface IEspCommandInternet extends IEspCommand
     static final String Email = "email";
     
     static final String Password = "password";
-    
-    static final String Token = "token";
     
     static final String IsOwnerKey = "is_owner_key";
     

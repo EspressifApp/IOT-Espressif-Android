@@ -470,7 +470,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
      */
     public void setHelpHintMessage(CharSequence hint)
     {
-        View view = getLayoutInflater().inflate(R.layout.esp_help_hint_content, null);
+        View view = View.inflate(this, R.layout.esp_help_hint_content, null);
         TextView hintTextView = (TextView)view.findViewById(R.id.help_hint_text);
         hintTextView.setText(hint);
         
@@ -659,7 +659,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
             rightView.setBackgroundColor(bgColor);
             rightView.setClickable(true);
             FrameLayout.LayoutParams lp =
-                new FrameLayout.LayoutParams(mHelpContainer.getWidth() - rect.right, view.getHeight(), Gravity.RIGHT);
+                new FrameLayout.LayoutParams(mHelpContainer.getWidth() - rect.right, view.getHeight(), Gravity.END);
             mHelpContainer.addView(rightView, lp);
             rightView.setY(rect.top);
         }

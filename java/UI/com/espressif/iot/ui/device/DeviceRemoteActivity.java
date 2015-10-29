@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -39,7 +38,7 @@ public class DeviceRemoteActivity extends DeviceActivityAbs implements OnClickLi
     @Override
     protected View initControlView()
     {
-        View view = getLayoutInflater().inflate(R.layout.device_activity_remote, null);
+        View view = View.inflate(this, R.layout.device_activity_remote, null);
         
         mAddressEdt = (EditText)view.findViewById(R.id.remote_address_edit);
         mCommandEdt = (EditText)view.findViewById(R.id.remote_command_edit);

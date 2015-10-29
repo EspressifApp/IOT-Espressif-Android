@@ -204,6 +204,10 @@ public interface IEspDevice extends IEspObject
      */
     String getParentDeviceBssid();
     
+    void setRootDeviceBssid(String rootBssid);
+    
+    String getRootDeviceBssid();
+    
     /*
      * refreshed means the device on Server maybe dirty, so ignore Server info about the device until refreshed is
      * cleared

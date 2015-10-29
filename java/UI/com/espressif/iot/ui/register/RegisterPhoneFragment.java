@@ -56,7 +56,7 @@ public class RegisterPhoneFragment extends Fragment implements OnClickListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.register_phone_fragment , null);
+        View view = inflater.inflate(R.layout.register_phone_fragment , container, false);
         
         mPhoneET = (EditText)view.findViewById(R.id.register_phone);
         mCaptchaCodeET = (EditText)view.findViewById(R.id.register_captcha_code);

@@ -9,7 +9,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.net.wifi.ScanResult;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -45,8 +44,7 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
     {
         stopAutoRefresh();
         
-        LayoutInflater inflater = mActivity.getLayoutInflater();
-        View view = inflater.inflate(R.layout.device_configure_select_dialog, null);
+        View view = View.inflate(mActivity, R.layout.device_configure_select_dialog, null);
         
         mWifiSpinner = (Spinner)view.findViewById(R.id.wifi_spinner);
         mWifiList = mUser.scanApList(true);

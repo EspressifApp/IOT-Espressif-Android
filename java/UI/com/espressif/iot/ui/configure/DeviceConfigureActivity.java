@@ -22,6 +22,7 @@ import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
@@ -73,8 +74,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     
     private int mAutoConfigureValue;
     
-    public static final int DEFAULT_AUTO_CONFIGRUE_VALUE = -30;
-    
     protected static final int POPMENU_ID_ACTIVATE = 0;
     protected static final int POPMENU_ID_DIRECT_CONNECT = 1;
     
@@ -96,7 +95,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShared.registerOnSharedPreferenceChangeListener(this);
         mAutoConfigureValue =
-            mShared.getInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, DEFAULT_AUTO_CONFIGRUE_VALUE);
+            mShared.getInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, EspDefaults.AUTO_CONFIGRUE_RSSI);
         
         mSoftApListView = (PullToRefreshListView)findViewById(R.id.softap_list);
         mSoftApListView.setOnItemClickListener(this);
@@ -540,7 +539,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     {
         if (key.equals(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE))
         {
-            mAutoConfigureValue = sharedPreferences.getInt(key, 0);
+            mAutoConfigureValue = sharedPreferences.getInt(key, EspDefaults.AUTO_CONFIGRUE_RSSI);
         }
     }
     

@@ -43,106 +43,22 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
     public boolean doActionDeviceGetStatusInternet(IEspDevice device)
     {
         EspDeviceType deviceType = device.getDeviceType();
-        String deviceKey = device.getKey();
-        boolean suc = false;
         switch (deviceType)
         {
             case FLAMMABLE:
-                IEspCommandFlammableGetStatusInternet flammalbeCommand = new EspCommandFlammableGetStatusInternet();
-                IEspStatusFlammable flammableStatus = flammalbeCommand.doCommandFlammableGetStatusInternet(deviceKey);
-                if (flammableStatus != null)
-                {
-                    suc = true;
-                    IEspDeviceFlammable flammable = (IEspDeviceFlammable)device;
-                    flammable.getStatusFlammable().setAt(flammableStatus.getAt());
-                    flammable.getStatusFlammable().setX(flammableStatus.getX());
-                }
-                return suc;
+                return executeGetFlammableStatusInternet(device);
             case HUMITURE:
-                IEspCommandHumitureGetStatusInternet humitureCommand = new EspCommandHumitureGetStatusInternet();
-                IEspStatusHumiture humitureStatus = humitureCommand.doCommandHumitureGetStatusInternet(deviceKey);
-                if (humitureStatus != null)
-                {
-                    suc = true;
-                    IEspDeviceHumiture humiture = (IEspDeviceHumiture)device;
-                    humiture.getStatusHumiture().setAt(humitureStatus.getAt());
-                    humiture.getStatusHumiture().setX(humitureStatus.getX());
-                    humiture.getStatusHumiture().setY(humitureStatus.getY());
-                }
-                return suc;
+                return executeGetHumitureStatusInternet(device);
             case VOLTAGE:
-                IEspCommandVoltageGetStatusInternet voltageCommand = new EspCommandVoltageGetStatusInternet();
-                IEspStatusVoltage voltageStatus = voltageCommand.doCommandVoltageGetStatusInternet(deviceKey);
-                if (voltageStatus != null)
-                {
-                    suc = true;
-                    IEspDeviceVoltage voltage = (IEspDeviceVoltage)device;
-                    voltage.getStatusVoltage().setAt(voltageStatus.getAt());
-                    voltage.getStatusVoltage().setX(voltageStatus.getX());
-                }
-                return suc;
+                return executeGetVoltageStatusInternet(device);
             case LIGHT:
-                IEspDeviceLight light = (IEspDeviceLight)device;
-                
-                // get rgb period white value
-                IEspCommandLightGetStatusInternet lightCommand = new EspCommandLightGetStatusInternet();
-                IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusInternet(deviceKey);
-                if (lightStatus != null)
-                {
-                    suc = true;
-                    light.getStatusLight().setPeriod(lightStatus.getPeriod());
-                    light.getStatusLight().setRed(lightStatus.getRed());
-                    light.getStatusLight().setGreen(lightStatus.getGreen());
-                    light.getStatusLight().setBlue(lightStatus.getBlue());
-                    light.getStatusLight().setCWhite(lightStatus.getCWhite());
-                    light.getStatusLight().setWWhite(lightStatus.getWWhite());
-                }
-                
-                // get battery value
-                boolean batterySuc = false;
-                IEspCommandLightGetEspnowInternet batteryCommand = new EspCommandLightGetEspnowInternet();
-                List<IEspStatusEspnow> espnowStatusList = batteryCommand.doCommandLightGetEspnowInternet(deviceKey);
-                List<IEspStatusEspnow> deviceEspnowStatusList = light.getEspnowStatusList();
-                deviceEspnowStatusList.clear();
-                if (espnowStatusList != null)
-                {
-                    deviceEspnowStatusList.addAll(espnowStatusList);
-                    batterySuc = true;
-                }
-                
-                return suc && batterySuc;
+                return executeGetLightStatusInternet(device);
             case PLUG:
-                IEspCommandPlugGetStatusInternet plugCommand = new EspCommandPlugGetStatusInternet();
-                IEspStatusPlug plugStatus = plugCommand.doCommandPlugGetStatusInternet(deviceKey);
-                if (plugStatus != null)
-                {
-                    suc = true;
-                    IEspDevicePlug plug = (IEspDevicePlug)device;
-                    plug.getStatusPlug().setIsOn(plugStatus.isOn());
-                }
-                return suc;
+                return executeGetPlugStatusInternet(device);
             case REMOTE:
-                IEspCommandRemoteGetStatusInternet remoteCommand = new EspCommandRemoteGetStatusInternet();
-                IEspStatusRemote remoteStatus = remoteCommand.doCommandRemoteGetStatusInternet(deviceKey);
-                if (remoteStatus != null)
-                {
-                    suc = true;
-                    IEspDeviceRemote remote = (IEspDeviceRemote)device;
-                    remote.getStatusRemote().setAddress(remoteStatus.getAddress());
-                    remote.getStatusRemote().setCommand(remoteStatus.getCommand());
-                    remote.getStatusRemote().setRepeat(remoteStatus.getRepeat());
-                }
-                return suc;
+                return executeGetRemoteStatusInternet(device);
             case PLUGS:
-                IEspCommandPlugsGetStatusInternet plugsCommand = new EspCommandPlugsGetStatusInternet();
-                IEspStatusPlugs plugsStatus = plugsCommand.doCommandPlugsGetStatusInternet(deviceKey);
-                if (plugsStatus != null)
-                {
-                    suc = true;
-                    IEspDevicePlugs plugs = (IEspDevicePlugs)device;
-                    plugs.setStatusPlugs(plugsStatus);
-                }
-                return suc;
+                return executeGetPlugsStatusInternet(device);
             case ROOT:
                 return false;
             case NEW:
@@ -151,4 +67,139 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
         throw new IllegalArgumentException();
     }
     
+    private boolean executeGetFlammableStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandFlammableGetStatusInternet flammalbeCommand = new EspCommandFlammableGetStatusInternet();
+        IEspStatusFlammable flammableStatus = flammalbeCommand.doCommandFlammableGetStatusInternet(device.getKey());
+        if (flammableStatus != null)
+        {
+            result = true;
+            IEspDeviceFlammable flammable = (IEspDeviceFlammable)device;
+            flammable.getStatusFlammable().setAt(flammableStatus.getAt());
+            flammable.getStatusFlammable().setX(flammableStatus.getX());
+        }
+        
+        return result;
+    }
+    
+    private boolean executeGetHumitureStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandHumitureGetStatusInternet humitureCommand = new EspCommandHumitureGetStatusInternet();
+        IEspStatusHumiture humitureStatus = humitureCommand.doCommandHumitureGetStatusInternet(device.getKey());
+        if (humitureStatus != null)
+        {
+            result = true;
+            IEspDeviceHumiture humiture = (IEspDeviceHumiture)device;
+            humiture.getStatusHumiture().setAt(humitureStatus.getAt());
+            humiture.getStatusHumiture().setX(humitureStatus.getX());
+            humiture.getStatusHumiture().setY(humitureStatus.getY());
+        }
+        
+        return result;
+    }
+    
+    private boolean executeGetVoltageStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandVoltageGetStatusInternet voltageCommand = new EspCommandVoltageGetStatusInternet();
+        IEspStatusVoltage voltageStatus = voltageCommand.doCommandVoltageGetStatusInternet(device.getKey());
+        if (voltageStatus != null)
+        {
+            result = true;
+            IEspDeviceVoltage voltage = (IEspDeviceVoltage)device;
+            voltage.getStatusVoltage().setAt(voltageStatus.getAt());
+            voltage.getStatusVoltage().setX(voltageStatus.getX());
+        }
+        
+        return result;
+    }
+    
+    private boolean executeGetLightStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        IEspDeviceLight light = (IEspDeviceLight)device;
+        
+        // get rgb period white value
+        IEspCommandLightGetStatusInternet lightCommand = new EspCommandLightGetStatusInternet();
+        IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusInternet(device.getKey());
+        if (lightStatus != null)
+        {
+            result = true;
+            light.getStatusLight().setPeriod(lightStatus.getPeriod());
+            light.getStatusLight().setRed(lightStatus.getRed());
+            light.getStatusLight().setGreen(lightStatus.getGreen());
+            light.getStatusLight().setBlue(lightStatus.getBlue());
+            light.getStatusLight().setCWhite(lightStatus.getCWhite());
+            light.getStatusLight().setWWhite(lightStatus.getWWhite());
+        }
+        
+        // get battery value
+        boolean batterySuc = false;
+        IEspCommandLightGetEspnowInternet batteryCommand = new EspCommandLightGetEspnowInternet();
+        List<IEspStatusEspnow> espnowStatusList = batteryCommand.doCommandLightGetEspnowInternet(device.getKey());
+        List<IEspStatusEspnow> deviceEspnowStatusList = light.getEspnowStatusList();
+        deviceEspnowStatusList.clear();
+        if (espnowStatusList != null)
+        {
+            deviceEspnowStatusList.addAll(espnowStatusList);
+            batterySuc = true;
+        }
+        
+        return result && batterySuc;
+    }
+    
+    private boolean executeGetPlugStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandPlugGetStatusInternet plugCommand = new EspCommandPlugGetStatusInternet();
+        IEspStatusPlug plugStatus = plugCommand.doCommandPlugGetStatusInternet(device.getKey());
+        if (plugStatus != null)
+        {
+            result = true;
+            IEspDevicePlug plug = (IEspDevicePlug)device;
+            plug.getStatusPlug().setIsOn(plugStatus.isOn());
+        }
+        
+        return result;
+    }
+    
+    private boolean executeGetRemoteStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandRemoteGetStatusInternet remoteCommand = new EspCommandRemoteGetStatusInternet();
+        IEspStatusRemote remoteStatus = remoteCommand.doCommandRemoteGetStatusInternet(device.getKey());
+        if (remoteStatus != null)
+        {
+            result = true;
+            IEspDeviceRemote remote = (IEspDeviceRemote)device;
+            remote.getStatusRemote().setAddress(remoteStatus.getAddress());
+            remote.getStatusRemote().setCommand(remoteStatus.getCommand());
+            remote.getStatusRemote().setRepeat(remoteStatus.getRepeat());
+        }
+        
+        return result;
+    }
+    
+    private boolean executeGetPlugsStatusInternet(IEspDevice device)
+    {
+        boolean result = false;
+        
+        IEspCommandPlugsGetStatusInternet plugsCommand = new EspCommandPlugsGetStatusInternet();
+        IEspStatusPlugs plugsStatus = plugsCommand.doCommandPlugsGetStatusInternet(device.getKey());
+        if (plugsStatus != null)
+        {
+            result = true;
+            IEspDevicePlugs plugs = (IEspDevicePlugs)device;
+            plugs.setStatusPlugs(plugsStatus);
+        }
+        
+        return result;
+    }
 }

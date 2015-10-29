@@ -33,7 +33,7 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
     @Override
     protected View initControlView()
     {
-        View view = getLayoutInflater().inflate(R.layout.device_activity_plug, null);
+        View view = View.inflate(this, R.layout.device_activity_plug, null);
         mPlugSwitch = (CheckBox)view.findViewById(R.id.plug_switch);
         mPlugSwitch.setOnClickListener(this);
         

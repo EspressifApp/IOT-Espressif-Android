@@ -33,8 +33,6 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
     public boolean doActionDevicePostStatusInternet(IEspDevice device, IEspDeviceStatus status)
     {
         EspDeviceType deviceType = device.getDeviceType();
-        String deviceKey = device.getKey();
-        boolean suc = false;
         switch (deviceType)
         {
             case FLAMMABLE:
@@ -44,66 +42,89 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             case VOLTAGE:
                 break;
             case LIGHT:
-                IEspStatusLight lightStatus = (IEspStatusLight)status;
-                IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
-                suc = lightCommand.doCommandLightPostStatusInternet(deviceKey, lightStatus);
-                if (suc)
-                {
-                    IEspDeviceLight light = (IEspDeviceLight)device;
-                    light.getStatusLight().setPeriod(lightStatus.getPeriod());
-                    light.getStatusLight().setRed(lightStatus.getRed());
-                    light.getStatusLight().setGreen(lightStatus.getGreen());
-                    light.getStatusLight().setBlue(lightStatus.getBlue());
-                    light.getStatusLight().setCWhite(lightStatus.getCWhite());
-                    light.getStatusLight().setWWhite(lightStatus.getWWhite());
-                }
-                return suc;
+                return executePostLightStatusInternet((IEspDeviceLight)device, (IEspStatusLight)status);
             case PLUG:
-                IEspStatusPlug plugStatus = (IEspStatusPlug)status;
-                IEspCommandPlugPostStatusInternet plugCommand = new EspCommandPlugPostStatusInternet();
-                suc = plugCommand.doCommandPlugPostStatusInternet(deviceKey, plugStatus);
-                if (suc)
-                {
-                    IEspDevicePlug plugDevice = (IEspDevicePlug)device;
-                    plugDevice.getStatusPlug().setIsOn(plugStatus.isOn());
-                }
-                return suc;
+                return executePostPlugStatusInternet((IEspDevicePlug)device, (IEspStatusPlug)status);
             case REMOTE:
-                IEspStatusRemote remoteStatus = (IEspStatusRemote)status;
-                IEspCommandRemotePostStatusInternet remoteCommand = new EspCommandRemotePostStatusInternet();
-                suc = remoteCommand.doCommandRemotePostStatusInternet(deviceKey, remoteStatus);
-                if (suc)
-                {
-                    IEspDeviceRemote remote = (IEspDeviceRemote)device;
-                    remote.getStatusRemote().setAddress(remoteStatus.getAddress());
-                    remote.getStatusRemote().setCommand(remoteStatus.getCommand());
-                    remote.getStatusRemote().setRepeat(remoteStatus.getRepeat());
-                }
-                return suc;
+                return executePostRemoteStatusInternet((IEspDeviceRemote)device, (IEspStatusRemote)status);
             case PLUGS:
-                IEspStatusPlugs plugsStatus = (IEspStatusPlugs)status;
-                IEspCommandPlugsPostStatusInternet plugsCommand = new EspCommandPlugsPostStatusInternet();
-                suc = plugsCommand.doCommandPlugsPostStatusInternet(deviceKey, plugsStatus);
-                if (suc)
-                {
-                    IEspDevicePlugs plugs = (IEspDevicePlugs)device;
-                    for (IAperture postAperture : plugsStatus.getStatusApertureList())
-                    {
-                        plugs.updateApertureOnOff(postAperture);
-                    }
-                }
-                return suc;
+                return executePostPlugsStatusInternet((IEspDevicePlugs)device, (IEspStatusPlugs)status);
             case ROOT:
-                doRootRouterCommandInternet((IEspDeviceRoot)device, status);
+                executePostRootRouterStatusInternet((IEspDeviceRoot)device, status);
                 return true;
             case NEW:
                 break;
         }
         throw new IllegalArgumentException();
-    
     }
     
-    private void doRootRouterCommandInternet(IEspDeviceRoot device, IEspDeviceStatus status)
+    private boolean executePostLightStatusInternet(IEspDeviceLight light, IEspStatusLight status)
+    {
+        boolean result = false;
+        
+        IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
+        result = lightCommand.doCommandLightPostStatusInternet(light.getKey(), status);
+        if (result)
+        {
+            light.getStatusLight().setPeriod(status.getPeriod());
+            light.getStatusLight().setRed(status.getRed());
+            light.getStatusLight().setGreen(status.getGreen());
+            light.getStatusLight().setBlue(status.getBlue());
+            light.getStatusLight().setCWhite(status.getCWhite());
+            light.getStatusLight().setWWhite(status.getWWhite());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostPlugStatusInternet(IEspDevicePlug plug, IEspStatusPlug status)
+    {
+        boolean result = false;
+        
+        IEspCommandPlugPostStatusInternet plugCommand = new EspCommandPlugPostStatusInternet();
+        result = plugCommand.doCommandPlugPostStatusInternet(plug.getKey(), status);
+        if (result)
+        {
+            plug.getStatusPlug().setIsOn(status.isOn());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostRemoteStatusInternet(IEspDeviceRemote remote, IEspStatusRemote status)
+    {
+        boolean result = false;
+        
+        IEspCommandRemotePostStatusInternet remoteCommand = new EspCommandRemotePostStatusInternet();
+        result = remoteCommand.doCommandRemotePostStatusInternet(remote.getKey(), status);
+        if (result)
+        {
+            remote.getStatusRemote().setAddress(status.getAddress());
+            remote.getStatusRemote().setCommand(status.getCommand());
+            remote.getStatusRemote().setRepeat(status.getRepeat());
+        }
+        
+        return result;
+    }
+    
+    private boolean executePostPlugsStatusInternet(IEspDevicePlugs plugs, IEspStatusPlugs status)
+    {
+        boolean result = false;
+        
+        IEspCommandPlugsPostStatusInternet plugsCommand = new EspCommandPlugsPostStatusInternet();
+        result = plugsCommand.doCommandPlugsPostStatusInternet(plugs.getKey(), status);
+        if (result)
+        {
+            for (IAperture postAperture : status.getStatusApertureList())
+            {
+                plugs.updateApertureOnOff(postAperture);
+            }
+        }
+        
+        return result;
+    }
+    
+    private void executePostRootRouterStatusInternet(IEspDeviceRoot device, IEspDeviceStatus status)
     {
         List<IEspDeviceTreeElement> childList = device.getDeviceTreeElementList();
         for (IEspDeviceTreeElement element : childList)
@@ -151,5 +172,5 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             }
         }
     }
-
+    
 }

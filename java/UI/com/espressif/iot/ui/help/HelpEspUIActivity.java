@@ -19,7 +19,6 @@ import android.widget.ImageView.ScaleType;
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.help.ui.IEspHelpUIConfigure;
-import com.espressif.iot.help.ui.IEspHelpUIMeshConfigure;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeLocal;
 import com.espressif.iot.help.ui.IEspHelpUIUpgradeOnline;
 import com.espressif.iot.help.ui.IEspHelpUIUseFlammable;
@@ -32,7 +31,6 @@ import com.espressif.iot.help.ui.IEspHelpUIUseVoltage;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.help.HelpStepConfigure;
-import com.espressif.iot.type.help.HelpStepMeshConfigure;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.help.HelpStepUseFlammable;
@@ -49,7 +47,7 @@ import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfigure, IEspHelpUIUsePlug,
     IEspHelpUIUseLight, IEspHelpUIUseHumiture, IEspHelpUIUseFlammable, IEspHelpUIUseVoltage, IEspHelpUIUseRemote,
-    IEspHelpUIUsePlugs, IEspHelpUIUpgradeLocal, IEspHelpUIUpgradeOnline, IEspHelpUIMeshConfigure
+    IEspHelpUIUsePlugs, IEspHelpUIUpgradeLocal, IEspHelpUIUpgradeOnline
 {
     private static final Logger log = Logger.getLogger(HelpEspUIActivity.class);
     
@@ -105,10 +103,6 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
     protected void gotoConfigure()
     {
         if (mHelpMachine.isHelpModeConfigure())
-        {
-            mHelpMachine.transformState(true);
-        }
-        else if (mHelpMachine.isHelpModeMeshConfigure())
         {
             mHelpMachine.transformState(true);
         }
@@ -182,13 +176,6 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
                         mHelpMachine.start(HelpType.CONFIGURE);
                     }
                     activity.onHelpConfigure();
-                    break;
-                case RESULT_HELP_MESH_CONFIGURE:
-                    if (!mHelpMachine.isHelpOn())
-                    {
-                        mHelpMachine.start(HelpType.MESH_CONFIGURE);
-                    }
-                    activity.onHelpMeshConfigure();
                     break;
                 case RESULT_HELP_USE_PLUG:
                     if (!mHelpMachine.isHelpOn())
@@ -850,22 +837,6 @@ public class HelpEspUIActivity extends EspUIActivity implements IEspHelpUIConfig
         else if (mHelpMachine.isHelpModeUseRemote())
         {
             onHelpUseRemote();
-        }
-    }
-    
-    @Override
-    public void onHelpMeshConfigure()
-    {
-        clearHelpContainer();
-        
-        HelpStepMeshConfigure step = HelpStepMeshConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch (step)
-        {
-            case START:
-                hintConfigureStart();
-                break;
-            default:
-                break;
         }
     }
 }

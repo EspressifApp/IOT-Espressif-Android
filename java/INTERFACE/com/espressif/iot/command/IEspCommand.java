@@ -11,5 +11,9 @@ import com.espressif.iot.object.IEspObject;
  */
 public interface IEspCommand extends IEspObject
 {
+    static final String Authorization = "Authorization";
+    
+    static final String Token = "token";
+    
     static final String Status = "status";
 }

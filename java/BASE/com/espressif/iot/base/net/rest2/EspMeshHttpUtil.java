@@ -238,6 +238,16 @@ public class EspMeshHttpUtil
         return respJson != null && MeshTypeUtil.checkIsDeviceAvailable(respJson);
     }
     
+    public static boolean checkDeviceAvailable(JSONObject responseJSON)
+    {
+        return responseJSON != null && MeshTypeUtil.checkIsDeviceAvailable(responseJSON);
+    }
+    
+    public static String createDeviceAvailableRequestContent()
+    {
+        return MeshTypeUtil.createIsDeviceAvailableRequestContent();
+    }
+    
     private static String getRootInetAddrStr(String uriStr)
     {
         try

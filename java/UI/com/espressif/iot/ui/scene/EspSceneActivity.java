@@ -13,6 +13,7 @@ import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.EspDeviceType;
+import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.view.DeviceAdapter;
@@ -22,6 +23,7 @@ import com.espressif.iot.ui.view.TouchPointMoveLayout.IntersectsView;
 import com.espressif.iot.ui.view.TouchPointMoveLayout.OnTouchMoveListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.AlertDialog;
@@ -80,16 +82,14 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
     
     private TouchPointMoveLayout mMoveLayout;
     
+    private View mButtonBar;
+    private Button mBottomEditBtn;
+    private Button mBottomRemoveBtn;
+    private Button mBottomControlBtn;
+    
     private static final int POPMENU_ID_SYNC_LOCAL = 0x10;
-    private static final int POPMENU_ID_EDIT = 0x11;
-    private static final int POPMENU_ID_REMOVE = 0x12;
-    private static final int POPMENU_ID_CONTROL = 0x13;
     private static final int POPMENU_ID_RENAME = 0x20;
     private static final int POPMENU_ID_DELETE = 0x21;
-    
-    private MenuItem mEditMenuItem;
-    private MenuItem mRemoveMenuItem;
-    private MenuItem mControlMenuItem;
     
     private EspGroupHandler mEspGroupHandler;
     private EspGroupDBManager mEspGroupDBManager;
@@ -137,6 +137,14 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         mSceneLV.setOnItemClickListener(this);
         mSceneLV.setOnItemLongClickListener(this);
         
+        mButtonBar = findViewById(R.id.scene_button_bar);
+        mBottomEditBtn = (Button)findViewById(R.id.scene_device_edit);
+        mBottomEditBtn.setOnClickListener(this);
+        mBottomControlBtn = (Button)findViewById(R.id.scene_device_control);
+        mBottomControlBtn.setOnClickListener(this);
+        mBottomRemoveBtn = (Button)findViewById(R.id.scene_device_remove);
+        mBottomRemoveBtn.setOnClickListener(this);
+        
         mEspGroupHandler = EspGroupHandler.getInstance();
         mEspGroupHandler.call();
         mEspGroupDBManager = EspGroupDBManager.getInstance();
@@ -166,20 +174,12 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
     protected void onTitleRightIconClick(View rightIcon)
     {
         PopupMenu popupMenu = new PopupMenu(this, rightIcon);
+        
         Menu menu = popupMenu.getMenu();
-        if (mSelectedGroup == null)
-        {
-            boolean canSyncLocal = mUser.isLogin() && mEspGroupDBManager.getUserGroup(null).size() > 0;
-            menu.add(Menu.NONE, POPMENU_ID_SYNC_LOCAL, 0, R.string.esp_scene_menu_sync_local).setEnabled(canSyncLocal);
-        }
-        else
-        {
-            mEditMenuItem = menu.add(Menu.NONE, POPMENU_ID_EDIT, 0, R.string.esp_scene_menu_edit);
-            mRemoveMenuItem = menu.add(Menu.NONE, POPMENU_ID_REMOVE, 0, R.string.esp_scene_menu_remove);
-            mControlMenuItem = menu.add(Menu.NONE, POPMENU_ID_CONTROL, 0, R.string.esp_scene_menu_control);
-        }
+        boolean canSyncLocal = mUser.isLogin() && mEspGroupDBManager.getUserGroup(null).size() > 0;
+        menu.add(Menu.NONE, POPMENU_ID_SYNC_LOCAL, 0, R.string.esp_scene_menu_sync_local).setEnabled(canSyncLocal);
+        
         popupMenu.setOnMenuItemClickListener(this);
-        updateMenuItems();
         popupMenu.show();
     }
     
@@ -190,6 +190,25 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         {
             showCreateSceneDialog();
         }
+        else if (v == mBottomEditBtn)
+        {
+            boolean editable = !mDeviceAdapter.isEditable();
+            mDeviceAdapter.setEditable(editable);
+            if (!editable)
+            {
+                mDeviceAdapter.getEditCheckedDevices().clear();
+            }
+            updateBottomButtons();
+            mDeviceAdapter.notifyDataSetChanged();
+        }
+        else if (v == mBottomControlBtn)
+        {
+            checkControllableDevice();
+        }
+        else if (v == mBottomRemoveBtn)
+        {
+            showRemoveDeviceDialog();
+        }
     }
 
     @Override
@@ -199,23 +218,15 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         {
             mDeviceAdapter.getEditCheckedDevices().clear();
             mDeviceAdapter.setEditable(false);
-            updateMenuItems();
+            updateBottomButtons();
             
             IEspGroup group = mSceneList.get(position);
-            if (mSelectedGroup == group)
-            {
-                mSelectedGroup = null;
-                mDeviceList.clear();
-                mDeviceList.addAll(mUserDeviceList);
-                setTitle(mTitle);
-            }
-            else
-            {
-                mSelectedGroup = group;
-                mDeviceList.clear();
-                mDeviceList.addAll(mSelectedGroup.getDeviceList());
-                setTitle(mSelectedGroup.getName());
-            }
+            mSelectedGroup = mSelectedGroup == group ? null : group;
+            boolean groupSelected = mSelectedGroup != null;
+            mDeviceList.clear();
+            mDeviceList.addAll(groupSelected ? mSelectedGroup.getDeviceList() : mUserDeviceList);
+            setTitle(groupSelected ? mSelectedGroup.getName() : mTitle);
+            mButtonBar.setVisibility(groupSelected ? View.VISIBLE : View.GONE);
             
             mDeviceAdapter.notifyDataSetChanged();
             mSceneAdapter.notifyDataSetChanged();
@@ -283,22 +294,6 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
                 updateGroupList();
                 mEspGroupHandler.call();
                 return true;
-            case POPMENU_ID_EDIT:
-                boolean editable = !mDeviceAdapter.isEditable();
-                mDeviceAdapter.setEditable(editable);
-                if (!editable)
-                {
-                    mDeviceAdapter.getEditCheckedDevices().clear();
-                }
-                updateMenuItems();
-                mDeviceAdapter.notifyDataSetChanged();
-                return true;
-            case POPMENU_ID_REMOVE:
-                showRemoveDeviceDialog();
-                return true;
-            case POPMENU_ID_CONTROL:
-                checkControllableDevice();
-                return true;
         }
         return false;
     }
@@ -306,28 +301,18 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
     @Override
     public void onEditCheckedChanged(CheckBox checkBox, IEspDevice device, boolean isChecked)
     {
-        updateMenuItems();
+        updateBottomButtons();
     }
     
-    private void updateMenuItems()
+    private void updateBottomButtons()
     {
-        if (mEditMenuItem != null)
-        {
-            mEditMenuItem.setEnabled(mSelectedGroup != null);
-            int titleRes =
-                mDeviceAdapter.isEditable() ? R.string.esp_scene_menu_edit_cancel : R.string.esp_scene_menu_edit;
-            mEditMenuItem.setTitle(titleRes);
-        }
+        boolean editable = mDeviceAdapter.isEditable();
+        int titleRes = editable ? R.string.esp_scene_menu_edit_cancel : R.string.esp_scene_menu_edit;
+        mBottomEditBtn.setText(titleRes);
         
         boolean hasDeviceSelected = mDeviceAdapter.getEditCheckedDevices().size() > 0;
-        if (mRemoveMenuItem != null)
-        {
-            mRemoveMenuItem.setEnabled(hasDeviceSelected);
-        }
-        if (mControlMenuItem != null)
-        {
-            mControlMenuItem.setEnabled(hasDeviceSelected);
-        }
+        mBottomControlBtn.setEnabled(hasDeviceSelected);
+        mBottomRemoveBtn.setEnabled(hasDeviceSelected);
     }
     
     private Bitmap generateViewBitmap(View view)
@@ -448,7 +433,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         {
             if (convertView == null)
             {
-                convertView = mInflater.inflate(R.layout.esp_scene_list_item, null);
+                convertView = mInflater.inflate(R.layout.esp_scene_list_item, parent, false);
             }
             
             IEspGroup group = getItem(position);
@@ -511,7 +496,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
     
     private void showEditSceneDialog(final IEspGroup scene)
     {
-        View view = getLayoutInflater().inflate(R.layout.edit_dialog, null);
+        View view = View.inflate(this, R.layout.edit_dialog, null);
         final EditText edittext = (EditText)view.findViewById(R.id.edit);
         edittext.setHint(R.string.esp_scene_edit_hint);
         final TextView textview = (TextView)view.findViewById(R.id.text);
@@ -621,7 +606,6 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
             .show();
     }
     
-    
     private void checkControllableDevice()
     {
         Set<EspDeviceType> deviceTypes = new HashSet<EspDeviceType>();
@@ -635,7 +619,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         }
         if (deviceTypes.size() == 0)
         {
-            Toast.makeText(this, R.string.esp_scene_no_controllable_device_msg, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.esp_scene_no_controllable_device_type_msg, Toast.LENGTH_SHORT).show();
         }
         else if (deviceTypes.size() == 1)
         {
@@ -690,17 +674,25 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         IEspDeviceArray deviceArray = BEspDevice.createDeviceArray(type);
         for (IEspDevice device : mDeviceAdapter.getEditCheckedDevices())
         {
-            if (device.getDeviceType() == type)
+            IEspDeviceState state = device.getDeviceState();
+            if (device.getDeviceType() == type && (state.isStateInternet() || state.isStateLocal()))
             {
                 deviceArray.addDevice(device);
             }
         }
         
-        Intent intent = DeviceActivityAbs.getDeviceIntent(getBaseContext(), deviceArray);
-        intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-        intent.putExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, true);
-        DeviceActivityAbs.TEMP_DEVICE = deviceArray;
-        startActivity(intent);
+        if (deviceArray.getDeviceList().size() > 0)
+        {
+            Intent intent = DeviceActivityAbs.getDeviceIntent(getBaseContext(), deviceArray);
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, true);
+            DeviceActivityAbs.TEMP_DEVICE = deviceArray;
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(this, R.string.esp_secen_no_online_device_msg, Toast.LENGTH_SHORT).show();
+        }
     }
     
     private BroadcastReceiver mReceiver = new BroadcastReceiver()
@@ -711,8 +703,8 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
             final String action = intent.getAction();
             if (action.equals(EspStrings.Action.CREATE_NEW_CLOUD_GROUP))
             {
-                long oldId = intent.getLongExtra(EspStrings.Key.KEY_GROUP_ID_OLD, 0);
-                long newId = intent.getLongExtra(EspStrings.Key.KEY_GROUP_ID_NEW, 0);
+                long oldId = intent.getLongExtra(EspStrings.Key.KEY_GROUP_ID_OLD, EspDefaults.GROUP_ID_OLD);
+                long newId = intent.getLongExtra(EspStrings.Key.KEY_GROUP_ID_NEW, EspDefaults.GROUP_ID_NEW);
                 updateGroupId(oldId, newId);
             }
         }

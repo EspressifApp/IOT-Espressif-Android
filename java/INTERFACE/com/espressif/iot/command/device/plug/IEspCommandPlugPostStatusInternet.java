@@ -1,5 +1,7 @@
 package com.espressif.iot.command.device.plug;
 
+import java.util.List;
+
 import com.espressif.iot.command.IEspCommandInternet;
 import com.espressif.iot.command.device.IEspCommandPlug;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
@@ -16,4 +18,14 @@ public interface IEspCommandPlugPostStatusInternet extends IEspCommandInternet, 
      * @return whether the command executed suc
      */
     boolean doCommandPlugPostStatusInternet(String deviceKey, IEspStatusPlug statusPlug);
+    
+    /**
+     * post multicast internet
+     * 
+     * @param deviceKey
+     * @param statusPlug
+     * @param bssids
+     * @return
+     */
+    boolean doCommandMulticastPostStatusInternet(String deviceKey, IEspStatusPlug statusPlug, List<String> bssids);
 }

@@ -366,7 +366,7 @@ public class DeviceTimersActivity extends Activity implements OnItemClickListene
         {
             if (convertView == null)
             {
-                convertView = mInflater.inflate(android.R.layout.simple_list_item_1, null);
+                convertView = mInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
             }
             
             TextView textView = (TextView)convertView.findViewById(android.R.id.text1);

@@ -66,6 +66,40 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
      * Singleton lazy initialization end
      */
     
+
+    @Override
+    public void clear()
+    {
+        synchronized (mTransformedDeviceCacheQueue)
+        {
+            mTransformedDeviceCacheQueue.clear();
+        }
+        synchronized (mServerLocalDeviceCacheQueue)
+        {
+            mServerLocalDeviceCacheQueue.clear();
+        }
+        synchronized (mLocalDeviceIOTAddressQueue)
+        {
+            mLocalDeviceIOTAddressQueue.clear();
+        }
+        synchronized (mStatemachineDeviceCacheQueue)
+        {
+            mStatemachineDeviceCacheQueue.clear();
+        }
+        synchronized (mSharedDeviceCacheQueue)
+        {
+            mSharedDeviceCacheQueue.clear();
+        }
+        synchronized (mUpgradeSucLocalDeviceCacheQueue)
+        {
+            mUpgradeSucLocalDeviceCacheQueue.clear();
+        }
+        synchronized (mStaDeviceIOTAddressQueue)
+        {
+            mStaDeviceIOTAddressQueue.clear();
+        }
+    }
+    
     @Override
     public boolean addTransformedDeviceCache(IEspDevice device)
     {
@@ -333,6 +367,5 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
         }
         
     }
-
 
 }

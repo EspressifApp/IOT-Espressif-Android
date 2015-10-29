@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 /**
@@ -37,7 +38,8 @@ public class ConfigureLog4J
         
         SharedPreferences shared =
             EspApplication.sharedInstance().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        logConfigurator.setUseFileAppender(shared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, false));
+        boolean storeLog = shared.getBoolean(EspStrings.Key.SETTINGS_KEY_STORE_LOG, EspDefaults.STORE_LOG);
+        logConfigurator.setUseFileAppender(storeLog);
         
         logConfigurator.setFileName(LogConfigurator.DefaultLogFileDirPath + LogConfigurator.DefaultLogFileName);
         // Set the root log level

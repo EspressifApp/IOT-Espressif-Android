@@ -16,14 +16,11 @@ import android.widget.ImageView.ScaleType;
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.help.ui.IEspHelpUIConfigure;
-import com.espressif.iot.help.ui.IEspHelpUIMeshConfigure;
 import com.espressif.iot.type.help.HelpStepConfigure;
-import com.espressif.iot.type.help.HelpStepMeshConfigure;
 import com.espressif.iot.ui.configure.ApInfo;
 import com.espressif.iot.ui.configure.DeviceConfigureActivity;
 
-public class HelpDeviceConfigureActivity extends DeviceConfigureActivity implements IEspHelpUIConfigure,
-    IEspHelpUIMeshConfigure
+public class HelpDeviceConfigureActivity extends DeviceConfigureActivity implements IEspHelpUIConfigure
 {
     private HelpHandler mHelpHandler;
     
@@ -67,9 +64,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
             {
                 case RESULT_HELP_CONFIGURE:
                     activity.onHelpConfigure();
-                    break;
-                case RESULT_HELP_MESH_CONFIGURE:
-                    activity.onHelpMeshConfigure();
                     break;
             }
         }
@@ -131,42 +125,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
     }
     
     @Override
-    public void onHelpMeshConfigure()
-    {
-        highlightHelpView(mSoftApListView);
-        
-        HelpStepMeshConfigure step = HelpStepMeshConfigure.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch (step)
-        {
-            case SCAN_MESH_SOFTAP:
-                mHelpMachine.transformState(hasMeshSoftAp());
-                mHelpHandler.sendEmptyMessage(RESULT_HELP_MESH_CONFIGURE);
-                break;
-            case SCAN_MESH_SOFTAP_FAILED:
-                hintDiscoverSoftAP(R.string.esp_help_mesh_configure_scan_mesh_failed);
-                break;
-            case SELECT_SOFTAP:
-                setHelpHintMessage(R.string.esp_help_mesh_configure_select_softap_msg);
-                break;
-            default:
-                break;
-        }
-    }
-    
-    private boolean hasMeshSoftAp()
-    {
-        for (IEspDeviceNew device : mSoftApList)
-        {
-            if (device.getIsMeshDevice())
-            {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    @Override
     public void onExitHelpMode()
     {
         setResult(RESULT_EXIT_HELP_MODE);
@@ -192,13 +150,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
             
             mHelpHandler.sendEmptyMessage(RESULT_HELP_CONFIGURE);
         }
-        else if (mHelpMachine.isHelpModeMeshConfigure())
-        {
-            mSoftApList.clear();
-            mSoftApAdapter.notifyDataSetChanged();
-            
-            mHelpHandler.sendEmptyMessage(RESULT_HELP_MESH_CONFIGURE);
-        }
     }
     
     @Override
@@ -210,14 +161,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
             {
                 mHelpMachine.retry();
                 mHelpHandler.sendEmptyMessage(RESULT_HELP_CONFIGURE);
-            }
-        }
-        else if (mHelpMachine.isHelpModeMeshConfigure())
-        {
-            if (mHelpMachine.getCurrentStateOrdinal() == HelpStepMeshConfigure.SCAN_MESH_SOFTAP_FAILED.ordinal())
-            {
-                mHelpMachine.retry();
-                mHelpHandler.sendEmptyMessage(RESULT_HELP_MESH_CONFIGURE);
             }
         }
     }
@@ -235,17 +178,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
                     return false;
             }
         }
-        else if (mHelpMachine.isHelpModeMeshConfigure())
-        {
-            switch(itemId)
-            {
-                case POPMENU_ID_ACTIVATE:
-                case POPMENU_ID_DIRECT_CONNECT:
-                    return true;
-                default:
-                    return false;
-            }
-        }
         else
         {
             return false;
@@ -255,6 +187,6 @@ public class HelpDeviceConfigureActivity extends DeviceConfigureActivity impleme
     @Override
     protected boolean checkHelpModeOn()
     {
-        return mHelpMachine.isHelpModeConfigure() || mHelpMachine.isHelpModeMeshConfigure();
+        return mHelpMachine.isHelpModeConfigure();
     }
 }

@@ -21,6 +21,7 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.help.HelpStepUpgradeLocal;
 import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
+import com.espressif.iot.ui.configure.EspButtonConfigureActivity;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
 import com.espressif.iot.ui.help.HelpDeviceFlammableActivity;
 import com.espressif.iot.ui.help.HelpDeviceHumitureActivity;
@@ -36,8 +37,9 @@ import com.espressif.iot.ui.view.TreeView;
 import com.espressif.iot.ui.view.TreeView.LastLevelItemClickListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
-import com.google.zxing.qrcode.ui.CreateQRImageHelper;
+import com.google.zxing.qrcode.ui.QRImageHelper;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -70,6 +72,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
     protected static final int MENU_ID_UPGRADE_LOCAL = 0x1002;
     protected static final int MENU_ID_UPGRADE_ONLINE = 0x1003;
+    protected static final int MENU_ID_ESPBUTTON_CONFIGURE = 0x1004;
     
     protected IEspDevice mIEspDevice;
     
@@ -98,7 +101,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
-        boolean isTempDeviceMode = intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, false);
+        boolean isTempDeviceMode =
+            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, EspDefaults.USE_TEMP_DEVICE);
         
         mUser = BEspUser.getBuilder().getInstance();
         IEspDevice device = isTempDeviceMode ? TEMP_DEVICE : mUser.getUserDevice(deviceKey);
@@ -113,8 +117,9 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShowChildren =
-            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, true) && mIEspDevice.getIsMeshDevice()
-                && shared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
+            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, EspDefaults.SHOW_CHILDREN)
+                && mIEspDevice.getIsMeshDevice()
+                && shared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
         
         setTitle(mIEspDevice.getName());
         
@@ -167,7 +172,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         mPager = (EspViewPager)findViewById(R.id.device_ui_pager);
         mPager.setInterceptTouchEvent(mShowChildren);
         
-        mMeshView = getLayoutInflater().inflate(R.layout.device_mesh_children_list, null);
+        mMeshView = View.inflate(this, R.layout.device_mesh_children_list, null);
         if (mShowChildren)
         {
             initTreeView();
@@ -421,6 +426,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         menu.add(Menu.NONE, MENU_ID_UPGRADE_LOCAL, 0, R.string.esp_device_menu_upgrade_local);
         menu.add(Menu.NONE, MENU_ID_UPGRADE_ONLINE, 0, R.string.esp_device_menu_upgrade_online);
         
+        if (mIEspDevice.getDeviceState().isStateLocal())
+        {
+            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
+        }
+        
         return super.onCreateOptionsMenu(menu);
     }
     
@@ -498,14 +508,21 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 mUser.doActionUpgradeInternet(mIEspDevice);
                 finish();
                 return true;
+            case MENU_ID_ESPBUTTON_CONFIGURE:
+                Intent configureIntent = new Intent(this, EspButtonConfigureActivity.class);
+                String[] deviceKeys = new String[] {mIEspDevice.getKey()};
+                configureIntent.putExtra(EspStrings.Key.KEY_ESPBUTTON_DEVICE_KEYS, deviceKeys);
+                startActivity(configureIntent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
     
     private void showQRCodeDialog(String shareKey)
     {
-        final ImageView QRImage = (ImageView)getLayoutInflater().inflate(R.layout.qr_code_image, null);
-        final Bitmap QRBmp = CreateQRImageHelper.createQRImage(shareKey, DeviceActivityAbs.this);
+        String qrUrl = QRImageHelper.createDeviceKeyUrl(shareKey);
+        final ImageView QRImage = (ImageView)View.inflate(this, R.layout.qr_code_image, null);
+        final Bitmap QRBmp = QRImageHelper.createQRImage(qrUrl, DeviceActivityAbs.this);
         QRImage.setImageBitmap(QRBmp);
         
         AlertDialog dialog = new AlertDialog.Builder(this).setView(QRImage).create();
@@ -637,25 +654,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 log.debug(mIEspDevice.getName() + " Post status");
                 IEspDeviceStatus status = params[0];
                 mCommand = COMMAND_POST;
-                if (isDeviceArray())
-                {
-                    IEspDeviceArray deviceArray = (IEspDeviceArray)mIEspDevice;
-                    List<IEspDevice> devices = deviceArray.getDeviceList();
-                    for (IEspDevice device : devices)
-                    {
-                        IEspDeviceState state = device.getDeviceState();
-                        if (state.isStateInternet() || state.isStateLocal())
-                        {
-                            mUser.doActionPostDeviceStatus(device, status);
-                        }
-                    }
-                    
-                    return true;
-                }
-                else
-                {
-                    return mUser.doActionPostDeviceStatus(mIEspDevice, status);
-                }
+                return mUser.doActionPostDeviceStatus(mIEspDevice, status);
             }
             else
             {

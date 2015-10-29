@@ -18,7 +18,6 @@ import com.espressif.iot.user.builder.BEspUser;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -69,8 +68,7 @@ public class LoginThirdPartyDialog implements PlatformActionListener, OnClickLis
         mTwitter = ShareSDK.getPlatform(EspThirdPartyLoginPlat.SHARESDK_NAME_TWITTER);
         mTwitter.setPlatformActionListener(this);
         
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        View content = inflater.inflate(R.layout.third_party_login_dialog, null);
+        View content = View.inflate(mContext, R.layout.third_party_login_dialog, null);
         mWeiboTV = (TextView)content.findViewById(R.id.weibo_login);
         mWeiboTV.setOnClickListener(this);
         mWeChatTV = (TextView)content.findViewById(R.id.wechat_login);

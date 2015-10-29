@@ -66,7 +66,7 @@ public class DeviceAdapter extends BaseAdapter
         
         if (convertView == null)
         {
-            convertView = mInflater.inflate(R.layout.device_layout, null);
+            convertView = mInflater.inflate(R.layout.device_layout, parent, false);
         }
         
         convertView.setTag(device);
@@ -154,18 +154,7 @@ public class DeviceAdapter extends BaseAdapter
                 }
             }
         });
-        
-        View statusContent = convertView.findViewById(R.id.status_content);
-        if (mEditable)
-        {
-            statusContent.setVisibility(View.GONE);
-            editCB.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            statusContent.setVisibility(View.VISIBLE);
-            editCB.setVisibility(View.GONE);
-        }
+        editCB.setVisibility(mEditable ? View.VISIBLE : View.GONE);
         
         return convertView;
     }

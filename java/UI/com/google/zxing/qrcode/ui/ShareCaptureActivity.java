@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -26,8 +27,10 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.espressif.iot.R;
+import com.espressif.iot.ui.configure.EspButtonConfigureActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspStrings;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.qrcode.camera.CameraManager;
@@ -183,25 +186,64 @@ public class ShareCaptureActivity extends Activity implements Callback
         inactivityTimer.onActivity();
         playBeepSoundAndVibrate();
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        if (barcode != null)
-        {
-            Drawable drawable = new BitmapDrawable(getResources(), barcode);
-            dialog.setIcon(drawable);
-        }
-        dialog.setTitle(R.string.esp_qrcode_capture_device);
-        ShareDialogListener clickListener = new ShareDialogListener(obj.getText());
+        JSONObject qrContentJSON = getSharedContent(obj.getText());
+        ShareDialogListener clickListener = new ShareDialogListener(this, qrContentJSON);
         dialog.setNegativeButton(android.R.string.cancel, clickListener);
         dialog.setPositiveButton(android.R.string.ok, clickListener);
+        setDialogMessage(dialog, qrContentJSON);
         dialog.show();
+    }
+    
+    private JSONObject getSharedContent(String qrConent)
+    {
+        try
+        {
+            JSONObject contentJSON = new JSONObject(qrConent);
+            return contentJSON;
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private void setDialogMessage(AlertDialog.Builder builder, JSONObject qrConentJSON)
+    {
+        if (qrConentJSON == null)
+        {
+            builder.setMessage(R.string.esp_qrcode_decode_failed);
+            return;
+        }
+        
+        try
+        {
+            String qrType = qrConentJSON.getString(QRImageHelper.KEY_QR_TYPE);
+            if (qrType.equals(QRImageHelper.TYPE_SHARE_DEVICE_KEY))
+            {
+                builder.setMessage(R.string.esp_qrcode_capture_device);
+            }
+            else if (qrType.equals(QRImageHelper.TYPE_BUTTON_INFO))
+            {
+                builder.setMessage(R.string.esp_espbutton_qr_dialog_title);
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+            builder.setMessage(R.string.esp_qrcode_decode_failed);
+        }
     }
     
     private class ShareDialogListener implements DialogInterface.OnClickListener
     {
-        private final String mShareKey;
+        private Activity mActivity;
+        private final JSONObject mSharedContent;
         
-        public ShareDialogListener(String shareKey)
+        public ShareDialogListener(Activity activity, JSONObject sharedContent)
         {
-            mShareKey = shareKey;
+            mActivity = activity;
+            mSharedContent = sharedContent;
         }
         
         @Override
@@ -210,7 +252,7 @@ public class ShareCaptureActivity extends Activity implements Callback
             switch (which)
             {
                 case DialogInterface.BUTTON_POSITIVE:
-                    new GetShareAsyncTask().execute(mShareKey);
+                    doPositive();
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
                     finish();
@@ -218,20 +260,74 @@ public class ShareCaptureActivity extends Activity implements Callback
             }
             
         }
+
+        private void doPositive()
+        {
+            if (mSharedContent == null)
+            {
+                finish();
+                return;
+            }
+            
+            try
+            {
+                String qrType = mSharedContent.getString(QRImageHelper.KEY_QR_TYPE);
+                if (qrType.equals(QRImageHelper.TYPE_SHARE_DEVICE_KEY))
+                {
+                    String shareDeviceKey = mSharedContent.getString(QRImageHelper.KEY_SHARE_DEVICE_KEY);
+                    new GetShareDeviceAsyncTask(mActivity).execute(shareDeviceKey);
+                }
+                else if (qrType.equals(QRImageHelper.TYPE_BUTTON_INFO))
+                {
+                    String buttonTempKey = mSharedContent.getString(QRImageHelper.KEY_BUTTON_TEMP_KEY);
+                    String buttonMacAddress = mSharedContent.getString(QRImageHelper.KEY_BUTTON_MAC_ADDRESS);
+                    Intent intent = new Intent(ShareCaptureActivity.this, EspButtonConfigureActivity.class);
+                    intent.putExtra(EspStrings.Key.KEY_ESPBUTTON_TEMP_KEY, buttonTempKey);
+                    intent.putExtra(EspStrings.Key.KEY_ESPBUTTON_MAC, buttonMacAddress);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
     
-    private class GetShareAsyncTask extends AsyncTask<String, Object, Boolean>
+    private abstract class ProgressDialogAsyncTask extends AsyncTask<String, Object, Boolean>
     {
+        protected Activity mActivity;
         
-        private ProgressDialog mProgressDialog;
+        protected ProgressDialog mProgressDialog;
+        
+        public ProgressDialogAsyncTask(Activity activity)
+        {
+            mActivity = activity;
+        }
         
         @Override
         protected void onPreExecute()
         {
-            mProgressDialog = new ProgressDialog(ShareCaptureActivity.this);
+            mProgressDialog = new ProgressDialog(mActivity);
             mProgressDialog.setMessage(getString(R.string.esp_qrcode_capturing_message));
             mProgressDialog.setCanceledOnTouchOutside(false);
             mProgressDialog.show();
+        }
+        
+        @Override
+        protected void onPostExecute(Boolean result)
+        {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
+    }
+    
+    private class GetShareDeviceAsyncTask extends ProgressDialogAsyncTask
+    {
+        public GetShareDeviceAsyncTask(Activity activity)
+        {
+            super(activity);
         }
         
         @Override
@@ -246,9 +342,8 @@ public class ShareCaptureActivity extends Activity implements Callback
         @Override
         protected void onPostExecute(Boolean result)
         {
-            mProgressDialog.dismiss();
-            mProgressDialog = null;
-            Activity activity = ShareCaptureActivity.this;
+            super.onPostExecute(result);
+            
             int toastMsg;
             if (result)
             {
@@ -258,10 +353,9 @@ public class ShareCaptureActivity extends Activity implements Callback
             {
                 toastMsg = R.string.esp_qrcode_capture_result_failed;
             }
-            Toast.makeText(activity, toastMsg, Toast.LENGTH_LONG).show();
-            activity.finish();
+            Toast.makeText(mActivity, toastMsg, Toast.LENGTH_LONG).show();
+            mActivity.finish();
         }
-        
     }
     
     private void initBeepSound()

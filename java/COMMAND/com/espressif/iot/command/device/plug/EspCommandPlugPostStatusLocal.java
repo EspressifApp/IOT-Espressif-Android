@@ -1,6 +1,8 @@
 package com.espressif.iot.command.device.plug;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -8,6 +10,7 @@ import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
+import com.espressif.iot.util.MeshUtil;
 
 public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusLocal
 {
@@ -41,19 +44,25 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
         return request;
     }
     
-    private boolean postPlugStatus2(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid, boolean isMeshDevice)
+    private JSONObject getRequestJSONObject(IEspStatusPlug statusPlug, List<String> macList)
+    {
+        JSONObject result = getRequestJSONObject(statusPlug);
+        MeshUtil.addMulticastJSONValue(result, macList);
+        
+        return result;
+    }
+    
+    private boolean postPlugStatus2(InetAddress inetAddress, JSONObject postJSON, String deviceBssid, boolean isMeshDevice)
     {
         String uriString = getLocalUrl(inetAddress);
-        JSONObject jsonObject;
         JSONObject result = null;
-        jsonObject = getRequestJSONObject(statusPlug);
         if (deviceBssid == null || !isMeshDevice)
         {
-            result = EspBaseApiUtil.Post(uriString, jsonObject);
+            result = EspBaseApiUtil.Post(uriString, postJSON);
         }
         else
         {
-            result = EspBaseApiUtil.PostForJson(uriString, deviceBssid, jsonObject);
+            result = EspBaseApiUtil.PostForJson(uriString, deviceBssid, postJSON);
         }
         return (result != null);
     }
@@ -61,7 +70,8 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     @Override
     public boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug)
     {
-        boolean result = postPlugStatus2(inetAddress, statusPlug, null, false);
+        JSONObject postJSON = getRequestJSONObject(statusPlug);
+        boolean result = postPlugStatus2(inetAddress, postJSON, null, false);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugPostStatusInternet(inetAddress=[" + inetAddress
             + "],statusPlug=[" + statusPlug + "]): " + result);
         return result;
@@ -71,11 +81,54 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     public boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid,
         boolean isMeshDevice)
     {
-        boolean result = postPlugStatus2(inetAddress, statusPlug, deviceBssid, isMeshDevice);
+        JSONObject postJSON = getRequestJSONObject(statusPlug);
+        boolean result = postPlugStatus2(inetAddress, postJSON, deviceBssid, isMeshDevice);
         log.debug(Thread.currentThread().toString() + "##doCommandPlugPostStatusLocal(inetAddress=[" + inetAddress
             + "],statusPlug=[" + statusPlug + "],deviceBssid=[" + deviceBssid + "],isMeshDevice=[" + isMeshDevice
             + "])");
         return result;
     }
     
+    @Override
+    public boolean doCommandMulticastPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug,
+        List<String> bssids)
+    {
+        if (bssids.size() == 1)
+        {
+            JSONObject postJSON = getRequestJSONObject(statusPlug);
+            return postPlugStatus2(inetAddress, postJSON, bssids.get(0), true);
+        }
+        else
+        {
+            boolean result = true;
+            List<String> macList = new ArrayList<String>();
+            for (String bssid : bssids)
+            {
+                macList.add(MeshUtil.getMacAddressForMesh(bssid));
+                if (macList.size() == MULTICAST_GROUP_LENGTH_LIMIT)
+                {
+                    if (!postMulticastCommand(inetAddress, statusPlug, macList))
+                    {
+                        result = false;
+                    }
+                    macList.clear();
+                }
+            }
+            if (!macList.isEmpty())
+            {
+                if (!postMulticastCommand(inetAddress, statusPlug, macList))
+                {
+                    result = false;
+                }
+            }
+            
+            return result;
+        }
+    }
+    
+    private boolean postMulticastCommand(InetAddress inetAddress, IEspStatusPlug statusPlug, List<String> macList)
+    {
+        JSONObject postJSON = getRequestJSONObject(statusPlug, macList);
+        return postPlugStatus2(inetAddress, postJSON, MULTICAST_MAC, true);
+    }
 }

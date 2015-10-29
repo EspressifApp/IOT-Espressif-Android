@@ -26,7 +26,7 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
     @Override
     protected View initControlView()
     {
-        View view  = getLayoutInflater().inflate(R.layout.device_activity_root_router, null);
+        View view  = View.inflate(this, R.layout.device_activity_root_router, null);
         
         mPlugBtn = (Button)view.findViewById(R.id.mesh_all_plug_btn);
         mPlugBtn.setOnClickListener(this);

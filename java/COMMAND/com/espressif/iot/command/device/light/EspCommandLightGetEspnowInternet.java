@@ -21,9 +21,8 @@ public class EspCommandLightGetEspnowInternet implements IEspCommandLightGetEspn
     {
         String headerKey = Authorization;
         String headerValue = Token + " " + deviceKey;
-        JSONObject result = null;
         HeaderPair header = new HeaderPair(headerKey, headerValue);
-        result = EspBaseApiUtil.Get(URL, header);
+        JSONObject result = EspBaseApiUtil.Get(URL, header);
         if (result == null)
         {
             return null;

@@ -171,12 +171,4 @@ public interface IEspHelpStateMachine
     boolean isHelpModeUpgradeLocal();
     
     boolean isHelpModeUpgradeOnline();
-    
-    boolean isHelpModeUseSSSDevice();
-    
-    boolean isHelpModeSSSUpgrade();
-    
-    boolean isHelpModeSSSMeshConfigure();
-    
-    boolean isHelpModeMeshConfigure();
 }

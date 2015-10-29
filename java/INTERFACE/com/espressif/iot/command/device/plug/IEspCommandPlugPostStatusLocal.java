@@ -1,6 +1,7 @@
 package com.espressif.iot.command.device.plug;
 
 import java.net.InetAddress;
+import java.util.List;
 
 import com.espressif.iot.command.IEspCommandLocal;
 import com.espressif.iot.command.device.IEspCommandPlug;
@@ -30,4 +31,14 @@ public interface IEspCommandPlugPostStatusLocal extends IEspCommandLocal, IEspCo
      */
     boolean doCommandPlugPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, String deviceBssid,
         boolean isMeshDevice);
+    
+    /**
+     * post multicast command
+     * 
+     * @param inetAddress
+     * @param statusPlug
+     * @param bssids
+     * @return
+     */
+    boolean doCommandMulticastPostStatusLocal(InetAddress inetAddress, IEspStatusPlug statusPlug, List<String> bssids);
 }

@@ -77,4 +77,7 @@
         <attr name="ptrDrawableBottom" format="reference" />
     </declare-styleable>
 
+    <declare-styleable name="EspPreference">
+        <attr name="titleColor" format="reference|color" />
+    </declare-styleable>
 </resources>

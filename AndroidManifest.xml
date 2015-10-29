@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="12"
-    android:versionName="v1.0.0" >
+    android:versionCode="13"
+    android:versionName="v1.1.0" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -44,11 +44,11 @@
         <activity
             android:name="com.espressif.iot.ui.login.LoginActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/FullScreen" />
+            android:theme="@style/NoTitleBar" />
         <activity
             android:name="com.espressif.iot.ui.register.RegisterActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/FullScreen" />
+            android:theme="@style/NoTitleBar" />
         <activity
             android:name="com.espressif.iot.ui.main.EspUIActivity"
             android:screenOrientation="portrait" />
@@ -72,7 +72,7 @@
             android:name="com.espressif.iot.ui.device.DeviceLightActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity
             android:name="com.espressif.iot.ui.device.DeviceFlammableActivity"
             android:screenOrientation="portrait"
@@ -120,9 +120,6 @@
             android:name="com.espressif.iot.ui.help.HelpActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.espressif.iot.ui.softap_sta_support.help.SSSHelpActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="com.espressif.iot.ui.help.HelpEspUIActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -152,9 +149,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeDark" />
         <activity
-            android:name="com.espressif.iot.ui.softap_sta_support.help.HelpSoftApStaSupportActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="com.espressif.iot.ui.configure.DeviceEspTouchActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -181,6 +175,11 @@
         <activity
             android:name="com.espressif.iot.ui.scene.EspSceneActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.EspButtonConfigureActivity"
+            android:screenOrientation="portrait" />
+
+        <service android:name="com.espressif.iot.esppush.EspPushService" />
     </application>
 
 </manifest>

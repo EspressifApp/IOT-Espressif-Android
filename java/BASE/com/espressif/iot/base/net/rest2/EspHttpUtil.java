@@ -2,6 +2,7 @@ package com.espressif.iot.base.net.rest2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
@@ -102,8 +103,7 @@ public class EspHttpUtil
     private static HttpUriRequest createHttpRequest(boolean isInstantly, boolean isGet, String url, JSONObject json,
         HeaderPair... headers)
     {
-        // Char '+' must convert
-        url = url.replace("+", "%2B");
+        url = encodingUrl(url);
         if (!__isHttpsSupported())
         {
             url = url.replace("https", "http");
@@ -146,10 +146,51 @@ public class EspHttpUtil
         return request;
     }
     
-    private static JSONObject executeHttpRequest(HttpClient httpclient, HttpUriRequest httpRequest,
+    private static String encodingUrl(String url)
+    {
+        final char[] specChars = {'+', ':'};
+        
+        String header;
+        String body;
+        if (url.startsWith("https://"))
+        {
+            header = "https://";
+        }
+        else if (url.startsWith("http://"))
+        {
+            header = "http://";
+        }
+        else
+        {
+            header = "";
+        }
+        
+        body = url.substring(header.length());
+        for (char specChar : specChars)
+        {
+            String encodedStr = encodingSpecUrlChar(specChar);
+            body = body.replace("" + specChar, encodedStr);
+        }
+        
+        return header + body;
+    }
+    
+    private static String encodingSpecUrlChar(char c)
+    {
+        int asciiCode = (int)c;
+        String hexStr = Integer.toHexString(asciiCode).toUpperCase(Locale.ENGLISH);
+        if (hexStr.length() < 2)
+        {
+            hexStr = "0" + hexStr;
+        }
+        
+        String result = "%" + hexStr;
+        return result;
+    }
+    
+    public static JSONObject executeHttpRequest(HttpClient httpclient, HttpUriRequest httpRequest,
         Runnable disconnectedCallback)
     {
-        
         boolean isRetry = true;
         JSONObject result = null;
         for (int retry = 0; result == null && isRetry && retry < SOCKET_CONNECT_RETRY_TIME; ++retry)
@@ -242,5 +283,4 @@ public class EspHttpUtil
         
         return result;
     }
-    
 }

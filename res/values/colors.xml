@@ -17,4 +17,6 @@
     <color name="esp_scene_background_intersects">#70000000</color>
     <color name="esp_scene_background_selected">#40000000</color>
     <color name="esp_scene_fragment_background">#f9ffffff</color>
+    
+    <color name="esp_preference_category_title">#ee36bfdc</color>
 </resources>

@@ -13,14 +13,19 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import com.espressif.iot.action.IEspActionUserRegisterPhoneInternet;
+import com.espressif.iot.command.device.espbutton.IEspButtonConfigureListener;
 import com.espressif.iot.device.cache.IEspDeviceCache.NotifyType;
 import com.espressif.iot.action.device.New.EspActionDeviceNewGetInfoLocal;
 import com.espressif.iot.action.device.New.IEspActionDeviceNewGetInfoLocal;
+import com.espressif.iot.action.device.array.EspActionDeviceArrayPostStatus;
+import com.espressif.iot.action.device.array.IEspActionDeviceArrayPostStatus;
 import com.espressif.iot.action.device.common.EspActionDeviceActivateSharedInternet;
 import com.espressif.iot.action.device.common.EspActionDeviceGenerateShareKeyInternet;
 import com.espressif.iot.action.device.common.EspActionDeviceGetStatusInternet;
@@ -47,6 +52,8 @@ import com.espressif.iot.action.device.common.upgrade.EspDeviceCheckCompatibilit
 import com.espressif.iot.action.device.common.upgrade.EspDeviceGetUpgradeTypeResult;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceCheckCompatibility;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceGetUpgradeTypeResult;
+import com.espressif.iot.action.device.espbutton.EspActionEspButtonConfigure;
+import com.espressif.iot.action.device.espbutton.IEspActionEspButtonConfigure;
 import com.espressif.iot.action.device.esptouch.EspActionDeviceEsptouch;
 import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
 import com.espressif.iot.action.device.humiture.EspActionHumitureGetStatusListInternetDB;
@@ -82,6 +89,7 @@ import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.builder.BEspDeviceNew;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
@@ -116,6 +124,7 @@ import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
 import com.espressif.iot.util.RandomUtil;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.TimeUtil;
 
 public class EspUser implements IEspUser
@@ -124,23 +133,16 @@ public class EspUser implements IEspUser
     private final static Logger log = Logger.getLogger(EspUser.class);
     
     private long mUserId;
-    
     private String mUserKey;
-    
     private String mUserName;
-    
     private String mUserEmail;
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
-    
     private final List<IEspDeviceSSS> mStaDeviceList = new ArrayList<IEspDeviceSSS>();
-    
     private final ReentrantLock mDeviceListsLock = new ReentrantLock();
     
     private volatile IEspActionDeviceEsptouch mActionDeviceEsptouch = null;
-    
     private final Object mEsptouchLock = new Object();
-    
     private volatile boolean mIsEsptouchCancelled = false;
     
     private List<IEspGroup> mGroupList = new ArrayList<IEspGroup>();
@@ -419,6 +421,11 @@ public class EspUser implements IEspUser
     @Override
     public boolean doActionPostDeviceStatus(IEspDevice device, IEspDeviceStatus status)
     {
+        if (device instanceof IEspDeviceArray)
+        {
+            return doActionPostDeviceArrayStatus((IEspDeviceArray)device, status);
+        }
+        
         boolean isLocal = device.getDeviceState().isStateLocal();
         if (isLocal)
         {
@@ -430,6 +437,13 @@ public class EspUser implements IEspUser
             IEspActionDevicePostStatusInternet actionInternet = new EspActionDevicePostStatusInternet();
             return actionInternet.doActionDevicePostStatusInternet(device, status);
         }
+    }
+    
+    private boolean doActionPostDeviceArrayStatus(IEspDeviceArray device, IEspDeviceStatus status)
+    {
+        IEspActionDeviceArrayPostStatus action = new EspActionDeviceArrayPostStatus();
+        action.doActionDeviceArrayPostStatus(device, status);
+        return true;
     }
     
     @Override
@@ -597,7 +611,7 @@ public class EspUser implements IEspUser
         EspDeviceGenericComparator comparator = new EspDeviceGenericComparator();
         Collections.sort(mDeviceList, comparator);
         
-        // do rename action or delete action if necessay
+        // do rename action or delete action if necessary
         for (IEspDevice device : mDeviceList)
         {
             IEspDeviceState deviceState = device.getDeviceState();
@@ -611,6 +625,31 @@ public class EspUser implements IEspUser
             }
         }
         unlockUserDeviceLists();
+    }
+    
+    private class EspDeviceGenericComparator implements Comparator<IEspDevice>
+    {
+        
+        @Override
+        public int compare(IEspDevice lhs, IEspDevice rhs)
+        {
+            String device1Name = lhs.getName();
+            String device2Name = rhs.getName();
+            /**
+             * the order is determined by deviceName firstly
+             */
+            int result = device1Name.compareTo(device2Name);
+            if (result == 0)
+            {
+                String bssid1 = lhs.getBssid();
+                String bssid2 = rhs.getBssid();
+                /**
+                 * if deviceName is the same, it will determined by the bssid
+                 */
+                return bssid1.compareTo(bssid2);
+            }
+            return result;
+        }
     }
     
     @Override
@@ -656,11 +695,23 @@ public class EspUser implements IEspUser
         IEspUser result = action.doActionUserLoginDB();
         SharedPreferences shared =
             EspApplication.sharedInstance().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false))
+        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
         {
             __loadUserDeviceList();
         }
         return result;
+    }
+    
+    @Override
+    public void doActionUserLogout()
+    {
+        mUserEmail = null;
+        mUserId = 0;
+        mUserKey = null;
+        mUserName = null;
+        mGroupList.clear();
+        mDeviceList.clear();
+        mStaDeviceList.clear();
     }
     
     @Override
@@ -911,31 +962,6 @@ public class EspUser implements IEspUser
         return null;
     }
     
-    class EspDeviceGenericComparator implements Comparator<IEspDevice>
-    {
-        
-        @Override
-        public int compare(IEspDevice lhs, IEspDevice rhs)
-        {
-            String device1Name = lhs.getName();
-            String device2Name = rhs.getName();
-            /**
-             * the order is determined by deviceName firstly
-             */
-            int result = device1Name.compareTo(device2Name);
-            if (result == 0)
-            {
-                String bssid1 = lhs.getBssid();
-                String bssid2 = rhs.getBssid();
-                /**
-                 * if deviceName is the same, it will determined by the bssid
-                 */
-                return bssid1.compareTo(bssid2);
-            }
-            return result;
-        }
-    }
-    
     @Override
     public List<IEspDeviceSSS> __getOriginStaDeviceList()
     {
@@ -1049,6 +1075,42 @@ public class EspUser implements IEspUser
         }
     }
     
+    private boolean __ping()
+    {
+        // send contacting server broadcast when start __ping()
+        Context context = EspApplication.sharedInstance().getApplicationContext();
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
+        Intent intent = new Intent(EspStrings.Action.ESPTOUCH_CONTACTING_SERVER);
+        broadcastManager.sendBroadcast(intent);
+        
+        final String url = "https://iot.espressif.cn/v1/ping/";
+        JSONObject result = null;
+        for (int retry = 0; result == null && retry < 3; ++retry)
+        {
+            if (retry != 0)
+            {
+                try
+                {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            result = EspBaseApiUtil.Get(url);
+        }
+        boolean isServerAvailabe = result != null;
+        if (isServerAvailabe)
+        {
+            // send registering devices broadcast when __ping() server suc
+            intent = new Intent(EspStrings.Action.ESPTOUCH_REGISTERING_DEVICES);
+            broadcastManager.sendBroadcast(intent);
+        }
+        return isServerAvailabe;
+    }
+    
     private boolean __addDevicesSyn(final String apSsid, final String apBssid, final String apPassword,
         final boolean isSsidHidden, final boolean requiredActivate, int expectTaskResultCount,
         IEsptouchListener esptouchListener)
@@ -1081,6 +1143,9 @@ public class EspUser implements IEspUser
         {
             return isEsptouchSuc;
         }
+        
+        // ping server
+        __ping();
         
         IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
         while (!handler.isAllTasksFinished())
@@ -1401,10 +1466,37 @@ public class EspUser implements IEspUser
             {
                 SharedPreferences shared = getNewActivatedSharedPre();
                 Set<String> devices = shared.getStringSet(getUserKey(), new HashSet<String>());
-                devices.remove(deviceKey);
-                shared.edit().putStringSet(getUserKey(), devices).commit();
+                Set<String> newDevices = new HashSet<String>();
+                for (String key : devices)
+                {
+                    if (!key.equals(deviceKey))
+                    {
+                        newDevices.add(key);
+                    }
+                }
+                shared.edit().putStringSet(getUserKey(), newDevices).commit();
             }
         }
     }
-
+    
+    @Override
+    public boolean doActionEspButtonAdd(String tempKey, String macAddress, boolean permitAllRequest,
+        List<IEspDevice> deviceList, boolean isBroadcast, IEspButtonConfigureListener listener)
+    {
+        return doActionEspButtonReplace(tempKey, macAddress, permitAllRequest, deviceList, isBroadcast, listener);
+    }
+    
+    @Override
+    public boolean doActionEspButtonReplace(String newTempKey, String newMacAddress, boolean permitAllRequest,
+        List<IEspDevice> deviceList, boolean isBroadcast, IEspButtonConfigureListener listener, String... oldMacAddress)
+    {
+        IEspActionEspButtonConfigure action = new EspActionEspButtonConfigure();
+        return action.doActionEspButtonConfigure(newTempKey,
+            newMacAddress,
+            permitAllRequest,
+            deviceList,
+            isBroadcast,
+            listener,
+            oldMacAddress);
+    }
 }

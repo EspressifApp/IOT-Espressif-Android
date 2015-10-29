@@ -51,6 +51,7 @@
     <string name="esp_qrcode_capturing_message">Capturing device&#8230;</string>
     <string name="esp_qrcode_capture_result_success">Capture device success</string>
     <string name="esp_qrcode_capture_result_failed">Capture device failed</string>
+    <string name="esp_qrcode_decode_failed">Unsupported QR code content</string>
 
     <string name="esp_activity_bottom_item_more_overflow">More</string>
 
@@ -80,6 +81,7 @@
     <string name="esp_ui_device_all_visible">All visible</string>
     <string name="esp_ui_device_usable_visible">Usable visible</string>
     <string name="esp_ui_device_sort_by">Sort by</string>
+    <string name="esp_ui_not_login_msg">You are not logged in, some function will be limited.</string>
 
     <string name="esp_settings">Settings</string>
     <string name="esp_settings_account">Account</string>
@@ -104,6 +106,8 @@
     <string name="esp_settings_debug_read_log_no_log">No stored log</string>
     <string name="esp_settings_wifi">Wifi</string>
     <string name="esp_settings_wifi_edit">Wifi edit</string>
+    <string name="esp_settings_message">Message</string>
+    <string name="esp_settings_esppush">Accept message push</string>
 
     <string name="esp_upgrade_apk_downloading">Downloading %1$d %%</string>
     <string name="esp_upgrade_apk_status_complete">Download complete in PhoneStorage/Espressif/apk/Esp.apk</string>
@@ -140,6 +144,7 @@
     <string name="esp_device_menu_upgrade_local">Upgrade local</string>
     <string name="esp_device_menu_upgrade_online">Upgrade cloud</string>
     <string name="esp_device_menu_change_password">Change password</string>
+    <string name="esp_device_menu_espbutton_configure">Configure EspButton</string>
     <string name="esp_device_dialog_upgrade_apk_message">You need upgrade apk to control the device</string>
     <string name="esp_device_dialog_upgrade_device_message">The device need upgrade to use</string>
     <string name="esp_device_dialog_upgrading_local_message">The device is upgrading local</string>
@@ -287,7 +292,7 @@
     <string name="esp_help_mesh_configure_scan_mesh_failed">Check your Mesh device softap is on, then pull down torefresh</string>
     <string name="esp_help_mesh_configure_select_softap_msg">Click the Mesh device, then select Mesh configure</string>
     <string name="esp_help_mesh_configure_suc_msg">You have learned how to configure mesh</string>
-    
+
     <string name="esp_esptouch">Esp Touch</string>
     <string name="esp_esptouch_wifi_hint">Please connect Wi-Fi first</string>
     <string name="esp_esptouch_ssid">SSID: %1$s</string>
@@ -303,15 +308,26 @@
     <string name="esp_esptouch_result_title">Esptouch Result</string>
     <string name="esp_esptouch_message_cloud_title">Connected to Cloud Device List(%1$d):\n</string>
     <string name="esp_esptouch_message_wifi_title">Connected to Wi-Fi Device List(%1$d):\n</string>
+	<string name="esp_esptouch_discovering_devices">Discovering the devices&#8230;</string>
+	<plurals name="esp_esptouch_device_found">
+	    <item quantity="one">%d device found</item>
+	    <item quantity="many">%d devices found</item>
+	</plurals>
+	<string name="esp_esptouch_contacting_server">Contacting the server&#8230;</string>
+	<string name="esp_esptouch_registering_devices">Registering the devices&#8230;</string>
+	<plurals name="esp_esptouch_device_registered">
+	    <item quantity="one">%d device registered</item>
+	    <item quantity="many">%d devices registered</item>
+	</plurals>
     
     <string name="esp_wifi_edit">Wi-Fi Edit</string>
     <string name="esp_wifi_pwd_edit">Edit</string>
     <string name="esp_wifi_pwd_edit_title">Edit Wi-Fi password</string>
     <string name="esp_wifi_pwd_delete">Delete</string>
     <string name="esp_wifi_pwd_delete_sellected_message">Do you want to delete the Wi-Fi password?</string>
-    
+
     <string name="esp_device_mesh_children_title">Mesh network</string>
-    
+
     <string name="esp_scene">Scene</string>
     <string name="esp_scene_popmenu_rename">Rename</string>
     <string name="esp_scene_popmenu_delete">Delete</string>
@@ -322,13 +338,31 @@
     <string name="esp_scene_move_device_into_toast">Add completed</string>
     <string name="esp_scene_menu_sync_local">Synchronize local scenes</string>
     <string name="esp_scene_duplicate_scene_msg">Duplicate scene already exists</string>
-    <string name="esp_scene_menu_edit">Select devices</string>
-    <string name="esp_scene_menu_edit_cancel">Cancel select</string>
+    <string name="esp_scene_menu_edit">Select</string>
+    <string name="esp_scene_menu_edit_cancel">Cancel</string>
     <string name="esp_scene_menu_remove">Remove</string>
-    <string name="esp_scene_menu_control">Control devices</string>
+    <string name="esp_scene_menu_control">Control</string>
     <string name="esp_scene_remove_dialog_msg">Remove all selected devices ?</string>
-    <string name="esp_scene_no_controllable_device_msg">No controllable device is selected</string>
-    
+    <string name="esp_scene_no_controllable_device_type_msg">No controllable device type is selected</string>
+    <string name="esp_secen_no_online_device_msg">All selected devices are offline</string>
+
+    <string name="esp_espbutton_qr_dialog_title">Do you want configure EspButton ?</string>
+    <string name="esp_espbutton_mac">Button MAC: %1$s</string>
+    <string name="esp_espbutton_temp_key">Temp Key: %1$s</string>
+    <string name="esp_espbutton_permit_all">Permit all pair requests</string>
+    <string name="esp_espbutton_start_configure">Start configure</string>
+    <string name="esp_espbutton_configure_exit">Exit</string>
+    <string name="esp_espbutton_configure_forbid">Forbid</string>
+    <string name="esp_espbutton_configure_permit">Permit</string>
+    <string name="esp_espbutton_configure_counter">%1$d seconds</string>
+    <string name="esp_espbutton_configure_progress">Configuring&#8230;</string>
+    <string name="esp_espbutton_configure_request">Permit pair device %1$s ?</string>
+    <string name="esp_espbutton_configure_result">Device %1$s pair EspButton %2$s</string>
+    <string name="esp_espbutton_configure_continue">Continue to pair ?</string>
+    <string name="esp_espbutton_configure_button_scan">Make EspButton scan</string>
+    <string name="esp_espbutton_configure_waiting">Finding device&#8230;</string>
+    <string name="esp_espbutton_configure_pairing">Pairing&#8230;</string>
+    <string name="esp_espbutton_configure_complete">Configure complete</string>
 </resources>
 <!-- 
 &#8230;   =   ...

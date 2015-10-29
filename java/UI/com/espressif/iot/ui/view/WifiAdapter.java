@@ -55,7 +55,7 @@ public class WifiAdapter extends BaseAdapter
         if (convertView == null)
         {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+            convertView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
         }
         ScanResult sr = mWifiList.get(position);
         

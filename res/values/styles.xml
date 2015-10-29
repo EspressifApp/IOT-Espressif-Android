@@ -20,6 +20,7 @@
         <item name="android:textSize">20sp</item>
     </style>
 
+    <style name="NoTitleBar" parent="android:Theme.Holo.NoActionBar"></style>
     <style name="FullScreen" parent="android:Theme.Holo.NoActionBar.Fullscreen"></style>
 
     <style name="LoginEditText">

@@ -53,7 +53,7 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     @Override
     protected View initControlView()
     {
-        View view = getLayoutInflater().inflate(R.layout.device_activity_chartview, null);
+        View view = View.inflate(this, R.layout.device_activity_chartview, null);
         
         mDateTV = (TextView)view.findViewById(R.id.date_text);
         
@@ -96,8 +96,7 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     
     private void showSelectDateDialog()
     {
-        final DatePicker datePicker =
-            (DatePicker)getLayoutInflater().inflate(R.layout.chartview_date_select_dialog, null);
+        final DatePicker datePicker = (DatePicker)View.inflate(this, R.layout.chartview_date_select_dialog, null);
         datePicker.setMaxDate(System.currentTimeMillis());
         new AlertDialog.Builder(this).setView(datePicker)
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()

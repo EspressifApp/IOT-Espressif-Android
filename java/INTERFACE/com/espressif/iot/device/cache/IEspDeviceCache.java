@@ -21,6 +21,8 @@ public interface IEspDeviceCache
         PULL_REFRESH, STATE_MACHINE_BACKSTATE, STATE_MACHINE_UI
     }
 
+    void clear();
+    
     boolean addTransformedDeviceCache(IEspDevice device);
     
     boolean addTransformedDeviceCacheList(List<IEspDevice> devieList);

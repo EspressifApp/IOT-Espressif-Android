@@ -1,6 +1,11 @@
 package com.espressif.iot.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Util class for mesh
@@ -374,5 +379,52 @@ public class MeshUtil
         test_getHostNameByMeshIp();
         test_getMacAddressBytes();
         test_getMacAddressStr();
+    }
+    
+    private static final String KEY_MULTICAST_GROUP_LENGTH = "glen";
+    private static final String KEY_MULTICAST_GROUP = "group";
+    
+    public static JSONObject addMulticastJSONValue(JSONObject json, List<String> macList)
+    {
+        try
+        {
+            json.put(KEY_MULTICAST_GROUP_LENGTH, "" + macList.size());
+            StringBuilder macs = new StringBuilder();
+            for (String mac : macList)
+            {
+                macs.append(mac);
+            }
+            json.put(KEY_MULTICAST_GROUP, macs.toString());
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return json;
+    }
+    
+    public static List<String> getRawBssidListByMacs(String macs, int macNum)
+    {
+        List<CharSequence> bssids = new ArrayList<CharSequence>();
+        for (int i = 0; i < macNum; i++)
+        {
+            StringBuilder sb = new StringBuilder();
+            bssids.add(sb);
+        }
+        int offset = macs.length() / macNum;
+        for (int i = 0; i < macs.length(); i++)
+        {
+            char c = macs.charAt(i);
+            StringBuilder sb = (StringBuilder)bssids.get(i / offset);
+            sb.append(c);
+        }
+        
+        List<String> result = new ArrayList<String>();
+        for (CharSequence cs : bssids)
+        {
+            result.add(getRawMacAddress(cs.toString()));
+        }
+        
+        return result;
     }
 }

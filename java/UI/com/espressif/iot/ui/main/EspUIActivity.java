@@ -14,6 +14,9 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
+import com.espressif.iot.esppush.EspPushService;
+import com.espressif.iot.esppush.EspPushUtils;
+import com.espressif.iot.model.device.cache.EspDeviceCache;
 import com.espressif.iot.model.device.sort.DeviceSortor;
 import com.espressif.iot.model.device.sort.DeviceSortor.DeviceSortType;
 import com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler;
@@ -31,6 +34,7 @@ import com.espressif.iot.ui.view.DeviceAdapter.OnEditCheckedChangeListener;
 import com.espressif.iot.ui.view.menu.IEspBottomMenu;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
@@ -157,6 +161,9 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mNewDevicesShared.registerOnSharedPreferenceChangeListener(this);
         mNewDevicesSet = mUser.getNewActivatedDevices();
         
+        // Clear cache list
+        EspDeviceCache.getInstance().clear();
+        
         // Init top panel
         mDeviceVisibleCB = (ToggleButton)findViewById(R.id.device_visible_check);
         mDeviceVisibleCB.setOnCheckedChangeListener(this);
@@ -191,7 +198,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         mAutoRefreshHandler = new AutoRefreshHandler(this);
         // Get auto refresh settings data
-        long autoRefreshTime = mShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, 0);
+        long autoRefreshTime =
+            mShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
         if (autoRefreshTime > 0)
         {
             sendAutoRefreshMessage(autoRefreshTime);
@@ -217,10 +225,23 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
         else
         {
+            Toast.makeText(this, R.string.esp_ui_not_login_msg, Toast.LENGTH_LONG).show();
             scanSta();
         }
         
         EspGroupHandler.getInstance().call();
+        
+        if (mUser.isLogin())
+        {
+            if (mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, EspDefaults.STORE_LOG))
+            {
+                EspPushUtils.startPushService(this);
+            }
+            else
+            {
+                EspPushUtils.stopPushService(this);
+            }
+        }
     }
     
     private void setTitleProgressing()
@@ -271,6 +292,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mShared.unregisterOnSharedPreferenceChangeListener(this);
         mNewDevicesShared.unregisterOnSharedPreferenceChangeListener(this);
         mBraodcastManager.unregisterReceiver(mReciever);
+        EspBaseApiUtil.cancelAllTask();
+        EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
         EspGroupHandler.getInstance().finish();
     }
     
@@ -290,6 +313,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             if (resultCode == SettingsActivity.RESULT_CODE_LOGOUT)
             {
                 // cancel all task in thread pool before the activity is finished
+                mUser.doActionUserLogout();
+                EspPushService.stop(this);
                 EspBaseApiUtil.cancelAllTask();
                 EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
                 startActivity(new Intent(this, LoginActivity.class));
@@ -347,7 +372,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             {
                 mAutoRefreshHandler.removeMessages(MSG_AUTO_REFRESH);
             }
-            long autoTime = mShared.getLong(key, 0);
+            long autoTime = mShared.getLong(key, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
             if (autoTime > 0)
             {
                 sendAutoRefreshMessage(autoTime);
@@ -463,7 +488,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         new DeviceSortor().sort(mAllDeviceList, mSortType);
         
-        boolean showMeshTree = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, false);
+        boolean showMeshTree =
+            mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
         if (hasMeshDevice && showMeshTree)
         {
             mVirtuaMeshRoot.setName("Mesh Root");
@@ -914,7 +940,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 else
                 {
                     mHasEneditableDevice = true;
-                    continue;
                 }
             }
             
@@ -960,7 +985,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        System.exit(0);
+                        finish();
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

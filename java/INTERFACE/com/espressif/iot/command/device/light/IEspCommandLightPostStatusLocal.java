@@ -1,6 +1,7 @@
 package com.espressif.iot.command.device.light;
 
 import java.net.InetAddress;
+import java.util.List;
 
 import com.espressif.iot.command.IEspCommandLocal;
 import com.espressif.iot.command.device.IEspCommandLight;
@@ -9,10 +10,10 @@ import com.espressif.iot.type.device.status.IEspStatusLight;
 public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspCommandLight
 {
     /**
-     * @deprecated Use {@link #doCommandLightPostStatusLocal(InetAddress, IEspStatusLight, String, String)} instead of it,
-     * and the deviceBssid=null when you call the method
+     * @deprecated Use {@link #doCommandLightPostStatusLocal(InetAddress, IEspStatusLight, String, String)} instead of
+     *             it, and the deviceBssid=null when you call the method
      * 
-     * post the statusLight to the Light by Local
+     *             post the statusLight to the Light by Local
      * 
      * @param inetAddress the Light's ip address
      * @param statusLight the status of Light
@@ -43,4 +44,14 @@ public interface IEspCommandLightPostStatusLocal extends IEspCommandLocal, IEspC
      */
     void doCommandLightPostStatusLocalInstantly(InetAddress inetAddress, IEspStatusLight statusLight,
         String deviceBssid, boolean isMeshDevice, Runnable disconnectedCallback);
+    
+    /**
+     * Post multicast status
+     * 
+     * @param inetAddress
+     * @param statusLight
+     * @param bssids
+     * @return
+     */
+    boolean doCommandMulticastPostStatusLocal(InetAddress inetAddress, IEspStatusLight statusLight, List<String> bssids);
 }
