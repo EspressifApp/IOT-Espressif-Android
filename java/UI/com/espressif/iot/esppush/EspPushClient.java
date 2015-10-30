@@ -54,7 +54,7 @@ public class EspPushClient
     private static final String KEY_META = "meta";
     private static final String KEY_AUTHORIZATION = "Authorization";
     private static final String KEY_STATUS = "status";
-    private static final String KEY_PAYLOAD = "payload";
+    private static final String KEY_DATA = "data";
     private static final String KEY_ALERT = "alert";
     
     public static final String ESPPUSH_ACTION_RECEIVE_MESSAGE = "esppush_action_receive_message";
@@ -267,6 +267,7 @@ public class EspPushClient
                 try
                 {
                     String receiveMsg = receive();
+                    log.info("receive msg = " + receiveMsg);
                     
                     Intent intent = new Intent(ESPPUSH_ACTION_RECEIVE_MESSAGE);
                     JSONObject receiveJSON = new JSONObject(receiveMsg);
@@ -274,7 +275,7 @@ public class EspPushClient
                     {
                         String notificationMsg =
                             receiveJSON.getJSONObject(KEY_BODY)
-                                .getJSONObject(KEY_PAYLOAD)
+                                .getJSONObject(KEY_DATA)
                                 .getString(KEY_ALERT);
                         intent.putExtra(ESPPUSH_KEY_MESSAGE, notificationMsg);
                         mContext.sendBroadcast(intent);
