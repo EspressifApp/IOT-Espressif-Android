@@ -1,5 +1,6 @@
 package com.espressif.iot.model.user;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,7 +53,11 @@ import com.espressif.iot.action.device.common.upgrade.EspDeviceCheckCompatibilit
 import com.espressif.iot.action.device.common.upgrade.EspDeviceGetUpgradeTypeResult;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceCheckCompatibility;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceGetUpgradeTypeResult;
+import com.espressif.iot.action.device.espbutton.EspActionEspButtonActionGet;
+import com.espressif.iot.action.device.espbutton.EspActionEspButtonActionSet;
 import com.espressif.iot.action.device.espbutton.EspActionEspButtonConfigure;
+import com.espressif.iot.action.device.espbutton.IEspActionEspButtonActionGet;
+import com.espressif.iot.action.device.espbutton.IEspActionEspButtonActionSet;
 import com.espressif.iot.action.device.espbutton.IEspActionEspButtonConfigure;
 import com.espressif.iot.action.device.esptouch.EspActionDeviceEsptouch;
 import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
@@ -70,6 +75,7 @@ import com.espressif.iot.action.user.EspActionUserLoginInternet;
 import com.espressif.iot.action.user.EspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterPhoneInternet;
+import com.espressif.iot.action.user.EspActionUserResetPassword;
 import com.espressif.iot.action.user.IEspActionFindAccountnternet;
 import com.espressif.iot.action.user.IEspActionGetSmsCaptchaCodeInternet;
 import com.espressif.iot.action.user.IEspActionThirdPartyLoginInternet;
@@ -77,6 +83,7 @@ import com.espressif.iot.action.user.IEspActionUserLoginDB;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.IEspActionUserRegisterInternet;
+import com.espressif.iot.action.user.IEspActionUserResetPassword;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.EspGroupDBManager;
@@ -110,6 +117,7 @@ import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.esptouch.EsptouchResult;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
+import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
@@ -119,6 +127,7 @@ import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspRegisterResult;
+import com.espressif.iot.type.user.EspResetPasswordResult;
 import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -139,6 +148,7 @@ public class EspUser implements IEspUser
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
     private final List<IEspDeviceSSS> mStaDeviceList = new ArrayList<IEspDeviceSSS>();
+    private final List<IEspDeviceSSS> mTempStaDeviceList = new ArrayList<IEspDeviceSSS>();
     private final ReentrantLock mDeviceListsLock = new ReentrantLock();
     
     private volatile IEspActionDeviceEsptouch mActionDeviceEsptouch = null;
@@ -517,7 +527,7 @@ public class EspUser implements IEspUser
         lockUserDeviceLists();
         IOTUserDBManager iotUserDBManager = IOTUserDBManager.getInstance();
         List<DeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(mUserId);
-        mDeviceList = new ArrayList<IEspDevice>();
+        mDeviceList.clear();
         // add device into mDeviceList by deviceDBList
         for (DeviceDB deviceDB : deviceDBList)
         {
@@ -712,12 +722,21 @@ public class EspUser implements IEspUser
         mGroupList.clear();
         mDeviceList.clear();
         mStaDeviceList.clear();
+        mTempStaDeviceList.clear();
     }
     
     @Override
     public void loadUserDeviceListDB()
     {
         __loadUserDeviceList();
+    }
+    
+    @Override
+    public void clearUserDeviceLists()
+    {
+        mDeviceList.clear();
+        mStaDeviceList.clear();
+        mTempStaDeviceList.clear();
     }
     
     @Override
@@ -746,6 +765,13 @@ public class EspUser implements IEspUser
     {
         IEspActionFindAccountnternet action = new EspActionFindAccountInternet();
         return action.doActionFindEmailInternet(email);
+    }
+    
+    @Override
+    public EspResetPasswordResult doActionResetPassword(String email)
+    {
+        IEspActionUserResetPassword action = new EspActionUserResetPassword();
+        return action.doActionResetPassword(email);
     }
     
     @Override
@@ -977,6 +1003,11 @@ public class EspUser implements IEspUser
         List<IEspDeviceSSS> result = new ArrayList<IEspDeviceSSS>();
         lockUserDeviceLists();
         result.addAll(mStaDeviceList);
+        // add temp sta device if not exist
+        for (IEspDeviceSSS tempStaDevice : mTempStaDeviceList)
+        {
+            __addOrUpdateStaDeivce(result, tempStaDevice);
+        }
         unlockUserDeviceLists();
         return result;
     }
@@ -985,6 +1016,159 @@ public class EspUser implements IEspUser
     public List<IEspDevice> __getOriginDeviceList()
     {
         return mDeviceList;
+    }
+
+    @Override
+    public void __clearTempStaDeviceList()
+    {
+        log.debug("__clearTempStaDeviceList()");
+        lockUserDeviceLists();
+        mTempStaDeviceList.clear();
+        unlockUserDeviceLists();
+    }
+
+    private boolean __updateDevice(List<IEspDevice> deviceList, IEspDeviceSSS newStaDevice)
+    {
+        log.debug("__updateDevice() deviceList:" + deviceList + ", newStaDevice:" + newStaDevice);
+        // boolean isChanged = false;
+        boolean isExist = false;
+        String newBssid = newStaDevice.getBssid();
+        InetAddress newInetAddress = newStaDevice.getInetAddress();
+        String newParentBssid = newStaDevice.getParentDeviceBssid();
+        String newRootBssid = newStaDevice.getRootDeviceBssid();
+        for (IEspDevice device : deviceList)
+        {
+            String bssid = device.getBssid();
+            if (newBssid.equals(bssid))
+            {
+                isExist = true;
+                IEspDeviceState deviceState = device.getDeviceState();
+                // add device state local if necessary
+                boolean isNecessaryAddStateLocal =
+                    !deviceState.isStateLocal() && !deviceState.isStateUpgradingInternet()
+                        && (deviceState.isStateOffline() || deviceState.isStateInternet());
+                if (isNecessaryAddStateLocal)
+                {
+                    // isChanged = true;
+                    deviceState.addStateLocal();
+                    log.debug("__updateDevice() addStateLocal");
+                }
+                
+                InetAddress inetAddress = device.getInetAddress();
+                String parentBssid = device.getParentDeviceBssid();
+                String rootBssid = device.getRootDeviceBssid();
+                // update inetAddress if necessary
+                if (!newInetAddress.equals(inetAddress))
+                {
+                    // isChanged = true;
+                    device.setInetAddress(newInetAddress);
+                    log.debug("__updateDevice() update inetAddress");
+                }
+                // update parent bssid if necessary
+                if (newParentBssid != null && !newParentBssid.equals(parentBssid) || newParentBssid == null
+                    && parentBssid != null)
+                {
+                    // isChanged = true;
+                    device.setParentDeviceBssid(newParentBssid);
+                    log.debug("__updateDevice() update parentBssid");
+                }
+                // update root bssid if necessary
+                if (newRootBssid != null && !newRootBssid.equals(rootBssid) || newRootBssid == null
+                    && rootBssid != null)
+                {
+                    // isChanged = true;
+                    device.setRootDeviceBssid(newRootBssid);
+                    log.debug("__updateDevice() update rootBssid");
+                }
+                log.debug("__updateDevice() update break");
+                break;
+            }
+        }
+        // return isChanged || isExist;
+        return isExist;
+    }
+    
+    private boolean __addOrUpdateStaDeivce(List<IEspDeviceSSS> staDeviceList, IEspDeviceSSS newStaDevice)
+    {
+        log.debug("__addOrUpdateStaDeivce() staDeviceList:" + staDeviceList + ", newStaDevice:" + newStaDevice);
+        boolean isChanged = false;
+        boolean isExist = false;
+        String newBssid = newStaDevice.getBssid();
+        InetAddress newInetAddress = newStaDevice.getInetAddress();
+        String newParentBssid = newStaDevice.getParentDeviceBssid();
+        String newRootBssid = newStaDevice.getRootDeviceBssid();
+        for (IEspDeviceSSS staDevice : staDeviceList)
+        {
+            String bssid = staDevice.getBssid();
+            if (newBssid.equals(bssid))
+            {
+                isExist = true;
+                InetAddress inetAddress = staDevice.getInetAddress();
+                String parentBssid = staDevice.getParentDeviceBssid();
+                String rootBssid = staDevice.getRootDeviceBssid();
+                // update inetAddress if necessary
+                if (!newInetAddress.equals(inetAddress))
+                {
+                    isChanged = true;
+                    staDevice.setInetAddress(newInetAddress);
+                    log.debug("__addOrUpdateStaDeivce() update inetAddress");
+                }
+                // update parent bssid if necessary
+                if (newParentBssid == null && parentBssid != null || newParentBssid != null
+                    && !newParentBssid.equals(parentBssid))
+                {
+                    isChanged = true;
+                    staDevice.setParentDeviceBssid(newParentBssid);
+                    log.debug("__addOrUpdateStaDeivce() update parentBssid");
+                }
+                // update root bssid if necessary
+                if (newRootBssid == null && rootBssid != null || newRootBssid != null
+                    && !newRootBssid.equals(rootBssid))
+                {
+                    isChanged = true;
+                    staDevice.setRootDeviceBssid(newRootBssid);
+                    log.debug("__addOrUpdateStaDeivce() update rootBssid");
+                }
+                log.debug("__addOrUpdateStaDeivce() update break");
+                break;
+            }
+        }
+        if (!isExist)
+        {
+            isChanged = true;
+            staDeviceList.add(newStaDevice);
+            log.debug("__addOrUpdateStaDeivce() add newStaDevice");
+        }
+        return isChanged;
+    }
+    
+    @Override
+    public void __addTempStaDeviceList(List<IOTAddress> iotAddressList)
+    {
+        log.debug("__addTempStaDeviceList() iotAddressList:" + iotAddressList);
+        lockUserDeviceLists();
+        boolean isDeviceChanged = false;
+        for (IOTAddress iotAddress : iotAddressList)
+        {
+            String rootBssid = iotAddress.getRootBssid();
+            String bssid = iotAddress.getBSSID();
+            String ssid = BSSIDUtil.genDeviceNameByBSSID(bssid);
+            iotAddress.setSSID(ssid);
+            IEspDeviceSSS tempStaDevice = BEspDevice.createSSSDevice(iotAddress);
+            tempStaDevice.setRootDeviceBssid(rootBssid);
+            boolean _isTempStaChanged = __addOrUpdateStaDeivce(mTempStaDeviceList, tempStaDevice);
+            isDeviceChanged = isDeviceChanged ? true : _isTempStaChanged;
+        }
+        if (isDeviceChanged)
+        {
+            log.debug("__addTempStaDeviceList() send local broadcast UI_REFRESH_LOCAL_DEVICE");
+            // send ui refresh local devices broadcast when new local devices are found
+            Context context = EspApplication.sharedInstance().getApplicationContext();
+            LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
+            Intent intent = new Intent(EspStrings.Action.UI_REFRESH_LOCAL_DEVICES);
+            broadcastManager.sendBroadcast(intent);
+        }
+        unlockUserDeviceLists();
     }
     
     @Override
@@ -995,8 +1179,20 @@ public class EspUser implements IEspUser
         // so we return the copy list to prevent it
         List<IEspDevice> result = new ArrayList<IEspDevice>();
         lockUserDeviceLists();
-        result.addAll(mDeviceList);
-        result.addAll(mStaDeviceList);
+        List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
+        deviceList.addAll(mDeviceList);
+        List<IEspDeviceSSS> staDeviceList = new ArrayList<IEspDeviceSSS>();
+        staDeviceList.addAll(mStaDeviceList);
+        for (IEspDeviceSSS tempStaDevice : mTempStaDeviceList)
+        {
+            boolean isExist = __updateDevice(deviceList, tempStaDevice);
+            if (!isExist)
+            {
+                __addOrUpdateStaDeivce(staDeviceList, tempStaDevice);
+            }
+        }
+        result.addAll(deviceList);
+        result.addAll(staDeviceList);
         unlockUserDeviceLists();
         return result;
     }
@@ -1499,4 +1695,19 @@ public class EspUser implements IEspUser
             listener,
             oldMacAddress);
     }
+    
+    @Override
+    public boolean doActionEspButtonKeyActionSet(IEspDevice device, EspButtonKeySettings settings)
+    {
+        IEspActionEspButtonActionSet action = new EspActionEspButtonActionSet();
+        return action.doActionEspButtonActionSet(device, settings);
+    }
+    
+    @Override
+    public List<EspButtonKeySettings> doActionEspButtonKeyActionGet(IEspDevice device)
+    {
+        IEspActionEspButtonActionGet action = new EspActionEspButtonActionGet();
+        return action.doActionEspButtonActionGet(device);
+    }
+
 }

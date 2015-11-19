@@ -37,7 +37,6 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
-import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.ui.main.EspActivityAbs;
@@ -77,6 +76,8 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private List<String> mEsptouchDeviceBssidList = new ArrayList<String>();
     private AtomicInteger mEsptouchDeivceRegisterCount = new AtomicInteger();
+    private List<String> mRegisteredDeviceBssidList = new ArrayList<String>();
+    private List<String> mRegisteredDeviceNameList = new ArrayList<String>();
     
     private static final int REQUEST_SOFTAP_CONFIGURE = 10;
     
@@ -310,6 +311,10 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             }
             else if(action.equals(EspStrings.Action.ESPTOUCH_DEVICE_REGISTERED))
             {
+                String deviceBssid = intent.getStringExtra(EspStrings.Key.DEVICE_BSSID);
+                mRegisteredDeviceBssidList.add(deviceBssid);
+                String deviceName = intent.getStringExtra(EspStrings.Key.DEVICE_NAME);
+                mRegisteredDeviceNameList.add(deviceName);
                 int quantity = mEsptouchDeivceRegisterCount.incrementAndGet();
                 text = resources.getQuantityString(R.plurals.esp_esptouch_device_registered, quantity, quantity);
                 mEsptouchContentCountTV.setText(text);
@@ -344,26 +349,27 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private List<String> filterConfigureDeviceNameList()
     {
-        List<IEspDevice> deviceList = mUser.getDeviceList();
         List<String> deviceNameList = new ArrayList<String>();
-        for (IEspDevice deviceInList : deviceList)
+        
+        for (int i = 0; i < mRegisteredDeviceBssidList.size(); ++i)
         {
-            for (String esptouchDeviceBssid : mEsptouchDeviceBssidList)
+            String deviceBssid = mRegisteredDeviceBssidList.get(i);
+            if (mEsptouchDeviceBssidList.contains(deviceBssid))
             {
-                String deviceBssid = deviceInList.getBssid();
-                if (esptouchDeviceBssid.equals(deviceBssid))
-                {
-                    deviceNameList.add(deviceInList.getName());
-                    mEsptouchDeviceBssidList.remove(esptouchDeviceBssid);
-                    break;
-                }
+                String deviceName = mRegisteredDeviceNameList.get(i);
+                deviceNameList.add(deviceName);
+                mEsptouchDeviceBssidList.remove(deviceBssid);
+                break;
             }
         }
+        
         return deviceNameList;
     }
     
     private void doEspTouch()
     {
+        mRegisteredDeviceBssidList.clear();
+        mRegisteredDeviceNameList.clear();
         mEsptouchDeivceRegisterCount.set(0);
         mEsptouchDeviceBssidList.clear();
         final String bssid = getConnectionBssid();

@@ -204,8 +204,18 @@ public interface IEspDevice extends IEspObject
      */
     String getParentDeviceBssid();
     
+    /**
+     * Set root device bssid of device's mesh group
+     * 
+     * @param rootBssid
+     */
     void setRootDeviceBssid(String rootBssid);
     
+    /**
+     * Get device's mesh group root device bssid. If the device is root device, return bssid of itself.
+     * 
+     * @return
+     */
     String getRootDeviceBssid();
     
     /*

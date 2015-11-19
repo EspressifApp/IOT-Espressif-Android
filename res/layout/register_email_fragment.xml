@@ -19,6 +19,7 @@
         android:id="@+id/register_email"
         style="@style/RegisterEditText"
         android:drawableLeft="@drawable/esp_register_icon_email"
+        android:inputType="textEmailAddress"
         android:hint="@string/esp_register_email" />
 
     <EditText

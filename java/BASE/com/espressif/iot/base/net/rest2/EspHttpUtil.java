@@ -35,6 +35,8 @@ public class EspHttpUtil
     
     private final static int SOCKET_CONNECT_RETRY_TIME = 3;
     
+    private final static String KEY_STATUS = "status";
+    
     public static JSONObject Get(String url, HeaderPair... headers)
     {
         return Get(url, null, headers);
@@ -213,6 +215,8 @@ public class EspHttpUtil
             {
                 response = httpclient.execute(httpRequest);
                 
+                int statusCode = response.getStatusLine().getStatusCode();
+                
                 HttpEntity entity = response.getEntity();
                 if (entity == null && disconnectedCallback == null)
                 {
@@ -233,6 +237,10 @@ public class EspHttpUtil
                     try
                     {
                         result = new JSONObject(resultStr);
+                        if (!result.has(KEY_STATUS))
+                        {
+                            result.put(KEY_STATUS, statusCode);
+                        }
                     }
                     catch (JSONException e)
                     {

@@ -15,6 +15,11 @@ public class IOTAddress implements IEspObject
     private String mSSID;
     
     /**
+     * the root device's bssid(only mesh device has root device)
+     */
+    private String mRootBssid;
+    
+    /**
      * the device's bssid
      */
     private String mBSSID;
@@ -99,6 +104,16 @@ public class IOTAddress implements IEspObject
     public String getSSID()
     {
         return mSSID;
+    }
+    
+    public void setRootBssid(String rootBssid)
+    {
+        mRootBssid = rootBssid;
+    }
+    
+    public String getRootBssid()
+    {
+        return mRootBssid;
     }
     
     public void setParentBssid(String parentBssid)

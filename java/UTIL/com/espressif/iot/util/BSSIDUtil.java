@@ -82,6 +82,11 @@ public class BSSIDUtil
     public static String genDeviceNameByBSSID(String prefix, String BSSID)
     {
         // 1a:fe:34:77:c0:00 change to 77C000
+        System.out.println("genDeviceNameByBSSID BSSID =  " + BSSID);
+        if (BSSID.length() == 12)
+        {
+            BSSID = MeshUtil.getRawMacAddress(BSSID);
+        }
         String tail = "";
         tail += UpperCase(BSSID.substring(9, 11));
         tail += BSSID.substring(12, 14).toUpperCase(Locale.US);

@@ -739,6 +739,12 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         {
             log.warn("Delete path is not directry");
         }
+        if (mStoreLogPre.isChecked())
+        {
+            Logger root = Logger.getRootLogger();
+            root.removeAppender(LogConfigurator.APPENDER_NAME);
+            root.addAppender(LogConfigurator.createFileAppender());
+        }
     }
     
 }

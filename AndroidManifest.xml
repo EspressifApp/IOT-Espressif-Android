@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="14"
-    android:versionName="v1.1.1" >
+    android:versionCode="15"
+    android:versionName="v1.1.2" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -49,6 +49,9 @@
             android:name="com.espressif.iot.ui.register.RegisterActivity"
             android:screenOrientation="portrait"
             android:theme="@style/NoTitleBar" />
+        <activity
+            android:name="com.espressif.iot.ui.login.ResetUserPasswordActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.main.EspUIActivity"
             android:screenOrientation="portrait" />
@@ -177,6 +180,9 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.configure.EspButtonConfigureActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity"
             android:screenOrientation="portrait" />
 
         <service android:name="com.espressif.iot.esppush.EspPushService" />

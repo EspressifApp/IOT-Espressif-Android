@@ -17,6 +17,7 @@ import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
+import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.net.IOTAddress;
@@ -25,6 +26,7 @@ import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspRegisterResult;
+import com.espressif.iot.type.user.EspResetPasswordResult;
 import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 
 public interface IEspUser extends IEspSingletonObject
@@ -297,12 +299,21 @@ public interface IEspUser extends IEspSingletonObject
      */
     IEspUser doActionUserLoginDB();
     
+    /**
+     * Logout. Clear the user info
+     * 
+     */
     void doActionUserLogout();
     
     /**
      * load devices of user from DB
      */
     void loadUserDeviceListDB();
+    
+    /**
+     * Clear devices of user
+     */
+    void clearUserDeviceLists();
     
     /**
      * login by Internet
@@ -365,6 +376,14 @@ public interface IEspUser extends IEspSingletonObject
      * @return
      */
     boolean findAccountEmailRegistered(String email);
+    
+    /**
+     * Post reset request to server
+     * 
+     * @param email
+     * @return
+     */
+    EspResetPasswordResult doActionResetPassword(String email);
     
     /**
      * when device's updated, the broadcast of DEVICES_ARRIVE_STATEMACHINE or DEVICES_ARRIVE_PULLREFRESH(@see
@@ -434,9 +453,6 @@ public interface IEspUser extends IEspSingletonObject
      */
     EspUpgradeDeviceTypeResult getDeviceUpgradeTypeResult(IEspDevice device);
     
-    // TODO
-    // gotten sharing
-    
     /**
      * Get the timers from server, and store the time in the timer list of device
      * 
@@ -478,13 +494,6 @@ public interface IEspUser extends IEspSingletonObject
     void doActionDeviceSleepRebootLocal(EspDeviceType type);
     
     /**
-     * Get the device's device tree element list
-     * 
-     * @param allDeviceList the list of all device belong to the IUser
-     * @return the device's device tree element list
-     */
-    
-    /**
      * 
      * @param isFilter true is filter the ScanResult belong to the device's Softap
      * @return the ScanResult List
@@ -511,6 +520,17 @@ public interface IEspUser extends IEspSingletonObject
      * @return the origin device list
      */
     List<IEspDevice> __getOriginDeviceList();
+    
+    /**
+     * Clear temp sta device list
+     */
+    void __clearTempStaDeviceList();
+    
+    /**
+     * Add temp sta device list and send relating local broadcast
+     * @param iotAddressList the list of IOTAddress representing 
+     */
+    void __addTempStaDeviceList(List<IOTAddress> iotAddressList);
     
     /**
      * Get the collection of {@link #getDeviceList()} and {@link #getStaDeviceList()}
@@ -728,4 +748,21 @@ public interface IEspUser extends IEspSingletonObject
      */
     boolean doActionEspButtonReplace(String newTempKey, String newMacAddress, boolean permitAllRequest,
         List<IEspDevice> deviceList, boolean isBroadcast, IEspButtonConfigureListener listener, String... oldMacAddress);
+    
+    /**
+     * Set key action
+     * 
+     * @param device
+     * @param settings
+     * @return
+     */
+    boolean doActionEspButtonKeyActionSet(IEspDevice device, EspButtonKeySettings settings);
+    
+    /**
+     * Get keys' action
+     * 
+     * @param device
+     * @return
+     */
+    List<EspButtonKeySettings> doActionEspButtonKeyActionGet(IEspDevice device);
 }

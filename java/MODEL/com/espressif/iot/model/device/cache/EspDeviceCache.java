@@ -367,5 +367,19 @@ public class EspDeviceCache implements IEspDeviceCache, IEspSingletonObject
         }
         
     }
-
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{mTransforedDeviceCacheQueue: " + mTransformedDeviceCacheQueue + "\n");
+        sb.append("mServerLocalDeviceCacheQueue: " + mServerLocalDeviceCacheQueue + "\n");
+        sb.append("mLocalDeviceIOTAddressQueue: " + mLocalDeviceIOTAddressQueue + "\n");
+        sb.append("mStatemachineDeviceCacheQueue: " + mStatemachineDeviceCacheQueue + "\n");
+        sb.append("mSharedDeviceCacheQueue: " + mSharedDeviceCacheQueue + "\n");
+        sb.append("mUpgradeSucLocalDeviceCacheQueue: " + mUpgradeSucLocalDeviceCacheQueue + "\n");
+        sb.append("mStaDeviceIOTAddressQueue: " + mStaDeviceIOTAddressQueue + "}\n");
+        return sb.toString();
+    }
+    
 }

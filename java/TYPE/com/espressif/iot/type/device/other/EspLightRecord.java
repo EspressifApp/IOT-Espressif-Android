@@ -129,6 +129,12 @@ public class EspLightRecord
         return period;
     }
     
+    // get last period
+    public int getLastPeriod()
+    {
+        return mLastLightStatus.period;
+    }
+    
     // get norm value str
     private static String __getNormStrByNorm(double norm, int sb, double norm_rgbw_min, double norm_rgbw_max)
     {
@@ -260,6 +266,100 @@ public class EspLightRecord
         return post_ww;
     }
     
+    // get last seekbar value
+    public int getLastSeekbarRed()
+    {
+        return mLastLightStatus.seekbar_red;
+    }
+    
+    public int getLastSeekbarGreen()
+    {
+        return mLastLightStatus.seekbar_green;
+    }
+    
+    public int getLastSeekbarBlue()
+    {
+        return mLastLightStatus.seekbar_blue;
+    }
+    
+    public int getLastSeekbarCw()
+    {
+        return mLastLightStatus.seekbar_cw;
+    }
+    
+    public int getLastSeekbarWw()
+    {
+        return mLastLightStatus.seekbar_ww;
+    }
+    
+    // get last color value
+    public int getLastColorRed()
+    {
+        return mLastLightStatus.color_red;
+    }
+    
+    public int getLastColorGreen()
+    {
+        return mLastLightStatus.color_green;
+    }
+    
+    public int getLastColorBlue()
+    {
+        return mLastLightStatus.color_blue;
+    }
+    
+    // get last status value
+    public int getLastStatusRed()
+    {
+        return mLastLightStatus.status_red;
+    }
+    
+    public int getLastStatusGreen()
+    {
+        return mLastLightStatus.status_green;
+    }
+    
+    public int getLastStatusBlue()
+    {
+        return mLastLightStatus.status_blue;
+    }
+    
+    public int getLastStatusCw()
+    {
+        return mLastLightStatus.status_cw;
+    }
+    
+    public int getLastStatusWw()
+    {
+        return mLastLightStatus.status_ww;
+    }
+    
+    // get last post value
+    public int getLastPostRed()
+    {
+        return mLastLightStatus.post_red;
+    }
+    
+    public int getLastPostGreen()
+    {
+        return mLastLightStatus.post_green;
+    }
+    
+    public int getLastPostBlue()
+    {
+        return mLastLightStatus.post_blue;
+    }
+    
+    public int getLastPostCw()
+    {
+        return mLastLightStatus.post_cw;
+    }
+    
+    public int getLastPostWw()
+    {
+        return mLastLightStatus.post_ww;
+    }
+    
     public void undoStatus()
     {
         if (mLastLightStatus != null)
@@ -299,7 +399,6 @@ public class EspLightRecord
                 System.out.println("execute undoStatus() mLastLightStatus.norm_red:" + mLastLightStatus.norm_red
                     + ",norm_red:" + norm_red);
             }
-            mLastLightStatus = null;
         }
     }
     
@@ -343,6 +442,8 @@ public class EspLightRecord
         {
             System.out.println("execute saveLastStatus() mLastLightStatus.norm_red:" + mLastLightStatus.norm_red
                 + ",norm_red:" + norm_red);
+            System.out.println("execute saveLastStatus() mLastLightStatus.seekbar_red:" + mLastLightStatus.seekbar_red
+                + ",seekbar_red:" + seekbar_red);
         }
     }
     
@@ -696,8 +797,8 @@ public class EspLightRecord
     public void updateByNorm(int period, double norm_red, double norm_green, double norm_blue, double norm_cw,
         double norm_ww)
     {
-        saveLastStatus();
         initByNorm(period, norm_red, norm_green, norm_blue, norm_cw, norm_ww);
+//        saveLastStatus();
     }
     
     static EspLightRecord createInstanceByNorm(int period, double norm_red, double norm_green, double norm_blue,
@@ -711,27 +812,26 @@ public class EspLightRecord
     private void initBySeekbar(int period, int seekbar_red, int seekbar_green, int seekbar_blue, int seekbar_cw,
         int seekbar_ww)
     {
-        final boolean debug = false;
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() seekbar_red:" + seekbar_red);
         initPeriod(period);
         initMinMax(this.period);
         initSeekbar(seekbar_red, seekbar_green, seekbar_blue, seekbar_cw, seekbar_ww);
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() seekbar_red1:" + this.seekbar_red);
         setSeekbar2Norm();
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() norm_red:" + this.norm_red);
         setSeekbar2Status();
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() status_red:" + this.status_red);
         setStatus2Post();
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() post_red:" + this.post_red);
         setStatus2Color();
-        if (debug)
+        if (DEBUG)
             System.out.println("initBySeekbar() color_red:" + this.color_red);
-        if (debug)
+        if (DEBUG)
         {
             System.out.println("initBySeekbar() this:" + this);
         }
@@ -740,8 +840,8 @@ public class EspLightRecord
     public void updateBySeekbar(int period, int seekbar_red, int seekbar_green, int seekbar_blue, int seekbar_cw,
         int seekbar_ww)
     {
-        saveLastStatus();
         initBySeekbar(period, seekbar_red, seekbar_green, seekbar_blue, seekbar_cw, seekbar_ww);
+//        saveLastStatus();
     }
     
     static EspLightRecord createInstanceBySeekbar(int period, int seekbar_red, int seekbar_green, int seekbar_blue,
@@ -765,8 +865,8 @@ public class EspLightRecord
     
     public void updateByPost(int period, int post_red, int post_green, int post_blue, int post_cw, int post_ww)
     {
-        saveLastStatus();
         initByPost(period, post_red, post_green, post_blue, post_cw, post_ww);
+//        saveLastStatus();
     }
     
     public static EspLightRecord createInstanceByPost(int period, int post_red, int post_green, int post_blue, int post_cw,
@@ -790,8 +890,8 @@ public class EspLightRecord
     
     public void updateByColor(int period, int color_red, int color_green, int color_blue)
     {
-        saveLastStatus();
         initByColor(period, color_red, color_green, color_blue);
+//        saveLastStatus();
     }
     
     static EspLightRecord createInstanceByColor(int period, int color_red, int color_green, int color_blue)

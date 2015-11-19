@@ -426,7 +426,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         menu.add(Menu.NONE, MENU_ID_UPGRADE_LOCAL, 0, R.string.esp_device_menu_upgrade_local);
         menu.add(Menu.NONE, MENU_ID_UPGRADE_ONLINE, 0, R.string.esp_device_menu_upgrade_online);
         
-        if (mIEspDevice.getDeviceState().isStateLocal())
+        if (mIEspDevice.getIsMeshDevice() && mIEspDevice.getDeviceState().isStateLocal())
         {
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
         }
@@ -663,7 +663,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 mCommand = COMMAND_GET;
                 if (mIEspDevice instanceof IEspDeviceArray)
                 {
-                    return true;
+                    return false;
                 }
                 else
                 {

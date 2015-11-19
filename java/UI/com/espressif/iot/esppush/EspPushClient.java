@@ -6,9 +6,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -36,9 +34,8 @@ public class EspPushClient
     private Context mContext;
     private IEspUser mUser;
     
-    private static final String URL_SERVER = "http://iot.espressif.cn";
-    private static final int PORT_SERVER = 8000;
-    private URL mURL;
+    private static final String SERVER_HOST = "iot.espressif.cn";
+    private static final int SERVER_PORT = 8000;
     
     private Socket mSocket;
     private PrintStream mPrintStream;
@@ -70,14 +67,6 @@ public class EspPushClient
     {
         mContext = context;
         mUser = BEspUser.getBuilder().getInstance();
-        try
-        {
-            mURL = new URL(URL_SERVER);
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
     }
     
     /**
@@ -104,16 +93,27 @@ public class EspPushClient
             return;
         }
         
+        // Close OutputStream
+        mPrintStream.close();
         try
         {
-            mPrintStream.close();
+            // Close InputStream
             mBufferedReader.close();
-            mSocket.close();
         }
         catch (IOException i)
         {
-            log.error("disconnect() close IOException");
+            log.error("disconnect() close mBufferedReader IOException");
             i.printStackTrace();
+        }
+        try
+        {
+            // Close Socket
+            mSocket.close();
+        }
+        catch (IOException e)
+        {
+            log.error("disconnect() close mSocket IOException");
+            e.printStackTrace();
         }
         
         mSocket = null;
@@ -224,8 +224,8 @@ public class EspPushClient
             log.debug("start connecting");
             try
             {
-                InetAddress address = InetAddress.getByName(mURL.getHost());
-                mSocket = new Socket(address, PORT_SERVER);
+                InetAddress address = InetAddress.getByName(SERVER_HOST);
+                mSocket = new Socket(address, SERVER_PORT);
                 mPrintStream = new PrintStream(mSocket.getOutputStream());
                 mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
                 
@@ -239,6 +239,7 @@ public class EspPushClient
             }
             catch (JSONException e)
             {
+                log.error("ConnectTask catch JSONException");
                 e.printStackTrace();
                 return false;
             }
@@ -247,12 +248,17 @@ public class EspPushClient
         @Override
         protected void onPostExecute(Boolean result)
         {
-            log.debug("connect " + result);
-            mConnectTask = null;
+            log.debug("connect result = " + result);
             if (result)
             {
                 new ReceivePushMessageThread().start();
             }
+            else
+            {
+                disconnect();
+            }
+            
+            mConnectTask = null;
         }
     }
     
@@ -269,7 +275,6 @@ public class EspPushClient
                     String receiveMsg = receive();
                     log.info("receive msg = " + receiveMsg);
                     
-                    Intent intent = new Intent(ESPPUSH_ACTION_RECEIVE_MESSAGE);
                     JSONObject receiveJSON = new JSONObject(receiveMsg);
                     if (receiveJSON.has(KEY_BODY))
                     {
@@ -277,6 +282,7 @@ public class EspPushClient
                             receiveJSON.getJSONObject(KEY_BODY)
                                 .getJSONObject(KEY_DATA)
                                 .getString(KEY_ALERT);
+                        Intent intent = new Intent(ESPPUSH_ACTION_RECEIVE_MESSAGE);
                         intent.putExtra(ESPPUSH_KEY_MESSAGE, notificationMsg);
                         mContext.sendBroadcast(intent);
                     }

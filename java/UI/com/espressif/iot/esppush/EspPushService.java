@@ -3,7 +3,7 @@ package com.espressif.iot.esppush;
 import java.util.List;
 
 import com.espressif.iot.R;
-import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.ui.main.WelcomeActivity;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -34,7 +34,7 @@ public class EspPushService extends Service
         ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
         List<RunningServiceInfo> list = am.getRunningServices(Integer.MAX_VALUE);
         boolean isServiceRunning = false;
-        String clsName = "com.espressif.iot.esppush.EspPushService";
+        String clsName = EspPushService.class.getName();
         for (RunningServiceInfo info : list) {
             String serviceCls = info.service.getClassName();
             if (serviceCls.equalsIgnoreCase(clsName)) {
@@ -173,8 +173,10 @@ public class EspPushService extends Service
     
     private void notification(String message)
     {
-        Intent intent = new Intent(this, EspApplication.getEspUIActivity());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         Notification notification =
             new NotificationCompat.Builder(this).setContentTitle(getString(R.string.app_name))

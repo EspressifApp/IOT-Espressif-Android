@@ -22,6 +22,8 @@ import com.espressif.iot.model.device.cache.EspDeviceCache;
 import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 
 public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
     IEspActionDeviceSynchronizeInterentDiscoverLocal
@@ -106,6 +108,10 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                 
             };
         }
+        
+        // clear temp sta device list
+        final IEspUser user = BEspUser.getBuilder().getInstance();
+        user.__clearTempStaDeviceList();
         
         if (localRequired && serverRequired)
         {

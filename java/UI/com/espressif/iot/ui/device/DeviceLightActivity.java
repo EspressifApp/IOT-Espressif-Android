@@ -15,13 +15,18 @@ import com.espressif.iot.type.device.other.EspLightRecord;
 import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
+import com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity;
 import com.espressif.iot.ui.view.EspColorPicker;
 import com.espressif.iot.ui.view.EspColorPicker.OnColorChangedListener;
+import com.espressif.iot.util.EspStrings;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -71,11 +76,13 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     
     private IEspDeviceLight mDeviceLight;
     
-    private EspLightRecord mLightStatus;
+    private EspLightRecord mLightRecord;
     
     protected View mLightLayout;
     
     private IEspLongSocket mLongSocket;
+    
+    private static final int MENU_ID_ESPBUTTON_SETTINGS = 0x2001;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -83,11 +90,11 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         super.onCreate(savedInstanceState);
         
         mDeviceLight = (IEspDeviceLight)mIEspDevice;
-        mLightStatus = EspLightRecord.createFakeInstance();
+        mLightRecord = EspLightRecord.createFakeInstance();
         
         boolean compatibility = isDeviceCompatibility();
         checkHelpModeLight(compatibility);
-        if (compatibility)
+        if (compatibility && !isDeviceArray())
         {
             executeGet();
         }
@@ -166,6 +173,32 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mColorPicker.setOnColorChangeListener(this);
         
         return view;
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        if (mIEspDevice.getIsMeshDevice() && !isDeviceArray())
+        {
+            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings);
+        }
+        
+        return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case MENU_ID_ESPBUTTON_SETTINGS:
+                Intent intent = new Intent(this, EspButtonCustomKeySettingsActivity.class);
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mDeviceLight.getKey());
+                startActivity(intent);
+                return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
     }
     
     private void clearEditFocus()
@@ -354,86 +387,83 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mWWhiteText.setText(ww_norm_str);
     }
     
-    private void __updateLightPeriodUI(int period_prev, int period, int period_min, int period_max)
+    private void __updateLightPeriodUI2(int period)
     {
-        period = restrict(period, period_min, period_max);
-        log.debug("__updateLightPeriodUI() period_prev:" + period_prev + ",period:" + period);
+        int period_last = mLightRecord.getLastPeriod();
+        // update period
+        setLightPeriod(period);
+        setLightPeriodStr("" + period);
         // update UI when period change
-        if (period != period_prev)
+        if (period != period_last)
         {
-            log.debug("__updateLightPeriodUI() period != period_prev");
-            // update period
-            setLightPeriod(period);
-            setLightPeriodStr("" + period);
-            // update rgbw value
-            final int rgbw_min_prev = 0;
             final double norm_rgbw_min = NORM_MIN;
             final double norm_rgbw_max = NORM_MAX;
-            int rgbw_max_prev = EspLightRecord.getRgbwMax(period_prev);
+            int rgbw_max_last = EspLightRecord.getRgbwMax(period_last);
             int rgbw_max = EspLightRecord.getRgbwMax(period);
+            log.debug("__updateLightPeriodUI() rgbw_max_last:" + rgbw_max_last + ",rgbw_max:" + rgbw_max);
             // update red
-            int red_seekbar_prev = mLightStatus.getSeekbarRed();
-            String red_norm_str = EspLightRecord.getNormStrBySeekbar(red_seekbar_prev, rgbw_min_prev, rgbw_max_prev);
+            int red_seekbar_last = mLightRecord.getLastSeekbarRed();
+            /**
+             * for period and seekbar value will be changed together sometimes,
+             * so we use text update seekbar.
+             * if we need more accurate, add preStatus in EspLightRecord
+             */
+            String red_norm_str = getLightNormRedStr();
             double red_norm = Double.parseDouble(red_norm_str);
             int red_seekbar = EspLightRecord.getSeekbarByNorm(red_norm, norm_rgbw_min, norm_rgbw_max, rgbw_max);
+            log.debug("__updateLightPeriodUI() red_seekbar_last:" + red_seekbar_last + "red_norm_str" + red_norm_str
+                + ",red_norm:" + red_norm + ",red_seekbar:" + red_seekbar);
             setLightSeekbarRedMax(rgbw_max);
             setLightSeekbarRed(red_seekbar);
             // update green
-            int green_seekbar_prev = mLightStatus.getSeekbarGreen();
-            String green_norm_str = EspLightRecord.getNormStrBySeekbar(green_seekbar_prev, rgbw_min_prev, rgbw_max_prev);
+            String green_norm_str = getLightNormGreenStr();
             double green_norm = Double.parseDouble(green_norm_str);
             int green_seekbar = EspLightRecord.getSeekbarByNorm(green_norm, norm_rgbw_min, norm_rgbw_max, rgbw_max);
             setLightSeekbarGreenMax(rgbw_max);
             setLightSeekbarGreen(green_seekbar);
             // update blue
-            int blue_seekbar_prev = mLightStatus.getSeekbarBlue();
-            String blue_norm_str = EspLightRecord.getNormStrBySeekbar(blue_seekbar_prev, rgbw_min_prev, rgbw_max_prev);
+            String blue_norm_str = getLightNormBlueStr();
             double blue_norm = Double.parseDouble(blue_norm_str);
             int blue_seekbar = EspLightRecord.getSeekbarByNorm(blue_norm, norm_rgbw_min, norm_rgbw_max, rgbw_max);
             setLightSeekbarBlueMax(rgbw_max);
             setLightSeekbarBlue(blue_seekbar);
             // update cw
-            int cw_seekbar_prev = mLightStatus.getSeekbarCw();
-            String cw_norm_str = EspLightRecord.getNormStrBySeekbar(cw_seekbar_prev, rgbw_min_prev, rgbw_max_prev);
+            String cw_norm_str = getLightNormCwStr();
             double cw_norm = Double.parseDouble(cw_norm_str);
             int cw_seekbar = EspLightRecord.getSeekbarByNorm(cw_norm, norm_rgbw_min, norm_rgbw_max, rgbw_max);
             setLightSeekbarCwMax(rgbw_max);
             setLightSeekbarCw(cw_seekbar);
             // update ww
-            int ww_seekbar_prev = mLightStatus.getSeekbarWw();
-            String ww_norm_str = EspLightRecord.getNormStrBySeekbar(ww_seekbar_prev, rgbw_min_prev, rgbw_max_prev);
+            String ww_norm_str = getLightNormWwStr();
             double ww_norm = Double.parseDouble(ww_norm_str);
             int ww_seekbar = EspLightRecord.getSeekbarByNorm(ww_norm, norm_rgbw_min, norm_rgbw_max, rgbw_max);
             setLightSeekbarWwMax(rgbw_max);
             setLightSeekbarWw(ww_seekbar);
+            
+            mLightRecord.updateBySeekbar(period, red_seekbar, green_seekbar, blue_seekbar, cw_seekbar, ww_seekbar);
         }
     }
     
     private void updateLightPeriodUIByText()
     {
-        int period_prev = mLightStatus.getPeriod();
         String period_str = getLightPeriodStr();
         int period = Integer.parseInt(period_str);
-        int period_min = PERIOD_MIN;
-        int period_max = PERIOD_MAX;
-        log.debug("updateLightPeriodUIByText()" + ",period_prev:" + period_prev + ",period:" + period);
-        __updateLightPeriodUI(period_prev, period, period_min, period_max);
+        log.debug("updateLightPeriodUIByText(), period:" + period);
+        __updateLightPeriodUI2(period);
     }
     
     private void updateLightPeridTextBySeekbar()
     {
         int period = getLightPeriod();
         setLightPeriodStr("" + period);
+        log.debug("updateLightPeridTextBySeekbar() period:" + period);
     }
     
     private void updateLightPeriodUIBySeekbar()
     {
-        int period_prev = mLightStatus.getPeriod();
         int period = getLightPeriod();
-        int period_min = PERIOD_MIN;
-        int period_max = PERIOD_MAX;
-        log.debug("updateLightPeriodUIBySeekbar() period:" + period + ",period_prev:" + period_prev);
-        __updateLightPeriodUI(period_prev, period, period_min, period_max);
+        log.debug("updateLightPeriodUIBySeekbar(), period:" + period);
+        __updateLightPeriodUI2(period);
     }
     
     private void __updateLightUIBySeekbar(boolean[] types, int seekbar)
@@ -449,12 +479,18 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 "period:" + period + ",seekbar:" + seekbar + ",seekbar_rgbw_max:" + seekbar_rgbw_max + ",norm_str:"
                     + norm_str;
         }
+        int seekbar_red = mLightRecord.getSeekbarRed();
+        int seekbar_green = mLightRecord.getSeekbarGreen();
+        int seekbar_blue = mLightRecord.getSeekbarBlue();
+        int seekbar_cw = mLightRecord.getSeekbarCw();
+        int seekbar_ww = mLightRecord.getSeekbarWw();
         // red
         if (types[0])
         {
             log.debug("__updateLightUIBySeekbar() red, " + log_info);
             setLightSeekbarRed(seekbar);
             setLightNormRedStr(norm_str);
+            seekbar_red = seekbar;
         }
         // green
         else if (types[1])
@@ -462,6 +498,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIBySeekbar() green, " + log_info);
             setLightSeekbarGreen(seekbar);
             setLightNormGreenStr(norm_str);
+            seekbar_green = seekbar;
         }
         // blue
         else if (types[2])
@@ -469,6 +506,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIBySeekbar() blue, " + log_info);
             setLightSeekbarBlue(seekbar);
             setLightNormBlueStr(norm_str);
+            seekbar_blue = seekbar;
         }
         // cw
         else if (types[3])
@@ -476,6 +514,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIBySeekbar() cw, " + log_info);
             setLightSeekbarCw(seekbar);
             setLightNormCwStr(norm_str);
+            seekbar_cw = seekbar;
         }
         // ww
         else if (types[4])
@@ -483,7 +522,9 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIBySeekbar() ww, " + log_info);
             setLightSeekbarWw(seekbar);
             setLightNormWwStr(norm_str);
+            seekbar_ww = seekbar;
         }
+        mLightRecord.updateBySeekbar(period, seekbar_red, seekbar_green, seekbar_blue, seekbar_cw, seekbar_ww);
     }
     
     private void updateLightRedUIBySeekbar()
@@ -532,6 +573,12 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         int seekbar = EspLightRecord.getSeekbarByNorm(norm, norm_rgbw_min, norm_rgbw_max, seekbar_rgbw_max);
         
         String log_info = null;
+        
+        int seekbar_red = mLightRecord.getSeekbarRed();
+        int seekbar_green = mLightRecord.getSeekbarGreen();
+        int seekbar_blue = mLightRecord.getSeekbarBlue();
+        int seekbar_cw = mLightRecord.getSeekbarCw();
+        int seekbar_ww = mLightRecord.getSeekbarWw();
         if (log.isDebugEnabled())
         {
             log_info = "norm:" + norm + ",norm_str:" + norm_str + "seekbar:" + seekbar;
@@ -542,6 +589,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIByNorm() red, " + log_info);
             setLightNormRedStr(norm_str);
             setLightSeekbarRed(seekbar);
+            seekbar_red = seekbar;
         }
         // green
         else if (types[1])
@@ -549,6 +597,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIByNorm() green, " + log_info);
             setLightNormGreenStr(norm_str);
             setLightSeekbarGreen(seekbar);
+            seekbar_green = seekbar;
         }
         // blue
         else if (types[2])
@@ -556,6 +605,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIByNorm() blue, " + log_info);
             setLightNormBlueStr(norm_str);
             setLightSeekbarBlue(seekbar);
+            seekbar_blue = seekbar;
         }
         // cw
         else if (types[3])
@@ -563,6 +613,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIByNorm() cw, " + log_info);
             setLightNormCwStr(norm_str);
             setLightSeekbarCw(seekbar);
+            seekbar_cw = seekbar;
         }
         // ww
         else if (types[4])
@@ -570,7 +621,9 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             log.debug("__updateLightUIByNorm() ww, " + log_info);
             setLightNormWwStr(norm_str);
             setLightSeekbarWw(seekbar);
+            seekbar_ww = seekbar;
         }
+        mLightRecord.updateBySeekbar(period, seekbar_red, seekbar_green, seekbar_blue, seekbar_cw, seekbar_ww);
     }
     
     private void updateLightRedUIByNorm()
@@ -616,14 +669,14 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         int color_green = Color.green(color);
         int color_blue = Color.blue(color);
         // update light status
-        log.info("updateLightStatusByColor() mLightStatus.updateByColor");
-        mLightStatus.updateByColor(period, color_red, color_green, color_blue);
+        log.info("updateLightStatusByColor() mLightRecord.updateByColor");
+        mLightRecord.updateByColor(period, color_red, color_green, color_blue);
         // get seekbar value
-        int seekbar_red = mLightStatus.getSeekbarRed();
-        int seekbar_green = mLightStatus.getSeekbarGreen();
-        int seekbar_blue = mLightStatus.getSeekbarBlue();
-        int seekbar_cw = mLightStatus.getSeekbarCw();
-        int seekbar_ww = mLightStatus.getSeekbarWw();
+        int seekbar_red = mLightRecord.getSeekbarRed();
+        int seekbar_green = mLightRecord.getSeekbarGreen();
+        int seekbar_blue = mLightRecord.getSeekbarBlue();
+        int seekbar_cw = mLightRecord.getSeekbarCw();
+        int seekbar_ww = mLightRecord.getSeekbarWw();
         // update UI by seekbar
         setLightSeekbarRed(seekbar_red);
         setLightSeekbarGreen(seekbar_green);
@@ -649,16 +702,16 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         int post_ww = statusLight.getWWhite();
         
         // update light status
-        log.info("updateLightStatusByEspStatusLight() mLightStatus.updateByPost");
-        mLightStatus.updateByPost(period, post_red, post_green, post_blue, post_cw, post_ww);
+        log.info("updateLightStatusByEspStatusLight() mLightRecord.updateByPost");
+        mLightRecord.updateByPost(period, post_red, post_green, post_blue, post_cw, post_ww);
         
         // get seekbar value
-        int seekbar_period = mLightStatus.getPeriod();
-        int seekbar_red = mLightStatus.getSeekbarRed();
-        int seekbar_green = mLightStatus.getSeekbarGreen();
-        int seekbar_blue = mLightStatus.getSeekbarBlue();
-        int seekbar_cw = mLightStatus.getSeekbarCw();
-        int seekbar_ww = mLightStatus.getSeekbarWw();
+        int seekbar_period = mLightRecord.getPeriod();
+        int seekbar_red = mLightRecord.getSeekbarRed();
+        int seekbar_green = mLightRecord.getSeekbarGreen();
+        int seekbar_blue = mLightRecord.getSeekbarBlue();
+        int seekbar_cw = mLightRecord.getSeekbarCw();
+        int seekbar_ww = mLightRecord.getSeekbarWw();
         
         // update period
         setLightPeriod(seekbar_period);
@@ -715,27 +768,46 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     private void undoLightStatus()
     {
         log.info("undoLightStatus()");
+        
         // undo light status
-        mLightStatus.undoStatus();
+        mLightRecord.undoStatus();
         
         // get seekbar value
-        int seekbar_red = mLightStatus.getSeekbarRed();
-        int seekbar_green = mLightStatus.getSeekbarGreen();
-        int seekbar_blue = mLightStatus.getSeekbarBlue();
-        int seekbar_cw = mLightStatus.getSeekbarCw();
-        int seekbar_ww = mLightStatus.getSeekbarWw();
+        int seekbar_period = mLightRecord.getPeriod();
+        int seekbar_red = mLightRecord.getSeekbarRed();
+        int seekbar_green = mLightRecord.getSeekbarGreen();
+        int seekbar_blue = mLightRecord.getSeekbarBlue();
+        int seekbar_cw = mLightRecord.getSeekbarCw();
+        int seekbar_ww = mLightRecord.getSeekbarWw();
         
         // update UI by seekbar and text
+        // update period seekbar and text
+        setLightPeriod(seekbar_period);
+        setLightPeriodStr("" + seekbar_period);
+        
+        int rgbw_max = EspLightRecord.getRgbwMax(seekbar_period);
+        
+        // update rgbw seekbar max
+        setLightSeekbarRedMax(rgbw_max);
+        setLightSeekbarGreenMax(rgbw_max);
+        setLightSeekbarBlueMax(rgbw_max);
+        setLightSeekbarCwMax(rgbw_max);
+        setLightSeekbarWwMax(rgbw_max);
+        
+        // update rgbw seekbar value
         setLightSeekbarRed(seekbar_red);
         setLightSeekbarGreen(seekbar_green);
         setLightSeekbarBlue(seekbar_blue);
         setLightSeekbarCw(seekbar_cw);
         setLightSeekbarWw(seekbar_ww);
+        
+        // update rgbw seekbar text
         updateLightRedUIBySeekbar();
         updateLightGreenUIBySeekbar();
         updateLightBlueUIBySeekbar();
         updateLightCwUIBySeekbar();
         updateLightWwUIBySeekbar();
+        
     }
     
     @Override
@@ -812,12 +884,12 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mColorDisplay.setBackgroundColor(color);
         updateLightStatusByColor(color);
         
-        int period = mLightStatus.getPeriod();
-        int post_red = mLightStatus.getPostRed();
-        int post_green = mLightStatus.getPostGreen();
-        int post_blue = mLightStatus.getPostBlue();
-        int post_cw = mLightStatus.getPostCw();
-        int post_ww = mLightStatus.getPostWw();
+        int period = mLightRecord.getPeriod();
+        int post_red = mLightRecord.getPostRed();
+        int post_green = mLightRecord.getPostGreen();
+        int post_blue = mLightRecord.getPostBlue();
+        int post_cw = mLightRecord.getPostCw();
+        int post_ww = mLightRecord.getPostWw();
         IEspStatusLight statusLight = new EspStatusLight();
         statusLight.setPeriod(period);
         statusLight.setRed(post_red);
@@ -913,15 +985,22 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             int post_blue = statusLight.getBlue();
             int post_cw = statusLight.getCWhite();
             int post_ww = statusLight.getWWhite();
-            mLightStatus = EspLightRecord.createInstanceByPost(period, post_red, post_green, post_blue, post_cw, post_ww);
+            mLightRecord = EspLightRecord.createInstanceByPost(period, post_red, post_green, post_blue, post_cw, post_ww);
+            log.info("executeFinish() COMMAND_GET saveLastStatus()");
+            mLightRecord.saveLastStatus();
         }
         
         if (result)
         {
             if (command == COMMAND_GET)
             {
-                log.debug("1. executeFinish() result && command == COMMAND_GET");
+                log.debug("executeFinish() result && command == COMMAND_GET");
                 updateLightStatusByEspStatusLight(true, statusLight);
+            }
+            else
+            {
+                log.info("executeFinish() COMMAND_POST saveLastStatus()");
+                mLightRecord.saveLastStatus();
             }
         }
         else
@@ -949,7 +1028,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         
         if (command == COMMAND_GET && result)
         {
-            log.debug("2. executeFinish() command == COMMAND_GET && result");
             checkLowBatteryEspnow();
         }
     }
@@ -1033,6 +1111,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 + color_green + ",color_blue" + color_blue);
             mColorDisplay.setBackgroundColor(color);
         }
+        
     }
     
     @Override

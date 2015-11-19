@@ -11,6 +11,8 @@ import org.json.JSONObject;
 
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 
 class EspMeshNetUtil
 {
@@ -117,6 +119,21 @@ class EspMeshNetUtil
         return result;
     }
     
+    /**
+     * update user's temporary sta device list 
+     * @param rootBssid
+     * @param iotAddressList
+     */
+    static void __updateTempStaDeviceList(String rootBssid, List<IOTAddress> iotAddressList)
+    {
+        IEspUser user = BEspUser.getBuilder().getInstance();
+        for (IOTAddress iotAddress : iotAddressList)
+        {
+            iotAddress.setRootBssid(rootBssid);
+        }
+        user.__addTempStaDeviceList(iotAddressList);
+    }
+    
     static List<IOTAddress> __GetTopoIOTAddressList2(InetAddress rootInetAddress, String deviceBssid,
         boolean isSubDevices)
     {
@@ -145,6 +162,10 @@ class EspMeshNetUtil
                     totalNum = subParentTopoResult.totalNum;
                 }
                 subParentIOTAddressList = subParentTopoResult.iotAddressList;
+                if (isSubDevices)
+                {
+                    __updateTempStaDeviceList(deviceBssid, subParentIOTAddressList);
+                }
             }
             
             if (subParentIOTAddressList == null)
@@ -172,6 +193,9 @@ class EspMeshNetUtil
             ++index;
             // check whether there's more device, here 1 means root device
             isMoreDevice = iotAddressList.size() + 1 < totalNum;
+            log.error(Thread.currentThread().toString() + "__GetTopoIOTAddressList2(): iotAddressList.size() + 1:"
+                + (iotAddressList.size() + 1) + ", totalNum:" + totalNum + ", next:" + next + ", isSubDevices:"
+                + isSubDevices + ", isMoreDevice:" + isMoreDevice);
         } while (next != null && isSubDevices && isMoreDevice);
         
         return iotAddressList;

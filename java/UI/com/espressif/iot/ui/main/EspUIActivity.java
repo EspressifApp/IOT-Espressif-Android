@@ -107,10 +107,10 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
      * Whether the refresh task is running
      */
     private boolean mRefreshing;
-    private Handler mAutoRefreshHandler;
+    private Handler mRefreshHandler;
     private static final int MSG_AUTO_REFRESH = 0;
     
-    private SharedPreferences mShared;
+    private SharedPreferences mSettingsShared;
     
     /**
      * This activity is in the foreground or background
@@ -154,8 +154,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         setContentView(R.layout.esp_ui_activity);
         
         mUser = BEspUser.getBuilder().getInstance();
-        mShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        mShared.registerOnSharedPreferenceChangeListener(this);
+        mSettingsShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        mSettingsShared.registerOnSharedPreferenceChangeListener(this);
         
         mNewDevicesShared = getSharedPreferences(EspStrings.Key.NAME_NEW_ACTIVATED_DEVICES, Context.MODE_PRIVATE);
         mNewDevicesShared.registerOnSharedPreferenceChangeListener(this);
@@ -196,10 +196,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mEditCheckedDevices = mDeviceAdapter.getEditCheckedDevices();
         mDeviceAdapter.setOnEditCheckedChangeListener(this);
         
-        mAutoRefreshHandler = new AutoRefreshHandler(this);
+        mRefreshHandler = new RefreshHandler(this);
         // Get auto refresh settings data
         long autoRefreshTime =
-            mShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
+            mSettingsShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH,
+                EspDefaults.AUTO_REFRESH_DEVICE_TIME);
         if (autoRefreshTime > 0)
         {
             sendAutoRefreshMessage(autoRefreshTime);
@@ -210,7 +211,13 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         IntentFilter filter = new IntentFilter(EspStrings.Action.DEVICES_ARRIVE_PULLREFRESH);
         filter.addAction(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE);
         filter.addAction(EspStrings.Action.LOGIN_NEW_ACCOUNT);
-        mBraodcastManager.registerReceiver(mReciever, filter);
+        mBraodcastManager.registerReceiver(mDeviceChangeReciever, filter);
+        
+        IntentFilter tempFilter = new IntentFilter(EspStrings.Action.UI_REFRESH_LOCAL_DEVICES);
+        mBraodcastManager.registerReceiver(mTempDeviceReciever, tempFilter);
+        
+        IntentFilter loginFilter = new IntentFilter();
+        mBraodcastManager.registerReceiver(mLoginReceiver, loginFilter);
         
         // Init title bar
         setTitle(R.string.esp_ui_title);
@@ -233,7 +240,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         if (mUser.isLogin())
         {
-            if (mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, EspDefaults.STORE_LOG))
+            if (mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, EspDefaults.ESPPUSH_ON))
             {
                 EspPushUtils.startPushService(this);
             }
@@ -289,12 +296,18 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     protected void onDestroy()
     {
         super.onDestroy();
-        mShared.unregisterOnSharedPreferenceChangeListener(this);
+        
+        mSettingsShared.unregisterOnSharedPreferenceChangeListener(this);
         mNewDevicesShared.unregisterOnSharedPreferenceChangeListener(this);
-        mBraodcastManager.unregisterReceiver(mReciever);
+        
+        mBraodcastManager.unregisterReceiver(mDeviceChangeReciever);
+        mBraodcastManager.unregisterReceiver(mTempDeviceReciever);
+        mBraodcastManager.unregisterReceiver(mLoginReceiver);
+        
         EspBaseApiUtil.cancelAllTask();
         EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
         EspGroupHandler.getInstance().finish();
+        mUser.clearUserDeviceLists();
     }
     
     @Override
@@ -368,11 +381,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         if (key.equals(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH))
         {
             // The auto refresh settings changed
-            if (mAutoRefreshHandler.hasMessages(MSG_AUTO_REFRESH))
+            if (mRefreshHandler.hasMessages(MSG_AUTO_REFRESH))
             {
-                mAutoRefreshHandler.removeMessages(MSG_AUTO_REFRESH);
+                mRefreshHandler.removeMessages(MSG_AUTO_REFRESH);
             }
-            long autoTime = mShared.getLong(key, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
+            long autoTime = mSettingsShared.getLong(key, EspDefaults.AUTO_REFRESH_DEVICE_TIME);
             if (autoTime > 0)
             {
                 sendAutoRefreshMessage(autoTime);
@@ -417,7 +430,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         Message msg = new Message();
         msg.what = MSG_AUTO_REFRESH;
         msg.obj = autoRefreshTime;
-        mAutoRefreshHandler.sendMessageDelayed(msg, autoRefreshTime);
+        mRefreshHandler.sendMessageDelayed(msg, autoRefreshTime);
     }
     
     /**
@@ -425,6 +438,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
      */
     private void refresh()
     {
+        if (!checkDeviceUpgradeWhenRefresh())
+        {
+            return;
+        }
+        
         if (!mRefreshing)
         {
             mRefreshing = true;
@@ -439,10 +457,45 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private void scanSta()
     {
+        if (!checkDeviceUpgradeWhenRefresh())
+        {
+            return;
+        }
+        
         if (!mRefreshing)
         {
             mUser.doActionRefreshStaDevices(false);
         }
+    }
+    
+    /**
+     * Check whether device is upgrading when refreshing
+     * 
+     * @return true mean no device is upgrading, permit refresh devices. false mean at least one device is upgrading,
+     *         forbid refresh devices
+     */
+    private boolean checkDeviceUpgradeWhenRefresh()
+    {
+        for (IEspDevice device : mAllDeviceList)
+        {
+            IEspDeviceState state = device.getDeviceState();
+            if (state.isStateUpgradingInternet() || state.isStateUpgradingLocal())
+            {
+                mRefreshHandler.postDelayed(new Runnable()
+                {
+                    
+                    @Override
+                    public void run()
+                    {
+                        mDeviceListView.onRefreshComplete();
+                    }
+                }, 3000);
+                
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     private boolean isNetworkAvailabale()
@@ -489,7 +542,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         new DeviceSortor().sort(mAllDeviceList, mSortType);
         
         boolean showMeshTree =
-            mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
+            mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
         if (hasMeshDevice && showMeshTree)
         {
             mVirtuaMeshRoot.setName("Mesh Root");
@@ -497,7 +550,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
     }
     
-    private BroadcastReceiver mReciever = new BroadcastReceiver()
+    private BroadcastReceiver mLoginReceiver = new BroadcastReceiver()
     {
         
         @Override
@@ -510,7 +563,30 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 refresh();
                 return;
             }
-            
+        }
+    };
+    
+    private BroadcastReceiver mTempDeviceReciever = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            final String action = intent.getAction();
+            if (action.equals(EspStrings.Action.UI_REFRESH_LOCAL_DEVICES))
+            {
+                updateDeviceList();
+                mDeviceAdapter.notifyDataSetChanged();
+            }
+        }
+    };
+    
+    private BroadcastReceiver mDeviceChangeReciever = new BroadcastReceiver()
+    {
+        
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            final String action = intent.getAction();
             setTitleContentView(null);
             
             // for EspDeviceStateMachine check the state valid before and after device's state transformation
@@ -526,6 +602,10 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             {
                 log.debug("Receive Broadcast but invisible so ignore");
                 mIsDevicesUpdatedNecessary = true;
+                if (action.equals(EspStrings.Action.DEVICES_ARRIVE_PULLREFRESH))
+                {
+                    mIsDevicesPullRefreshUpdated = true;
+                }
                 return;
             }
             if (action.equals(EspStrings.Action.DEVICES_ARRIVE_PULLREFRESH))
@@ -539,11 +619,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 mDeviceListView.onRefreshComplete();
                 
                 mRefreshing = false;
-                
-                if (mIsDevicesUpdatedNecessary)
-                {
-                    mIsDevicesPullRefreshUpdated = true;
-                }
             }
             else if (action.equals(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE))
             {
@@ -558,11 +633,11 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
     };
     
-    private static class AutoRefreshHandler extends Handler
+    private static class RefreshHandler extends Handler
     {
         private WeakReference<EspUIActivity> mActivity;
         
-        public AutoRefreshHandler(EspUIActivity activity)
+        public RefreshHandler(EspUIActivity activity)
         {
             mActivity = new WeakReference<EspUIActivity>(activity);
         }

@@ -8,6 +8,7 @@ import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.AccountUtil;
+import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
@@ -36,22 +37,33 @@ public class LoginActivity extends Activity implements OnClickListener
     private Button mLoginBtn;
     private Button mRegisterBtn;
     private Button mQuickUsageBtn;
+    private TextView mForgetPwdTV;
     private TextView mThirdPartyLoginTV;
     
     private final static int REQUEST_REGISTER = 1;
     
     private LoginThirdPartyDialog mThirdPartyLoginDialog;
     
+    private SharedPreferences mSettingsShared;
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         
-        setContentView(R.layout.login_activity);
-        
         mUser = BEspUser.getBuilder().getInstance();
-        
-        init();
+        mSettingsShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
+        if (mSettingsShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
+        {
+            mUser.doActionUserLoginDB();
+            
+            gotoEspUIActivity();
+        }
+        else
+        {
+            setContentView(R.layout.login_activity);
+            init();
+        }
     }
     
     private void init()
@@ -74,6 +86,9 @@ public class LoginActivity extends Activity implements OnClickListener
         mThirdPartyLoginTV = (TextView)findViewById(R.id.login_text_third_party);
         mThirdPartyLoginTV.setOnClickListener(this);
         
+        mForgetPwdTV = (TextView)findViewById(R.id.forget_password_text);
+        mForgetPwdTV.setOnClickListener(this);
+        
         mThirdPartyLoginDialog = new LoginThirdPartyDialog(this);
         mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
     }
@@ -93,13 +108,15 @@ public class LoginActivity extends Activity implements OnClickListener
         else if (v == mQuickUsageBtn)
         {
             mUser.loadUserDeviceListDB();
-            Intent intent = new Intent(this, EspApplication.getEspUIActivity());
-            startActivity(intent);
-            finish();
+            gotoEspUIActivity();
         }
         else if (v == mThirdPartyLoginTV)
         {
             mThirdPartyLoginDialog.show();
+        }
+        else if (v == mForgetPwdTV)
+        {
+            startActivity(new Intent(this, ResetUserPasswordActivity.class));
         }
     }
     
@@ -116,6 +133,13 @@ public class LoginActivity extends Activity implements OnClickListener
                 mPasswordEdt.setText(password);
             }
         }
+    }
+    
+    private void gotoEspUIActivity()
+    {
+        Intent intent = new Intent(this, EspApplication.getEspUIActivity());
+        startActivity(intent);
+        finish();
     }
     
     private void login()
@@ -176,12 +200,8 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private void loginSuccess()
     {
-        SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        shared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).apply();
+        mSettingsShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).apply();
         
-        Intent intent = new Intent(this, EspApplication.getEspUIActivity());
-        startActivity(intent);
-        finish();
+        gotoEspUIActivity();
     }
- 
 }

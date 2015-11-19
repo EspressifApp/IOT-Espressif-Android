@@ -746,6 +746,10 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     Context context = EspApplication.sharedInstance().getApplicationContext();
                     LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
                     Intent intent = new Intent(EspStrings.Action.ESPTOUCH_DEVICE_REGISTERED);
+                    String deviceBssid = mDeviceResult.getBssid();
+                    intent.putExtra(EspStrings.Key.DEVICE_BSSID, deviceBssid);
+                    String deviceName = mDeviceResult.getName();
+                    intent.putExtra(EspStrings.Key.DEVICE_NAME, deviceName);
                     broadcastManager.sendBroadcast(intent);
                 }
                 

@@ -15,6 +15,8 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.net.mdns.MdnsDiscoverUtil;
 import com.espressif.iot.base.net.udp.UdpBroadcastUtil;
 import com.espressif.iot.type.net.IOTAddress;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 
 public class EspMeshDiscoverUtil
 {
@@ -57,6 +59,7 @@ public class EspMeshDiscoverUtil
      */
     private static Set<IOTAddress> discoverIOTMeshDevices(final String deviceBssid)
     {
+        final IEspUser user = BEspUser.getBuilder().getInstance();
         // discover IOT Root Devices by UDP Broadcast
         final Set<IOTAddress> rootDeviceSet = new HashSet<IOTAddress>();
         // send udp broadcast each 1000 ms no matter how much is udp broadcast SOTIMEOUT
@@ -77,7 +80,16 @@ public class EspMeshDiscoverUtil
                     {
                         rootDeviceList = UdpBroadcastUtil.discoverIOTDevices();
                     }
-                    
+
+                    // only discover all device require __addTempStaDeviceList()
+                    if (deviceBssid == null)
+                    {
+                        for (IOTAddress iotAddress : rootDeviceList)
+                        {
+                            iotAddress.setRootBssid(iotAddress.getBSSID());
+                        }
+                        user.__addTempStaDeviceList(rootDeviceList);
+                    }
                     rootDeviceSet.addAll(rootDeviceList);
                 }
             });
@@ -112,10 +124,10 @@ public class EspMeshDiscoverUtil
         log.debug("discoverIOTMeshDevices(): rootDeviceSet=" + rootDeviceSet);
         // discover IOT Devices by IOT Root Devices
         List<Future<Set<IOTAddress>>> futureList = new ArrayList<Future<Set<IOTAddress>>>();
-        for (final IOTAddress iotAddress : rootDeviceSet)
+        for (final IOTAddress rootIOTAddress : rootDeviceSet)
         {
             // if the device isn't mesh device ignore it,
-            if (!iotAddress.isMeshDevice())
+            if (!rootIOTAddress.isMeshDevice())
             {
                 continue;
             }
@@ -126,8 +138,8 @@ public class EspMeshDiscoverUtil
                 public Set<IOTAddress> call()
                     throws Exception
                 {
-                    log.debug("__discoverIOTMeshDevicesOnRoot2(): iotAddress=[" + iotAddress + "]");
-                    return __discoverIOTMeshDevicesOnRoot2(iotAddress, deviceBssid);
+                    log.debug("__discoverIOTMeshDevicesOnRoot2(): rootIOTAddress=[" + rootIOTAddress + "]");
+                    return __discoverIOTMeshDevicesOnRoot2(rootIOTAddress, deviceBssid);
                 }
                 
             });

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="15dip" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/percent_text"
+            android:layout_width="45dip"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:textAppearanceMedium" />
+
+        <SeekBar
+            android:id="@+id/percent_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:max="100" />
+    </LinearLayout>
+
+    <Switch
+        android:id="@+id/brightness_indi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOn="@string/esp_espbutton_custom_brightness_increase"
+        android:textOff="@string/esp_espbutton_custom_brightness_dim" />
+
+    <CheckBox
+        android:id="@+id/broadcast_cb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dip"
+        android:text="@string/esp_espbutton_custom_broadcast" />
+
+</LinearLayout>

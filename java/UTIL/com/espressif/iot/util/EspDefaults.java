@@ -4,7 +4,7 @@ public final class EspDefaults
 {
     // About Settings
     public static final boolean AUTO_LOGIN = false;
-    public static final long AUTO_REFRESH_DEVICE_TIME = 0;
+    public static final long AUTO_REFRESH_DEVICE_TIME = 300000; // 5 minutes
     public static final int AUTO_CONFIGRUE_RSSI = -30;
     public static final boolean SHOW_MESH_TREE = false;
     public static final boolean STORE_LOG = false;

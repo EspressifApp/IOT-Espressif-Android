@@ -94,4 +94,12 @@
         <item>Device name</item>
         <item>Activated time</item>
     </string-array>
+
+    <string-array name="esp_espbutton_actions">
+        <item>Reset function</item>
+        <item>Set color</item>
+        <item>Turn on/off</item>
+        <item>Set timer</item>
+        <item>Set brightness</item>
+    </string-array>
 </resources>

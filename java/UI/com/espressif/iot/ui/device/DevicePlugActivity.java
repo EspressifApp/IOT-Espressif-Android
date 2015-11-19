@@ -24,7 +24,7 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         
         boolean compatibility = isDeviceCompatibility();
         checkHelpModePlug(compatibility);
-        if (compatibility)
+        if (compatibility && !isDeviceArray())
         {
             executeGet();
         }

@@ -76,4 +76,12 @@
         <item name="android:windowFrame">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
+
+    <style name="EspButtonKey">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">80dip</item>
+        <item name="android:minHeight">80dip</item>
+        <item name="android:background">@drawable/esp_espbutton_key</item>
+    </style>
 </resources>

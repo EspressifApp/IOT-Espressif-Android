@@ -97,5 +97,6 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.base.net.rest2.EspMeshUpgradeServer.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.log.InitLogger.class).setLevel(Level.DEBUG);
         Logger.getLogger(com.espressif.iot.command.device.espbutton.EspCommandEspButtonConfigure.class).setLevel(Level.DEBUG);
+        Logger.getLogger(com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity.class).setLevel(Level.DEBUG);
     }
 }

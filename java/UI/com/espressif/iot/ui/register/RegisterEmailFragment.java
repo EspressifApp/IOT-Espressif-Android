@@ -5,6 +5,7 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.user.EspRegisterResult;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
+import com.espressif.iot.util.AccountUtil;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
@@ -131,8 +132,6 @@ public class RegisterEmailFragment extends Fragment implements OnClickListener, 
     {
         if (!checkAccount())
         {
-            Toast.makeText(getActivity(), R.string.esp_register_account_email_toast, Toast.LENGTH_LONG)
-                .show();
             return;
         }
         if (mUsernameEdt.hasFocus())
@@ -342,6 +341,12 @@ public class RegisterEmailFragment extends Fragment implements OnClickListener, 
         CharSequence email = mEmailEdt.getText();
         if (TextUtils.isEmpty(username) || TextUtils.isEmpty(email))
         {
+            Toast.makeText(getActivity(), R.string.esp_register_account_email_toast, Toast.LENGTH_LONG).show();
+            return false;
+        }
+        else if (!AccountUtil.isEmail(email.toString()))
+        {
+            Toast.makeText(getActivity(), R.string.esp_register_account_email_format_error, Toast.LENGTH_LONG).show();
             return false;
         }
         else

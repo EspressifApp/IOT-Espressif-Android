@@ -15,6 +15,7 @@
     <string name="esp_login_third_party"><u>Third-party login</u></string>
     <string name="esp_login_email_hint">Please enter legal email</string>
     <string name="esp_login_password_hint">Please enter password</string>
+    <string name="esp_login_forget_password"><u>Forget Password</u></string>
 
     <string name="esp_third_party_weibo">Weibo</string>
     <string name="esp_third_party_wechat">WeChat</string>
@@ -30,6 +31,7 @@
     <string name="esp_register_input_password_again">Enter password again</string>
     <string name="esp_register_register">Register</string>
     <string name="esp_register_account_email_toast">Please enter User name and Email</string>
+    <string name="esp_register_account_email_format_error">Email format error</string>
     <string name="esp_register_same_password_toast">Please enter same password</string>
     <string name="esp_register_progress_message">Register&#8230;</string>
     <string name="esp_register_result_success">Register success</string>
@@ -46,6 +48,13 @@
     <string name="esp_register_phone_number_toast">Please input phone number</string>
     <string name="esp_register_captcha_code_toast">Please input captcha code</string>
     <string name="esp_register_get_sms_captcha_code_again">Get Sms captcha code after %1$d seconds</string>
+
+    <string name="esp_reset_password">Reset Password</string>
+    <string name="esp_reset_password_email_hint">Please input Email</string>
+    <string name="esp_reset_password_progress">Sending request&#8230;</string>
+    <string name="esp_reset_password_result_completed">The Email has sent, please check your email as soon as possible</string>
+    <string name="esp_reset_password_result_failed">Sent request failed</string>
+    <string name="esp_reset_password_result_email_not_exist">The Email does not exit</string>
 
     <string name="esp_qrcode_capture_device">Capture device</string>
     <string name="esp_qrcode_capturing_message">Capturing device&#8230;</string>
@@ -144,7 +153,7 @@
     <string name="esp_device_menu_upgrade_local">Upgrade local</string>
     <string name="esp_device_menu_upgrade_online">Upgrade cloud</string>
     <string name="esp_device_menu_change_password">Change password</string>
-    <string name="esp_device_menu_espbutton_configure">Configure EspButton</string>
+    <string name="esp_device_menu_espbutton_configure">Pair EspButton</string>
     <string name="esp_device_dialog_upgrade_apk_message">You need upgrade apk to control the device</string>
     <string name="esp_device_dialog_upgrade_device_message">The device need upgrade to use</string>
     <string name="esp_device_dialog_upgrading_local_message">The device is upgrading local</string>
@@ -182,6 +191,7 @@
     <string name="esp_device_light_disconnect_msg">Device is disconnected</string>
     <string name="esp_device_light_continuous_control_forbidden">This light don\'t support to continuous control</string>
     <string name="esp_device_light_espnow_low_battery">Low battery Espnow</string>
+    <string name="esp_device_light_menu_espbutton_settings">EspButton Settings</string>
 
     <string name="esp_device_remote_address_hint">Please input address</string>
     <string name="esp_device_remote_command_hint">Please input command</string>
@@ -363,6 +373,20 @@
     <string name="esp_espbutton_configure_waiting">Finding device&#8230;</string>
     <string name="esp_espbutton_configure_pairing">Pairing&#8230;</string>
     <string name="esp_espbutton_configure_complete">Configure complete</string>
+
+    <string name="esp_espbutton_custom_get_settings">Get settings&#8230;</string>
+    <string name="esp_espbutton_custom_post_settings">Post settings&#8230;</string>
+    <string name="esp_espbutton_custom_broadcast">Broadcast</string>
+    <string name="esp_espbutton_custom_select_color">Select color</string>
+    <string name="esp_espbutton_custom_brightness_percent">Set brightness</string>
+    <string name="esp_espbutton_custom_brightness_text">%1$d%%</string>
+    <string name="esp_espbutton_custom_brightness_increase">\u0020\u0020+\u0020\u0020</string>
+    <string name="esp_espbutton_custom_brightness_dim">\u0020\u0020-\u0020\u0020</string>
+    <string name="esp_espbutton_custion_timer">Set timer</string>
+    <string name="esp_espbutton_custom_timer_text">seconds</string>
+    <string name="esp_espbutton_custom_timer_hint">0 ~ 3600 seconds</string>
+    <string name="esp_espbutton_custom_turnonoff">Set switch</string>
+    <string name="esp_espbutton_custom_turnonoff_reversing">Reversing</string>
 </resources>
 <!-- 
 &#8230;   =   ...

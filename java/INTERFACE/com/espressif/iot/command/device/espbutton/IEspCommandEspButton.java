@@ -15,4 +15,10 @@ public interface IEspCommandEspButton extends IEspCommandDevice
     public static final String KEY_RESULT = "result";
     public static final String KEY_GROUPS = "groups";
     public static final String KEY_GROUP_ID = "group_id";
+    
+    public static final String BUTTON_KEY_REPLACE = "XX";
+    public static final String KEY_SHORT_PRESS = "tapXX";
+    public static final String KEY_SHROT_PRESS_ARG = "argXXtap";
+    public static final String KEY_LONG_PRESS = "pressXX";
+    public static final String KEY_LONG_PRESS_ARG = "argXXpress";
 }

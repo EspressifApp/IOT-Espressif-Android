@@ -99,7 +99,7 @@ class EspHttpClient extends DefaultHttpClient
         BasicHttpParams params = new BasicHttpParams();
         params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CONNECTION_TIMEOUT);
         params.setParameter(CoreConnectionPNames.SO_TIMEOUT, SO_TIMEOUT);
-        params.setParameter("tiemout", 6);
+        params.setParameter("timemout", 6);
         this.setParams(params);
         this.mIsMesh = isMesh;
         // set keep alive strategy

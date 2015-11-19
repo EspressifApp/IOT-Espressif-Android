@@ -56,6 +56,10 @@ public final class EspStrings
          */
         public static final String ESPTOUCH_DEVICE_REGISTERED = "ESPTOUCH_DEVICE_REGISTERED";
         
+        /**
+         * Send local broadcast when a local devices are found
+         */
+        public static final String UI_REFRESH_LOCAL_DEVICES = "UI_REFRESH_DEVICES";
     }
     
     public static final class Key
@@ -108,6 +112,16 @@ public final class EspStrings
         public static final String SETTINGS_KEY_DEVICE_AUTO_CONFIGURE = "settings_device_auto_configure";
         
         public static final String SETTINGS_KEY_ESPPUSH = "settings_esppush";
+        
+        /**
+         * The Intent value name of extra Device Bssid
+         */
+        public static final String DEVICE_BSSID = "device_bssid";
+        
+        /**
+         * The Intent value name of extra Device Name
+         */
+        public static final String DEVICE_NAME = "device_name";
         
         /**
          * The Intent value name of extra Device Key

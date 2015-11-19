@@ -167,7 +167,30 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         mUser.loadGroupDB();
         mSceneList.clear();
         mSceneList.addAll(mUser.getGroupList());
+        if (mSelectedGroup != null)
+        {
+            for (IEspGroup group : mSceneList)
+            {
+                if (group.getId() == mSelectedGroup.getId())
+                {
+                    mSelectedGroup = group;
+                    break;
+                }
+            }
+        }
         mSceneAdapter.notifyDataSetChanged();
+    }
+    
+    private void updateGroupSelectedChanged()
+    {
+        boolean groupSelected = mSelectedGroup != null;
+        
+        mDeviceList.clear();
+        mDeviceList.addAll(groupSelected ? mSelectedGroup.getDeviceList() : mUserDeviceList);
+        mDeviceAdapter.notifyDataSetChanged();
+        
+        setTitle(groupSelected ? mSelectedGroup.getName() : mTitle);
+        mButtonBar.setVisibility(groupSelected ? View.VISIBLE : View.GONE);
     }
     
     @Override
@@ -222,13 +245,8 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
             
             IEspGroup group = mSceneList.get(position);
             mSelectedGroup = mSelectedGroup == group ? null : group;
-            boolean groupSelected = mSelectedGroup != null;
-            mDeviceList.clear();
-            mDeviceList.addAll(groupSelected ? mSelectedGroup.getDeviceList() : mUserDeviceList);
-            setTitle(groupSelected ? mSelectedGroup.getName() : mTitle);
-            mButtonBar.setVisibility(groupSelected ? View.VISIBLE : View.GONE);
+            updateGroupSelectedChanged();
             
-            mDeviceAdapter.notifyDataSetChanged();
             mSceneAdapter.notifyDataSetChanged();
         }
         else if (parent == mDeviceLV)
@@ -577,6 +595,12 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
                 public void onClick(DialogInterface dialog, int which)
                 {
                     mUser.doActionGroupDelete(group);
+                    
+                    if (mSelectedGroup  == group)
+                    {
+                        mSelectedGroup = null;
+                        updateGroupSelectedChanged();
+                    }
                     
                     updateGroupList();
                 }

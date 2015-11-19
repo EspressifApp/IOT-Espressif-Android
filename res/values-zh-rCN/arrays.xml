@@ -85,4 +85,12 @@
         <item>设备名</item>
         <item>激活时间</item>
     </string-array>
+
+    <string-array name="esp_espbutton_actions">
+        <item>重置设置</item>
+        <item>设置颜色</item>
+        <item>设置开关</item>
+        <item>设置定时器</item>
+        <item>设置亮度</item>
+    </string-array>
 </resources>

@@ -15,6 +15,7 @@
     <string name="esp_login_third_party"><u>使用第三方登录</u></string>
     <string name="esp_login_email_hint">请输入正确的邮箱</string>
     <string name="esp_login_password_hint">请输入密码</string>
+    <string name="esp_login_forget_password"><u>忘记密码</u></string>
 
     <string name="esp_third_party_weibo">微博</string>
     <string name="esp_third_party_wechat">微信</string>
@@ -30,6 +31,7 @@
     <string name="esp_register_input_password_again">再次输入密码</string>
     <string name="esp_register_register">注册</string>
     <string name="esp_register_account_email_toast">请输入用户名和邮箱</string>
+    <string name="esp_register_account_email_format_error">邮箱格式错误</string>
     <string name="esp_register_same_password_toast">请输入相同的密码</string>
     <string name="esp_register_progress_message">正在注册&#8230;</string>
     <string name="esp_register_result_success">注册成功</string>
@@ -46,6 +48,13 @@
     <string name="esp_register_phone_number_toast">请输入手机号</string>
     <string name="esp_register_captcha_code_toast">请输入验证码</string>
     <string name="esp_register_get_sms_captcha_code_again">%1$d 秒后可再次获取验证码</string>
+
+    <string name="esp_reset_password">重置密码</string>
+    <string name="esp_reset_password_email_hint">请输入邮箱地址</string>
+    <string name="esp_reset_password_progress">正在发送请求&#8230;</string>
+    <string name="esp_reset_password_result_completed">重置密码的邮件已发往您的邮箱，请尽快去邮箱修改密码</string>
+    <string name="esp_reset_password_result_failed">发送请求失败</string>
+    <string name="esp_reset_password_result_email_not_exist">Email 不存在</string>
 
     <string name="esp_qrcode_capture_device">获取设备</string>
     <string name="esp_qrcode_capturing_message">正在获取设备&#8230;</string>
@@ -144,7 +153,7 @@
     <string name="esp_device_menu_upgrade_local">本地升级设备</string>
     <string name="esp_device_menu_upgrade_online">云端升级设备</string>
     <string name="esp_device_menu_change_password">修改设备密码</string>
-    <string name="esp_device_menu_espbutton_configure">配置EspButton</string>
+    <string name="esp_device_menu_espbutton_configure">配对EspButton</string>
     <string name="esp_device_dialog_upgrade_apk_message">需要升级应用才能控制设备</string>
     <string name="esp_device_dialog_upgrade_device_message">设备需要升级才能使用</string>
     <string name="esp_device_dialog_upgrading_local_message">设备正在本地升级</string>
@@ -182,6 +191,7 @@
     <string name="esp_device_light_disconnect_msg">与设备的连接断开了</string>
     <string name="esp_device_light_continuous_control_forbidden">此设备暂不支持连续控制</string>
     <string name="esp_device_light_espnow_low_battery">以下Espnow电量不足</string>
+    <string name="esp_device_light_menu_espbutton_settings">EspButton设置</string>
 
     <string name="esp_device_remote_address_hint">请输入地址</string>
     <string name="esp_device_remote_command_hint">请输入命令</string>
@@ -361,4 +371,18 @@
     <string name="esp_espbutton_configure_waiting">正在寻找设备&#8230;</string>
     <string name="esp_espbutton_configure_pairing">正在配对&#8230;</string>
     <string name="esp_espbutton_configure_complete">配置结束</string>
+
+    <string name="esp_espbutton_custom_get_settings">获取设置&#8230;</string>
+    <string name="esp_espbutton_custom_post_settings">正在设置&#8230;</string>
+    <string name="esp_espbutton_custom_broadcast">广播</string>
+    <string name="esp_espbutton_custom_select_color">选择颜色</string>
+    <string name="esp_espbutton_custom_brightness_percent">设置亮度</string>
+    <string name="esp_espbutton_custom_brightness_text">%1$d%%</string>
+    <string name="esp_espbutton_custom_brightness_increase">\u0020\u0020+\u0020\u0020</string>
+    <string name="esp_espbutton_custom_brightness_dim">\u0020\u0020-\u0020\u0020</string>
+    <string name="esp_espbutton_custion_timer">设置定时任务</string>
+    <string name="esp_espbutton_custom_timer_text">秒</string>
+    <string name="esp_espbutton_custom_timer_hint">0 ~ 3600 秒</string>
+    <string name="esp_espbutton_custom_turnonoff">设置开关</string>
+    <string name="esp_espbutton_custom_turnonoff_reversing">反向开关</string>
 </resources>

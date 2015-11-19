@@ -376,18 +376,18 @@ public class EspActionDeviceUpgradeLocal implements IEspActionDeviceUpgradeLocal
         return true;
     }
     
-    private boolean __resetMeshDevice(InetAddress inetAddress, String deviceBssid)
-    {
-        log.debug(Thread.currentThread().toString() + "##__resetMeshDevice(inetAddress=[" + inetAddress
-            + "],deviceBssid=[" + deviceBssid + "]): " + true);
-        String url = __getResetUrl(inetAddress);
-        EspBaseApiUtil.PostForJson(url, deviceBssid, null);
-        /**
-         * for some reason, after receiving reset command, the device will reboot and phone won't get response from
-         * device. in almost all of situations, the reset command will suc, so return true forever
-         */
-        return true;
-    }
+//    private boolean __resetMeshDevice(InetAddress inetAddress, String deviceBssid)
+//    {
+//        log.debug(Thread.currentThread().toString() + "##__resetMeshDevice(inetAddress=[" + inetAddress
+//            + "],deviceBssid=[" + deviceBssid + "]): " + true);
+//        String url = __getResetUrl(inetAddress);
+//        EspBaseApiUtil.PostForJson(url, deviceBssid, null);
+//        /**
+//         * for some reason, after receiving reset command, the device will reboot and phone won't get response from
+//         * device. in almost all of situations, the reset command will suc, so return true forever
+//         */
+//        return true;
+//    }
     
     /**
      * get device's IOTAddress by UDP broadcast
@@ -552,11 +552,11 @@ public class EspActionDeviceUpgradeLocal implements IEspActionDeviceUpgradeLocal
             return null;
         }
         log.debug("doUpgradeMeshDeviceLocal listen suc");
-        boolean isResetSuc = __resetMeshDevice(inetAddress, bssid);
-        if (!isResetSuc)
-        {
-            log.warn("doUpgradeMeshDeviceLocal reset fail");
-        }
+//        boolean isResetSuc = __resetMeshDevice(inetAddress, bssid);
+//        if (!isResetSuc)
+//        {
+//            log.warn("doUpgradeMeshDeviceLocal reset fail");
+//        }
         // discover current local device list
         log.debug("doUpgradeMeshDeviceLocal discover start");
         List<IOTAddress> result = null;

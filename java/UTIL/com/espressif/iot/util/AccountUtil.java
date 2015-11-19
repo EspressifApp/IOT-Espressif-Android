@@ -28,7 +28,7 @@ public class AccountUtil
         return TYPE_NONE;
     }
     
-    private static boolean isEmail(String strEmail)
+    public static boolean isEmail(String strEmail)
     {
         String strs[] = strEmail.split("@");
         if (strs.length != 2)

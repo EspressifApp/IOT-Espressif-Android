@@ -57,6 +57,8 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
     
     private static final int ASK_DEVICE_COMMAND_LEN = 20;
     
+    private int mRequestPairNum;
+    
     @Override
     public String getLocalUrl(InetAddress inetAddress)
     {
@@ -73,6 +75,7 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
         mInetDevice = mDeviceList.get(0);
         mListener = listener;
         mDeviceMac = mInetDevice.getBssid();
+        mRequestPairNum = 0;
         
         String localUrl = getLocalUrl(mInetDevice.getInetAddress());
         if (!connect(localUrl))
@@ -127,6 +130,11 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
             }
             else if (userMessage.equals(IEspButtonConfigureListener.PAIR_CONTINUE))
             {
+                if (++mRequestPairNum >= mDeviceList.size())
+                {
+                    return finishWithResult(RESULT_SUC);
+                }
+                
                 // get pair next device message from user
                 if (broadcastButtonInfo(newTempKey, newMacAddress, oldMacAddress))
                 {

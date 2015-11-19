@@ -32,16 +32,37 @@
         android:hint="@string/esp_login_password"
         android:inputType="textPassword" />
 
-    <CheckBox
-        android:id="@+id/login_cb_auto_login"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
         android:layout_marginTop="15dip"
-        android:background="@drawable/esp_checkbox"
-        android:button="@null"
-        android:text="@string/esp_login_auto_login"
-        android:textSize="18sp" />
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/login_cb_auto_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/esp_checkbox"
+            android:button="@null"
+            android:text="@string/esp_login_auto_login"
+            android:textSize="18sp" />
+
+        <Space
+            android:layout_width="0dip"
+            android:layout_height="1dip"
+            android:layout_marginLeft="3dip"
+            android:layout_marginRight="3dip"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/forget_password_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/esp_login_forget_password"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
     <include layout="@layout/login_buttons" />
 

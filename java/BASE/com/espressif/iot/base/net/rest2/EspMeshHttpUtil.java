@@ -46,6 +46,8 @@ public class EspMeshHttpUtil
     
     private final static long IS_DEVICE_AVAILABLE_INTERVAL = 200;
     
+    private final static String KEY_STATUS = "status";
+    
     // build command request
     private static EspHttpRequest createEspHttpCommandRequest(String uri, String command)
     {
@@ -152,6 +154,8 @@ public class EspMeshHttpUtil
             {
                 response = httpclient.execute(httpRequest);
                 
+                int statusCode = response.getStatusLine().getStatusCode();
+                
                 HttpEntity entity = response.getEntity();
                 if (entity == null && disconnectedCallback == null)
                 {
@@ -171,6 +175,10 @@ public class EspMeshHttpUtil
                     try
                     {
                         result = new JSONObject(resultStr);
+                        if (!result.has(KEY_STATUS))
+                        {
+                            result.put(KEY_STATUS, statusCode);
+                        }
                     }
                     catch (JSONException e)
                     {

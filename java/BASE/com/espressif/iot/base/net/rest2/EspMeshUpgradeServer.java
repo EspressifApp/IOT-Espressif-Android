@@ -1,6 +1,7 @@
 package com.espressif.iot.base.net.rest2;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -79,6 +80,8 @@ public class EspMeshUpgradeServer
     
     private final Socket mSocket;
     
+    private final int COMMAND_LEN = 20;
+    
     private final int MESH_PORT_INT = 8000;
     
     private boolean mIsSuc;
@@ -126,13 +129,71 @@ public class EspMeshUpgradeServer
     }
     
     /**
-     * write message to socket's outputstream
+     * read command of is device available from device
+     * @param socket the socket to be read from
+     * @return is device available result
+     */
+    private String readCommand(Socket socket)
+    {
+        DataInputStream inputStream = null;
+        StringBuilder sb = new StringBuilder();
+        int receiveCount = 0;
+        int receiveValue = 0;
+        try
+        {
+            inputStream = new DataInputStream(socket.getInputStream());
+            while ((receiveValue = inputStream.read()) != -1)
+            {
+                char c = (char)receiveValue;
+                sb.append(c);
+                if (++receiveCount >= COMMAND_LEN)
+                {
+                    break;
+                }
+            }
+            return sb.toString();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private boolean isDeviceAvailable(Socket socket)
+    {
+        // build is device available request
+        String request = MeshTypeUtil.createIsDeviceAvailableRequestContent();
+        // send is device available
+        __write(socket, request);
+        // receive is device available
+        String response = readCommand(socket);
+        JSONObject responseJson = null;
+        try
+        {
+            if (response != null)
+            {
+                responseJson = new JSONObject(response);
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        // parse is device available
+        boolean isDeviceAvailable = responseJson == null ? false : MeshTypeUtil.checkIsDeviceAvailable(responseJson);
+        log.debug("isDeviceAvailable(): " + isDeviceAvailable + ", responseJson:" + responseJson);
+        return isDeviceAvailable;
+    }
+    
+    /**
+     * write message to socket's outputstream directly
      * 
      * @param socket the socket to be written
      * @param msg the message to be written
      * @return wheter the message is written suc
      */
-    private boolean write(Socket socket, String msg)
+    private boolean __write(Socket socket, String msg)
     {
         // add writer
         DataOutputStream writer;
@@ -149,6 +210,48 @@ public class EspMeshUpgradeServer
             e.printStackTrace();
         }
         return false;
+    }
+    
+    /**
+     * write message to socket's outputstream if device is available
+     * 
+     * @param socket the socket to be written
+     * @param msg the message to be written
+     * @return wheter the message is written suc
+     */
+    private boolean write(Socket socket, String msg)
+    {
+        final int retryTotal = 3;
+        boolean isDeviceAvailable = false;
+        for (int retry = 0; !isDeviceAvailable && retry < retryTotal; ++retry)
+        {
+            isDeviceAvailable = isDeviceAvailable(socket);
+            if (isDeviceAvailable)
+            {
+                break;
+            }
+            try
+            {
+                Thread.sleep(200);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        if (!isDeviceAvailable)
+        {
+            log.warn("bh write() device isn't available, return false");
+            return false;
+        }
+        else
+        {
+            log.error("bh __write() entrance");
+            boolean isSuc = __write(socket, msg);
+            log.error("bh __write() isSuc: " + isSuc);
+            return isSuc;
+        }
     }
     
     /**
@@ -391,9 +494,10 @@ public class EspMeshUpgradeServer
         mIsFinished = true;
         mIsSuc = true;
         // build reset request as the mesh device's response
-        String uriStr = "http://" + mInetAddr.getHostAddress() + "/upgrade?command=reset";
+        String uriStr = "http://" + mInetAddr.getHostAddress() + "/upgrade?action=sys_reboot";
         String method = "POST";
         EspHttpRequestBaseEntity requestEntity = new EspHttpRequestBaseEntity(method, uriStr);
+        requestEntity.putQueryParams(MAC, MeshUtil.getMacAddressForMesh(mDeviceBssid));
         return requestEntity.toString();
     }
     
