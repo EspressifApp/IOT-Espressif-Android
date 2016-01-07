@@ -19,6 +19,7 @@ import com.espressif.iot.ui.device.DevicePlugActivity;
 import com.espressif.iot.ui.help.HelpDeviceLightActivity;
 import com.espressif.iot.ui.help.HelpDevicePlugActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
+import com.espressif.iot.ui.view.SoftAPAdapter;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -34,12 +35,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,7 +46,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
@@ -100,7 +98,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mSoftApListView = (PullToRefreshListView)findViewById(R.id.softap_list);
         mSoftApListView.setOnItemClickListener(this);
         mSoftApList = new Vector<IEspDeviceNew>();
-        mSoftApAdapter = new SoftApAdapter(this);
+        mSoftApAdapter = new SoftApAdapter(this, mSoftApList);
         mSoftApListView.setAdapter(mSoftApAdapter);
         mSoftApListView.setOnRefreshListener(this);
         
@@ -349,46 +347,21 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         }
     }
     
-    private class SoftApAdapter extends BaseAdapter
+    private class SoftApAdapter extends SoftAPAdapter
     {
-        
-        private Activity mActivity;
-        
-        public SoftApAdapter(Activity activity)
+        public SoftApAdapter(Activity activity, List<IEspDeviceNew> softApList)
         {
-            mActivity = activity;
+            super(activity, softApList);
         }
-        
-        @Override
-        public int getCount()
-        {
-            return mSoftApList.size();
-        }
-        
-        @Override
-        public Object getItem(int position)
-        {
-            return mSoftApList.get(position);
-        }
-        
-        @Override
-        public long getItemId(int position)
-        {
-            return 0;
-        }
-        
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent)
         {
-            if (convertView == null)
-            {
-                LayoutInflater inflater = mActivity.getLayoutInflater();
-                convertView = inflater.inflate(R.layout.device_layout, parent, false);
-            }
+            View view = super.getView(position, convertView, parent);
             
             IEspDeviceNew deviceNew = mSoftApList.get(position);
             
-            TextView deviceNameTV = (TextView)convertView.findViewById(R.id.device_name);
+            TextView deviceNameTV = (TextView)view.findViewById(R.id.device_name);
             String displayText = deviceNew.getSsid();
             // check whether the device is configured
             List<IEspDevice> deviceList = BEspUser.getBuilder().getInstance().getDeviceList();
@@ -407,24 +380,8 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 }
             }
             deviceNameTV.setText(displayText);
-            ImageView deviceIconIV = (ImageView)convertView.findViewById(R.id.device_icon);
-            deviceIconIV.setImageResource(R.drawable.esp_wifi_signal);
-            deviceIconIV.getDrawable().setLevel(WifiManager.calculateSignalLevel(deviceNew.getRssi(), 5));
-            TextView deviceRssiTV = (TextView)convertView.findViewById(R.id.device_status_text);
-            deviceRssiTV.setText("RSSI: " + deviceNew.getRssi());
             
-            ImageView meshIcon = (ImageView)convertView.findViewById(R.id.device_status1);
-            boolean isMesh = deviceNew.getIsMeshDevice();
-            if (isMesh)
-            {
-                meshIcon.setBackgroundResource(R.drawable.esp_icon_mesh);
-            }
-            else
-            {
-                meshIcon.setBackgroundResource(0);
-            }
-            
-            TextView contentTV = (TextView)convertView.findViewById(R.id.content_text);
+            TextView contentTV = (TextView)view.findViewById(R.id.content_text);
             if (isConfigured(deviceNew.getBssid()))
             {
                 contentTV.setText("Configured");
@@ -434,7 +391,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 contentTV.setText("");
             }
             
-            return convertView;
+            return view;
         }
         
     }

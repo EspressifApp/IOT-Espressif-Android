@@ -20,6 +20,7 @@ import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
+import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
@@ -765,4 +766,30 @@ public interface IEspUser extends IEspSingletonObject
      * @return
      */
     List<EspButtonKeySettings> doActionEspButtonKeyActionGet(IEspDevice device);
+    
+    /**
+     * Get triggers of the device
+     * 
+     * @param device
+     * @return
+     */
+    List<EspDeviceTrigger> doActionDeviceTriggerGet(IEspDevice device);
+    
+    /**
+     * Create a new trigger
+     * 
+     * @param device
+     * @param trigger
+     * @return id of created trigger, -1 is failed
+     */
+    long doActionDeviceTriggerCreate(IEspDevice device, EspDeviceTrigger trigger);
+    
+    /**
+     * Update trigger
+     * 
+     * @param device
+     * @param trigger must contain it's id
+     * @return true is successful, false is failed
+     */
+    boolean doActionDeviceTriggerUpdate(IEspDevice device, EspDeviceTrigger trigger);
 }

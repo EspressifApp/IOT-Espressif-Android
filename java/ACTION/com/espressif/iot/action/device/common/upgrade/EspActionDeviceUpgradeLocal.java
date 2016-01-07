@@ -517,19 +517,7 @@ public class EspActionDeviceUpgradeLocal implements IEspActionDeviceUpgradeLocal
         // connect
         log.debug("doUpgradeMeshDeviceLocal connect start");
         final int retryTime = 3;
-        final int timeout = 5000;
-        boolean isConnected = false;
         EspMeshUpgradeServer server = EspMeshUpgradeServer.createInstance(user1, user2, inetAddress, bssid);
-        for (int retry = 0; !isConnected && retry < retryTime; retry++)
-        {
-            isConnected = server.connect(timeout);
-        }
-        if (!isConnected)
-        {
-            log.warn("doUpgradeMeshDeviceLocal connect fail");
-            return null;
-        }
-        log.debug("doUpgradeMeshDeviceLocal connect suc");
         // send upgrade start
         log.debug("doUpgradeMeshDeviceLocal upgradeStart start");
         boolean isUpgradeStartSuc = false;

@@ -224,12 +224,19 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
             initDialog();
         }
         
-        private void initDialog()
-        {
+        private void initDialog() {
             mProgressDialog = new ProgressDialog(mActivity);
             mProgressDialog.setMessage(getString(R.string.esp_espbutton_configure_progress));
             mProgressDialog.setCancelable(false);
-            
+            mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                getString(R.string.esp_espbutton_configure_exit),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mListener.interrupt();
+                    }
+                });
+
             mPairRequestDialog = new AlertDialog.Builder(mActivity).setCancelable(false).create();
             mPairResultDialog = new AlertDialog.Builder(mActivity).setCancelable(false).create();
         }
@@ -252,11 +259,15 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
         }
         
         @Override
-        protected void onPostExecute(Boolean result)
-        {
+        protected void onPostExecute(Boolean result) {
             dissmissAllDialog();
-            
-            Toast.makeText(mActivity, R.string.esp_espbutton_configure_complete, Toast.LENGTH_SHORT).show();
+
+            if (!mListener.isInterrupted()) {
+                int resultRes = result ? R.string.esp_espbutton_configure_result_suc
+                    : R.string.esp_espbutton_configure_result_failed;
+                String resultStr = getString(R.string.esp_espbutton_configure_result, "", getString(resultRes));
+                Toast.makeText(mActivity, resultStr, Toast.LENGTH_SHORT).show();
+            }
             mActivity.finish();
         }
         
@@ -289,6 +300,7 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
                 if (broadcastSuc)
                 {
                     mProgressDialog.setMessage(getString(R.string.esp_espbutton_configure_button_scan));
+                    mProgressDialog.show();
                     startCountdown();
                 }
             }
@@ -328,9 +340,10 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
         private void onPairResult(String deviceMac, boolean success, final Queue<String> queue)
         {
             PairResultDialogListener buttonListener = new PairResultDialogListener(queue);
-            mPairResultDialog.setTitle(getString(R.string.esp_espbutton_configure_result,
-                deviceMac,
-                Boolean.valueOf(success).toString()));
+            int resultRes =
+                success ? R.string.esp_espbutton_configure_result_suc : R.string.esp_espbutton_configure_result_failed;
+            mPairResultDialog
+                .setTitle(getString(R.string.esp_espbutton_configure_result, deviceMac, getString(resultRes)));
             mPairResultDialog.setMessage(getString(R.string.esp_espbutton_configure_continue));
             mPairResultDialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.ok), buttonListener);
             mPairResultDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
@@ -339,8 +352,19 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
             mPairResultDialog.show();
         }
         
-        private IEspButtonConfigureListener mListener = new IEspButtonConfigureListener()
+        private class ConfigureInteractive implements IEspButtonConfigureListener
         {
+            private volatile boolean mInterrupted = false;
+            
+            @Override
+            public void interrupt(){
+                mInterrupted = true;
+            }
+
+            @Override
+            public boolean isInterrupted() {
+                return mInterrupted;
+            }
             
             @Override
             public void onBroadcastComplete(IEspDevice rootDevice, boolean result)
@@ -359,8 +383,9 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
             {
                 publishProgress(PAIR_RESULT, deviceMac, success, queue);
             }
-            
-        };
+        }
+        
+        private ConfigureInteractive mListener = new ConfigureInteractive();
         
         private class PairRequestDialogListener implements DialogInterface.OnClickListener
         {

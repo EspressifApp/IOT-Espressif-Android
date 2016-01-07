@@ -34,7 +34,7 @@ import org.apache.http.protocol.HttpRequestExecutor;
 class EspHttpClient extends DefaultHttpClient
 {
     
-    private final static int MAX_RETRY_TIMES = 3;
+    private final static int MAX_RETRY_TIMES = 0;
     
     private static final int HTTP_MESH_PORT = 8000;
     
@@ -44,7 +44,7 @@ class EspHttpClient extends DefaultHttpClient
     
     private final static int CONNECTION_TIMEOUT = 2 * 1000;
     
-    private final static int SO_TIMEOUT = 4 * 1000;
+    private final static int SO_TIMEOUT = 20 * 1000;
     
     private boolean mIsMesh;
     

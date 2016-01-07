@@ -82,6 +82,7 @@
     <string name="esp_ui_edit_has_eneditable_device_message">Some devices can\'t delete</string>
     <string name="esp_ui_edit_forbidden_toast">This device can\'t edit now</string>
     <string name="esp_ui_exit_message">\nDo you want to exit?\n</string>
+    <string name="esp_ui_exiting">Exiting&#8230;</string>
     <string name="esp_ui_network_enable_msg">No available network</string>
     <string name="esp_ui_device_activate_suc">Make device connect to cloud successfully</string>
     <string name="esp_ui_device_activate_failed">Make device connect to cloud failed</string>
@@ -146,6 +147,11 @@
     <string name="esp_configure_result_failed">Configuration failed</string>
     <string name="esp_configure_add">Add devices</string>
 
+    <string name="esp_browser_configure_titile">Device Configure</string>
+    <string name="esp_browser_confiugre_menu_connect">Connect device and configure</string>
+    <string name="esp_browser_confiugre_connecting">Connecting&#8230;</string>
+    <string name="esp_browser_configure_connect_failed">Connect device failed</string>
+
     <string name="esp_device_task_dialog_message">Please wait&#8230;</string>
 
     <string name="esp_device_menu_share">Share</string>
@@ -154,6 +160,7 @@
     <string name="esp_device_menu_upgrade_online">Upgrade cloud</string>
     <string name="esp_device_menu_change_password">Change password</string>
     <string name="esp_device_menu_espbutton_configure">Pair EspButton</string>
+    <string name="esp_device_menu_trigger">Trigger settings</string>
     <string name="esp_device_dialog_upgrade_apk_message">You need upgrade apk to control the device</string>
     <string name="esp_device_dialog_upgrade_device_message">The device need upgrade to use</string>
     <string name="esp_device_dialog_upgrading_local_message">The device is upgrading local</string>
@@ -179,6 +186,16 @@
     <string name="esp_device_timer_save_result_failed">Save failed</string>
     <string name="esp_device_timer_delete_result_success">Delete complete</string>
     <string name="esp_device_timer_delete_result_failed">Delete failed</string>
+
+    <string name="esp_device_trigger">Trigger</string>
+    <string name="esp_device_trigger_get_failed">Get trigger failed, please check your network</string>
+    <string name="esp_device_trigger_settings_add_notification">Add notification</string>
+    <string name="esp_device_trigger_settings_delete_notification">Delete</string>
+    <string name="esp_device_trigger_settings_save">Save changes</string>
+    <string name="esp_device_trigger_settings_save_suc">Save completed</string>
+    <string name="esp_device_trigger_settings_save_failed">Save failed</string>
+    <string name="esp_device_trigger_settings_back_msg">You haven\'t save the changed, exit?</string>
+    <string name="esp_device_trigger_settings_back_exit">Exit</string>
 
     <string name="esp_device_light_freq">Frequency</string>
     <string name="esp_device_light_red">Red</string>
@@ -314,6 +331,7 @@
     <string name="esp_esptouch_connect_wifi">"%1$s is connected to Wi-Fi"</string>
     <string name="esp_esptouch_menu_get_share">Get Share</string>
     <string name="esp_esptouch_menu_softap_configure">SoftAP Configure</string>
+    <string name="esp_esptouch_menu_browser_configure">Webpage Configure</string>
     <string name="esp_esptouch_done_text">Done</string>
     <string name="esp_esptouch_result_title">Esptouch Result</string>
     <string name="esp_esptouch_message_cloud_title">Connected to Cloud Device List(%1$d):\n</string>
@@ -368,8 +386,10 @@
     <string name="esp_espbutton_configure_progress">Configuring&#8230;</string>
     <string name="esp_espbutton_configure_request">Permit pair device %1$s ?</string>
     <string name="esp_espbutton_configure_result">Device %1$s pair EspButton %2$s</string>
+    <string name="esp_espbutton_configure_result_suc">successfully</string>
+    <string name="esp_espbutton_configure_result_failed">failed</string>
     <string name="esp_espbutton_configure_continue">Continue to pair ?</string>
-    <string name="esp_espbutton_configure_button_scan">Make EspButton scan</string>
+    <string name="esp_espbutton_configure_button_scan">Long click EspButton Left key</string>
     <string name="esp_espbutton_configure_waiting">Finding device&#8230;</string>
     <string name="esp_espbutton_configure_pairing">Pairing&#8230;</string>
     <string name="esp_espbutton_configure_complete">Configure complete</string>

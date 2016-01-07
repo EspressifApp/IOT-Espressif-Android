@@ -41,6 +41,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     private TextView mTitleTV;
     private ImageView mLeftIcon;
     private ImageView mRightIcon;
+    private ViewGroup mTitleContentView;
     
     protected FrameLayout mHelpContainer;
     
@@ -75,6 +76,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         mTitleTV = (TextView)findViewById(R.id.title_text);
         mLeftIcon = (ImageView)findViewById(R.id.left_icon);
         mRightIcon = (ImageView)findViewById(R.id.right_icon);
+        mTitleContentView = (ViewGroup)findViewById(R.id.title_content);
         
         setTitleLeftIcon(R.drawable.esp_icon_back);
         
@@ -194,6 +196,8 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         {
             mRightIcon.setOnClickListener(mIconClickListener);
         }
+        
+        checkTitleRightIconAndTitleContentView();
     }
     
     public void setTitleContentView(View view)
@@ -203,18 +207,31 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     
     public void setTitleContentView(View view, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom)
     {
-        ViewGroup content = (ViewGroup)findViewById(R.id.title_content);
-        content.removeAllViews();
-        content.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+        mTitleContentView.removeAllViews();
+        mTitleContentView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
         
         if (view != null)
         {
-            content.setVisibility(View.VISIBLE);
-            content.addView(view);
+            mTitleContentView.setVisibility(View.VISIBLE);
+            mTitleContentView.addView(view);
         }
         else
         {
-            content.setVisibility(View.GONE);
+            mTitleContentView.setVisibility(View.GONE);
+        }
+        
+        checkTitleRightIconAndTitleContentView();
+    }
+    
+    private void checkTitleRightIconAndTitleContentView() {
+        if (mRightIcon.getDrawable() == null) {
+            if (mTitleContentView.getVisibility() == View.VISIBLE) {
+                mRightIcon.setVisibility(View.GONE);
+            } else {
+                mRightIcon.setVisibility(View.VISIBLE);
+            }
+        } else {
+            mRightIcon.setVisibility(View.VISIBLE);
         }
     }
     

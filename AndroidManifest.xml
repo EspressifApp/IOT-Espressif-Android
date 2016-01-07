@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="15"
-    android:versionName="v1.1.2" >
+    android:versionCode="16"
+    android:versionName="v1.1.3" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -11,18 +11,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
-
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name="com.espressif.iot.base.application.EspApplication"
@@ -183,6 +182,12 @@
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.configure.DeviceBrowserConfigureActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.espressif.iot.ui.device.trigger.DeviceTriggerActivity"
             android:screenOrientation="portrait" />
 
         <service android:name="com.espressif.iot.esppush.EspPushService" />

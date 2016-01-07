@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public interface ICachedThreadPool
 {
     static final int THREADS_CORE_COUNT = 16;
-    static final int THREADS_MAX_COUNT = 32;
+    static final int THREADS_MAX_COUNT = Integer.MAX_VALUE;
     static final long THREADS_KEEP_ALIVE_TIME = 60L;
     static final TimeUnit THREADS_KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
     /**

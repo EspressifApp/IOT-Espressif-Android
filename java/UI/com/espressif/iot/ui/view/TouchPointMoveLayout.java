@@ -91,7 +91,7 @@ public class TouchPointMoveLayout extends FrameLayout
             case MotionEvent.ACTION_MOVE:
                 if (mTouchMove)
                 {
-                    moveToucMoveView();
+                    moveTouchMoveView();
                     checkIntersects();
                     return true;
                 }
@@ -106,7 +106,7 @@ public class TouchPointMoveLayout extends FrameLayout
             case MotionEvent.ACTION_CANCEL:
                 if (mTouchMove)
                 {
-                    moveToucMoveView();
+                    moveTouchMoveView();
                     checkIntersects();
                     
                     if (mOnTouchMoveListener != null)
@@ -128,7 +128,7 @@ public class TouchPointMoveLayout extends FrameLayout
         return super.onTouchEvent(event);
     }
     
-    private void moveToucMoveView()
+    private void moveTouchMoveView()
     {
         mMoveView.setX(mTouchPointX - mMoveViewOffsetX);
         mMoveView.setY(mTouchPointY - mMoveViewOffsetY);

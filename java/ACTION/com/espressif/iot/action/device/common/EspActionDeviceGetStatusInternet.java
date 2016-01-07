@@ -139,18 +139,20 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
         }
         
         // get battery value
-        boolean batterySuc = false;
-        IEspCommandLightGetEspnowInternet batteryCommand = new EspCommandLightGetEspnowInternet();
-        List<IEspStatusEspnow> espnowStatusList = batteryCommand.doCommandLightGetEspnowInternet(device.getKey());
-        List<IEspStatusEspnow> deviceEspnowStatusList = light.getEspnowStatusList();
-        deviceEspnowStatusList.clear();
-        if (espnowStatusList != null)
+        boolean getBattery = false;
+        if (result && getBattery)
         {
-            deviceEspnowStatusList.addAll(espnowStatusList);
-            batterySuc = true;
+            IEspCommandLightGetEspnowInternet batteryCommand = new EspCommandLightGetEspnowInternet();
+            List<IEspStatusEspnow> espnowStatusList = batteryCommand.doCommandLightGetEspnowInternet(device.getKey());
+            List<IEspStatusEspnow> deviceEspnowStatusList = light.getEspnowStatusList();
+            deviceEspnowStatusList.clear();
+            if (espnowStatusList != null)
+            {
+                deviceEspnowStatusList.addAll(espnowStatusList);
+            }
         }
         
-        return result && batterySuc;
+        return result;
     }
     
     private boolean executeGetPlugStatusInternet(IEspDevice device)

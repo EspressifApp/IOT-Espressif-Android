@@ -1,14 +1,6 @@
 package com.espressif.iot.command.device.espbutton;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.espressif.iot.base.net.rest2.EspMeshHttpUtil;
+import com.espressif.iot.base.net.proxy.MeshCommunicationUtils;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.util.MeshUtil;
 
@@ -40,24 +32,17 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
     private List<IEspDevice> mDeviceList;
     private String mDeviceMac;
     private boolean mBroadcast;
+    private String mTargetUrl;
     private IEspButtonConfigureListener mListener = null;
     
     private static final long TIMEOUT = 60000L;
     private static final long PING_INTERVAL = 3000L;
     
-    private static final int PORT = 8000;
-    private static final int SO_TIMEOUT = 8000;
-    private Socket mSocket;
-    private PrintStream mPrintStream;
-    private BufferedReader mBufferedReader;
-    
     private Queue<JSONObject> mCacheResponseQueue = new LinkedList<JSONObject>();
-    private static final int RESPONSE_TYPE_ASK = 0;
-    private static final int RESPONSE_TYPE_PING = 1;
-    
-    private static final int ASK_DEVICE_COMMAND_LEN = 20;
     
     private int mRequestPairNum;
+    
+    private int mTaskSerial;
     
     @Override
     public String getLocalUrl(InetAddress inetAddress)
@@ -76,12 +61,13 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
         mListener = listener;
         mDeviceMac = mInetDevice.getBssid();
         mRequestPairNum = 0;
+        mTargetUrl = getLocalUrl(mInetDevice.getInetAddress());
+        mTaskSerial = MeshCommunicationUtils.generateLongSocketSerial();
         
-        String localUrl = getLocalUrl(mInetDevice.getInetAddress());
-        if (!connect(localUrl))
+        // check whether listener is null
+        if (listener == null)
         {
-            log.debug("EspButtonConfigure connect failed");
-            return finishWithResult(RESULT_FAILED);
+            throw new IllegalArgumentException("IEspButtonConfigureListener is null");
         }
         
         // Send broadcast
@@ -91,10 +77,15 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
             return finishWithResult(RESULT_FAILED);
         }
         
-        long waitTime = 0L;
+        long startTime = System.currentTimeMillis();
         int result = COMMAND_CONTINUE;
-        for (int i = 0; i < 1000; i++)
+        while (true)
         {
+            if (listener.isInterrupted())
+            {
+                return RESULT_OVER;
+            }
+            
             try
             {
                 Thread.sleep(PING_INTERVAL);
@@ -138,7 +129,7 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
                 // get pair next device message from user
                 if (broadcastButtonInfo(newTempKey, newMacAddress, oldMacAddress))
                 {
-                    waitTime = 0L;
+                    startTime = System.currentTimeMillis();
                     result = COMMAND_CONTINUE;
                 }
                 else
@@ -157,306 +148,108 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
                 return finishWithResult(RESULT_FAILED);
             }
             
-            waitTime += PING_INTERVAL;
-            if (waitTime > TIMEOUT)
+            if (System.currentTimeMillis() - startTime > TIMEOUT)
             {
                 // timeout
-                return finishWithResult(RESULT_SUC);
+                if (isBroadcast)
+                {
+                    if (mRequestPairNum > 0)
+                    {
+                        return finishWithResult(RESULT_SUC);
+                    }
+                    else
+                    {
+                        return finishWithResult(RESULT_FAILED);
+                    }
+                    
+                }
+                else
+                {
+                    return finishWithResult(RESULT_FAILED);
+                }
             }
-        }
-        
-        return finishWithResult(RESULT_FAILED);
-    }
-    
-    private boolean connect(String url)
-    {
-        try
-        {
-            URL _URL = new URL(url);
-            InetAddress address = InetAddress.getByName(_URL.getHost());
-            mSocket = new Socket(address, PORT);
-            mSocket.setKeepAlive(true);
-            mSocket.setSoTimeout(SO_TIMEOUT);
-            mPrintStream = new PrintStream(mSocket.getOutputStream());
-            mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
-            
-            return true;
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (UnknownHostException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return false;
-    }
-    
-    private void disconnect()
-    {
-        try
-        {
-            if (mPrintStream != null)
-            {
-                mPrintStream.close();
-            }
-            if (mBufferedReader != null)
-            {
-                mBufferedReader.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        try
-        {
-            if (mSocket != null)
-            {
-                mSocket.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
         }
     }
     
     private int finishWithResult(int result)
     {
-        disconnect();
         return result;
-    }
-    
-    private void post(String content)
-    {
-        if (!content.endsWith("\r\n"))
-        {
-            content += "\r\n";
-        }
-        content = content.replace("\\/", "/");
-        log.debug("EspButtonConfigure post " + content);
-        mPrintStream.print(content);
-    }
-    
-    private JSONObject receive()
-    {
-        try
-        {
-            String response = readLine();//  mBufferedReader.readLine();
-            JSONObject result = new JSONObject(response);
-            log.info("EspButtonConfigure receive() " + result.toString());
-            
-            return result;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
-    private String readLine() throws IOException
-    {
-        StringBuilder result = new StringBuilder();
-        int i;
-        while ((i = mBufferedReader.read()) != -1)
-        {
-            char c = (char)i;
-            result.append(c);
-            if (c == '\n')
-            {
-                if (result.toString().contains("command"))
-                {
-                    int endLength = ASK_DEVICE_COMMAND_LEN - result.length();
-                    if (endLength > 0)
-                    {
-                        char[] ends = new char[endLength];
-                        int actuallyReadLen = mBufferedReader.read(ends);
-                        if (actuallyReadLen != endLength)
-                        {
-                            log.error("readLine() command wrong length");
-                            throw new IOException();
-                        }
-                        result.append(ends);
-                    }
-                    break;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        
-        return result.toString();
-    }
-    
-    private JSONObject receive(int respType)
-    {
-        JSONObject response;
-        while((response = receive()) != null)
-        {
-            switch(respType)
-            {
-                case RESPONSE_TYPE_ASK:
-                    if (response.optString(KEY_PATH, null) == null)
-                    {
-                        return response;
-                    }
-                    else
-                    {
-                        mCacheResponseQueue.add(response);
-                        break;
-                    }
-                case RESPONSE_TYPE_PING:
-                    if (response.optString(KEY_PATH).equals(PATH_PING))
-                    {
-                        return response;
-                    }
-                    else
-                    {
-                        mCacheResponseQueue.add(response);
-                        break;
-                    }
-            }
-        }
-        
-        return null;
-    }
-    
-    private void addMeshJSONKey(JSONObject json, String bssid)
-        throws JSONException
-    {
-        String localPort = MeshUtil.getPortForMesh(mSocket.getLocalPort());
-        json.put(KEY_SPORT, localPort);
-        String localHostAddress = MeshUtil.getIpAddressForMesh(mSocket.getLocalAddress().getHostAddress());
-        json.put(KEY_SIP, localHostAddress);
-        
-        String mac = MeshUtil.getMacAddressForMesh(bssid);
-        json.put(KEY_MDEV_MAC, mac);
-    }
-    
-    private boolean askDeviceAvailable()
-    {
-        if (!mInetDevice.getIsMeshDevice())
-        {
-            return true;
-        }
-        
-        final int retryTime = 3;
-        for (int i = 0; i < retryTime; i++)
-        {
-            String command = EspMeshHttpUtil.createDeviceAvailableRequestContent();
-            post(command);
-            JSONObject result = receive(RESPONSE_TYPE_ASK);
-            if (result == null)
-            {
-                return false;
-            }
-            
-            if (EspMeshHttpUtil.checkDeviceAvailable(result))
-            {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     private boolean broadcastButtonInfo(String newTempKey, String newMacAddress,
         String... oldMacAddress)
     {
         boolean result;
-        if (!askDeviceAvailable())
+        
+        JSONObject postJSON = new JSONObject();
+        try
         {
-            result = false;
-        }
-        else
-        {
-            JSONObject postJSON = new JSONObject();
-            try
+            JSONObject buttonNewJSON = new JSONObject();
+            buttonNewJSON.put(KEY_TEMP_KEY, newTempKey);
+            buttonNewJSON.put(KEY_BUTTON_MAC, newMacAddress);
+            postJSON.put(KEY_BUTTON_NEW, buttonNewJSON);
+            postJSON.put(KEY_PATH, PATH_BROADCAST);
+            
+            if (oldMacAddress.length == 0)
             {
-                JSONObject buttonNewJSON = new JSONObject();
-                buttonNewJSON.put(KEY_TEMP_KEY, newTempKey);
-                buttonNewJSON.put(KEY_BUTTON_MAC, newMacAddress);
-                postJSON.put(KEY_BUTTON_NEW, buttonNewJSON);
-                postJSON.put(KEY_PATH, PATH_BROADCAST);
+                postJSON.put(KEY_REPLACE, 0);
+            }
+            else
+            {
+                postJSON.put(KEY_REPLACE, 1);
                 
-                if (oldMacAddress.length == 0)
+                JSONObject buttonRemoveJSON = new JSONObject();
+                StringBuilder oldMacs = new StringBuilder();
+                for (int i = 0; i < oldMacAddress.length; i++)
                 {
-                    postJSON.put(KEY_REPLACE, 0);
+                    oldMacs.append(MeshUtil.getMacAddressForMesh(oldMacAddress[i]));
                 }
-                else
+                buttonRemoveJSON.put(KEY_MAC_LEN, oldMacAddress.length);
+                buttonRemoveJSON.put(KEY_MAC, oldMacs.toString());
+                postJSON.put(KEY_BUTTON_REMOVE, buttonRemoveJSON);
+            }
+            
+            String bssid = mDeviceMac;
+            if (mInetDevice.getIsMeshDevice())
+            {
+                if (mDeviceList.size() > 1)
                 {
-                    postJSON.put(KEY_REPLACE, 1);
-                    
-                    JSONObject buttonRemoveJSON = new JSONObject();
-                    StringBuilder oldMacs = new StringBuilder();
-                    for (int i = 0; i < oldMacAddress.length; i++)
+                    if (mBroadcast)
                     {
-                        oldMacs.append(MeshUtil.getMacAddressForMesh(oldMacAddress[i]));
-                    }
-                    buttonRemoveJSON.put(KEY_MAC_LEN, oldMacAddress.length);
-                    buttonRemoveJSON.put(KEY_MAC, oldMacs.toString());
-                    postJSON.put(KEY_BUTTON_REMOVE, buttonRemoveJSON);
-                }
-                
-                if (mInetDevice.getIsMeshDevice())
-                {
-                    String bssid;
-                    if (mDeviceList.size() > 1)
-                    {
-                        if (mBroadcast)
-                        {
-                            bssid = BROADCAST_MAC;
-                        }
-                        else
-                        {
-                            bssid = MULTICAST_MAC;
-                            List<String> macs = new ArrayList<String>();
-                            for (IEspDevice device : mDeviceList)
-                            {
-                                macs.add(device.getBssid());
-                            }
-                            MeshUtil.addMulticastJSONValue(postJSON, macs);
-                        }
+                        bssid = BROADCAST_MAC;
                     }
                     else
                     {
-                        bssid = mInetDevice.getBssid();
+                        bssid = MULTICAST_MAC;
+                        List<String> macs = new ArrayList<String>();
+                        for (IEspDevice device : mDeviceList)
+                        {
+                            macs.add(device.getBssid());
+                        }
+                        MeshUtil.addMulticastJSONValue(postJSON, macs);
                     }
-                    addMeshJSONKey(postJSON, bssid);
-                }
-                
-                post(postJSON.toString());
-                JSONObject response = receive();
-                if (response != null)
-                {
-                    int status = response.getInt(Status);
-                    result = status == HttpStatus.SC_OK;
                 }
                 else
                 {
-                    result = false;
+                    bssid = mInetDevice.getBssid();
                 }
             }
-            catch (JSONException e)
+            
+            JSONObject response = MeshCommunicationUtils.JsonPost(mTargetUrl, bssid, mTaskSerial, postJSON);
+            if (response != null)
             {
-                e.printStackTrace();
+                int status = response.getInt(Status);
+                result = status == HttpStatus.SC_OK;
+            }
+            else
+            {
                 result = false;
             }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+            result = false;
         }
         
         if (mListener != null)
@@ -469,25 +262,12 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
     
     private int ping()
     {
-        if (!askDeviceAvailable())
-        {
-            return COMMAND_OVER;
-        }
-        
         JSONObject postJSON = new JSONObject();
         try
         {
             postJSON.put(KEY_PATH, PATH_PING);
-            if (mInetDevice.getIsMeshDevice())
-            {
-                addMeshJSONKey(postJSON, mDeviceMac);
-            }
-            post(postJSON.toString());
-            JSONObject response = receive(RESPONSE_TYPE_PING);
-            if (response != null)
-            {
-                return COMMAND_CONTINUE;
-            }
+            
+            return postPingAndReadResponse(postJSON);
         }
         catch (JSONException e)
         {
@@ -496,24 +276,52 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
         return COMMAND_OVER;
     }
     
-    private int postPairPermit(boolean permit)
-    {
-        if (!askDeviceAvailable())
-        {
-            return COMMAND_OVER;
+    private int postPingAndReadResponse(JSONObject postJSON) {
+        JSONObject response = MeshCommunicationUtils.JsonPost(mTargetUrl, mDeviceMac, mTaskSerial, postJSON);
+        if (response != null) {
+            if (response.optString(KEY_PATH).equals(PATH_PING))
+            {
+                return COMMAND_CONTINUE;
+            }
+            else
+            {
+                mCacheResponseQueue.add(response);
+                
+                return readPingResponse();
+            }
         }
         
+        return COMMAND_OVER;
+    }
+    
+    private int readPingResponse() {
+        while (true) {
+            JSONObject response = MeshCommunicationUtils.JsonReadOnly(mTargetUrl, mDeviceMac, mTaskSerial);
+            if (response != null) {
+                if (response.optString(KEY_PATH).equals(PATH_PING))
+                {
+                    return COMMAND_CONTINUE;
+                }
+                else
+                {
+                    mCacheResponseQueue.add(response);
+                }
+            }
+            else {
+                return COMMAND_OVER;
+            }
+        }
+    }
+    
+    private int postPairPermit(boolean permit)
+    {
         JSONObject postJSON = new JSONObject();
         int status = permit ? HttpStatus.SC_OK : HttpStatus.SC_FORBIDDEN;
         try
         {
             postJSON.put(Status, status);
             postJSON.put(KEY_PATH, PATH_PAIR_REQUEST);
-            if (mInetDevice.getIsMeshDevice())
-            {
-                addMeshJSONKey(postJSON, mDeviceMac);
-            }
-            post(postJSON.toString());
+            MeshCommunicationUtils.JsonNonResponsePost(mTargetUrl, mDeviceMac, mTaskSerial, postJSON);
             return COMMAND_CONTINUE;
         }
         catch (JSONException e)
@@ -537,6 +345,7 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
             else if (path.equals(PATH_PAIR_REQUEST))
             {
                 mDeviceMac = response.getString(KEY_DEVICE_MAC);
+                mDeviceMac = MeshUtil.getRawMacAddress(mDeviceMac);
                 if (mPermitAll)
                 {
                     mUserMsgQueue.add(IEspButtonConfigureListener.PAIR_PERMIT);
@@ -561,6 +370,7 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
                 else
                 {
                     String deviceMac = response.getString(KEY_DEVICE_MAC);
+                    deviceMac = MeshUtil.getRawMacAddress(mDeviceMac);
                     boolean configResult = response.getInt(KEY_RESULT) == 1;
                     if (mListener != null)
                     {

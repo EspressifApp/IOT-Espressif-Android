@@ -12,6 +12,19 @@ public interface IEspButtonConfigureListener
     public static final String PAIR_OVER = "pair_over";
     
     /**
+     * Set the the task over
+     * 
+     */
+    void interrupt();
+    
+    /**
+     * Get the task is over or not
+     * 
+     * @return
+     */
+    boolean isInterrupted();
+    
+    /**
      * Broadcast pair configure
      * 
      * @param rootDevice

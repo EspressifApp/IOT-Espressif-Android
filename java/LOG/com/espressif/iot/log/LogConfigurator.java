@@ -62,13 +62,13 @@ public class LogConfigurator
     
     private static final String DefaultFilePattern = "%d - [%p::%c::%t] - %m%n";
     
-    public static String DefaultLogFileDirPath = EspApplication.sharedInstance().getContextFilesDirPath() + "/Log/";
+    public static String DefaultLogFileDirPath = EspApplication.sharedInstance().getEspRootSDPath() + "/Log/";
     
     public static final String DefaultLogFileName = "log";
     
-    public static final int DefaultMaxBackupSize = 5;
+    public static final int DefaultMaxBackupSize = 200;
     
-    private static final long DefaultMaxFileSize = 512 * 1024;
+    private static final long DefaultMaxFileSize = 1024 * 1024 * 10; // 10 MB
     
     private static final boolean DefaultImmediateFlush = true;
     

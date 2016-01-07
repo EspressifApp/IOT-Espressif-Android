@@ -16,6 +16,7 @@ import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity;
+import com.espressif.iot.ui.device.trigger.DeviceTriggerActivity;
 import com.espressif.iot.ui.view.EspColorPicker;
 import com.espressif.iot.ui.view.EspColorPicker.OnColorChangedListener;
 import com.espressif.iot.util.EspStrings;
@@ -83,6 +84,7 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     private IEspLongSocket mLongSocket;
     
     private static final int MENU_ID_ESPBUTTON_SETTINGS = 0x2001;
+    private static final int MENU_ID_TRIGGER = 0x2002;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -176,13 +178,15 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     }
     
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        if (mIEspDevice.getIsMeshDevice() && !isDeviceArray())
-        {
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mIEspDevice.getIsMeshDevice() && !isDeviceArray()) {
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings);
         }
-        
+
+//        if (mIEspDevice.getDeviceState().isStateInternet()) {
+//            menu.add(Menu.NONE, MENU_ID_TRIGGER, 1, R.string.esp_device_menu_trigger);
+//        }
+
         return super.onCreateOptionsMenu(menu);
     }
     
@@ -195,6 +199,11 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 Intent intent = new Intent(this, EspButtonCustomKeySettingsActivity.class);
                 intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mDeviceLight.getKey());
                 startActivity(intent);
+                return true;
+            case MENU_ID_TRIGGER:
+                Intent triggerIntent = new Intent(this, DeviceTriggerActivity.class);
+                triggerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
+                startActivity(triggerIntent);
                 return true;
         }
         

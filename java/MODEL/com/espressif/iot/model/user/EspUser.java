@@ -1,6 +1,7 @@
 package com.espressif.iot.model.user;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,6 +50,12 @@ import com.espressif.iot.action.device.common.timer.EspActionDeviceTimerPostInte
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerDeleteInternet;
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerGetInternet;
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerPostInternet;
+import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerCreate;
+import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerGet;
+import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerUpdate;
+import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerCreate;
+import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerGet;
+import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerUpdate;
 import com.espressif.iot.action.device.common.upgrade.EspDeviceCheckCompatibility;
 import com.espressif.iot.action.device.common.upgrade.EspDeviceGetUpgradeTypeResult;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceCheckCompatibility;
@@ -121,6 +128,7 @@ import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusFlammable;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
+import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceCompatibility;
@@ -1029,7 +1037,7 @@ public class EspUser implements IEspUser
 
     private boolean __updateDevice(List<IEspDevice> deviceList, IEspDeviceSSS newStaDevice)
     {
-        log.debug("__updateDevice() deviceList:" + deviceList + ", newStaDevice:" + newStaDevice);
+//        log.debug("__updateDevice() deviceList:" + deviceList + ", newStaDevice:" + newStaDevice);
         // boolean isChanged = false;
         boolean isExist = false;
         String newBssid = newStaDevice.getBssid();
@@ -1050,6 +1058,10 @@ public class EspUser implements IEspUser
                 if (isNecessaryAddStateLocal)
                 {
                     // isChanged = true;
+                    if(deviceState.isStateOffline())
+                    {
+                        deviceState.clearStateOffline();
+                    }
                     deviceState.addStateLocal();
                     log.debug("__updateDevice() addStateLocal");
                 }
@@ -1090,7 +1102,7 @@ public class EspUser implements IEspUser
     
     private boolean __addOrUpdateStaDeivce(List<IEspDeviceSSS> staDeviceList, IEspDeviceSSS newStaDevice)
     {
-        log.debug("__addOrUpdateStaDeivce() staDeviceList:" + staDeviceList + ", newStaDevice:" + newStaDevice);
+//        log.debug("__addOrUpdateStaDeivce() staDeviceList:" + staDeviceList + ", newStaDevice:" + newStaDevice);
         boolean isChanged = false;
         boolean isExist = false;
         String newBssid = newStaDevice.getBssid();
@@ -1111,7 +1123,7 @@ public class EspUser implements IEspUser
                 {
                     isChanged = true;
                     staDevice.setInetAddress(newInetAddress);
-                    log.debug("__addOrUpdateStaDeivce() update inetAddress");
+//                    log.debug("__addOrUpdateStaDeivce() update inetAddress");
                 }
                 // update parent bssid if necessary
                 if (newParentBssid == null && parentBssid != null || newParentBssid != null
@@ -1119,7 +1131,7 @@ public class EspUser implements IEspUser
                 {
                     isChanged = true;
                     staDevice.setParentDeviceBssid(newParentBssid);
-                    log.debug("__addOrUpdateStaDeivce() update parentBssid");
+//                    log.debug("__addOrUpdateStaDeivce() update parentBssid");
                 }
                 // update root bssid if necessary
                 if (newRootBssid == null && rootBssid != null || newRootBssid != null
@@ -1127,9 +1139,9 @@ public class EspUser implements IEspUser
                 {
                     isChanged = true;
                     staDevice.setRootDeviceBssid(newRootBssid);
-                    log.debug("__addOrUpdateStaDeivce() update rootBssid");
+//                    log.debug("__addOrUpdateStaDeivce() update rootBssid");
                 }
-                log.debug("__addOrUpdateStaDeivce() update break");
+//                log.debug("__addOrUpdateStaDeivce() update break");
                 break;
             }
         }
@@ -1193,8 +1205,39 @@ public class EspUser implements IEspUser
         }
         result.addAll(deviceList);
         result.addAll(staDeviceList);
+//        result.add(createTestDevice());
         unlockUserDeviceLists();
+        
         return result;
+    }
+    
+    @SuppressWarnings("unused")
+    private IEspDevice createTestDevice()
+    {
+        IEspDevice light = BEspDevice.getInstance().alloc("TestDevice",
+            999999,
+            "TestDeviceTestDeviceTestDeviceTestDevice",
+            true,
+            "18:fe:34:a2:c6:db",
+            0,
+            EspDeviceType.LIGHT.getSerial(),
+            "unknow",
+            "unknow",
+            getUserId());
+        light.getDeviceState().addStateLocal();
+        light.setIsMeshDevice(true);
+        
+        try
+        {
+            InetAddress ia = InetAddress.getByName("192.168.43.181");
+            light.setInetAddress(ia);
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return light;
     }
     
     @Override
@@ -1510,7 +1553,7 @@ public class EspUser implements IEspUser
                 addDeviceAsyn(iotAddressDevice);
             }
         }
-        else
+        if (!mActionDeviceEsptouch.isCancelled())
         {
             doActionRefreshStaDevices(true);
         }
@@ -1710,4 +1753,24 @@ public class EspUser implements IEspUser
         return action.doActionEspButtonActionGet(device);
     }
 
+    @Override
+    public List<EspDeviceTrigger> doActionDeviceTriggerGet(IEspDevice device)
+    {
+        IEspActionDeviceTriggerGet action = new EspActionDeviceTriggerGet();
+        return action.getTriggersInternet(device);
+    }
+    
+    @Override
+    public long doActionDeviceTriggerCreate(IEspDevice device, EspDeviceTrigger trigger)
+    {
+        IEspActionDeviceTriggerCreate action = new EspActionDeviceTriggerCreate();
+        return action.createTriggerInternet(device, trigger);
+    }
+    
+    @Override
+    public boolean doActionDeviceTriggerUpdate(IEspDevice device, EspDeviceTrigger trigger)
+    {
+        IEspActionDeviceTriggerUpdate action = new EspActionDeviceTriggerUpdate();
+        return action.updateTriggerInternet(device, trigger);
+    }
 }

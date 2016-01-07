@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import android.net.wifi.ScanResult;
 
+import com.espressif.iot.base.net.proxy.MeshCommunicationUtils;
 import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil;
 import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.base.net.rest2.EspHttpUtil;
@@ -141,7 +142,7 @@ public class EspBaseApiUtil
      */
     public static JSONObject GetForJson(String uriStr, String deviceBssid, HeaderPair... headers)
     {
-        return EspMeshHttpUtil.GetForJson(uriStr, deviceBssid, headers);
+        return MeshCommunicationUtils.HttpGet(uriStr, deviceBssid, headers);
     }
     
     /**
@@ -151,10 +152,9 @@ public class EspBaseApiUtil
      * @param headers the headers of the request
      * @return the JSONObject result
      */
-    public static JSONObject PostForJson(String uriStr, String deviceBssid, JSONObject json,
-        HeaderPair... headers)
+    public static JSONObject PostForJson(String uriStr, String deviceBssid, JSONObject json, HeaderPair... headers)
     {
-        return EspMeshHttpUtil.PostForJson(uriStr, deviceBssid, json, headers);
+        return MeshCommunicationUtils.HttpPost(uriStr, deviceBssid, json, headers);
     }
     
     /**

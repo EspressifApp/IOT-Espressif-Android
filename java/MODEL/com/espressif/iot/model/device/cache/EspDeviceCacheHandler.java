@@ -677,6 +677,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
             String parentBssid = device.getParentDeviceBssid();
             String rootBssid = bssid;
             
+            int limitLevel = 20;
             do
             {
                 // next
@@ -694,6 +695,12 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 {
                     parentBssid = parentDevice.getParentDeviceBssid();
                     rootBssid = parentDevice.getBssid();
+                }
+                if (limitLevel-- < 0) {
+                    log.warn("setAllDevicesRootBssid: find parent and root bssid warning");
+                    parentDevice.setParentDeviceBssid(null);
+                    rootBssid = parentDevice.getBssid();
+                    break;
                 }
             } while (parentDevice != null);
             // set root bssid

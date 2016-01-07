@@ -35,11 +35,11 @@ public class EspActionDeviceNewGetInfoLocal implements IEspActionDeviceNewGetInf
         IOTAddress iotAddress = null;
         for (int i = 0; i < 5; i++)
         {
-                iotAddress = EspBaseApiUtil.discoverDevice(BSSIDUtil.restoreSoftApBSSID(device.getBssid()));
-                if (iotAddress != null)
-                {
-                        break;
-                }
+            iotAddress = EspBaseApiUtil.discoverDevice(BSSIDUtil.restoreSoftApBSSID(device.getBssid()));
+            if (iotAddress != null)
+            {
+                break;
+            }
         }
         return iotAddress;
     }

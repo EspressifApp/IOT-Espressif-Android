@@ -56,4 +56,8 @@ public interface IEspCommandInternet extends IEspCommand
     static final String Remember = "remember";
     
     static final String Parent_Mdev_Mac = "parent_mdev_mac";
+    
+    static final String METHOD_PUT = "method=PUT";
+    
+    static final String METHOD_DELETE = "method=DELETE";
 }

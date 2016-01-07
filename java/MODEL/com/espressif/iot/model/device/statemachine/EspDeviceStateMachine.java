@@ -611,7 +611,15 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
             case FAIL:
                 if (state.isStateConfiguring())
                 {
-                    state.addStateDeleted();
+                    // when configure using esptouch, clearState() instead of addStateDeleted()
+                    if ((device instanceof IEspDeviceConfigure))
+                    {
+                        state.clearState();
+                    }
+                    else
+                    {
+                        state.addStateDeleted();
+                    }
                 }
                 if (state.isStateActivating())
                 {

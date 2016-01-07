@@ -2,8 +2,10 @@ package com.espressif.iot.base.net.rest2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
@@ -15,6 +17,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -22,6 +25,7 @@ import org.json.JSONObject;
 
 import android.text.TextUtils;
 
+import com.espressif.iot.base.net.proxy.EspProxyServerImpl;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.util.MeshUtil;
 
@@ -40,7 +44,7 @@ public class EspMeshHttpUtil
     
     private final static String FAKE_SPORT = "FFFF";
     
-    private final static int SOCKET_CONNECT_RETRY_TIME = 3;
+    private final static int SOCKET_CONNECT_RETRY_TIME = 1;
     
     private final static int IS_DEVICE_AVAILABLE_RETRY_TIME = 3;
     
@@ -69,6 +73,41 @@ public class EspMeshHttpUtil
         return request;
     }
     
+    private static void addMeshHeader(EspHttpRequest request, String meshUrl, String meshBssid)
+    {
+        try
+        {
+            URL meshURL = new URL(meshUrl);
+//            request.addHeader("Host", meshURL.getHost());
+            request.addHeader("Mesh-Host", meshURL.getHost());
+            request.addHeader("Mesh-Bssid", meshBssid);
+            request.addHeader("Proxy-Timeout", "" + 4000);
+            request.addHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    private static String getLocalMeshServerUrl(String meshUrl)
+    {
+        try
+        {
+            URL targetURL = new URL(meshUrl);
+            int port = EspProxyServerImpl.getInstance().getEspProxyServerPort();
+            String localUrl = meshUrl.replace(targetURL.getHost(), "localhost:" + port);
+            
+            return localUrl;
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     // build get,post request
     private static EspHttpRequest createEspHttpRequest(boolean isInstantly, String method, String uri,
         String deviceBssid, JSONObject json, HeaderPair... headers)
@@ -77,7 +116,8 @@ public class EspMeshHttpUtil
         EspHttpRequest request = null;
         if (method.equals(EspHttpRequest.METHOD_GET) || method.equals(EspHttpRequest.METHOD_POST))
         {
-            request = new EspHttpRequest(uri, method);
+            request = new EspHttpRequest(getLocalMeshServerUrl(uri), method);
+//            request = new EspHttpRequest(uri, method);
         }
         else
         {
@@ -90,6 +130,7 @@ public class EspMeshHttpUtil
             request.setParams(params);
         }
         // Add Headers
+        addMeshHeader(request, uri, deviceBssid);
         for (int i = 0; i < headers.length; i++)
         {
             HeaderPair header = headers[i];
@@ -284,6 +325,9 @@ public class EspMeshHttpUtil
         EspHttpClient client = EspHttpClient.getEspMeshHttpClient();
         // check is device available
         boolean isDeviceAvailable = false;
+        if (1 == 1) {
+            isDeviceAvailable = true;
+        }
         String rootInetAddrStr = getRootInetAddrStr(uriStr);
         for (int retry = 0; !isDeviceAvailable && retry < IS_DEVICE_AVAILABLE_RETRY_TIME; ++retry)
         {

@@ -40,6 +40,7 @@ import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.ui.main.EspActivityAbs;
+import com.espressif.iot.ui.main.EspUIActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -73,6 +74,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private static final int POPUPMENU_ID_GET_SHARE = 1;
     private static final int POPUPMENU_ID_SOFTAP_CONFIGURE = 2;
+    private static final int POPUPMENU_ID_BROWSER_CONFIGURE = 3;
     
     private List<String> mEsptouchDeviceBssidList = new ArrayList<String>();
     private AtomicInteger mEsptouchDeivceRegisterCount = new AtomicInteger();
@@ -80,6 +82,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     private List<String> mRegisteredDeviceNameList = new ArrayList<String>();
     
     private static final int REQUEST_SOFTAP_CONFIGURE = 10;
+    private static final int REQUEST_BROWSER_CONFIGURE = 11;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -176,6 +179,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         Menu menu = popupMenu.getMenu();
         menu.add(Menu.NONE, POPUPMENU_ID_GET_SHARE, 0, R.string.esp_esptouch_menu_get_share);
         menu.add(Menu.NONE, POPUPMENU_ID_SOFTAP_CONFIGURE, 0, R.string.esp_esptouch_menu_softap_configure);
+//        menu.add(Menu.NONE, POPUPMENU_ID_BROWSER_CONFIGURE, 0, R.string.esp_esptouch_menu_browser_configure);
         popupMenu.setOnMenuItemClickListener(this);
         popupMenu.show();
     }
@@ -216,6 +220,10 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             case POPUPMENU_ID_SOFTAP_CONFIGURE:
                 startActivityForResult(new Intent(this, DeviceConfigureActivity.class), REQUEST_SOFTAP_CONFIGURE);
                 return true;
+            case POPUPMENU_ID_BROWSER_CONFIGURE:
+                startActivityForResult(new Intent(this, DeviceBrowserConfigureActivity.class),
+                    REQUEST_BROWSER_CONFIGURE);
+                return true;
         }
         return false;
     }
@@ -223,12 +231,18 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == REQUEST_SOFTAP_CONFIGURE)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                finish();
-            }
+        switch (requestCode) {
+            case REQUEST_SOFTAP_CONFIGURE:
+                if (resultCode == RESULT_OK) {
+                    finish();
+                }
+                break;
+            case REQUEST_BROWSER_CONFIGURE:
+                if (resultCode == RESULT_OK) {
+                    setResult(EspUIActivity.RESULT_SCAN);
+                    finish();
+                }
+                break;
         }
     }
     

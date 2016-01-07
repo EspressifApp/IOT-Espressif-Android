@@ -90,19 +90,21 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         }
         
         // Get battery value
-        boolean batterySuc = false;
-        IEspCommandLightGetEspnowLocal batteryCommand = new EspCommandLightGetEspnowLocal();
-        List<IEspStatusEspnow> espnowStatusList =
-            batteryCommand.doCommandLightGetEspnowLocal(inetAddress, deviceBssid, isMeshDevice);
-        List<IEspStatusEspnow> deviceEspnowStatusList = device.getEspnowStatusList();
-        deviceEspnowStatusList.clear();
-        if (espnowStatusList != null)
+        boolean getBattery = false;
+        if (result && getBattery)
         {
-            batterySuc = true;
-            deviceEspnowStatusList.addAll(espnowStatusList);
+            IEspCommandLightGetEspnowLocal batteryCommand = new EspCommandLightGetEspnowLocal();
+            List<IEspStatusEspnow> espnowStatusList =
+                batteryCommand.doCommandLightGetEspnowLocal(inetAddress, deviceBssid, isMeshDevice);
+            List<IEspStatusEspnow> deviceEspnowStatusList = device.getEspnowStatusList();
+            deviceEspnowStatusList.clear();
+            if (espnowStatusList != null)
+            {
+                deviceEspnowStatusList.addAll(espnowStatusList);
+            }
         }
         
-        return result && batterySuc;
+        return result;
     }
     
     private boolean executeGetPlugStatusLocal(IEspDevice device)

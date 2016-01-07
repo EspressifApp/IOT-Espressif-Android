@@ -28,7 +28,6 @@ import android.widget.ImageView;
 
 public class WelcomeActivity extends Activity
 {
-    
     private static final Logger log = Logger.getLogger(WelcomeActivity.class);
     
     private Point mScreenSize;

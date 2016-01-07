@@ -82,6 +82,7 @@
     <string name="esp_ui_edit_has_eneditable_device_message">部分设备处于不可删除状态</string>
     <string name="esp_ui_edit_forbidden_toast">此设备暂时不可编辑</string>
     <string name="esp_ui_exit_message">\n是否退出应用？\n</string>
+    <string name="esp_ui_exiting">正在退出&#8230;</string>
     <string name="esp_ui_network_enable_msg">没有可用网络</string>
     <string name="esp_ui_device_activate_suc">设备连接至云端成功</string>
     <string name="esp_ui_device_activate_failed">设备连接至云端失败</string>
@@ -146,6 +147,11 @@
     <string name="esp_configure_result_failed">配置失败</string>
     <string name="esp_configure_add">添加设备</string>
 
+    <string name="esp_browser_configure_titile">设备配置</string>
+    <string name="esp_browser_confiugre_menu_connect">连接设备进入网页配置</string>
+    <string name="esp_browser_confiugre_connecting">正在连接&#8230;</string>
+    <string name="esp_browser_configure_connect_failed">连接设备失败</string>
+
     <string name="esp_device_task_dialog_message">请稍等&#8230;</string>
 
     <string name="esp_device_menu_share">分享设备</string>
@@ -154,6 +160,7 @@
     <string name="esp_device_menu_upgrade_online">云端升级设备</string>
     <string name="esp_device_menu_change_password">修改设备密码</string>
     <string name="esp_device_menu_espbutton_configure">配对EspButton</string>
+    <string name="esp_device_menu_trigger">警报设置</string>
     <string name="esp_device_dialog_upgrade_apk_message">需要升级应用才能控制设备</string>
     <string name="esp_device_dialog_upgrade_device_message">设备需要升级才能使用</string>
     <string name="esp_device_dialog_upgrading_local_message">设备正在本地升级</string>
@@ -179,6 +186,16 @@
     <string name="esp_device_timer_save_result_failed">保存失败</string>
     <string name="esp_device_timer_delete_result_success">删除成功</string>
     <string name="esp_device_timer_delete_result_failed">删除失败</string>
+
+    <string name="esp_device_trigger">警报设置</string>
+    <string name="esp_device_trigger_get_failed">获取信息失败，请检查网络</string>
+    <string name="esp_device_trigger_settings_add_notification">增加通知</string>
+    <string name="esp_device_trigger_settings_delete_notification">删除</string>
+    <string name="esp_device_trigger_settings_save">保存修改</string>
+    <string name="esp_device_trigger_settings_save_suc">修改成功</string>
+    <string name="esp_device_trigger_settings_save_failed">修改失败</string>
+    <string name="esp_device_trigger_settings_back_msg">您尚未保存修改内容，是否退出？</string>
+    <string name="esp_device_trigger_settings_back_exit">退出</string>
 
     <string name="esp_device_light_freq">频率</string>
     <string name="esp_device_light_red">红</string>
@@ -314,6 +331,7 @@
     <string name="esp_esptouch_connect_wifi">"%1$s 已连接到Wi-Fi"</string>
     <string name="esp_esptouch_menu_get_share">获取朋友分享</string>
     <string name="esp_esptouch_menu_softap_configure">SoftAP配置</string>
+    <string name="esp_esptouch_menu_browser_configure">网页配置</string>
     <string name="esp_esptouch_done_text">完成</string>
     <string name="esp_esptouch_result_title">Esptouch 结果</string>
     <string name="esp_esptouch_message_cloud_title">已连上云端的设备列表(%1$d):\n</string>
@@ -366,8 +384,10 @@
     <string name="esp_espbutton_configure_progress">正在配置&#8230;</string>
     <string name="esp_espbutton_configure_request">是否允许配对设备 %1$s ?</string>
     <string name="esp_espbutton_configure_result">设备 %1$s 配对 EspButton %2$s</string>
+    <string name="esp_espbutton_configure_result_suc">成功</string>
+    <string name="esp_espbutton_configure_result_failed">失败</string>
     <string name="esp_espbutton_configure_continue">是否继续配对?</string>
-    <string name="esp_espbutton_configure_button_scan">控制EspButton扫描</string>
+    <string name="esp_espbutton_configure_button_scan">长按EspButton左键</string>
     <string name="esp_espbutton_configure_waiting">正在寻找设备&#8230;</string>
     <string name="esp_espbutton_configure_pairing">正在配对&#8230;</string>
     <string name="esp_espbutton_configure_complete">配置结束</string>

@@ -1,16 +1,19 @@
 package com.espressif.iot.ui.main;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.net.proxy.EspProxyServerImpl;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
@@ -98,6 +101,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     protected List<IEspDevice> mAllDeviceList;
     protected PullToRefreshListView mDeviceListView;
     private DeviceAdapter mDeviceAdapter;
+    private LinkedBlockingQueue<Object> mDevicesUpdateMsgQueue;
+    private UpdateDeviceListThread mDevicesUpdateThread;
     
     private static final int POPUPMENU_ID_RENAME = 1;
     private static final int POPUPMENU_ID_DELETE = 2;
@@ -109,6 +114,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     private boolean mRefreshing;
     private Handler mRefreshHandler;
     private static final int MSG_AUTO_REFRESH = 0;
+    private static final int MSG_UPDATE_TEMPDEVICE = 1;
     
     private SharedPreferences mSettingsShared;
     
@@ -131,6 +137,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     protected final static int REQUEST_DEVICE = 0x11;
     private static final int REQUEST_ESPTOUCH = 0x12;
     private static final int REQUEST_SETTINGS = 0x13;
+    
+    public static final int RESULT_SCAN = 0x20;
     
     private LocalBroadcastManager mBraodcastManager;
     
@@ -161,6 +169,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mNewDevicesShared.registerOnSharedPreferenceChangeListener(this);
         mNewDevicesSet = mUser.getNewActivatedDevices();
         
+        // Start local proxy server
+        EspProxyServerImpl.getInstance().start();
         // Clear cache list
         EspDeviceCache.getInstance().clear();
         
@@ -180,9 +190,13 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mVirtuaMeshRoot = BEspDeviceRoot.getBuilder().getVirtualMeshRoot();
         mDeviceListView = (PullToRefreshListView)findViewById(R.id.devices_list);
         mAllDeviceList = new Vector<IEspDevice>();
-        updateDeviceList();
         mDeviceAdapter = new EspDeviceAdapter(this, mAllDeviceList);
         mDeviceListView.setAdapter(mDeviceAdapter);
+        mDevicesUpdateMsgQueue = new LinkedBlockingQueue<Object>();
+        mDevicesUpdateThread = new UpdateDeviceListThread();
+        mDevicesUpdateThread.start();
+        updateDeviceList();
+        
         mDeviceListView.setOnRefreshListener(this);
         mDeviceListView.setOnItemClickListener(this);
         mDeviceListView.getRefreshableView().setOnItemLongClickListener(this);
@@ -275,7 +289,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
         // when the UI is showed, show the newest device list need the follow two sentences
         updateDeviceList();
-        mDeviceAdapter.notifyDataSetChanged();
         if (mIsDevicesUpdatedNecessary)
         {
             mDeviceListView.onRefreshComplete();
@@ -304,10 +317,55 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mBraodcastManager.unregisterReceiver(mTempDeviceReciever);
         mBraodcastManager.unregisterReceiver(mLoginReceiver);
         
-        EspBaseApiUtil.cancelAllTask();
-        EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
-        EspGroupHandler.getInstance().finish();
         mUser.clearUserDeviceLists();
+    }
+    
+    private class FinishTask extends AsyncTask<Void, Void, Void>
+    {
+        private Activity mActivity;
+        private ProgressDialog mDialog;
+        
+        public FinishTask(Activity activity)
+        {
+            mActivity = activity;
+        }
+        
+        @Override
+        protected void onPreExecute()
+        {
+            mDialog = new ProgressDialog(mActivity);
+            mDialog.setMessage(mActivity.getString(R.string.esp_ui_exiting));
+            mDialog.setCancelable(false);
+            mDialog.show();
+        }
+        
+        @Override
+        protected Void doInBackground(Void... params)
+        {
+            if (mDevicesUpdateThread != null) {
+                mDevicesUpdateThread.finish();
+                mDevicesUpdateThread.interrupt();
+                mDevicesUpdateThread = null;
+            }
+            EspBaseApiUtil.cancelAllTask();
+            EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
+            EspGroupHandler.getInstance().finish();
+            EspProxyServerImpl.getInstance().stop();
+            
+            return null;
+        }
+        
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            if (mDialog == null)
+            {
+                mDialog.dismiss();
+                mDialog = null;
+            }
+            
+            mActivity.finish();
+        }
     }
     
     @Override
@@ -320,6 +378,10 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 updateDeviceList();
                 return;
             }
+            else if (resultCode == RESULT_SCAN) {
+                refresh();
+                return;
+            }
         }
         else if (requestCode == REQUEST_SETTINGS)
         {
@@ -328,10 +390,8 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 // cancel all task in thread pool before the activity is finished
                 mUser.doActionUserLogout();
                 EspPushService.stop(this);
-                EspBaseApiUtil.cancelAllTask();
-                EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
                 startActivity(new Intent(this, LoginActivity.class));
-                finish();
+                new FinishTask(this).execute();
                 return;
             }
         }
@@ -413,14 +473,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     {
         if (view == mDeviceListView)
         {
-            if (mUser.isLogin())
-            {
-                refresh();
-            }
-            else
-            {
-                scanSta();
-            }
+            refresh();
         }
     }
     
@@ -438,6 +491,14 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
      */
     private void refresh()
     {
+        if (mUser.isLogin()) {
+            scanAll();
+        } else {
+            scanSta();
+        }
+    }
+    
+    private void scanAll() {
         if (!checkDeviceUpgradeWhenRefresh())
         {
             return;
@@ -464,6 +525,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         if (!mRefreshing)
         {
+            mRefreshing = true;
             mUser.doActionRefreshStaDevices(false);
         }
     }
@@ -512,42 +574,84 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
     }
     
-    private void updateDeviceList()
+    private synchronized void updateDeviceList()
     {
-        mAllDeviceList.clear();
-        boolean hasMeshDevice = false;
-        List<IEspDevice> list = mUser.getAllDeviceList();
-        for (int i = 0; i < list.size(); i++)
+        if (mDevicesUpdateMsgQueue.size() < 2) {
+            mDevicesUpdateMsgQueue.add(new Object());
+        }
+    }
+    
+    private class UpdateDeviceListThread extends Thread {
+        
+        private volatile boolean run = true;
+        
+        public void finish() {
+            run = false;
+        }
+        
+        @Override
+        public void run()
         {
-            IEspDevice device = list.get(i);
-            IEspDeviceState state = device.getDeviceState();
-            if (!state.isStateDeleted())
-            {
-                if (device.getIsMeshDevice())
+            while(run) {
+                try
                 {
-                    hasMeshDevice = true;
+                    mDevicesUpdateMsgQueue.take();
                 }
-                if (!mDeviceVisibleCB.isChecked())
+                catch (InterruptedException e)
                 {
-                    if (!state.isStateLocal() && !state.isStateInternet())
+                    e.printStackTrace();
+                    return;
+                }
+                
+                final List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
+                boolean hasMeshDevice = false;
+                List<IEspDevice> list = mUser.getAllDeviceList();
+                for (int i = 0; i < list.size(); i++)
+                {
+                    IEspDevice device = list.get(i);
+                    IEspDeviceState state = device.getDeviceState();
+                    if (!state.isStateDeleted())
                     {
-                        continue;
+                        if (device.getIsMeshDevice())
+                        {
+                            hasMeshDevice = true;
+                        }
+                        if (!mDeviceVisibleCB.isChecked())
+                        {
+                            if (!state.isStateLocal() && !state.isStateInternet())
+                            {
+                                continue;
+                            }
+                        }
+                        
+                        deviceList.add(device);
                     }
                 }
                 
-                mAllDeviceList.add(device);
-            }
-        }
-        
-        new DeviceSortor().sort(mAllDeviceList, mSortType);
-        
-        boolean showMeshTree =
-            mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
-        if (hasMeshDevice && showMeshTree)
-        {
-            mVirtuaMeshRoot.setName("Mesh Root");
-            mAllDeviceList.add(0, mVirtuaMeshRoot);
-        }
+                new DeviceSortor().sort(deviceList, mSortType);
+                
+                boolean showMeshTree =
+                    mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
+                if (hasMeshDevice && showMeshTree)
+                {
+                    mVirtuaMeshRoot.setName("Mesh Root");
+                    deviceList.add(0, mVirtuaMeshRoot);
+                }
+                
+                if (mRefreshHandler != null) {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            mAllDeviceList.clear();
+                            mAllDeviceList.addAll(deviceList);
+                            mDeviceAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            } // end while
+        } // end run
     }
     
     private BroadcastReceiver mLoginReceiver = new BroadcastReceiver()
@@ -574,8 +678,9 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             final String action = intent.getAction();
             if (action.equals(EspStrings.Action.UI_REFRESH_LOCAL_DEVICES))
             {
-                updateDeviceList();
-                mDeviceAdapter.notifyDataSetChanged();
+                if (!mRefreshHandler.hasMessages(MSG_UPDATE_TEMPDEVICE)) {
+                    mRefreshHandler.sendEmptyMessage(MSG_UPDATE_TEMPDEVICE);
+                }
             }
         }
     };
@@ -615,7 +720,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 mUser.doActionDevicesUpdated(false);
                 
                 updateDeviceList();
-                mDeviceAdapter.notifyDataSetChanged();
                 mDeviceListView.onRefreshComplete();
                 
                 mRefreshing = false;
@@ -663,6 +767,9 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                     
                     long autoTime = (Long)msg.obj;
                     activity.sendAutoRefreshMessage(autoTime);
+                    break;
+                case MSG_UPDATE_TEMPDEVICE:
+                    activity.updateDeviceList();
                     break;
             }
         }
@@ -725,7 +832,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         if (buttonView == mDeviceVisibleCB)
         {
             updateDeviceList();
-            mDeviceAdapter.notifyDataSetChanged();
         }
     }
     
@@ -743,7 +849,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         }
         
         updateDeviceList();
-        mDeviceAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -980,7 +1085,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                     Toast.makeText(mContext, msgRes, Toast.LENGTH_LONG).show();
                     dialog.dismiss();
                     updateDeviceList();
-                    mDeviceAdapter.notifyDataSetChanged();
                 }
             }.execute();
         }
@@ -1060,7 +1164,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        finish();
+                        new FinishTask(EspUIActivity.this).execute();
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

@@ -165,11 +165,10 @@ public class EspButtonCustomKeySettingsActivity extends EspActivityAbs implement
         mColorPicker = (EspColorPicker)colorView.findViewById(R.id.color_picker);
         mColorPicker.setOnColorChangeListener(this);
         mColorBroadCB = (CheckBox)colorView.findViewById(R.id.broadcast_cb);
-        mColorPickerDialog =
-            new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custom_select_color)
-                .setView(colorView)
-                .create();
-        
+        mColorPickerDialog = new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custom_select_color)
+            .setView(colorView)
+            .create();
+            
         View brightnessView = View.inflate(this, R.layout.espbutton_brightness, null);
         mBrightnessTV = (TextView)brightnessView.findViewById(R.id.percent_text);
         mBrightnessBar = (SeekBar)brightnessView.findViewById(R.id.percent_seekbar);
@@ -177,23 +176,26 @@ public class EspButtonCustomKeySettingsActivity extends EspActivityAbs implement
         mBrightnessSW = (Switch)brightnessView.findViewById(R.id.brightness_indi);
         mBrightnessSW.setOnCheckedChangeListener(this);
         mBrightnessBroadCB = (CheckBox)brightnessView.findViewById(R.id.broadcast_cb);
-        mBrightnessDialog =
-            new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custom_brightness_percent)
-                .setView(brightnessView)
-                .create();
-        
+        mBrightnessDialog = new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custom_brightness_percent)
+            .setView(brightnessView)
+            .create();
+            
         View timerView = View.inflate(this, R.layout.espbutton_timer, null);
         mTimerTimeET = (EditText)timerView.findViewById(R.id.timer_time_edit);
         mTimerBroadCB = (CheckBox)timerView.findViewById(R.id.broadcast_cb);
         mTimerDialog =
             new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custion_timer).setView(timerView).create();
-        
+            
         View onOffView = View.inflate(this, R.layout.espbutton_turn_onoff, null);
         mRevesingCB = (CheckBox)onOffView.findViewById(R.id.turn_onoff_cb);
         mRevesingCB.setOnCheckedChangeListener(this);
         mOnOffTB = (ToggleButton)onOffView.findViewById(R.id.turn_onoff_tb);
         mOnOffTB.setOnCheckedChangeListener(this);
         mOnOffBroadCB = (CheckBox)onOffView.findViewById(R.id.broadcast_cb);
+        // forbid set turn on/off start
+        mRevesingCB.setChecked(true);
+        mRevesingCB.setEnabled(false);
+        // forbid set turn on/off end
         mTurnOnOffDialog =
             new AlertDialog.Builder(this).setTitle(R.string.esp_espbutton_custom_turnonoff).setView(onOffView).create();
     }
@@ -251,6 +253,10 @@ public class EspButtonCustomKeySettingsActivity extends EspActivityAbs implement
         if (buttonView == mRevesingCB)
         {
             mOnOffTB.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+            
+            // forbid set turn on/off start
+            mOnOffTB.setVisibility(View.GONE);
+            // forbid set turn on/off end
         }
         else if (buttonView == mBrightnessSW)
         {
@@ -384,6 +390,10 @@ public class EspButtonCustomKeySettingsActivity extends EspActivityAbs implement
                             mOnOffTB.setChecked(false);
                             break;
                     }
+                    
+                    // forbid set turn on/off start
+                    mRevesingCB.setChecked(true);
+                    // forbid set turn on/off end
                     
                     mTurnOnOffDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                         getString(android.R.string.ok),

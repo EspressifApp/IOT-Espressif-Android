@@ -9,7 +9,7 @@ import com.espressif.iot.type.net.IOTAddress;
 public interface IEspActionDeviceUpgradeLocal extends IEspDeviceUpgrade, IEspActionActivated
 {
     
-    static final long TIMEOUT_MILLISECONDS = 5 * 60 * 1000;
+    static final long TIMEOUT_MILLISECONDS = 10 * 60 * 1000;
     
     final static int CONNECTION_TIMEOUT = 2 * 1000;
     
