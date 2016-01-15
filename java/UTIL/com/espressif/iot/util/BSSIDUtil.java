@@ -1,5 +1,7 @@
 package com.espressif.iot.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 //98:fe:34:77:ce:00
@@ -154,5 +156,27 @@ public class BSSIDUtil
     {
         // ESP wifi's sta bssid is started with "18:fe:34"
         return BSSID != null && (BSSID.startsWith("18:fe:34"));
+    }
+    
+    /**
+     * get bssid list from bssids String
+     * 
+     * @param bssids bssids String
+     * @return bssid list
+     */
+    public static List<String> getBssidList(String bssids)
+    {
+        // 18:fe:34:a2:c6:db length is 17
+        if (bssids.length() % 17 != 0)
+        {
+            return null;
+        }
+        List<String> bssidList = new ArrayList<String>();
+        for (int i = 0; i < bssids.length(); i += 17)
+        {
+            String bssid = bssids.substring(i, i + 17);
+            bssidList.add(bssid);
+        }
+        return bssidList;
     }
 }

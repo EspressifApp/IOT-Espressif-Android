@@ -9,8 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.net.proxy.MeshCommunicationUtils;
 import com.espressif.iot.type.device.status.IEspStatusLight;
-import com.espressif.iot.util.MeshUtil;
+import com.espressif.iot.type.net.HeaderPair;
 
 public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatusLocal
 {
@@ -49,15 +50,6 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
             e.printStackTrace();
         }
         return request;
-    }
-    
-    private JSONObject getRequestJSONObject(IEspStatusLight statusLight, List<String> macList,
-        boolean isResponseRequired)
-    {
-        JSONObject result = getRequestJSONObject(statusLight, isResponseRequired);
-        MeshUtil.addMulticastJSONValue(result, macList);
-        
-        return result;
     }
     
     private boolean postLightStatus2(InetAddress inetAddress, JSONObject postJSON, String deviceBssid,
@@ -146,7 +138,7 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
             List<String> macList = new ArrayList<String>();
             for (String bssid : bssids)
             {
-                macList.add(MeshUtil.getMacAddressForMesh(bssid));
+                macList.add(bssid);
                 if (macList.size() == MULTICAST_GROUP_LENGTH_LIMIT)
                 {
                     if (!postMulticastCommand(inetAddress, statusLight, macList))
@@ -167,11 +159,20 @@ public class EspCommandLightPostStatusLocal implements IEspCommandLightPostStatu
         }
     }
     
-    private boolean postMulticastCommand(InetAddress inetAddress, IEspStatusLight statusLight, List<String> macList)
-    {
+    private boolean postMulticastCommand(InetAddress inetAddress, IEspStatusLight statusLight, List<String> macList) {
+        StringBuilder macs = new StringBuilder();
+        for (String mac : macList) {
+            macs.append(mac);
+        }
+        HeaderPair multicastHeader =
+            new HeaderPair(MeshCommunicationUtils.HEADER_MESH_MULTICAST_GROUP, macs.toString());
+
         boolean responseRequired = true;
-        JSONObject postJSON = getRequestJSONObject(statusLight, macList, responseRequired);
-        boolean result = postLightStatus2(inetAddress, postJSON, MULTICAST_MAC, true, responseRequired, null);
+        JSONObject postJSON = getRequestJSONObject(statusLight, responseRequired);
+
+        JSONObject respJSON =
+            EspBaseApiUtil.PostForJson(getLocalUrl(inetAddress), MeshCommunicationUtils.MULTICAST_MAC, postJSON, multicastHeader);
+        boolean result = respJSON != null;
         log.info("postMulticastCommand result = " + result);
         return result;
     }

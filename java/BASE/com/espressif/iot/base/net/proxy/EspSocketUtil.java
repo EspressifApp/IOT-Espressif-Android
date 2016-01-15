@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 public class EspSocketUtil
 {
@@ -18,6 +19,8 @@ public class EspSocketUtil
     private static final byte LF = '\r';
     
     private static final byte CR = '\n';
+    
+    private static final String ESCAPE = "\r\n";
     
     /**
      * read one byte from the socket
@@ -201,6 +204,111 @@ public class EspSocketUtil
             e.printStackTrace();
         }
         return headerValue;
+    }
+    
+    /**
+     * remove unnecessary Http Header
+     * 
+     * @param buffer the buffer stored HttpHeader
+     * @param headerLength the header length
+     * @param contentLength the content length
+     * @param httpHeaderList the http header list to be removed
+     * @param newHeaderLength int[0] to store new header length
+     * @return the new buffer
+     */
+    public static byte[] removeUnnecessaryHttpHeader(byte[] buffer, int headerLength, int contentLength,
+        List<String> httpHeaderList, int[] newHeaderLength)
+    {
+        int bufferOffset = 0;
+        int bufferSize = headerLength + contentLength;
+        byte[] newBuffer = new byte[bufferSize];
+        int newByteOffset = 0;
+        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(buffer, 0, bufferSize);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(byteInputStream));
+        String line = null;
+        // read first line
+        try
+        {
+            line = reader.readLine();
+        }
+        catch (IOException e)
+        {
+            MeshLog.e(DEBUG, USE_LOG4J, CLASS, "removeUnnecessaryHttpHeader() IOException firstly");
+        }
+        
+        // occupy header
+        while (line != null && bufferOffset < headerLength)
+        {
+            boolean isRemoved = false;
+            // check header whether it is to be removed
+            String[] kv = line.split(":( )+");
+            if (kv.length == 2)
+            {
+                for (String httpHeader : httpHeaderList)
+                {
+                    if (kv[0].equals(httpHeader))
+                    {
+                        isRemoved = true;
+                        break;
+                    }
+                }
+            }
+                
+            // don't forget to add \r\n
+            line = line + ESCAPE;
+            if (!isRemoved && line != null)
+            {
+                byte[] srcBytes = line.getBytes();
+                Object src = srcBytes;
+                int srcPos = 0;
+                Object dst = newBuffer;
+                int dstPos = newByteOffset;
+                int length = srcBytes.length;
+                System.arraycopy(src, srcPos, dst, dstPos, length);
+                newByteOffset += length;
+                bufferOffset += length;
+            }
+            else
+            {
+                bufferOffset += line.getBytes().length;
+            }
+            try
+            {
+                line = reader.readLine();
+            }
+            catch (IOException e)
+            {
+                MeshLog.e(DEBUG, USE_LOG4J, CLASS, "removeUnnecessaryHttpHeader() IOException");
+                break;
+            }
+        }
+
+        newHeaderLength[0] = newByteOffset;
+        
+        // occupy body if necessary
+        if (contentLength > 0)
+        {
+            Object src = buffer;
+            int srcPos = bufferOffset;
+            Object dst = newBuffer;
+            int dstPos = newByteOffset;
+            int length = contentLength;
+            System.arraycopy(src, srcPos, dst, dstPos, length);
+            newByteOffset += length;
+            bufferOffset += length;
+        }
+        
+        // close resources
+        try
+        {
+            byteInputStream.close();
+            reader.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return newBuffer;
     }
     
     /**

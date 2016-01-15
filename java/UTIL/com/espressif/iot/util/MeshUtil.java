@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Util class for mesh
  * 
@@ -264,7 +261,7 @@ public class MeshUtil
     private static void test_getMacAddressForMesh()
     {
         String bssid = "1a:34:56:38:90:34";
-        String result = getMacAddressForMesh(bssid);
+        String result = bssid;
         if (result.equals("1A3456389034"))
         {
             System.out.println("test_getMacAddressForMesh() pass");
@@ -379,28 +376,6 @@ public class MeshUtil
         test_getHostNameByMeshIp();
         test_getMacAddressBytes();
         test_getMacAddressStr();
-    }
-    
-    private static final String KEY_MULTICAST_GROUP_LENGTH = "glen";
-    private static final String KEY_MULTICAST_GROUP = "group";
-    
-    public static JSONObject addMulticastJSONValue(JSONObject json, List<String> macList)
-    {
-        try
-        {
-            json.put(KEY_MULTICAST_GROUP_LENGTH, "" + macList.size());
-            StringBuilder macs = new StringBuilder();
-            for (String mac : macList)
-            {
-                macs.append(mac);
-            }
-            json.put(KEY_MULTICAST_GROUP, macs.toString());
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        return json;
     }
     
     public static List<String> getRawBssidListByMacs(String macs, int macNum)

@@ -240,7 +240,7 @@ public class EspMeshSocketImpl implements EspMeshSocket
         return socket;
     }
     
-    private void sendRequestBytes(byte[] requestBytes, String targetBssid, int proto)
+    private void sendRequestBytes(byte[] requestBytes, String targetBssid, List<String> targetBssidList, int proto)
     {
         if (!isConnected())
         {
@@ -250,8 +250,11 @@ public class EspMeshSocketImpl implements EspMeshSocket
         try
         {
             OutputStream sckOutputStream = mSocket.getOutputStream();
-            EspMeshRequest meshRequest = EspMeshRequest.createInstance(proto, targetBssid, requestBytes);
+            EspMeshRequest meshRequest =
+                targetBssidList == null ? EspMeshRequest.createInstance(proto, targetBssid, requestBytes)
+                    : EspMeshRequest.createInstance(proto, targetBssidList, requestBytes);
             requestBytes = meshRequest.getRequestBytes();
+            
             // write requestBytes
             EspSocketUtil.writeBytes(sckOutputStream, requestBytes);
             // flush
@@ -355,7 +358,8 @@ public class EspMeshSocketImpl implements EspMeshSocket
             if (!proxyTask.isReadOnlyTask())
             {
                 int proto = proxyTask.getProtoType();
-                sendRequestBytes(requestBytes, targetBssid, proto);
+                List<String> targetBssidList = proxyTask.getGroupBssidList();
+                sendRequestBytes(requestBytes, targetBssid, targetBssidList, proto);
                 MeshLog.i(DEBUG, USE_LOG4J, CLASS, "loop() sendRequestBytes to " + targetBssid + " suc");
             }
             else

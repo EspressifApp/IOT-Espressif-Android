@@ -9,8 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.net.proxy.MeshCommunicationUtils;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
-import com.espressif.iot.util.MeshUtil;
+import com.espressif.iot.type.net.HeaderPair;
 
 public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusLocal
 {
@@ -42,14 +43,6 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
             e.printStackTrace();
         }
         return request;
-    }
-    
-    private JSONObject getRequestJSONObject(IEspStatusPlug statusPlug, List<String> macList)
-    {
-        JSONObject result = getRequestJSONObject(statusPlug);
-        MeshUtil.addMulticastJSONValue(result, macList);
-        
-        return result;
     }
     
     private boolean postPlugStatus2(InetAddress inetAddress, JSONObject postJSON, String deviceBssid, boolean isMeshDevice)
@@ -104,7 +97,7 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
             List<String> macList = new ArrayList<String>();
             for (String bssid : bssids)
             {
-                macList.add(MeshUtil.getMacAddressForMesh(bssid));
+                macList.add(bssid);
                 if (macList.size() == MULTICAST_GROUP_LENGTH_LIMIT)
                 {
                     if (!postMulticastCommand(inetAddress, statusPlug, macList))
@@ -128,7 +121,16 @@ public class EspCommandPlugPostStatusLocal implements IEspCommandPlugPostStatusL
     
     private boolean postMulticastCommand(InetAddress inetAddress, IEspStatusPlug statusPlug, List<String> macList)
     {
-        JSONObject postJSON = getRequestJSONObject(statusPlug, macList);
-        return postPlugStatus2(inetAddress, postJSON, MULTICAST_MAC, true);
+        StringBuilder macs = new StringBuilder();
+        for (String mac : macList) {
+            macs.append(mac);
+        }
+        HeaderPair multicastHeader =
+            new HeaderPair(MeshCommunicationUtils.HEADER_MESH_MULTICAST_GROUP, macs.toString());
+        
+        JSONObject postJSON = getRequestJSONObject(statusPlug);
+        
+        JSONObject respJSON = EspBaseApiUtil.PostForJson(getLocalUrl(inetAddress), MeshCommunicationUtils.MULTICAST_MAC, postJSON, multicastHeader);
+        return respJSON != null;
     }
 }

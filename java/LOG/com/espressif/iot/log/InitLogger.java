@@ -20,7 +20,6 @@ public class InitLogger {
         Logger.getLogger(com.espressif.iot.db.IOTDeviceDBManager.class).setLevel(Level.OFF);
         Logger.getLogger(com.espressif.iot.ui.device.timer.DeviceTimersActivity.class).setLevel(Level.OFF);
         Logger.getLogger(com.espressif.iot.command.device.sensor.EspCommandSensorGetStatusInternet.class).setLevel(Level.OFF);
-        Logger.getLogger(com.espressif.iot.command.device.espbutton.EspCommandEspButtonConfigureOld.class).setLevel(Level.OFF);
         Logger.getLogger(com.espressif.iot.command.device.humiture.EspCommandHumitureGetStatusListInternet.class).setLevel(Level.OFF);
         Logger.getLogger(com.espressif.iot.action.device.common.EspActionDeviceSynchronizeInterentDiscoverLocal.class).setLevel(Level.OFF);
         Logger.getLogger(com.espressif.iot.command.device.common.EspCommandDeviceDeleteInternet.class).setLevel(Level.OFF);

@@ -36,7 +36,7 @@ public class EspCommandEspButtonGroupDeviceMoveInto implements IEspCommandEspBut
             StringBuilder devicesMacs = new StringBuilder();
             for (IEspDevice device : moveDevices)
             {
-                String deviceMac = MeshUtil.getMacAddressForMesh(device.getBssid());
+                String deviceMac = device.getBssid();
                 devicesMacs.append(deviceMac);
             }
             postJSON.put(KEY_MAC, devicesMacs.toString());

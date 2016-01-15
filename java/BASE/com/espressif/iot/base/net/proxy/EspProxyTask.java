@@ -2,6 +2,7 @@ package com.espressif.iot.base.net.proxy;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.List;
 
 public interface EspProxyTask
 {
@@ -147,4 +148,18 @@ public interface EspProxyTask
      * @return
      */
     int getTaskTimeout();
+    
+    /**
+     * get group bssid list
+     * 
+     * @return group bssid list
+     */
+    List<String> getGroupBssidList();
+    
+    /**
+     * set group bssid list
+     * 
+     * @param groupBssidList the group bssid list
+     */
+    void setGroupBssidList(List<String> groupBssidList);
 }

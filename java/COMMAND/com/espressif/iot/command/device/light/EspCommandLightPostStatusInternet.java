@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.MeshUtil;
 
 public class EspCommandLightPostStatusInternet implements IEspCommandLightPostStatusInternet
 {
@@ -92,7 +91,7 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
         List<String> macList = new ArrayList<String>();
         for (String bssid : bssids)
         {
-            macList.add(MeshUtil.getMacAddressForMesh(bssid));
+            macList.add(bssid);
             if (macList.size() == MULTICAST_GROUP_LENGTH_LIMIT)
             {
                 if (!postMulticastCommand(deviceKey, statusLight, macList))
@@ -118,12 +117,15 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
         String headerValue = Token + " " + deviceKey;
         HeaderPair header = new HeaderPair(headerKey, headerValue);
         
+        StringBuilder urlBuilder = new StringBuilder(URL_MULTICAST);
+        for (String mac : macList) {
+            urlBuilder.append(mac).append(",");
+        }
+        
         try
         {
             JSONObject postJSON = getJSONByStatus(statusLight);
-            MeshUtil.addMulticastJSONValue(postJSON, macList);
-            
-            JSONObject result = EspBaseApiUtil.Post(URL_MULTICAST, postJSON, header);
+            JSONObject result = EspBaseApiUtil.Post(urlBuilder.toString(), postJSON, header);
             if (result != null)
             {
                 int httpStatus = result.getInt(Status);

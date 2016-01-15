@@ -86,6 +86,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
     private Button mBottomEditBtn;
     private Button mBottomRemoveBtn;
     private Button mBottomControlBtn;
+    private Button mBottomSelectAllBtn;
     
     private static final int POPMENU_ID_SYNC_LOCAL = 0x10;
     private static final int POPMENU_ID_RENAME = 0x20;
@@ -144,6 +145,8 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         mBottomControlBtn.setOnClickListener(this);
         mBottomRemoveBtn = (Button)findViewById(R.id.scene_device_remove);
         mBottomRemoveBtn.setOnClickListener(this);
+        mBottomSelectAllBtn = (Button)findViewById(R.id.scene_device_select_all);
+        mBottomSelectAllBtn.setOnClickListener(this);
         
         mEspGroupHandler = EspGroupHandler.getInstance();
         mEspGroupHandler.call();
@@ -231,6 +234,14 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         else if (v == mBottomRemoveBtn)
         {
             showRemoveDeviceDialog();
+        } else if (v == mBottomSelectAllBtn) {
+            if (mDeviceAdapter.getEditCheckedDevices().size() > 0) {
+                mDeviceAdapter.cancelSelectAllDevice();
+            } else {
+                mDeviceAdapter.selectAllDevice();
+            }
+
+            updateBottomButtons();
         }
     }
 
@@ -327,6 +338,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         boolean editable = mDeviceAdapter.isEditable();
         int titleRes = editable ? R.string.esp_scene_menu_edit_cancel : R.string.esp_scene_menu_edit;
         mBottomEditBtn.setText(titleRes);
+        mBottomSelectAllBtn.setEnabled(editable);
         
         boolean hasDeviceSelected = mDeviceAdapter.getEditCheckedDevices().size() > 0;
         mBottomControlBtn.setEnabled(hasDeviceSelected);

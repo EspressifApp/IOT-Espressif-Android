@@ -92,6 +92,10 @@ public class EspMeshPackageUtil
     private static final boolean USE_LOG4J = true;
     private static final Class<?> CLASS = EspMeshPackageUtil.class;
     
+    private static final int M_OPTION_HEADER_LEN = 2;
+    
+    private static final int M_O_MCAST_GRP = 7;
+    
     private static final int VER = 0;
     
     private static String MULTIPLE_CAST_BSSID = "01:00:5e:00:00:00";
@@ -109,6 +113,7 @@ public class EspMeshPackageUtil
     public static int M_PROTO_JSON = 2;
     
     public static int M_PROTO_MQTT = 3;
+    
     
     // get first byte of Mesh Package Header
     private static byte get1Byte(int ver, boolean optionExist)
@@ -171,21 +176,29 @@ public class EspMeshPackageUtil
     private static byte[] getOptionBytes(List<String> targetBssidList)
     {
         int targetBssidListSize = targetBssidList.size();
-        byte[] bssidListBytes = new byte[targetBssidListSize * MAC_ADDR_LEN];
-        int bssidListBytesOffset = 0;
+        final int optionSizeEach = MAC_ADDR_LEN + M_OPTION_HEADER_LEN;
+        byte[] optionBytes = new byte[targetBssidListSize * optionSizeEach];
+        int optionBytesOffset = 0;
         
         for (int bssidIndex = 0; bssidIndex < targetBssidListSize; ++bssidIndex)
         {
+            optionBytes[optionBytesOffset++] = M_O_MCAST_GRP;
+            optionBytes[optionBytesOffset++] = (byte)optionSizeEach;
             String targetBssid = targetBssidList.get(bssidIndex);
             byte[] bssidBytes = getDestAddrBytes(targetBssid);
             for (int offset = 0; offset < MAC_ADDR_LEN; ++offset)
             {
-                bssidListBytes[offset + bssidListBytesOffset] = bssidBytes[offset];
+                optionBytes[offset + optionBytesOffset] = bssidBytes[offset];
             }
-            bssidListBytesOffset += MAC_ADDR_LEN;
+            optionBytesOffset += MAC_ADDR_LEN;
         }
         
-        return bssidListBytes;
+        return optionBytes;
+    }
+    
+    private static int getMeshRequestOptionLength(List<String> groupBssidList)
+    {
+        return (M_OPTION_LEN + (M_OPTION_HEADER_LEN + MAC_ADDR_LEN) * groupBssidList.size());
     }
     
     private static byte[] __addMeshRequestPackageHeader(int proto, String targetBssid, byte[] requestBytes,
@@ -201,7 +214,7 @@ public class EspMeshPackageUtil
                 throw new IllegalArgumentException("groupBssidList.size() should equal 0");
             }
             // don't forget to add M_OPTION_LEN
-            optionLength += (M_OPTION_LEN + MAC_ADDR_LEN * groupBssidList.size());
+            optionLength = getMeshRequestOptionLength(groupBssidList);
         }
         // packageLength = M_HEADER_LEN + requestBytes.length+optionLength
         int packageLength = M_HEADER_LEN + requestBytes.length + optionLength;
@@ -209,7 +222,7 @@ public class EspMeshPackageUtil
         byte[] newRequestBytes = new byte[packageLength];
         // build package before optionList
         int ver = VER;
-        boolean optionExist = false;
+        boolean optionExist = optionLength != 0;
         int headerOffset = 0;
         // build first two bytes
         newRequestBytes[headerOffset++] = get1Byte(ver, optionExist);

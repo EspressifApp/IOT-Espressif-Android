@@ -1,8 +1,12 @@
 package com.espressif.iot.base.net.proxy;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.protocol.HTTP;
+
+import com.espressif.iot.util.BSSIDUtil;
 
 import android.text.TextUtils;
 
@@ -11,6 +15,21 @@ public class EspProxyTaskFactory
     private static final boolean DEBUG = true;
     private static final boolean USE_LOG4J = true;
     private static final Class<?> CLASS = EspProxyTaskFactory.class;
+    private static final List<String> UNNECESSARY_HEADER_LIST;
+    
+    static
+    {
+        UNNECESSARY_HEADER_LIST = new ArrayList<String>();
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_MESH_BSSID);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_MESH_HOST);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_PROXY_TIMEOUT);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_READ_ONLY);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_NON_RESPONSE);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_PROTO_TYPE);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_TASK_SERIAL);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_TASK_TIMEOUT);
+        UNNECESSARY_HEADER_LIST.add(MeshCommunicationUtils.HEADER_MESH_MULTICAST_GROUP);
+    }
     
     /**
      * create EspProxyTask by its source socket
@@ -49,10 +68,30 @@ public class EspProxyTaskFactory
                 contentLength = Integer.parseInt(contentLengthStr);
                 EspSocketUtil.readBytes(srcSock.getInputStream(), buffer, headerLength, contentLength);
             }
+            String meshGroupStr =
+                EspSocketUtil.findHttpHeader(buffer,
+                    0,
+                    headerLength,
+                    MeshCommunicationUtils.HEADER_MESH_MULTICAST_GROUP);
+            List<String> bssidList = null;
+            if (!TextUtils.isEmpty(meshGroupStr))
+            {
+                bssidList = BSSIDUtil.getBssidList(meshGroupStr);
+            }
             
             int protoType =
                 TextUtils.isEmpty(protoTypeStr) ? EspProxyTask.M_PROTO_HTTP : Integer.parseInt(protoTypeStr);
                 
+            // remove unnecessary header
+            int[] newHeaderLength = new int[]{-1};
+            buffer =
+                EspSocketUtil.removeUnnecessaryHttpHeader(buffer,
+                    headerLength,
+                    contentLength,
+                    UNNECESSARY_HEADER_LIST,
+                    newHeaderLength);
+            headerLength = newHeaderLength[0];
+            
             byte[] requestBytes = getRequestBytes(protoType, buffer, headerLength, contentLength);
             // String request = new String(requestBytes);
             
@@ -69,6 +108,10 @@ public class EspProxyTaskFactory
             task.setLongSocketSerial(taskSerial);
             int taskTimeout = TextUtils.isEmpty(timeoutStr) ? 0 : Integer.parseInt(timeoutStr);
             task.setTaskTimeout(taskTimeout);
+            if (bssidList != null)
+            {
+                task.setGroupBssidList(bssidList);
+            }
             return task;
         }
         catch (IOException e)

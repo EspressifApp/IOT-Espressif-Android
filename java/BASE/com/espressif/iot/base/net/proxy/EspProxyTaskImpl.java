@@ -3,6 +3,7 @@ package com.espressif.iot.base.net.proxy;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public class EspProxyTaskImpl implements EspProxyTask
 {
@@ -29,6 +30,7 @@ public class EspProxyTaskImpl implements EspProxyTask
     private int mProtoType = M_PROTO_HTTP;
     private int mLongSocketSerial = 0;
     private int mTaskTimeout = 0;
+    private List<String> mGroupBssidList = null;
     
     private volatile boolean mFinished;
     
@@ -176,7 +178,6 @@ public class EspProxyTaskImpl implements EspProxyTask
     {
         if (this == CLOSE_PROXYTASK)
         {
-            System.out.println("bh CLOSE_PROXYTASK shouldn't call replyClose()");
             MeshLog.e(DEBUG, USE_LOG4J, CLASS, "CLOSE_PROXYTASK shouldn't call setSourceSocket()");
             throw new IllegalStateException("CLOSE_PROXYTASK shouldn't call replyClose()");
         }
@@ -372,6 +373,18 @@ public class EspProxyTaskImpl implements EspProxyTask
                 + " | request valid = " + mRequestValid + " | response valid = " + mResponseValid + " | finished = "
                 + mFinished + " | mLongSocketSerial = " + mLongSocketSerial + "]";
         }
+    }
+
+    @Override
+    public List<String> getGroupBssidList()
+    {
+        return mGroupBssidList;
+    }
+    
+    @Override
+    public void setGroupBssidList(List<String> groupBssidList)
+    {
+        mGroupBssidList = groupBssidList;
     }
     
 }

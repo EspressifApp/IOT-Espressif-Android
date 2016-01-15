@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.MeshUtil;
 
 public final class MeshCommunicationUtils
 {
@@ -28,8 +27,12 @@ public final class MeshCommunicationUtils
     // and 30 * 1000 is enough to replace Integer.MAX_VALUE
     private static final int READ_TIMEOUT_INFINITE = 30 * 1000;
     
+    public static final String BROADCAST_MAC = "00:00:00:00:00:00";
+    public static final String MULTICAST_MAC = "01:00:5e:00:00:00";
+    
     public static final String HEADER_MESH_HOST = "Mesh-Host";
     public static final String HEADER_MESH_BSSID = "Mesh-Bssid";
+    public static final String HEADER_MESH_MULTICAST_GROUP = "Mesh-Group";
     public static final String HEADER_PROXY_TIMEOUT = "Proxy-Timeout";
     
     public static final String HEADER_PROTO_TYPE = "M-Proto-Type";
@@ -40,6 +43,8 @@ public final class MeshCommunicationUtils
     
     private static final String METHOD_POST = "POST";
     private static final String METHOD_GET = "GET";
+    private static final String RESPONSE = "response";
+    private static final int RESPONSE_ONLY_ROOT = 2;
     
     public static final int SERIAL_NORMAL_TASK = 0;
     private static volatile int SERIAL_LONG_TASK = 1;
@@ -87,6 +92,12 @@ public final class MeshCommunicationUtils
             for (HeaderPair header : headers)
             {
                 urlConn.addRequestProperty(header.getName(), header.getValue());
+            }
+            
+            // Add necessary json
+            if (!nonResponse && (bssid.equals(MULTICAST_MAC) || bssid.equals(BROADCAST_MAC)))
+            {
+                postJSON.put(RESPONSE, RESPONSE_ONLY_ROOT);
             }
             
             // Connect or post
@@ -166,7 +177,7 @@ public final class MeshCommunicationUtils
         String localHostAddress = "FFFFFFFF";
         json.put(KEY_SIP, localHostAddress);
         
-        String mac = MeshUtil.getMacAddressForMesh(bssid);
+        String mac = bssid;
         json.put(KEY_MDEV_MAC, mac);
     }
     

@@ -11,8 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:adjustViewBounds="true"
-        android:minHeight="250dip"
-        android:minWidth="250dip"
         android:scaleType="fitXY"
         android:src="@drawable/esp_espbutton_img" />
 
@@ -21,52 +19,60 @@
         style="@style/EspButtonKey"
         android:layout_alignLeft="@id/button_img"
         android:layout_alignRight="@id/button_img"
-        android:layout_alignTop="@id/button_img" />
+        android:layout_alignTop="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_up" />
 
     <Button
         android:id="@+id/key_left"
         style="@style/EspButtonKey"
         android:layout_alignBottom="@id/button_img"
         android:layout_alignLeft="@id/button_img"
-        android:layout_alignTop="@id/button_img" />
+        android:layout_alignTop="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_left" />
 
     <Button
         android:id="@+id/key_right"
         style="@style/EspButtonKey"
         android:layout_alignBottom="@id/button_img"
         android:layout_alignRight="@id/button_img"
-        android:layout_alignTop="@id/button_img" />
+        android:layout_alignTop="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_right" />
 
     <Button
         android:id="@+id/key_down"
         style="@style/EspButtonKey"
         android:layout_alignBottom="@id/button_img"
         android:layout_alignLeft="@id/button_img"
-        android:layout_alignRight="@id/button_img" />
+        android:layout_alignRight="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_down" />
 
     <Button
         android:id="@+id/key_1"
         style="@style/EspButtonKey"
         android:layout_alignLeft="@id/button_img"
-        android:layout_alignTop="@id/button_img" />
+        android:layout_alignTop="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_1" />
 
     <Button
         android:id="@+id/key_2"
         style="@style/EspButtonKey"
         android:layout_alignRight="@id/button_img"
-        android:layout_alignTop="@id/button_img" />
+        android:layout_alignTop="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_2" />
 
     <Button
         android:id="@+id/key_3"
         style="@style/EspButtonKey"
         android:layout_alignBottom="@id/button_img"
-        android:layout_alignLeft="@id/button_img" />
+        android:layout_alignLeft="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_3" />
 
     <Button
         android:id="@+id/key_4"
         style="@style/EspButtonKey"
         android:layout_alignBottom="@id/button_img"
-        android:layout_alignRight="@id/button_img" />
+        android:layout_alignRight="@id/button_img"
+        android:background="@drawable/esp_espbutton_key_4" />
 
     <ImageView
         android:id="@+id/button_cover"
@@ -74,8 +80,6 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:adjustViewBounds="true"
-        android:minHeight="250dip"
-        android:minWidth="250dip"
         android:scaleType="fitXY"
         android:src="@drawable/esp_espbutton_cover" />
 

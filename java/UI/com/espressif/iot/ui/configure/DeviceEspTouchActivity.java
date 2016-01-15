@@ -419,11 +419,13 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             @Override
             protected void onPostExecute(Boolean result)
             {
-                toastEspTouchResult(result);
                 dialog.dismiss();
                 // show dialog, add device list
                 List<String> deviceNameList = filterConfigureDeviceNameList();
                 List<String> configuredDeviceBssidList = mEsptouchDeviceBssidList;
+                if (deviceNameList.isEmpty() && configuredDeviceBssidList.isEmpty()) {
+                    toastEspTouchResult(false);
+                }
                 String title = getString(R.string.esp_esptouch_result_title);
                 StringBuilder message = new StringBuilder();
                 message.append(getString(R.string.esp_esptouch_message_cloud_title, deviceNameList.size()));

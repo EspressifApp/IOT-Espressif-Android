@@ -327,7 +327,7 @@
     <string name="esp_esptouch_show_password">Show password</string>
     <string name="esp_esptouch_is_hidden">This Wi-Fi is hidden</string>
     <string name="esp_esptouch_version">EspTouch Ver : %1$s</string>
-    <string name="esp_esptouch_hint_msg">\"Please make sure that the green light of device is under twinkle slowly before click [OK]\"</string>
+    <string name="esp_esptouch_hint_msg">\"Please make sure that the green light of device is under twinkle slowly before click [OK]. If the light is yellow, please wait for the light to turn green.\"</string>
     <string name="esp_esptouch_connect_wifi">"%1$s is connected to Wi-Fi"</string>
     <string name="esp_esptouch_menu_get_share">Get Share</string>
     <string name="esp_esptouch_menu_softap_configure">SoftAP Configure</string>
@@ -370,6 +370,7 @@
     <string name="esp_scene_menu_edit_cancel">Cancel</string>
     <string name="esp_scene_menu_remove">Remove</string>
     <string name="esp_scene_menu_control">Control</string>
+    <string name="esp_scene_menu_select_all">Select All</string>
     <string name="esp_scene_remove_dialog_msg">Remove all selected devices ?</string>
     <string name="esp_scene_no_controllable_device_type_msg">No controllable device type is selected</string>
     <string name="esp_secen_no_online_device_msg">All selected devices are offline</string>

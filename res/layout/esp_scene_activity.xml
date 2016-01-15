@@ -33,6 +33,14 @@
                     android:text="@string/esp_scene_menu_edit" />
 
                 <Button
+                    android:id="@+id/scene_device_select_all"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/esp_scene_menu_select_all" />
+
+                <Button
                     android:id="@+id/scene_device_control"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dip"

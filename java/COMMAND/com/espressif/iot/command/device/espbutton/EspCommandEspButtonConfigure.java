@@ -1,7 +1,6 @@
 package com.espressif.iot.command.device.espbutton;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -13,6 +12,7 @@ import org.json.JSONObject;
 
 import com.espressif.iot.base.net.proxy.MeshCommunicationUtils;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.util.MeshUtil;
 
 public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigure
@@ -210,23 +210,25 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
             }
             
             String bssid = mDeviceMac;
+            HeaderPair multicastHeader = null;
             if (mInetDevice.getIsMeshDevice())
             {
                 if (mDeviceList.size() > 1)
                 {
                     if (mBroadcast)
                     {
-                        bssid = BROADCAST_MAC;
+                        bssid = MeshCommunicationUtils.BROADCAST_MAC;
                     }
                     else
                     {
-                        bssid = MULTICAST_MAC;
-                        List<String> macs = new ArrayList<String>();
+                        bssid = MeshCommunicationUtils.MULTICAST_MAC;
+                        StringBuilder macs = new StringBuilder();
                         for (IEspDevice device : mDeviceList)
                         {
-                            macs.add(device.getBssid());
+                            macs.append(device.getBssid());
                         }
-                        MeshUtil.addMulticastJSONValue(postJSON, macs);
+                        multicastHeader =
+                            new HeaderPair(MeshCommunicationUtils.HEADER_MESH_MULTICAST_GROUP, macs.toString());
                     }
                 }
                 else
@@ -234,8 +236,14 @@ public class EspCommandEspButtonConfigure implements IEspCommandEspButtonConfigu
                     bssid = mInetDevice.getBssid();
                 }
             }
-            
-            JSONObject response = MeshCommunicationUtils.JsonPost(mTargetUrl, bssid, mTaskSerial, postJSON);
+
+            JSONObject response;
+            if (multicastHeader == null) {
+                response = MeshCommunicationUtils.JsonPost(mTargetUrl, bssid, mTaskSerial, postJSON);
+            } else {
+                response = MeshCommunicationUtils.JsonPost(mTargetUrl, bssid, mTaskSerial, postJSON, multicastHeader);
+            }
+
             if (response != null)
             {
                 int status = response.getInt(Status);

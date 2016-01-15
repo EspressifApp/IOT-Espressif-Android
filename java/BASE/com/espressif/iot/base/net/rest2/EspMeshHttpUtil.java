@@ -27,7 +27,6 @@ import android.text.TextUtils;
 
 import com.espressif.iot.base.net.proxy.EspProxyServerImpl;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.MeshUtil;
 
 public class EspMeshHttpUtil
 {
@@ -144,7 +143,7 @@ public class EspMeshHttpUtil
         }
         try
         {
-            String mac = MeshUtil.getMacAddressForMesh(deviceBssid);
+            String mac = deviceBssid;
             json.put(SIP, FAKE_SIP);
             json.put(SPORT, FAKE_SPORT);
             json.put(MDEV_MAC, mac);

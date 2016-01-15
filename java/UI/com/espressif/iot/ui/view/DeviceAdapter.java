@@ -178,4 +178,14 @@ public class DeviceAdapter extends BaseAdapter
     {
         mEditCheckedChangeListener = listener;
     }
+    
+    public void selectAllDevice() {
+        mEditCheckedDevices.addAll(mDeviceList);
+        notifyDataSetChanged();
+    }
+    
+    public void cancelSelectAllDevice() {
+        mEditCheckedDevices.clear();
+        notifyDataSetChanged();
+    }
 }
