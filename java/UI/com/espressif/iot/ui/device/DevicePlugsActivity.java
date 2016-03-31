@@ -26,7 +26,7 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements OnItemClic
 {
     private IEspDevicePlugs mDevicePlugs;
     
-    protected ListView mApertureListView;
+    private ListView mApertureListView;
     private ApertureAdapter mApertureAdapter;
     private List<IAperture> mApertureList;
     
@@ -36,7 +36,6 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements OnItemClic
         super.onCreate(savedInstanceState);
         
         boolean compatibility = isDeviceCompatibility();
-        checkHelpModePlugs(compatibility);
         if (compatibility)
         {
             executeGet();
@@ -72,8 +71,6 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements OnItemClic
         {
             Toast.makeText(this, R.string.esp_device_plugs_get_status_failed, Toast.LENGTH_LONG).show();
         }
-        
-        checkHelpExecuteFinish(command, result);
     }
     
     @Override
@@ -165,13 +162,5 @@ public class DevicePlugsActivity extends DeviceActivityAbs implements OnItemClic
             return view;
         }
         
-    }
-    
-    protected void checkHelpModePlugs(boolean compatibility)
-    {
-    }
-    
-    protected void checkHelpExecuteFinish(int command, boolean result)
-    {
     }
 }

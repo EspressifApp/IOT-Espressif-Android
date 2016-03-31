@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="17"
-    android:versionName="v1.1.4" >
+    android:versionCode="18"
+    android:versionName="v1.1.5" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -62,7 +62,7 @@
             android:name="com.espressif.iot.ui.settings.SettingsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.espressif.iot.ui.configure.DeviceConfigureActivity"
+            android:name="com.espressif.iot.ui.configure.DeviceSoftAPConfigureActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.configure.WifiConfigureActivity"
@@ -118,38 +118,6 @@
         <activity
             android:name="com.espressif.iot.ui.device.timer.DevicePlugsLoopPeriodTimerEditActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpEspUIActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDeviceConfigureActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDeviceFlammableActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppThemeDark" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDeviceHumitureActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppThemeDark" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDeviceLightActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDevicePlugActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDevicePlugsActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.help.HelpDeviceVoltageActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppThemeDark" />
         <activity
             android:name="com.espressif.iot.ui.configure.DeviceEspTouchActivity"
             android:screenOrientation="portrait" />

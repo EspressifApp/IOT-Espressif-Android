@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.net.wifi.ScanResult;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,22 +19,23 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.type.net.WifiCipherType;
+import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.view.WifiAdapter;
 import com.espressif.iot.util.BSSIDUtil;
 
-public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs implements OnClickListener,
-    OnCancelListener
+public class DeviceSoftAPConfigureSettingsDialog extends DeviceSoftAPConfigureDialogAbs
+    implements OnClickListener, OnCancelListener
 {
-    protected AlertDialog mDialog;
+    private AlertDialog mDialog;
     
     private Spinner mWifiSpinner;
     private WifiAdapter mWifiAdapter;
-    protected List<ScanResult> mWifiList;
+    private List<ScanResult> mWifiList;
     
     private EditText mWifiPasswordEdt;
     private CheckBox mShowPasswordCheck;
     
-    public DeviceConfigureSettingsDialog(DeviceConfigureActivity activity, IEspDeviceNew device)
+    public DeviceSoftAPConfigureSettingsDialog(DeviceSoftAPConfigureActivity activity, IEspDeviceNew device)
     {
         super(activity, device);
     }
@@ -76,14 +76,13 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
             {
                 if (mWifiList.get(i).BSSID.equals(lastBssid))
                 {
+                    // find last configured AP
                     mWifiSpinner.setSelection(i);
                     mWifiPasswordEdt.setText(lastPwd);
                     break;
                 }
             }
         }
-        
-        checkHelpState();
     }
     
     @Override
@@ -149,12 +148,11 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
         {
             if (isChecked)
             {
-                mWifiPasswordEdt.setInputType(InputType.TYPE_CLASS_TEXT
-                    | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                mWifiPasswordEdt.setInputType(EspActivityAbs.InputType_PASSWORD_VISIBLE);
             }
             else
             {
-                mWifiPasswordEdt.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                mWifiPasswordEdt.setInputType(EspActivityAbs.InputType_PASSWORD_NORMAL);
             }
         }
         
@@ -163,18 +161,6 @@ public class DeviceConfigureSettingsDialog extends DeviceConfigureDialogAbs impl
     @Override
     public void onCancel(DialogInterface dialog)
     {
-        if (checkHelpOnCancel())
-        {
-            return;
-        }
-        
         resetAutoRefresh();
-    }
-    
-    protected void checkHelpState() {
-    }
-    
-    protected boolean checkHelpOnCancel() {
-        return false;
     }
 }

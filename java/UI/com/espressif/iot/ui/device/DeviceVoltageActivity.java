@@ -152,8 +152,6 @@ public class DeviceVoltageActivity extends DeviceChartActivityAbs
                 mDialog = null;
             }
             
-            checkHelpExecuteFinish(result != null);
-            
             setChartViewDrawn(true);
         }
     }

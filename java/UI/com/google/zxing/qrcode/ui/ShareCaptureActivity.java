@@ -354,6 +354,7 @@ public class ShareCaptureActivity extends Activity implements Callback
                 toastMsg = R.string.esp_qrcode_capture_result_failed;
             }
             Toast.makeText(mActivity, toastMsg, Toast.LENGTH_LONG).show();
+            mActivity.setResult(RESULT_OK);
             mActivity.finish();
         }
     }

@@ -35,14 +35,14 @@ public class DeviceBrowserConfigureActivity extends EspActivityAbs
     implements OnItemClickListener, OnRefreshListener<ListView> {
     private IEspUser mUser;
 
-    private final int LIST_HEADER_COUNT = PullToRefreshListView.DEFAULT_HEADER_COUNT;
-
     private PullToRefreshListView mSoftApListView;
     private List<IEspDeviceNew> mSoftApList;
     private BaseAdapter mSoftApAdapter;
 
     private static final int MENU_ID_CONNECT = 1;
 
+    private DeviceBrowserWebFragment mFragment;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +68,7 @@ public class DeviceBrowserConfigureActivity extends EspActivityAbs
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        IEspDeviceNew device = mSoftApList.get(position - LIST_HEADER_COUNT);
+        IEspDeviceNew device = (IEspDeviceNew)view.getTag();
         PopupMenu popupMenu = new PopupMenu(this, view);
         Menu menu = popupMenu.getMenu();
         menu.add(Menu.NONE, MENU_ID_CONNECT, 0, R.string.esp_browser_confiugre_menu_connect);
@@ -76,6 +76,13 @@ public class DeviceBrowserConfigureActivity extends EspActivityAbs
         popupMenu.show();
     }
 
+    @Override
+    protected void onTitleRightIconClick(View rightIcon) {
+        if (mFragment != null) {
+            mFragment.onTitleRightIconClick();
+        }
+    }
+    
     private class RefreshSoftAPTask extends AsyncTask<Void, Void, List<IEspDeviceNew>> {
         @Override
         protected List<IEspDeviceNew> doInBackground(Void... params) {
@@ -127,6 +134,9 @@ public class DeviceBrowserConfigureActivity extends EspActivityAbs
 
     }
 
+    /**
+     * Connect the device and show it's configure web page
+     */
     private class ConnectTask extends AsyncTask<Void, Void, Boolean> {
         private Activity mActivity;
         private IEspDeviceNew mDevice;
@@ -168,16 +178,16 @@ public class DeviceBrowserConfigureActivity extends EspActivityAbs
 
             if (result) {
                 commitWebPageFragment(mDevice);
-            }
-            else {
+            } else {
                 Toast.makeText(mActivity, R.string.esp_browser_configure_connect_failed, Toast.LENGTH_LONG).show();
             }
         }
     }
 
+    // Show the device configure web page
     private void commitWebPageFragment(IEspDeviceNew device) {
-        DeviceBrowserWebFragment fragment = new DeviceBrowserWebFragment();
-        fragment.setDevice(device);
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        mFragment = new DeviceBrowserWebFragment();
+        mFragment.setDevice(device);
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
     }
 }

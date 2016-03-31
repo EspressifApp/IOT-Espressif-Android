@@ -634,8 +634,9 @@ public class EspMeshSocketImpl implements EspMeshSocket
                 String message = EspSocketUtil.getStrackTrace(e);
                 MeshLog.e(DEBUG, USE_LOG4J, CLASS, "replyProxyTask() IOException e:" + message);
             }
-            MeshLog.e(DEBUG, USE_LOG4J, CLASS, "replyProxyTask() proxyTask is removed from mSentProxyTaskList: "
-                + finishedProxyTask + ", mSentProxyTaskList: " + mSentProxyTaskList);
+            // don't open the log for released version, or apk will crash sometime for concurrent exception
+//            MeshLog.e(DEBUG, USE_LOG4J, CLASS, "replyProxyTask() proxyTask is removed from mSentProxyTaskList: "
+//                + finishedProxyTask + ", mSentProxyTaskList: " + mSentProxyTaskList);
             
             // decrease timeout if necessary
             if (finishedProxyTask.getTaskTimeout() != 0)

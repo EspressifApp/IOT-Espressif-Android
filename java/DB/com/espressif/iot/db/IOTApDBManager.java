@@ -1,5 +1,6 @@
 package com.espressif.iot.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -11,6 +12,7 @@ import com.espressif.iot.db.greenrobot.daos.ApDBDao;
 import com.espressif.iot.db.greenrobot.daos.ApDBDao.Properties;
 import com.espressif.iot.db.greenrobot.daos.DaoSession;
 import com.espressif.iot.object.IEspSingletonObject;
+import com.espressif.iot.object.db.IApDB;
 import com.espressif.iot.object.db.IApDBManager;
 
 import de.greenrobot.dao.query.Query;
@@ -89,7 +91,7 @@ public class IOTApDBManager implements IApDBManager, IEspSingletonObject
     }
     
     @Override
-    public ApDB getLastSelectedApDB()
+    public IApDB getLastSelectedApDB()
     {
         ApDB apDB = __getLastSelectedApDB();
         if (apDB == null)
@@ -105,10 +107,17 @@ public class IOTApDBManager implements IApDBManager, IEspSingletonObject
         return apDB;
     }
     
-    @Override
-    public List<ApDB> getAllApDBList()
+    private List<ApDB> __getAllApDBList()
     {
         return apDao.loadAll();
+    }
+    
+    @Override
+    public List<IApDB> getAllApDBList()
+    {
+        List<IApDB> apDBList = new ArrayList<IApDB>();
+        apDBList.addAll(__getAllApDBList());
+        return apDBList;
     }
     
     @Override
@@ -117,7 +126,7 @@ public class IOTApDBManager implements IApDBManager, IEspSingletonObject
         __setIsLastSelectedFalse();
         
         // Delete deviceBssid from other ap
-        List<ApDB> list = getAllApDBList();
+        List<ApDB> list = __getAllApDBList();
         for (ApDB ap : list)
         {
             if (!ap.getBssid().equals(bssid) && ap.getDeviceBssids().contains(deviceBssid))
@@ -168,7 +177,7 @@ public class IOTApDBManager implements IApDBManager, IEspSingletonObject
     public synchronized void updateApInfo(String deviceBssid, boolean isConfiguredSuc)
     {
         ApDB apDB = null;
-        List<ApDB> list = getAllApDBList();
+        List<ApDB> list = __getAllApDBList();
         for (ApDB ap : list)
         {
             if (ap.getDeviceBssids().contains(deviceBssid))

@@ -10,7 +10,6 @@ import com.espressif.iot.util.BSSIDUtil;
 
 import android.content.Context;
 import android.net.wifi.ScanResult;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -21,6 +20,9 @@ public class WifiAdapter extends BaseAdapter
     private Context mContext;
     private final List<ScanResult> mWifiList;
     
+    /**
+     * The BSSID set of WIFI need filter
+     */
     private Set<String> mFilter;
     
     public WifiAdapter(Context context, List<ScanResult> list)
@@ -54,8 +56,7 @@ public class WifiAdapter extends BaseAdapter
     {
         if (convertView == null)
         {
-            LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            convertView = View.inflate(mContext, android.R.layout.simple_list_item_1, null);
         }
         ScanResult sr = mWifiList.get(position);
         
@@ -114,6 +115,11 @@ public class WifiAdapter extends BaseAdapter
         }
     }
     
+    /**
+     * Filter the WIFI
+     * 
+     * @param bssid of WIFI
+     */
     public void addFilter(String bssid)
     {
         if (!mFilter.contains(bssid))
@@ -123,6 +129,11 @@ public class WifiAdapter extends BaseAdapter
         }
     }
     
+    /**
+     * Remove the filter of the WIFI
+     * 
+     * @param bssid of WIFI
+     */
     public void removeFilter(String bssid)
     {
         mFilter.remove(bssid);

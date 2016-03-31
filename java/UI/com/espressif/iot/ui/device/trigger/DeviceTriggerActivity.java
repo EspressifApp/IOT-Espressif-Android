@@ -24,16 +24,20 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClickListener {
+public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClickListener, OnItemLongClickListener {
     private final Logger log = Logger.getLogger(getClass());
 
     private static final int TRIGGER_NUM = 4;
@@ -50,11 +54,15 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
     private FragmentManager mFragmentManager;
     private static final String TAG_FRAGMENT = "Settings";
 
+    private static final int MENU_ID_TRIGGER_DELETE = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.device_trigger_activity);
+
+        setTitle(R.string.esp_device_trigger);
 
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
@@ -66,6 +74,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
         mTriggerAdapter = new TriggerAdapter(this);
         mTriggerListView.setAdapter(mTriggerAdapter);
         mTriggerListView.setOnItemClickListener(this);
+        mTriggerListView.setOnItemLongClickListener(this);
 
         mFragmentManager = getFragmentManager();
 
@@ -84,6 +93,19 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
             .addToBackStack(null)
             .commit();
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        EspDeviceTrigger trigger = mTriggerList.get(position);
+
+        PopupMenu popup = new PopupMenu(this, view);
+        Menu menu = popup.getMenu();
+        menu.add(0, MENU_ID_TRIGGER_DELETE, 0, R.string.esp_device_trigger_delete);
+        popup.setOnMenuItemClickListener(new MenuItemClickListener(trigger));
+        popup.show();
+
+        return true;
     }
 
     /**
@@ -115,6 +137,25 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
         if (!addTriggerDimensions.isEmpty()) {
             new CreateTriggerTask(this, addTriggerDimensions).execute();
         }
+    }
+
+    private class MenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
+        private EspDeviceTrigger mTrigger;
+
+        public MenuItemClickListener(EspDeviceTrigger trigger) {
+            mTrigger = trigger;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case MENU_ID_TRIGGER_DELETE:
+                    new DeleteTriggerTask(DeviceTriggerActivity.this, mTrigger).execute();
+                    return true;
+            }
+            return false;
+        }
+
     }
 
     private class TriggerAdapter extends BaseAdapter {
@@ -149,9 +190,9 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
 
             TextView tv1 = (TextView)convertView.findViewById(android.R.id.text1);
             tv1.setText(trigger.getName());
+            TextView tv2 = (TextView)convertView.findViewById(android.R.id.text2);
             List<TriggerRule> rules = trigger.getTriggerRules();
             if (!rules.isEmpty()) {
-                TextView tv2 = (TextView)convertView.findViewById(android.R.id.text2);
                 TriggerRule rule = rules.get(0);
 
                 StringBuilder ruleStr = new StringBuilder();
@@ -163,6 +204,8 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
                 }
 
                 tv2.setText(ruleStr);
+            } else {
+                tv2.setText("");
             }
 
             return convertView;
@@ -173,7 +216,6 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
      * Sort by dimension
      */
     private Comparator<EspDeviceTrigger> mTriggerComparator = new Comparator<EspDeviceTrigger>() {
-
         @Override
         public int compare(EspDeviceTrigger lhs, EspDeviceTrigger rhs) {
             Integer l = lhs.getDimension();
@@ -193,6 +235,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
             log.debug("execute GetTriggerTask");
             List<EspDeviceTrigger> result = mUser.doActionDeviceTriggerGet(mDevice);
             Collections.sort(result, mTriggerComparator);
+
             return result;
         }
 
@@ -203,8 +246,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
             if (result == null) {
                 log.info("GetTriggerTask result null");
                 Toast.makeText(mContext, R.string.esp_device_trigger_get_failed, Toast.LENGTH_LONG).show();
-            }
-            else {
+            } else {
                 log.info("GetTriggerTask result size = " + result.size());
                 onGetTriggers(result);
             }
@@ -245,7 +287,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
                 }
                 trigger.setName(name);
 
-                trigger.setStreamType(EspDeviceTrigger.STREAM_LIGHT);
+                trigger.setStreamType(EspDeviceTrigger.STREAM_ALARM);
                 trigger.setInterval(0);
                 trigger.setIntervalFunc(EspDeviceTrigger.INTERVAL_FUNC_AVG);
                 trigger.setCompareType(EspDeviceTrigger.COMPARE_TYPE_EQ);
@@ -254,6 +296,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
                 long id = mUser.doActionDeviceTriggerCreate(mDevice, trigger);
                 log.info("create dimension " + dimension + " result id = " + id);
                 if (id > 0) {
+                    trigger.setId(id);
                     result.add(trigger);
                 }
             }
@@ -262,6 +305,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
                 result.addAll(mTriggerList);
                 Collections.sort(result, mTriggerComparator);
             }
+
             return result;
         }
 
@@ -277,10 +321,35 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
         }
     }
 
+    private class DeleteTriggerTask extends ProgressDialogTask<Void, Void, Boolean> {
+        private EspDeviceTrigger mTrigger;
+
+        public DeleteTriggerTask(Activity activity, EspDeviceTrigger trigger) {
+            super(activity);
+
+            mTrigger = trigger;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return mUser.doActionDeviceTriggerDelete(mDevice, mTrigger);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            if (result) {
+                mTriggerList.remove(mTrigger);
+                mTriggerAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
         /*
-         * if find fragment and the fragment hasn't saved it's changes, hit user
+         * if find fragment and the fragment hasn't saved it's changes, hint user
          */
         Fragment fragment = mFragmentManager.findFragmentByTag(TAG_FRAGMENT);
         if (fragment != null) {
@@ -304,5 +373,9 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
 
     private void superBack() {
         super.onBackPressed();
+    }
+
+    public void notifyDataSetChanged() {
+        mTriggerAdapter.notifyDataSetChanged();
     }
 }

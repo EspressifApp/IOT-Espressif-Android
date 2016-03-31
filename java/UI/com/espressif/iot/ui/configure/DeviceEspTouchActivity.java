@@ -36,7 +36,7 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.IOTApDBManager;
-import com.espressif.iot.db.greenrobot.daos.ApDB;
+import com.espressif.iot.object.db.IApDB;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.ui.main.EspActivityAbs;
@@ -83,6 +83,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private static final int REQUEST_SOFTAP_CONFIGURE = 10;
     private static final int REQUEST_BROWSER_CONFIGURE = 11;
+    private static final int REQUEST_GET_SHARED = 12;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -179,7 +180,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         Menu menu = popupMenu.getMenu();
         menu.add(Menu.NONE, POPUPMENU_ID_GET_SHARE, 0, R.string.esp_esptouch_menu_get_share);
         menu.add(Menu.NONE, POPUPMENU_ID_SOFTAP_CONFIGURE, 0, R.string.esp_esptouch_menu_softap_configure);
-//        menu.add(Menu.NONE, POPUPMENU_ID_BROWSER_CONFIGURE, 0, R.string.esp_esptouch_menu_browser_configure);
+        menu.add(Menu.NONE, POPUPMENU_ID_BROWSER_CONFIGURE, 0, R.string.esp_esptouch_menu_browser_configure);
         popupMenu.setOnMenuItemClickListener(this);
         popupMenu.show();
     }
@@ -195,7 +196,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             }
             else
             {
-                mPasswordEdT.setInputType(InputType_PAssWORD_NORMAL);
+                mPasswordEdT.setInputType(InputType_PASSWORD_NORMAL);
             }
         }
     }
@@ -215,10 +216,10 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         switch(item.getItemId())
         {
             case POPUPMENU_ID_GET_SHARE:
-                startActivity(new Intent(this, ShareCaptureActivity.class));
+                startActivityForResult(new Intent(this, ShareCaptureActivity.class), REQUEST_GET_SHARED);
                 return true;
             case POPUPMENU_ID_SOFTAP_CONFIGURE:
-                startActivityForResult(new Intent(this, DeviceConfigureActivity.class), REQUEST_SOFTAP_CONFIGURE);
+                startActivityForResult(new Intent(this, DeviceSoftAPConfigureActivity.class), REQUEST_SOFTAP_CONFIGURE);
                 return true;
             case POPUPMENU_ID_BROWSER_CONFIGURE:
                 startActivityForResult(new Intent(this, DeviceBrowserConfigureActivity.class),
@@ -243,6 +244,11 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
                     finish();
                 }
                 break;
+            case REQUEST_GET_SHARED:
+                if (resultCode == RESULT_OK) {
+                    finish();
+                }
+                break;
         }
     }
     
@@ -259,8 +265,8 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private String getCurrentWifiPassword(String currentBssid)
     {
-        List<ApDB> apDBList = mIOTApDBManager.getAllApDBList();
-        for (ApDB ap : apDBList)
+        List<IApDB> apDBList = mIOTApDBManager.getAllApDBList();
+        for (IApDB ap : apDBList)
         {
             if (ap.getBssid().equals(currentBssid))
             {

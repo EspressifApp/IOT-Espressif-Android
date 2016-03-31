@@ -4,11 +4,10 @@ import com.espressif.iot.type.device.timer.EspDeviceFixedTimeTimer;
 
 public class DevicePlugFixedTimeTimerEditActivity extends DeviceTimerEditFixedTimerActivityAbs
 {
-
     @Override
     protected String getEditAction()
     {
-        return mActionValues[mActionSpinner.getSelectedItemPosition()];
+        return mActionValues[getActionSpinner().getSelectedItemPosition()];
     }
 
     @Override
@@ -16,5 +15,4 @@ public class DevicePlugFixedTimeTimerEditActivity extends DeviceTimerEditFixedTi
     {
         return timer.getTimeAction().get(0).getAction();
     }
-
 }

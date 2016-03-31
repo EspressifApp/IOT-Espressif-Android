@@ -20,7 +20,7 @@ public class EspDeviceTrigger
     public static final int COMPARE_TYPE_LT = 5;
     public static final int COMPARE_TYPE_LE = 6;
     
-    public static final String STREAM_LIGHT = "light";
+    public static final String STREAM_ALARM = "alarm_status";
     
     public static final String VIA_APP = "app";
     public static final String VIA_EMAIL = "mail";

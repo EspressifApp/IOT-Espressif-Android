@@ -58,9 +58,12 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
 {
     private final Logger log = Logger.getLogger(getClass());
     
+    /**
+     * The default update log URL
+     */
     private static final String DEFAULT_VERSION_LOG_URL = "file:///android_asset/html/en_us/update.html";
     /**
-     * The url for WebView
+     * The update log URL for WebView
      */
     private static final String VERSION_LOG_URL = "file:///android_asset/html/%locale/update.html";
     /**
@@ -226,6 +229,7 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         {
             if (resultCode == Activity.RESULT_OK)
             {
+                // Register completed, direct login
                 String email = data.getStringExtra(EspStrings.Key.REGISTER_NAME_EMAIL);
                 String password = data.getStringExtra(EspStrings.Key.REGISTER_NAME_PASSWORD);
                 

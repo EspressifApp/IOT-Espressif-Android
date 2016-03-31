@@ -27,6 +27,9 @@ import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.RandomUtil;
 
+/**
+ * The long connection client with ESP server base on MBox
+ */
 public class EspPushClient
 {
     private final Logger log = Logger.getLogger(getClass());
@@ -61,7 +64,7 @@ public class EspPushClient
     private static final String ESP_PNS_TOKEN = "mbox-fc36a67c11d41f70cf24db0e89e2ab7e113e6a89";
     
     private static final int PEER_TOKEN_MIN_LENGTH = 41;
-    private static final String TOKEN_ILLEGAL_CHARS = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+    private static final String TOKEN_LEGAL_CHARS = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
     
     public EspPushClient(Context context)
     {
@@ -156,6 +159,13 @@ public class EspPushClient
         }
     }
     
+    /**
+     * Subscribe MBox
+     * 
+     * @return subscribe completed or failed
+     * @throws JSONException
+     * @throws IOException
+     */
     private boolean subscribe()
         throws JSONException, IOException
     {
@@ -177,7 +187,11 @@ public class EspPushClient
         
         post(postJSON.toString());
         
-        JSONObject reponseJSON = new JSONObject(receive());
+        String response = receive();
+        if (response == null) {
+            return false;
+        }
+        JSONObject reponseJSON = new JSONObject(response);
         int httpStatus = reponseJSON.getInt(KEY_STATUS);
         
         return httpStatus == HttpStatus.SC_OK;
@@ -211,6 +225,9 @@ public class EspPushClient
         return (mSocket != null && mSocket.isConnected());
     }
     
+    /**
+     * The task create a long connection with server
+     */
     private class ConnectTask extends AsyncTask<Void, Void, Boolean>
     {
         
@@ -251,6 +268,7 @@ public class EspPushClient
             log.debug("connect result = " + result);
             if (result)
             {
+                // Create long connection successfully, start a thread to receive message
                 new ReceivePushMessageThread().start();
             }
             else
@@ -275,6 +293,9 @@ public class EspPushClient
                     String receiveMsg = receive();
                     log.info("receive msg = " + receiveMsg);
                     
+                    if (receiveMsg == null) {
+                        continue;
+                    }
                     JSONObject receiveJSON = new JSONObject(receiveMsg);
                     if (receiveJSON.has(KEY_BODY))
                     {
@@ -303,6 +324,11 @@ public class EspPushClient
         }
     }
     
+    /**
+     * Generate peer token
+     * 
+     * @return
+     */
     private String getPeerToken()
     {
         StringBuilder tokenBuilder = new StringBuilder();
@@ -310,7 +336,7 @@ public class EspPushClient
         for (int i = 0; i < temp.length(); i++)
         {
             char c = temp.charAt(i);
-            if (TOKEN_ILLEGAL_CHARS.contains("" + c))
+            if (TOKEN_LEGAL_CHARS.contains("" + c))
             {
                 tokenBuilder.append(c);
             }
@@ -325,6 +351,11 @@ public class EspPushClient
         return tokenBuilder.toString();
     }
     
+    /**
+     * Get MAC address
+     * 
+     * @return
+     */
     private String getMac()
     {
         String macSerial = "";
@@ -350,6 +381,11 @@ public class EspPushClient
         return macSerial;
     }
     
+    /**
+     * Get the MD5 of the apk keystore
+     * 
+     * @return
+     */
     public String getSignatureMD5()
     {
         String packageName = mContext.getApplicationInfo().packageName;

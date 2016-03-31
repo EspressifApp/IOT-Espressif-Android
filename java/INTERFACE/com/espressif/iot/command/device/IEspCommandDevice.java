@@ -11,17 +11,9 @@ import com.espressif.iot.command.IEspCommand;
 public interface IEspCommandDevice extends IEspCommand
 {
     public static final String URL_MULTICAST =
-        "https://iot.espressif.cn/v1/device/rpc/?deliver_to_device=true&action=multicast&mesh_multicast=true&bssids=";
+        "https://iot.espressif.cn/v1/device/rpc/?deliver_to_device=true&action=multicast&bssids=";
     
     public static final int MULTICAST_GROUP_LENGTH_LIMIT = 50;
     
-    public static final String KEY_GROUP_LENGTH = "glen";
-    
     public static final String KEY_GROUP = "group";
-    
-    public static final String KEY_MDEV_MAC = "mdev_mac";
-    
-    public static final String KEY_SIP = "sip";
-    
-    public static final String KEY_SPORT = "sport";
 }

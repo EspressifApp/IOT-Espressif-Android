@@ -1,5 +1,6 @@
 package com.espressif.iot.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -9,6 +10,7 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDBDao;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDBDao.Properties;
 import com.espressif.iot.object.IEspSingletonObject;
+import com.espressif.iot.object.db.IGenericDataDB;
 import com.espressif.iot.object.db.IGenericDataDBManager;
 import com.espressif.iot.object.db.IGenericDataDirectoryDBManager;
 import com.espressif.iot.util.TimeUtil;
@@ -39,26 +41,7 @@ public class IOTGenericDataDBManager implements IGenericDataDBManager, IEspSingl
         return instance;
     }
     
-    @Override
-    public synchronized void updateDataDirectoryLastAccessedTime(long deviceId, long startTimestampUTCDay,
-        long endTimestampUTCDay)
-    {
-        log.debug(Thread.currentThread().toString() + "##updateDataDirectoryLastAccessedTime(startTimestampUTCDay=["
-            + TimeUtil.getDateStr(startTimestampUTCDay, null) + "],endTimestampUTCDay=["
-            + TimeUtil.getDateStr(endTimestampUTCDay, null) + "]): start");
-        // insert or replace data directory and set directory id,
-        // we only need to update the last accessed timestamp,
-        // use the method maybe do something unnecessary, but it will take very little time,
-        // so we use the method here to make source code more generic
-        List<GenericDataDB> result = getDataList(deviceId, startTimestampUTCDay, endTimestampUTCDay);
-        __insertOrReplaceDataDirectory(result, startTimestampUTCDay, endTimestampUTCDay);
-        log.debug(Thread.currentThread().toString() + "##updateDataDirectoryLastAccessedTime(startTimestampUTCDay=["
-            + TimeUtil.getDateStr(startTimestampUTCDay, null) + "],endTimestampUTCDay=["
-            + TimeUtil.getDateStr(endTimestampUTCDay, null) + "]): end");
-    }
-    
-    @Override
-    public List<GenericDataDB> getDataList(long deviceId, long startTimestamp, long endTimestamp)
+    private List<GenericDataDB> __getDataList(long deviceId, long startTimestamp, long endTimestamp)
     {
         log.info(Thread.currentThread().toString() + "##getDataList(startTimestamp=["
             + TimeUtil.getDateStr(startTimestamp, null) + "],endTimestamp=[" + TimeUtil.getDateStr(endTimestamp, null)
@@ -77,7 +60,40 @@ public class IOTGenericDataDBManager implements IGenericDataDBManager, IEspSingl
         return result;
     }
     
-    private void __insertOrReplaceDataDirectory(List<GenericDataDB> dataDBList, long startTimestampUTCDay,
+    @Override
+    public synchronized void updateDataDirectoryLastAccessedTime(long deviceId, long startTimestampUTCDay,
+        long endTimestampUTCDay)
+    {
+        log.debug(Thread.currentThread().toString() + "##updateDataDirectoryLastAccessedTime(startTimestampUTCDay=["
+            + TimeUtil.getDateStr(startTimestampUTCDay, null) + "],endTimestampUTCDay=["
+            + TimeUtil.getDateStr(endTimestampUTCDay, null) + "]): start");
+        // insert or replace data directory and set directory id,
+        // we only need to update the last accessed timestamp,
+        // use the method maybe do something unnecessary, but it will take very little time,
+        // so we use the method here to make source code more generic
+        List<IGenericDataDB> result = getDataList(deviceId, startTimestampUTCDay, endTimestampUTCDay);
+        __insertOrReplaceDataDirectory(result, startTimestampUTCDay, endTimestampUTCDay);
+        log.debug(Thread.currentThread().toString() + "##updateDataDirectoryLastAccessedTime(startTimestampUTCDay=["
+            + TimeUtil.getDateStr(startTimestampUTCDay, null) + "],endTimestampUTCDay=["
+            + TimeUtil.getDateStr(endTimestampUTCDay, null) + "]): end");
+    }
+    
+    @Override
+    public List<IGenericDataDB> getDataList(long deviceId, long startTimestamp, long endTimestamp)
+    {
+        log.info(Thread.currentThread().toString() + "##getDataList(startTimestamp=["
+            + TimeUtil.getDateStr(startTimestamp, null) + "],endTimestamp=[" + TimeUtil.getDateStr(endTimestamp, null)
+            + "]): start");
+        List<GenericDataDB> dataList = __getDataList(deviceId, startTimestamp, endTimestamp);
+        List<IGenericDataDB> result = new ArrayList<IGenericDataDB>();
+        result.addAll(dataList);
+        log.info(Thread.currentThread().toString() + "##getDataList(startTimestamp=["
+            + TimeUtil.getDateStr(startTimestamp, null) + "],endTimestamp=[" + TimeUtil.getDateStr(endTimestamp, null)
+            + "]): end");
+        return result;
+    }
+    
+    private void __insertOrReplaceDataDirectory(List<IGenericDataDB> dataDBList, long startTimestampUTCDay,
         long endTimestampUTCDay)
     {
         // check valid
@@ -98,8 +114,8 @@ public class IOTGenericDataDBManager implements IGenericDataDBManager, IEspSingl
             log.debug(Thread.currentThread().toString() + "##__insertOrReplaceDataDirectory(dataDBList.size()=["
                 + dataDBList.size() + "])");
         }
-        GenericDataDB firstData = dataDBList.get(0);
-        GenericDataDB lastData = dataDBList.get(dataDBList.size() - 1);
+        IGenericDataDB firstData = dataDBList.get(0);
+        IGenericDataDB lastData = dataDBList.get(dataDBList.size() - 1);
         long deviceId = firstData.getDeviceId();
         IGenericDataDirectoryDBManager genericDataDirectoryDBManager = IOTGenericDataDirectoryDBManager.getInstance();
         // insert data directory for no value could get from internet at head
@@ -199,15 +215,20 @@ public class IOTGenericDataDBManager implements IGenericDataDBManager, IEspSingl
     }
     
     @Override
-    public synchronized void insertOrReplaceDataList(List<GenericDataDB> dataDBList, long startTimestampUTCDay,
+    public synchronized void insertOrReplaceDataList(List<IGenericDataDB> dataDBList, long startTimestampUTCDay,
         long endTimestampUTCDay)
     {
         if (dataDBList != null && !dataDBList.isEmpty())
         {
             // insert or replace data directory and set directory id
             __insertOrReplaceDataDirectory(dataDBList, startTimestampUTCDay, endTimestampUTCDay);
+            List<GenericDataDB> _dataDBList = new ArrayList<GenericDataDB>();
+            for (IGenericDataDB dataDB : dataDBList)
+            {
+                _dataDBList.add((GenericDataDB)dataDB);
+            }
             // insert data list in db
-            genericDataDao.insertOrReplaceInTx(dataDBList);
+            genericDataDao.insertOrReplaceInTx(_dataDBList);
             log.debug(Thread.currentThread().toString() + "##insertDataList(dataDBList.size()=[" + dataDBList.size()
                 + "])");
         }
@@ -218,16 +239,23 @@ public class IOTGenericDataDBManager implements IGenericDataDBManager, IEspSingl
         }
     }
     
-    @Override
-    public long __getDataTotalCount()
+    /**
+     * 
+     * @return how many data stored in local db totally now
+     */
+    long __getDataTotalCount()
     {
         long result = genericDataDao.count();
         log.debug(Thread.currentThread().toString() + "##__getDataTotalCount(): " + result);
         return result;
     }
     
-    @Override
-    public void __deleteDataList(List<GenericDataDB> dataDBList)
+    /**
+     * delete the data list
+     * 
+     * @param dataDBList the data list to be inserted
+     */
+    void __deleteDataList(List<GenericDataDB> dataDBList)
     {
         genericDataDao.deleteInTx(dataDBList);
         log.debug(Thread.currentThread().toString() + "##__deleteDataList(dataDBList.size()=[" + dataDBList.size()

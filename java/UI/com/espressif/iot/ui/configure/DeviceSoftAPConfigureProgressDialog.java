@@ -24,18 +24,18 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs implements OnDismissListener,
-    OnCancelListener
+public class DeviceSoftAPConfigureProgressDialog extends DeviceSoftAPConfigureDialogAbs
+    implements OnDismissListener, OnCancelListener
 {
-    private final Logger log = Logger.getLogger(DeviceConfigureProgressDialog.class);
+    private final Logger log = Logger.getLogger(DeviceSoftAPConfigureProgressDialog.class);
     
-    protected ApInfo mApInfo;
+    private ApInfo mApInfo;
     
-    protected ProgressDialog mDialog;
+    private ProgressDialog mDialog;
     
     private LocalBroadcastManager mBroadcastManager;
     
-    public DeviceConfigureProgressDialog(DeviceConfigureActivity activity, IEspDeviceNew device, ApInfo apInfo)
+    public DeviceSoftAPConfigureProgressDialog(DeviceSoftAPConfigureActivity activity, IEspDeviceNew device, ApInfo apInfo)
     {
         super(activity, device);
         
@@ -55,8 +55,6 @@ public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs impl
         mDialog.setOnDismissListener(this);
         mDialog.setOnCancelListener(this);
         mDialog.show();
-        
-        checkHelpState();
         
         mUser.saveApInfoInDB(mApInfo.bssid, mApInfo.ssid, mApInfo.password, mDevice.getBssid());
         mUser.doActionConfigure(mDevice, mApInfo.ssid, mApInfo.type, mApInfo.password);
@@ -97,8 +95,6 @@ public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs impl
             {
                 log.debug("mDevice.getDeviceState().isStateActivating()");
                 
-                checkHelpActivating();
-                
                 // Configure success
                 mDialog.setMessage(mActivity.getString(R.string.esp_configure_result_success));
                 mDialog.dismiss();
@@ -114,8 +110,6 @@ public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs impl
                 mDialog.setMessage(mActivity.getString(R.string.esp_configure_result_failed));
                 mDialog.setCancelable(true);
                 mDialog.setCanceledOnTouchOutside(true);
-                
-                checkHelpDeleted();
             }
         }
         
@@ -139,17 +133,4 @@ public class DeviceConfigureProgressDialog extends DeviceConfigureDialogAbs impl
             EspBaseApiUtil.enableConnected(mApInfo.ssid, mApInfo.type, mApInfo.password);
         }
     };
-    
-    
-    protected void checkHelpState()
-    {
-    }
-    
-    protected void checkHelpActivating()
-    {
-    }
-    
-    protected void checkHelpDeleted()
-    {
-    }
 }

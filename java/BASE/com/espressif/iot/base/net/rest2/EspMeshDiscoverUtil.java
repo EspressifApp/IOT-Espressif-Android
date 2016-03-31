@@ -33,7 +33,7 @@ public class EspMeshDiscoverUtil
         String rootBssid = rootIOTAddress.getBSSID();
         if (deviceBssid != null)
         {
-            IOTAddress iotAddress = EspMeshNetUtil.GetTopoIOTAddress2(rootInetAddress, deviceBssid);
+            IOTAddress iotAddress = EspMeshNetUtil2.GetTopoIOTAddress5(rootInetAddress, deviceBssid);
             if (iotAddress != null)
             {
                 iotMeshAddressSet.add(iotAddress);
@@ -42,7 +42,7 @@ public class EspMeshDiscoverUtil
         }
         else
         {
-            List<IOTAddress> iotAddressList = EspMeshNetUtil.GetTopoIOTAddressList2(rootInetAddress, rootBssid);
+            List<IOTAddress> iotAddressList = EspMeshNetUtil2.GetTopoIOTAddressList5(rootInetAddress, rootBssid);
             if (iotAddressList != null)
             {
                 iotMeshAddressSet.addAll(iotAddressList);

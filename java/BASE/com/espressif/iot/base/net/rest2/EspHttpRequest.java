@@ -10,8 +10,6 @@ class EspHttpRequest extends HttpEntityEnclosingRequestBase
     
     final static String METHOD_GET = "GET";
     
-    final static String METHOD_COMMAND = "COMMAND";
-    
     final static String ESP_INSTANTLY = "ESP_INSTANTLY";
     
     // dummy runnable do nothing, it is used by post instantly

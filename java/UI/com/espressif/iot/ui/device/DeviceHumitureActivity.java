@@ -164,8 +164,6 @@ public class DeviceHumitureActivity extends DeviceChartActivityAbs
                 mDialog = null;
             }
             
-            checkHelpExecuteFinish(result != null);
-            
             setChartViewDrawn(true);
         }
     }

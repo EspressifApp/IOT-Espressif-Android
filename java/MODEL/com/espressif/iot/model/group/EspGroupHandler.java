@@ -24,25 +24,22 @@ import com.espressif.iot.action.group.IEspActionGroupRenameInternet;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.EspGroupDBManager;
-import com.espressif.iot.db.greenrobot.daos.GroupDB;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.group.IEspGroup;
+import com.espressif.iot.object.db.IGroupDB;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
 
 public class EspGroupHandler
 {
-    private static EspGroupHandler instance;
+    private static class InstanceHolder {
+        static EspGroupHandler instance = new EspGroupHandler();
+    }
     
     public static EspGroupHandler getInstance()
     {
-        if (instance == null)
-        {
-            instance = new EspGroupHandler();
-        }
-        
-        return instance;
+        return InstanceHolder.instance;
     }
     
     private final Logger log = Logger.getLogger(getClass());
@@ -57,7 +54,7 @@ public class EspGroupHandler
     
     private LinkedBlockingQueue<Boolean> mHandleQueue;
     
-    public EspGroupHandler()
+    private EspGroupHandler()
     {
         mUser = BEspUser.getBuilder().getInstance();
         mDBManager = EspGroupDBManager.getInstance();
@@ -66,6 +63,11 @@ public class EspGroupHandler
         mHandleQueue = new LinkedBlockingQueue<Boolean>();
     }
     
+    /**
+     * Update groups' info from server
+     * 
+     * @param list groups synchronize from server
+     */
     public synchronized void updateSynchronizeCloudGroups(List<IEspGroup> list)
     {
         mSyncCloudGroups.clear();
@@ -87,10 +89,10 @@ public class EspGroupHandler
     
     private void updateCloudDB()
     {
-        List<GroupDB> cloudGroupDBs = mDBManager.getUserDBCloudGroup(mUser.getUserKey());
+        List<IGroupDB> cloudGroupDBs = mDBManager.getUserDBCloudGroup(mUser.getUserKey());
         List<IEspGroup> syncCloudGroups = new ArrayList<IEspGroup>();
         syncCloudGroups.addAll(mSyncCloudGroups);
-        for (GroupDB groupDB : cloudGroupDBs)
+        for (IGroupDB groupDB : cloudGroupDBs)
         {
             EspGroup dbGroup = new EspGroup();
             dbGroup.setId(groupDB.getId());
@@ -140,12 +142,12 @@ public class EspGroupHandler
             int state = group.getStateValue();
             String cloudBssidsText = mDBManager.getDeviceBssidsText(cloudBssids);
             
-            GroupDB groupDB = new GroupDB(groupId, groupName, userKey, state, "", cloudBssidsText, "");
-            mDBManager.insertOrReplace(groupDB);
+            mDBManager.insertOrReplace(groupId, groupName, userKey, state, "", cloudBssidsText, "");
         }
     }
     
     /**
+     * Check the data of groups, if uncompleted task exist, finish it.
      * If the task thread hasn't started, start the thread. Then run the group task at least once.
      */
     public void call()
@@ -228,8 +230,8 @@ public class EspGroupHandler
             {
                 userKey = "";
             }
-            List<GroupDB> localGroups = mDBManager.getUserDBLocalGroup(userKey);
-            for (GroupDB groupDB : localGroups)
+            List<IGroupDB> localGroups = mDBManager.getUserDBLocalGroup(userKey);
+            for (IGroupDB groupDB : localGroups)
             {
                 // DB local exist, post create command
                 log.debug("GroupTask create cloud group : id = " + groupDB.getId() + " || name = " + groupDB.getName());
@@ -239,11 +241,15 @@ public class EspGroupHandler
                 {
                     log.debug("GroupTask create cloud group suc : id = " + newGroupId + " || name = "
                         + groupDB.getName());
-                    GroupDB oldGroupDB = mDBManager.getGroupDB(groupDB.getId());
-                    GroupDB newGroupDB =
-                        new GroupDB(newGroupId, oldGroupDB.getName(), oldGroupDB.getUserKey(), 0,
-                            oldGroupDB.getLocalDeviceBssids(), "", "");
-                    mDBManager.insertOrReplace(newGroupDB);
+                    IGroupDB oldGroupDB = mDBManager.getGroupDB(groupDB.getId());
+                    // update id
+                    mDBManager.insertOrReplace(newGroupId,
+                        oldGroupDB.getName(),
+                        oldGroupDB.getUserKey(),
+                        0,
+                        oldGroupDB.getLocalDeviceBssids(),
+                        "",
+                        "");
                     mDBManager.delete(oldGroupDB.getId());
                     
                     Intent intent = new Intent(EspStrings.Action.CREATE_NEW_CLOUD_GROUP);
@@ -253,8 +259,8 @@ public class EspGroupHandler
                 }
             }
             
-            List<GroupDB> cloudGroups = mDBManager.getUserDBCloudGroup(userKey);
-            for (GroupDB groupDB : cloudGroups)
+            List<IGroupDB> cloudGroups = mDBManager.getUserDBCloudGroup(userKey);
+            for (IGroupDB groupDB : cloudGroups)
             {
                 EspGroup espGroup = new EspGroup();
                 espGroup.setId(groupDB.getId());
@@ -322,7 +328,7 @@ public class EspGroupHandler
                         String localBssid = localBssids.get(i);
                         if (localBssid.equals(device.getBssid()))
                         {
-                            // local device exist, cloud device not exist, user has this device
+                            // local device exist, cloud device not exist, user has activated this device on server
                             // post move device command.
                             log.debug("GroupTask move device to direct group. device name = " + device.getName()
                                 + " || group name = " + groupDB.getName());

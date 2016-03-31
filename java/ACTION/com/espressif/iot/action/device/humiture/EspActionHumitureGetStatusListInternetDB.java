@@ -6,6 +6,7 @@ import com.espressif.iot.action.device.sensor.EspActionSensorGetStatusListIntern
 import com.espressif.iot.command.device.humiture.EspCommandHumitureGetStatusListInternet;
 import com.espressif.iot.command.device.humiture.IEspCommandHumitureGetStatusListInternet;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
+import com.espressif.iot.object.db.IGenericDataDB;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.EspStatusHumiture;
 import com.espressif.iot.type.device.status.IEspStatusHumiture;
@@ -15,7 +16,7 @@ public class EspActionHumitureGetStatusListInternetDB extends EspActionSensorGet
     IEspActionHumitureGetStatusListInternetDB
 {
     @Override
-    public IEspStatusSensor parseStatus(GenericDataDB dataInDB)
+    public IEspStatusSensor parseStatus(IGenericDataDB dataInDB)
     {
         StringBuilder sb = new StringBuilder(dataInDB.getData());
         String[] datas = sb.toString().split(",");
@@ -30,13 +31,13 @@ public class EspActionHumitureGetStatusListInternetDB extends EspActionSensorGet
     }
     
     @Override
-    public GenericDataDB parseStatus(long deviceId, IEspStatusSensor statusSensor)
+    public IGenericDataDB parseStatus(long deviceId, IEspStatusSensor statusSensor)
     {
         double x = statusSensor.getX();
         double y = statusSensor.getY();
         String data = x + "," + y;
         long timestamp = statusSensor.getAt();
-        GenericDataDB genericDataDB = new GenericDataDB(null, deviceId, timestamp, data, 0);
+        IGenericDataDB genericDataDB = new GenericDataDB(null, deviceId, timestamp, data, 0);
         return genericDataDB;
     }
     

@@ -32,7 +32,8 @@
         <Spinner
             android:id="@+id/device_sort_spinner"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:entries="@array/esp_ui_device_sort" />
     </LinearLayout>
 
     <com.handmark.pulltorefresh.library.PullToRefreshListView

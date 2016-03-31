@@ -19,4 +19,10 @@ public interface IGroupDB
     public int getState();
     
     public void setState(int state);
+    
+    public String getRemoveDeviceBssids();
+    
+    public String getLocalDeviceBssids();
+    
+    public String getCloudDeviceBssids();
 }

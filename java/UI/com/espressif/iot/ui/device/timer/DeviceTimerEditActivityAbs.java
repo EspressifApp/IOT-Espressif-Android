@@ -119,6 +119,9 @@ public abstract class DeviceTimerEditActivityAbs extends Activity implements Esp
         return str;
     }
     
+    /**
+     * Post the new edited timer to server
+     */
     private class SaveTask extends AsyncTask<JSONObject, Void, Boolean>
     {
         

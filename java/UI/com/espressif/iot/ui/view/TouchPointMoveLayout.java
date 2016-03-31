@@ -3,26 +3,49 @@ package com.espressif.iot.ui.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.espressif.iot.R;
+
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
 public class TouchPointMoveLayout extends FrameLayout
 {
-    private boolean mTouchMove;
+    /**
+     * Whether the user is dragging a view
+     */
+    private boolean mDragging;
+    /**
+     * The X axis of touch point in TouchPointMoveLayout
+     */
     private float mTouchPointX;
+    /**
+     * The Y axis of touch point in TouchPointMoveLayout
+     */
     private float mTouchPointY;
     
-    private View mMoveView;
-    private LayoutParams mMoveViewLP;
-    private RectF mMoveRectF;
-    private float mMoveViewOffsetX;
-    private float mMoveViewOffsetY;
+    /**
+     * The view that user drag
+     */
+    private View mDragView;
+    private RectF mDragRectF;
+    private float mDragViewOffsetX;
+    private float mDragViewOffsetY;
     
+    /**
+     * The views need check whether mMoveView intersect when mMoveView is dragging.
+     */
     private List<IntersectsView> mIntersectsViews;
+    /**
+     * The view that mMoveView has intersected.
+     */
     private View mIntersectsView;
     private OnTouchMoveListener mOnTouchMoveListener;
     
@@ -33,13 +56,34 @@ public class TouchPointMoveLayout extends FrameLayout
     {
         View getView();
         
+        /**
+         * The position in TouchPointMoveLayout
+         * 
+         * @return
+         */
         RectF getRectF();
     }
     
+    /**
+     * Interface definition for a callback to be invoked when a view is dragged.
+     *
+     */
     public interface OnTouchMoveListener
     {
+        /**
+         * Call when the view that dragged view intersect has changed
+         * 
+         * @param moveView the view user dragged
+         * @param intersectsView the view that moveView intersect, it could be null.
+         */
         void onIntersectsChanged(View moveView, View intersectsView);
         
+        /**
+         * Call when a drag action is finished.
+         * 
+         * @param moveView the view user dragged
+         * @param intersectsView the view that moveView intersect, it could be null.
+         */
         void onTouchMoveEnd(View moveView, View intersectsView);
     }
     
@@ -63,13 +107,10 @@ public class TouchPointMoveLayout extends FrameLayout
     
     private void init(Context context)
     {
-        mTouchMove = false;
+        mDragging = false;
         
-        mMoveViewLP = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        
-        mMoveRectF = new RectF();
+        mDragRectF = new RectF();
         mIntersectsViews = new ArrayList<IntersectsView>();
-        
     }
     
     @Override
@@ -78,7 +119,7 @@ public class TouchPointMoveLayout extends FrameLayout
         mTouchPointX = ev.getX(ev.getPointerCount() - 1);
         mTouchPointY = ev.getY(ev.getPointerCount() - 1);
         
-        return mTouchMove;
+        return mDragging;
     }
     
     @Override
@@ -89,9 +130,9 @@ public class TouchPointMoveLayout extends FrameLayout
         switch(event.getAction() & MotionEvent.ACTION_MASK)
         {
             case MotionEvent.ACTION_MOVE:
-                if (mTouchMove)
+                if (mDragging)
                 {
-                    moveTouchMoveView();
+                    moveDragView();
                     checkIntersects();
                     return true;
                 }
@@ -104,20 +145,20 @@ public class TouchPointMoveLayout extends FrameLayout
                 }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (mTouchMove)
+                if (mDragging)
                 {
-                    moveTouchMoveView();
+                    moveDragView();
                     checkIntersects();
                     
                     if (mOnTouchMoveListener != null)
                     {
-                        mOnTouchMoveListener.onTouchMoveEnd(mMoveView, mIntersectsView);
+                        mOnTouchMoveListener.onTouchMoveEnd(mDragView, mIntersectsView);
                     }
                     
-                    mTouchMove = false;
+                    mDragging = false;
                     mIntersectsViews.clear();
-                    removeView(mMoveView);
-                    mMoveView = null;
+                    removeView(mDragView);
+                    mDragView = null;
                 }
                 mTouchPointX = Float.NaN;
                 mTouchPointY = Float.NaN;
@@ -128,22 +169,28 @@ public class TouchPointMoveLayout extends FrameLayout
         return super.onTouchEvent(event);
     }
     
-    private void moveTouchMoveView()
+    /**
+     * Set the drag view's position when touch
+     */
+    private void moveDragView()
     {
-        mMoveView.setX(mTouchPointX - mMoveViewOffsetX);
-        mMoveView.setY(mTouchPointY - mMoveViewOffsetY);
-        mMoveRectF.left = mMoveView.getX();
-        mMoveRectF.right = mMoveRectF.left + mMoveView.getWidth();
-        mMoveRectF.top = mMoveView.getY();
-        mMoveRectF.bottom = mMoveRectF.top + mMoveView.getHeight();
+        mDragView.setX(mTouchPointX - mDragViewOffsetX);
+        mDragView.setY(mTouchPointY - mDragViewOffsetY);
+        mDragRectF.left = mDragView.getX();
+        mDragRectF.right = mDragRectF.left + mDragView.getWidth();
+        mDragRectF.top = mDragView.getY();
+        mDragRectF.bottom = mDragRectF.top + mDragView.getHeight();
     }
     
+    /**
+     * Check the drag view intersect mIntersectsViews
+     */
     private void checkIntersects()
     {
         List<IntersectsView> intersectedViews = new ArrayList<IntersectsView>();
         for (IntersectsView iv : mIntersectsViews)
         {
-            if (RectF.intersects(iv.getRectF(), mMoveRectF))
+            if (RectF.intersects(iv.getRectF(), mDragRectF))
             {
                 intersectedViews.add(iv);
             }
@@ -154,10 +201,10 @@ public class TouchPointMoveLayout extends FrameLayout
         for (IntersectsView iv : intersectedViews)
         {
             RectF rf = iv.getRectF();
-            float x1 = Math.max(rf.left, mMoveRectF.left);
-            float x2 = Math.min(rf.right, mMoveRectF.right);
-            float y1 = Math.max(rf.top, mMoveRectF.top);
-            float y2 = Math.min(rf.bottom, mMoveRectF.bottom);
+            float x1 = Math.max(rf.left, mDragRectF.left);
+            float x2 = Math.min(rf.right, mDragRectF.right);
+            float y1 = Math.max(rf.top, mDragRectF.top);
+            float y2 = Math.min(rf.bottom, mDragRectF.bottom);
             float width = Math.abs(x1 - x2);
             float height = Math.abs(y1 - y2);
             float area = width * height;
@@ -174,12 +221,13 @@ public class TouchPointMoveLayout extends FrameLayout
             mIntersectsView = maxIntersectsAreaView;
             if (mOnTouchMoveListener != null)
             {
-                mOnTouchMoveListener.onIntersectsChanged(mMoveView, mIntersectsView);
+                mOnTouchMoveListener.onIntersectsChanged(mDragView, mIntersectsView);
             }
         }
     }
     
     /**
+     * Notification that the user start drag a view
      * 
      * @param moveView the view which move with touching
      * @param xInLayout the init x axis in TouchPointMoveLayout
@@ -188,29 +236,47 @@ public class TouchPointMoveLayout extends FrameLayout
      */
     public void startTouchMove(View moveView, float xInLayout, float yInLayout, List<IntersectsView> list)
     {
-        if (mTouchMove)
+        if (mDragging)
         {
             throw new IllegalStateException("Last touch move is still continue...");
         }
-        mTouchMove = true;
+
+        mDragging = true;
+
         mIntersectsViews.clear();
         if (list != null)
         {
             mIntersectsViews.addAll(list);
         }
-        mMoveView = moveView; 
-        if (mMoveView.getLayoutParams() == null)
-        {
-            addView(mMoveView, mMoveViewLP);
-        }
-        else
-        {
-            addView(mMoveView);
-        }
-        mMoveView.setX(xInLayout);
-        mMoveView.setY(yInLayout);
-        mMoveViewOffsetX = mTouchPointX - xInLayout;
-        mMoveViewOffsetY = mTouchPointY - yInLayout;
+
+        mDragView = generateDragView(moveView);
+        addView(mDragView);
+        mDragView.setX(xInLayout);
+        mDragView.setY(yInLayout);
+        mDragViewOffsetX = mTouchPointX - xInLayout;
+        mDragViewOffsetY = mTouchPointY - yInLayout;
+    }
+    
+    private Bitmap generateViewBitmap(View view)
+    {
+        Bitmap bmp = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        view.draw(canvas);
+
+        return bmp;
+    }
+    
+    private View generateDragView(View view)
+    {
+        ImageView iv = new ImageView(getContext());
+        LayoutParams lp = new LayoutParams(view.getWidth(), view.getHeight());
+        iv.setLayoutParams(lp);
+        iv.setScaleType(ScaleType.CENTER_INSIDE);
+        iv.setImageBitmap(generateViewBitmap(view));
+        iv.setBackgroundColor(getResources().getColor(R.color.esp_drag_view_background));
+        iv.setTag(view.getTag());
+
+        return iv;
     }
     
     public void setOnIntersectsChangeListener(OnTouchMoveListener listener)

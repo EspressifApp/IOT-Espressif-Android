@@ -4,13 +4,13 @@ import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 
-public abstract class DeviceConfigureDialogAbs
+public abstract class DeviceSoftAPConfigureDialogAbs
 {
     protected IEspUser mUser;
-    protected DeviceConfigureActivity mActivity;
+    protected DeviceSoftAPConfigureActivity mActivity;
     protected IEspDeviceNew mDevice;
     
-    public DeviceConfigureDialogAbs(DeviceConfigureActivity activity, IEspDeviceNew device)
+    public DeviceSoftAPConfigureDialogAbs(DeviceSoftAPConfigureActivity activity, IEspDeviceNew device)
     {
         mUser = BEspUser.getBuilder().getInstance();
         mActivity = activity;
@@ -19,12 +19,18 @@ public abstract class DeviceConfigureDialogAbs
     
     public abstract void show();
     
+    /**
+     * Stop auto refresh SoftAP list
+     */
     protected void stopAutoRefresh()
     {
         mActivity.setIsShowConfigureDialog(true);
         mActivity.removeRefreshMessage();
     }
     
+    /**
+     * Restart auto refresh SoftAP list
+     */
     protected void resetAutoRefresh()
     {
         mActivity.setIsShowConfigureDialog(false);

@@ -28,7 +28,6 @@ import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
 import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateInternet;
 import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler.ITaskActivateLocal;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.state.EspDeviceState;
@@ -37,7 +36,6 @@ import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.device.cache.IEspDeviceCache.NotifyType;
-import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
 
 public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingletonObject
 {
@@ -151,30 +149,6 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
         }
     }
     
-    /*
-     * if don't use IEspHelpStateMachine, the below method and its related code should be annotated
-     */
-    void __transformHelpStateMachine(final String deviceBssid, boolean isSuc)
-    {
-        IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
-        if (helpStateMachine.isHelpOn() && deviceBssid.equals(helpStateMachine.__getCurrentDeviceBssid()))
-        {
-            helpStateMachine.transformState(isSuc);
-        }
-    }
-    
-    /*
-     * if don't use IEspHelpStateMachine, the below method and its related code should be annotated
-     */
-    void __setHelpStateMachineDeviceBssid(final String deviceBssid)
-    {
-        IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
-        if (helpStateMachine.isHelpOn())
-        {
-            helpStateMachine.__setCurrentDeviceBssid(deviceBssid);
-        }
-    }
-    
     private void __activate(final IEspDevice device, final IEspDevice deviceStateMachine)
     {
         if (device instanceof IEspDeviceConfigure)
@@ -208,33 +182,12 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                     
                     user.saveNewActivatedDevice(result.getKey());
                     transformState(result, Direction.SUC);
-                    __transformHelpStateMachine(device.getBssid(), true);
                     return result;
                 }
                 // note: if fail, must return null instead of False
                 else
                 {
                     apDBManager.updateApInfo(deviceNew.getBssid(), false);
-                    
-                    IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
-                    if (device.getBssid().equals(helpStateMachine.__getCurrentDeviceBssid()))
-                    {
-                        String apSsidExpected = helpStateMachine.getConnectedApSsid();
-                        String apSsidCurrent = EspBaseApiUtil.getWifiConnectedSsid();
-                        if (apSsidExpected.equals(apSsidCurrent))
-                        {
-                            // activate fail
-                            log.debug("apSsidExpected.equals(apSsidCurrent) = true");
-                            __transformHelpStateMachine(device.getBssid(), false);
-                            __transformHelpStateMachine(device.getBssid(), false);
-                        }
-                        else
-                        {
-                            // connect Ap fail
-                            log.debug("apSsidExpected.equals(apSsidCurrent) = false");
-                            __transformHelpStateMachine(device.getBssid(), false);
-                        }
-                    }
                     return null;
                 }
             }
@@ -244,7 +197,6 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
         Future<?> future = __submitTask(task, taskSuc, taskFail, null);
         IEspDeviceNew deviceNew = (IEspDeviceNew)device;
         deviceNew.setFuture(future);
-        __setHelpStateMachineDeviceBssid(device.getBssid());
     }
     
     private void __configure(final IEspDevice device, final IEspDevice deviceStateMachine)
@@ -288,14 +240,12 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 if (deviceId < 0)
                 {
                     log.info("__configure suc");
-                    __transformHelpStateMachine(device.getBssid(), true);
                     return true;
                 }
                 // note: if fail, must return null instead of False
                 else
                 {
                     log.warn("__configure fail");
-                    __transformHelpStateMachine(device.getBssid(), false);
                     return null;
                 }
             }
@@ -338,7 +288,6 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
         Future<?> future = __submitTask(task, taskSuc, taskFail, taskCancel);
         IEspDeviceNew deviceNew = (IEspDeviceNew)device;
         deviceNew.setFuture(future);
-        __setHelpStateMachineDeviceBssid(device.getBssid());
     }
     
     private void __delete(final IEspDevice device)

@@ -16,8 +16,6 @@ import com.espressif.iot.db.greenrobot.daos.DaoMaster;
 import com.espressif.iot.db.greenrobot.daos.DaoMaster.DevOpenHelper;
 import com.espressif.iot.db.greenrobot.daos.DaoSession;
 import com.espressif.iot.log.InitLogger;
-import com.espressif.iot.ui.help.HelpEspUIActivity;
-import com.espressif.iot.ui.main.EspUIActivity;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Application;
@@ -178,12 +176,5 @@ public class EspApplication extends Application
                 EspTimeManager.getInstance().getUTCTimeLong();
             }
         }.start();
-    }
-    
-    public final static boolean HELP_ON = true;
-    
-    public static Class<?> getEspUIActivity()
-    {
-        return HELP_ON ? HelpEspUIActivity.class : EspUIActivity.class;
     }
 }

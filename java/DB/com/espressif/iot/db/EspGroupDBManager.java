@@ -10,10 +10,13 @@ import com.espressif.iot.db.greenrobot.daos.GroupDB;
 import com.espressif.iot.db.greenrobot.daos.GroupDBDao;
 import com.espressif.iot.db.greenrobot.daos.GroupDBDao.Properties;
 import com.espressif.iot.group.IEspGroup;
+import com.espressif.iot.object.IEspSingletonObject;
+import com.espressif.iot.object.db.IEspGroupDBManager;
+import com.espressif.iot.object.db.IGroupDB;
 
 import de.greenrobot.dao.query.Query;
 
-public class EspGroupDBManager
+public class EspGroupDBManager implements IEspGroupDBManager, IEspSingletonObject
 {
     private static EspGroupDBManager instance = null;
     
@@ -36,7 +39,8 @@ public class EspGroupDBManager
         mGroupDao = daoSession.getGroupDBDao();
     }
     
-    public List<GroupDB> getUserDBLocalGroup(String userKey)
+    @Override
+    public List<IGroupDB> getUserDBLocalGroup(String userKey)
     {
         if (userKey == null)
         {
@@ -47,10 +51,15 @@ public class EspGroupDBManager
                 .where(Properties.UserKey.eq(userKey), Properties.Id.lt(0))
                 .orderDesc(Properties.Id)
                 .build();
-        return query.list();
+        
+        List<GroupDB> groupDBList = query.list();
+        List<IGroupDB> result = new ArrayList<IGroupDB>();
+        result.addAll(groupDBList);
+        return result;
     }
     
-    public List<GroupDB> getUserDBCloudGroup(String userKey)
+    @Override
+    public List<IGroupDB> getUserDBCloudGroup(String userKey)
     {
         if (userKey == null)
         {
@@ -61,19 +70,27 @@ public class EspGroupDBManager
                 .where(Properties.UserKey.eq(userKey), Properties.Id.gt(0))
                 .orderAsc(Properties.Id)
                 .build();
-        return query.list();
+       List<GroupDB> groupDBList = query.list();
+       
+       List<IGroupDB> result = new ArrayList<IGroupDB>();
+       result.addAll(groupDBList);
+        return result;
     }
     
-    public List<GroupDB> getUserGroup(String userKey)
+    @Override
+    public List<IGroupDB> getUserGroup(String userKey)
     {
         if (userKey == null)
         {
             userKey = "";
         }
         Query<GroupDB> query = mGroupDao.queryBuilder().where(Properties.UserKey.eq(userKey)).build();
-        return query.list();
+        List<IGroupDB> result = new ArrayList<IGroupDB>();
+        result.addAll(query.list());
+        return result;
     }
     
+    @Override
     public List<String> getDeviceBssids(String bssidsStr)
     {
         List<String> list = new ArrayList<String>();
@@ -89,6 +106,7 @@ public class EspGroupDBManager
         return list;
     }
     
+    @Override
     public String getDeviceBssidsText(List<String> bssids)
     {
         StringBuilder bssidsStr = new StringBuilder();
@@ -100,14 +118,7 @@ public class EspGroupDBManager
         return bssidsStr.toString();
     }
     
-    /**
-     * 
-     * @param groupId
-     * @param groupName
-     * @param userKey
-     * @param state
-     * @return the groupId updated in DB
-     */
+    @Override
     public synchronized long insertOrReplace(long groupId, String groupName, String userKey, int state)
     {
         if (groupId == IEspGroup.ID_NEW)
@@ -130,11 +141,16 @@ public class EspGroupDBManager
         return groupId;
     }
     
-    public synchronized void insertOrReplace(GroupDB groupDB)
+    @Override
+    public synchronized void insertOrReplace(long id, String name, String userKey, int state, String localDeviceBssids,
+        String cloudDeviceBssids, String removeDeviceBssids)
     {
+        GroupDB groupDB =
+            new GroupDB(id, name, userKey, state, localDeviceBssids, cloudDeviceBssids, removeDeviceBssids);
         mGroupDao.insertOrReplace(groupDB);
     }
     
+    @Override
     public synchronized void delete(long groupId)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -144,17 +160,13 @@ public class EspGroupDBManager
         }
     }
     
-    public GroupDB getGroupDB(long groupId)
+    @Override
+    public IGroupDB getGroupDB(long groupId)
     {
         return mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
     }
     
-    /**
-     * The id of the group need modify
-     * 
-     * @param groupId
-     * @param bssids
-     */
+    @Override
     public synchronized void updateLocalBssids(long groupId, List<String> bssids)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -162,6 +174,7 @@ public class EspGroupDBManager
         groupDB.update();
     }
     
+    @Override
     public synchronized void addLocalBssid(long groupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -179,6 +192,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void addCloudBssid(long groupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -196,6 +210,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void addRemoveBssid(long gtoupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(gtoupId)).unique();
@@ -213,6 +228,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void deleteRemoveBssidIfExist(long groupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -225,6 +241,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void deleteLocalBssidIfExist(long groupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -237,6 +254,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void deleteCloudBssidIfExist(long groupId, String bssid)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -249,6 +267,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void updateCloudBssids(long groupId, List<String> bssids)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -256,6 +275,7 @@ public class EspGroupDBManager
         groupDB.update();
     }
     
+    @Override
     public synchronized void updateRemoveBssids(long groupId, List<String> bssids)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -263,13 +283,7 @@ public class EspGroupDBManager
         groupDB.update();
     }
     
-    public synchronized void updateUserKey(long groupId, String userKey)
-    {
-        GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
-        groupDB.setUserKey(userKey);
-        groupDB.update();
-    }
-    
+    @Override
     public synchronized void updateLocalGroupUserKey(String userKey)
     {
         if (TextUtils.isEmpty(userKey))
@@ -311,6 +325,7 @@ public class EspGroupDBManager
         }
     }
     
+    @Override
     public synchronized void updateState(long groupId, int state)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();
@@ -318,6 +333,7 @@ public class EspGroupDBManager
         groupDB.update();
     }
     
+    @Override
     public synchronized void updateName(long groupId, String name)
     {
         GroupDB groupDB = mGroupDao.queryBuilder().where(Properties.Id.eq(groupId)).unique();

@@ -12,6 +12,8 @@ public class EspProxyServerImpl implements EspProxyServer
     private static final boolean DEBUG = true;
     private static final boolean USE_LOG4J = true;
     private static final Class<?> CLASS = EspProxyServerImpl.class;
+    private static final int PROXY_SERVER_PORT_MIN = 10000;
+    private static final int PROXY_SERVER_PORT_MAX = 65535;
     
     private volatile boolean mIsStarted = false;
     private volatile int mLocalPort = -1;
@@ -53,8 +55,7 @@ public class EspProxyServerImpl implements EspProxyServer
         {
             try
             {
-                int port = random.nextInt(65536 - 10000);
-                port += 10000;
+                int port = random.nextInt(PROXY_SERVER_PORT_MAX - PROXY_SERVER_PORT_MIN) + PROXY_SERVER_PORT_MIN;
                 mServerSocket = new ServerSocket(port);
                 mLocalPort = mServerSocket.getLocalPort();
                 break;

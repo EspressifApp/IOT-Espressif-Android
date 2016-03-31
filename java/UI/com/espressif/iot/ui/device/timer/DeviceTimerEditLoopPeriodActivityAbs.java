@@ -17,7 +17,6 @@ import com.espressif.iot.type.device.timer.EspDeviceTimer;
 
 public abstract class DeviceTimerEditLoopPeriodActivityAbs extends DeviceTimerEditActivityAbs
 {
-    
     private EditText mTimeEdit;
     
     private Spinner mTimeUnitSpinner;
@@ -28,7 +27,7 @@ public abstract class DeviceTimerEditLoopPeriodActivityAbs extends DeviceTimerEd
     
     private String[] mTimeUintValues;
     
-    protected Spinner mActionSpinner;
+    private Spinner mActionSpinner;
     
     private ArrayAdapter<String> mActionsAdapter;
     
@@ -130,7 +129,11 @@ public abstract class DeviceTimerEditLoopPeriodActivityAbs extends DeviceTimerEd
             }
         }
     }
-    
+
+    protected Spinner getActionSpinner() {
+        return mActionSpinner;
+    }
+
     /**
      * 
      * @return the new action need post

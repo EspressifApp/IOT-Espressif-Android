@@ -42,7 +42,7 @@ public class EspTriggerSettingsFragment extends Fragment
     private final Logger log = Logger.getLogger(getClass());
 
     private IEspUser mUser;
-    private Activity mActivity;
+    private DeviceTriggerActivity mActivity;
     private EspDeviceTrigger mTrigger;
     private IEspDevice mDevice;
 
@@ -83,7 +83,7 @@ public class EspTriggerSettingsFragment extends Fragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mActivity = activity;
+        mActivity = (DeviceTriggerActivity)activity;
         mCompareTypeArray = DeviceTriggerActivity.COMPARE_TYPE_ARRAY;
 
         mUser = BEspUser.getBuilder().getInstance();
@@ -96,6 +96,7 @@ public class EspTriggerSettingsFragment extends Fragment
         mCompareTypeSpinner = (Spinner)view.findViewById(R.id.trigger_compare_type);
         ArrayAdapter<String> compareTypeAdapter =
             new ArrayAdapter<String>(mActivity, android.R.layout.simple_spinner_item, mCompareTypeArray);
+        compareTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mCompareTypeSpinner.setAdapter(compareTypeAdapter);
         mCompareTypeSpinner.setSelection(mTrigger.getCompareType());
         mCompareTypeSpinner.setOnItemSelectedListener(this);
@@ -128,6 +129,13 @@ public class EspTriggerSettingsFragment extends Fragment
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        mActivity.notifyDataSetChanged();
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent == mRuleListView) {
             final TriggerRule rule = mRuleList.get(position);
@@ -157,8 +165,7 @@ public class EspTriggerSettingsFragment extends Fragment
         if (v == mAddNotificationBtn) {
             mViaSpinner.setSelection(0);
             mAddRuleDialog.show();
-        }
-        else if (v == mSaveChangeBtn) {
+        } else if (v == mSaveChangeBtn) {
             new UpdateTriggerTask(mActivity, generateTaskTrigger()).execute();
         }
     }
@@ -235,8 +242,7 @@ public class EspTriggerSettingsFragment extends Fragment
         String compareValueStr = mCompareValueET.getText().toString();
         if (TextUtils.isEmpty(compareValueStr)) {
             mSaveChangeBtn.setEnabled(false);
-        }
-        else {
+        } else {
             int selectedType = mCompareTypeSpinner.getSelectedItemPosition();
             int compareValue = Integer.parseInt(compareValueStr);
             boolean comapreChanged =
@@ -294,8 +300,7 @@ public class EspTriggerSettingsFragment extends Fragment
                 Toast.makeText(mContext,
                     mContext.getString(R.string.esp_device_trigger_settings_save_suc),
                     Toast.LENGTH_SHORT).show();
-            }
-            else {
+            } else {
                 Toast
                     .makeText(mContext,
                         mContext.getString(R.string.esp_device_trigger_settings_save_failed),

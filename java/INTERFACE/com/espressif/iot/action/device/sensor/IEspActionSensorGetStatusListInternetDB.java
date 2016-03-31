@@ -5,7 +5,7 @@ import java.util.List;
 import com.espressif.iot.action.IEspActionDB;
 import com.espressif.iot.action.IEspActionInternet;
 import com.espressif.iot.action.device.IEspActionSensor;
-import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
+import com.espressif.iot.object.db.IGenericDataDB;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.IEspStatusSensor;
 
@@ -39,7 +39,7 @@ public interface IEspActionSensorGetStatusListInternetDB extends IEspActionSenso
      * @param dataInDB data in the db
      * @return the IEspStatusSensor
      */
-    IEspStatusSensor parseStatus(GenericDataDB dataInDB);
+    IEspStatusSensor parseStatus(IGenericDataDB dataInDB);
     
     /**
      * parse status from IEspStatusSensor to GenericDataDB
@@ -47,7 +47,7 @@ public interface IEspActionSensorGetStatusListInternetDB extends IEspActionSenso
      * @param statusSensor the status of sensor
      * @return the GenericDataDB
      */
-    GenericDataDB parseStatus(long deviceId, IEspStatusSensor statusSensor);
+    IGenericDataDB parseStatus(long deviceId, IEspStatusSensor statusSensor);
     
     /**
      * do the concrete command for the specific sensor to get status list from the Internet

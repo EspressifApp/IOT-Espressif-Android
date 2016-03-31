@@ -131,7 +131,7 @@ public class EspHttpUtil
             HeaderPair header = headers[i];
             request.addHeader(header.getName(), header.getValue());
         }
-        // SetEntity
+        // Set Entity
         if (json != null)
         {
             try

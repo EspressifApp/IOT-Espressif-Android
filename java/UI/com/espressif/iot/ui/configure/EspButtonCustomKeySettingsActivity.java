@@ -49,14 +49,14 @@ public class EspButtonCustomKeySettingsActivity extends EspActivityAbs implement
     private IEspDevice mDevice;
     
     private List<Button> mKeys;
-    private Button mKey1;
-    private Button mKey2;
-    private Button mKey3;
-    private Button mKey4;
-    private Button mKeyU;
-    private Button mKeyD;
-    private Button mKeyL;
-    private Button mKeyR;
+    private Button mKey1; // left up button
+    private Button mKey2; // right up button
+    private Button mKey3; // left down button
+    private Button mKey4; // right down button
+    private Button mKeyU; // up button
+    private Button mKeyD; // down button
+    private Button mKeyL; // left button
+    private Button mKeyR; // right button
     
     private AlertDialog mColorPickerDialog;
     private View mColorDisplay;

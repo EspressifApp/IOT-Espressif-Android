@@ -50,6 +50,7 @@ public class ResetUserPasswordActivity extends EspActivityAbs implements OnClick
     {
         if (v == mConfirmBtn)
         {
+            // Hide the soft keyboard
             InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mEmailET.getWindowToken(), 0);
             new ResetPasswordTask(this).execute(mEmailET.getText().toString());
@@ -72,6 +73,7 @@ public class ResetUserPasswordActivity extends EspActivityAbs implements OnClick
         @Override
         public void afterTextChanged(Editable s)
         {
+            // Check Email address format is legal
             if (AccountUtil.isEmail(s.toString()))
             {
                 mConfirmBtn.setEnabled(true);

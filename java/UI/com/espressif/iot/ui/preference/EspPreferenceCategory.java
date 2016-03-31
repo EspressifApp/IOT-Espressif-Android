@@ -8,7 +8,6 @@ import android.content.res.TypedArray;
 import android.preference.PreferenceCategory;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class EspPreferenceCategory extends PreferenceCategory
@@ -48,22 +47,16 @@ public class EspPreferenceCategory extends PreferenceCategory
             }
         }
         a.recycle();
-        
-        if (mTitleColor == null)
-        {
-            mTitleColor = ColorStateList.valueOf(0xFF000000);
-        }
     }
     
     @Override
-    protected View onCreateView(ViewGroup parent)
-    {
-        View view = super.onCreateView(parent);
-        
-        TextView titleTV = (TextView)view.findViewById(android.R.id.title);
-        titleTV.setTextColor(mTitleColor);
-        
-        return view;
+    protected void onBindView(View view) {
+        super.onBindView(view);
+
+        if (mTitleColor != null) {
+            TextView titleTV = (TextView)view.findViewById(android.R.id.title);
+            titleTV.setTextColor(mTitleColor);
+        }
     }
     
     public void setTitleColor(int color)

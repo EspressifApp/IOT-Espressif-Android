@@ -12,7 +12,7 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
     private Button mPlugBtn;
     private Button mLightBtn;
     private Button mRemoteBtn;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -27,14 +27,14 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
     protected View initControlView()
     {
         View view  = View.inflate(this, R.layout.device_activity_root_router, null);
-        
+
         mPlugBtn = (Button)view.findViewById(R.id.mesh_all_plug_btn);
         mPlugBtn.setOnClickListener(this);
         mLightBtn = (Button)view.findViewById(R.id.mesh_all_light_btn);
         mLightBtn.setOnClickListener(this);
         mRemoteBtn = (Button)view.findViewById(R.id.mesh_all_remote_btn);
         mRemoteBtn.setOnClickListener(this);
-        
+
         return view;
     }
 
@@ -53,15 +53,12 @@ public class DeviceRootRouterActivity extends DeviceActivityAbs implements OnCli
     {
         if (v == mPlugBtn)
         {
-//            new DevicePlugDialog(this, mIEspDevice).show();
         }
         else if (v == mLightBtn)
         {
-//            new DeviceLightDialog(this, mIEspDevice).show();
         }
         else if (v == mRemoteBtn)
         {
-//            new DeviceRemoteDialog(this, mIEspDevice).show();
         }
     }
 }

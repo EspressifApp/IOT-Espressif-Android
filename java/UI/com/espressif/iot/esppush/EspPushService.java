@@ -102,8 +102,11 @@ public class EspPushService extends Service
         
         mAlarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         mHeartBeatIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_HEART_BEAT), 0);
-        mAlarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()
-            + HEART_BEAT_INTERVAL, HEART_BEAT_INTERVAL, mHeartBeatIntent);
+         // Post heart beat broadcast every one minute
+        mAlarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + HEART_BEAT_INTERVAL,
+            HEART_BEAT_INTERVAL,
+            mHeartBeatIntent);
     }
     
     @Override
@@ -135,11 +138,13 @@ public class EspPushService extends Service
                 {
                     if (!mPushClient.isConnteted())
                     {
+                        // if the network is available and the client is disconnected, try to connect server
                         mPushClient.connect();
                     }
                 }
                 else
                 {
+                    // if the network is unavailable, disconnect the client.
                     mPushClient.disconnect();
                 }
             }
@@ -154,10 +159,12 @@ public class EspPushService extends Service
                 // Alarm heart beating
                 if (mPushClient.isConnteted())
                 {
+                    // if the client is connected, post a ping package
                     mPushClient.ping();
                 }
                 else if (isNetworkAvailable())
                 {
+                    // if the client is disconnected and the network is available, try to connect server
                     mPushClient.connect();
                 }
             }

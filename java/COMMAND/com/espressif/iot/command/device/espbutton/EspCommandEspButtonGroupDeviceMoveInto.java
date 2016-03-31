@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.net.HeaderPair;
-import com.espressif.iot.util.MeshUtil;
 
 public class EspCommandEspButtonGroupDeviceMoveInto implements IEspCommandEspButtonGroupDeviceMoveInto
 {

@@ -8,7 +8,6 @@ import java.util.Vector;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.device.IEspDeviceSSS;
@@ -16,8 +15,6 @@ import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.device.DeviceLightActivity;
 import com.espressif.iot.ui.device.DevicePlugActivity;
-import com.espressif.iot.ui.help.HelpDeviceLightActivity;
-import com.espressif.iot.ui.help.HelpDevicePlugActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.view.SoftAPAdapter;
 import com.espressif.iot.user.IEspUser;
@@ -52,19 +49,14 @@ import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DeviceConfigureActivity extends EspActivityAbs implements OnItemClickListener,
-    OnRefreshListener<ListView>, OnSharedPreferenceChangeListener
+public class DeviceSoftAPConfigureActivity extends EspActivityAbs
+    implements OnItemClickListener, OnRefreshListener<ListView>, OnSharedPreferenceChangeListener
 {
     private IEspUser mUser;
     
-    /**
-     * There is a header in PullToRefreshListView, so the list items are behind header.
-     */
-    private final int LIST_HEADER_COUNT = PullToRefreshListView.DEFAULT_HEADER_COUNT;
-    
-    protected PullToRefreshListView mSoftApListView;
-    protected List<IEspDeviceNew> mSoftApList;
-    protected BaseAdapter mSoftApAdapter;
+    private PullToRefreshListView mSoftApListView;
+    private List<IEspDeviceNew> mSoftApList;
+    private BaseAdapter mSoftApAdapter;
     
     private Handler mHandler;
     
@@ -72,8 +64,8 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     
     private int mAutoConfigureValue;
     
-    protected static final int POPMENU_ID_ACTIVATE = 0;
-    protected static final int POPMENU_ID_DIRECT_CONNECT = 1;
+    private static final int POPMENU_ID_ACTIVATE = 0;
+    private static final int POPMENU_ID_DIRECT_CONNECT = 1;
     
     /**
      * When show the dialogs, pause the auto refresh handler
@@ -106,8 +98,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mHandler = new ListHandler(this);
         
         setTitle(R.string.esp_configure_title);
-        
-        checkHelpModeConfigureClear();
     }
     
     @Override
@@ -115,7 +105,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     {
         super.onResume();
         
-        if (!mShowConfigureDialog && !checkHelpModeOn())
+        if (!mShowConfigureDialog)
         {
             sendRefreshMessage();
         }
@@ -151,7 +141,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         mSoftApAdapter.notifyDataSetChanged();
         mSoftApListView.onRefreshComplete();
         
-        if (!mHelpMachine.isHelpOn() && mAutoConfigureValue < 0 && mSoftApList.size() > 0)
+        if (mAutoConfigureValue < 0 && mSoftApList.size() > 0)
         {
             IEspDeviceNew device = mSoftApList.get(0);
             if (device.getRssi() >= mAutoConfigureValue && device.getRssi() < 0)
@@ -159,8 +149,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                 autoConfigure(device);
             }
         }
-        
-        checkHelpModeConfigureRetry();
     }
     
     private void autoConfigure(IEspDeviceNew device)
@@ -172,7 +160,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         List<String[]> configuredAps = mUser.getConfiguredAps();
         for (ScanResult wifi : wifis)
         {
-            
             for (String[] configuredAp : configuredAps)
             {
                 if (wifi.BSSID.equals(configuredAp[0]))
@@ -182,7 +169,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
                     String password = configuredAp[2];
                     WifiCipherType wifiType = WifiCipherType.getWifiCipherType(wifi);
                     ApInfo apInfo = new ApInfo(bssid, ssid, password, wifiType);
-                    new DeviceConfigureProgressDialog(this, device, apInfo).show();
+                    new DeviceSoftAPConfigureProgressDialog(this, device, apInfo).show();
                     return;
                 }
             }
@@ -265,7 +252,13 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         }
     }
     
-    protected boolean isConfigured(String bssid)
+    /**
+     * Whether the WIFI is configured ESP device
+     * 
+     * @param bssid of the WIFI
+     * @return
+     */
+    private boolean isConfigured(String bssid)
     {
         List<IEspDevice> list = mUser.getDeviceList();
         for (IEspDevice userDevice : list)
@@ -319,17 +312,17 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
     
     private static class ListHandler extends Handler
     {
-        private WeakReference<DeviceConfigureActivity> mActivity;
+        private WeakReference<DeviceSoftAPConfigureActivity> mActivity;
         
-        public ListHandler(DeviceConfigureActivity activity)
+        public ListHandler(DeviceSoftAPConfigureActivity activity)
         {
-            mActivity = new WeakReference<DeviceConfigureActivity>(activity);
+            mActivity = new WeakReference<DeviceSoftAPConfigureActivity>(activity);
         }
         
         @Override
         public void handleMessage(Message msg)
         {
-            DeviceConfigureActivity activity = mActivity.get();
+            DeviceSoftAPConfigureActivity activity = mActivity.get();
             if (activity == null)
             {
                 System.out.println("DeviceConfigureActivity ListHandler handleMessage activity is null");
@@ -359,7 +352,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         {
             View view = super.getView(position, convertView, parent);
             
-            IEspDeviceNew deviceNew = mSoftApList.get(position);
+            IEspDeviceNew deviceNew = (IEspDeviceNew)view.getTag();
             
             TextView deviceNameTV = (TextView)view.findViewById(R.id.device_name);
             String displayText = deviceNew.getSsid();
@@ -393,7 +386,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             
             return view;
         }
-        
     }
     
     @Override
@@ -404,7 +396,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             Toast.makeText(this, R.string.esp_configure_wifi_hint, Toast.LENGTH_SHORT).show();
             return;
         }
-        IEspDeviceNew device = mSoftApList.get(position - LIST_HEADER_COUNT);
+        IEspDeviceNew device = (IEspDeviceNew)view.getTag();
         
         PopupMenu popMenu = new PopupMenu(this, view);
         Menu menu = popMenu.getMenu();
@@ -429,11 +421,6 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         @Override
         public boolean onMenuItemClick(MenuItem item)
         {
-            if (checkHelpPopMenuItemClick(item.getItemId()))
-            {
-                return true;
-            }
-            
             switch (item.getItemId())
             {
                 case POPMENU_ID_ACTIVATE:
@@ -445,20 +432,19 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             }
             return false;
         }
-        
     }
     
-    protected void showConfigureSettingsDialog(IEspDeviceNew device)
+    private void showConfigureSettingsDialog(IEspDeviceNew device)
     {
-        new DeviceConfigureSettingsDialog(this, device).show();
+        new DeviceSoftAPConfigureSettingsDialog(this, device).show();
     }
     
     public void showConfigureProgressDialog(IEspDeviceNew device, ApInfo apInfo)
     {
-        new DeviceConfigureProgressDialog(this, device, apInfo).show();
+        new DeviceSoftAPConfigureProgressDialog(this, device, apInfo).show();
     }
     
-    public void showDirectConnectProgressDialog(IEspDeviceNew device)
+    private void showDirectConnectProgressDialog(IEspDeviceNew device)
     {
         new DeviceDirectConnectProgressDialog(this, device).show();
     }
@@ -469,10 +455,10 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         switch (device.getDeviceType())
         {
             case PLUG:
-                cls = EspApplication.HELP_ON ? HelpDevicePlugActivity.class : DevicePlugActivity.class;
+                cls = DevicePlugActivity.class;
                 break;
             case LIGHT:
-                cls = EspApplication.HELP_ON ? HelpDeviceLightActivity.class : DeviceLightActivity.class;
+                cls = DeviceLightActivity.class;
                 break;
             
             default:
@@ -485,8 +471,7 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
             Intent intent = new Intent(getBaseContext(), cls);
             intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
             intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-            intent.putExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, true);
-            DeviceActivityAbs.TEMP_DEVICE = device;
+            DeviceActivityAbs.setTempDevice(device);
             startActivity(intent);
         }
     }
@@ -498,23 +483,5 @@ public class DeviceConfigureActivity extends EspActivityAbs implements OnItemCli
         {
             mAutoConfigureValue = sharedPreferences.getInt(key, EspDefaults.AUTO_CONFIGRUE_RSSI);
         }
-    }
-    
-    protected void checkHelpModeConfigureClear()
-    {
-    }
-    
-    protected void checkHelpModeConfigureRetry()
-    {
-    }
-    
-    protected boolean checkHelpModeOn()
-    {
-        return false;
-    }
-    
-    protected boolean checkHelpPopMenuItemClick(int itemId)
-    {
-        return false;
     }
 }

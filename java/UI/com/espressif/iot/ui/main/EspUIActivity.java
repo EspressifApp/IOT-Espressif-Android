@@ -26,7 +26,7 @@ import com.espressif.iot.model.device.statemachine.EspDeviceStateMachineHandler;
 import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
-import com.espressif.iot.ui.configure.DeviceConfigureActivity;
+import com.espressif.iot.ui.configure.DeviceSoftAPConfigureActivity;
 import com.espressif.iot.ui.configure.DeviceEspTouchActivity;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.login.LoginActivity;
@@ -72,7 +72,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -92,14 +91,14 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
 {
     private static final Logger log = Logger.getLogger(EspUIActivity.class);
     
-    protected IEspUser mUser;
+    private IEspUser mUser;
     
     private static final int MENU_ID_ADD_DEVICE = 1;
     private static final int MENU_ID_EDIT = 4;
     private static final int MENU_ID_SCENE = 5;
     
-    protected List<IEspDevice> mAllDeviceList;
-    protected PullToRefreshListView mDeviceListView;
+    private List<IEspDevice> mAllDeviceList;
+    private PullToRefreshListView mDeviceListView;
     private DeviceAdapter mDeviceAdapter;
     private LinkedBlockingQueue<Object> mDevicesUpdateMsgQueue;
     private UpdateDeviceListThread mDevicesUpdateThread;
@@ -131,10 +130,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     private Set<IEspDevice> mEditCheckedDevices;
     
-    protected View mConfigureBtn;
-    
-    protected final static int REQUEST_HELP = 0x10;
-    protected final static int REQUEST_DEVICE = 0x11;
+    private final static int REQUEST_DEVICE = 0x11;
     private static final int REQUEST_ESPTOUCH = 0x12;
     private static final int REQUEST_SETTINGS = 0x13;
     
@@ -180,10 +176,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         
         mSortType = DeviceSortType.DEVICE_NAME;
         mDeviceSortSpinner = (Spinner)findViewById(R.id.device_sort_spinner);
-        String[] sortOptions = getResources().getStringArray(R.array.esp_ui_device_sort);
-        ArrayAdapter<String> sortAdapter =
-            new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sortOptions);
-        mDeviceSortSpinner.setAdapter(sortAdapter);
         mDeviceSortSpinner.setOnItemSelectedListener(this);
         
         // Init device list
@@ -358,7 +350,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         @Override
         protected void onPostExecute(Void result)
         {
-            if (mDialog == null)
+            if (mDialog != null)
             {
                 mDialog.dismiss();
                 mDialog = null;
@@ -401,8 +393,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     @Override
     protected void onCreateBottomItems(IEspBottomMenu bottomMenu)
     {
-        mConfigureBtn =
-            bottomMenu.addBottomItem(MENU_ID_ADD_DEVICE, R.drawable.esp_icon_add, R.string.esp_ui_menu_add_device);
+        bottomMenu.addBottomItem(MENU_ID_ADD_DEVICE, R.drawable.esp_icon_add, R.string.esp_ui_menu_add_device);
         bottomMenu.addBottomItem(MENU_ID_SCENE, R.drawable.esp_menu_icon_scene, R.string.esp_ui_menu_scene);
         bottomMenu.addBottomItem(MENU_ID_EDIT, R.drawable.esp_menu_icon_edit, R.string.esp_ui_menu_edit);
     }
@@ -480,7 +471,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     private void sendAutoRefreshMessage(Long autoRefreshTime)
     {
         log.debug("send Auto Refresh Message Delayed " + autoRefreshTime);
-        Message msg = new Message();
+        Message msg = Message.obtain();
         msg.what = MSG_AUTO_REFRESH;
         msg.obj = autoRefreshTime;
         mRefreshHandler.sendMessageDelayed(msg, autoRefreshTime);
@@ -730,8 +721,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 mUser.doActionDevicesUpdated(true);
                 updateDeviceList();
                 mDeviceAdapter.notifyDataSetChanged();
-                
-                checkHelpConfigure();
             }
         }
         
@@ -916,7 +905,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     
     protected void gotoConfigure()
     {
-        Intent intent = new Intent(this, DeviceConfigureActivity.class);
+        Intent intent = new Intent(this, DeviceSoftAPConfigureActivity.class);
         startActivity(intent);
     }
     
@@ -930,12 +919,6 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         IEspDeviceState state = device.getDeviceState();
         if (state.isStateUpgradingInternet() || state.isStateUpgradingLocal())
         {
-            return false;
-        }
-        
-        if (checkHelpClickDeviceType(device.getDeviceType()))
-        {
-            // The help mode is on, but not the clicked device type help
             return false;
         }
         
@@ -1155,7 +1138,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
             // Exit edit mode
             setEditBarEnable(false);
         }
-        else if (!mHelpMachine.isHelpOn())
+        else
         {
             new AlertDialog.Builder(this).setMessage(R.string.esp_ui_exit_message)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
@@ -1170,18 +1153,5 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
         }
-        else
-        {
-            super.onBackPressed();
-        }
-    }
-    
-    protected void checkHelpConfigure()
-    {
-    }
-    
-    protected boolean checkHelpClickDeviceType(EspDeviceType type)
-    {
-        return false;
     }
 }

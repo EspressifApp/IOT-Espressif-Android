@@ -32,8 +32,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -54,9 +52,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
@@ -291,9 +287,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
                 views.add(siv);
             }
             
-            View moveView = generateBitmapView(view);
-            moveView.setTag(view.getTag());
-            mMoveLayout.startTouchMove(moveView, view.getX(), view.getY(), views);
+            mMoveLayout.startTouchMove(view, view.getX(), view.getY(), views);
             
             return true;
         }
@@ -343,27 +337,6 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         boolean hasDeviceSelected = mDeviceAdapter.getEditCheckedDevices().size() > 0;
         mBottomControlBtn.setEnabled(hasDeviceSelected);
         mBottomRemoveBtn.setEnabled(hasDeviceSelected);
-    }
-    
-    private Bitmap generateViewBitmap(View view)
-    {
-        Bitmap bmp = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        view.draw(canvas);
-        
-        return bmp;
-    }
-    
-    private View generateBitmapView(View view)
-    {
-        ImageView iv = new ImageView(this);
-        LayoutParams lp = new LayoutParams(view.getWidth(), view.getHeight());
-        iv.setLayoutParams(lp);
-        iv.setScaleType(ScaleType.CENTER_INSIDE);
-        iv.setImageBitmap(generateViewBitmap(view));
-        iv.setBackgroundColor(getResources().getColor(R.color.esp_scene_move_view_background));
-        
-        return iv;
     }
     
     private OnTouchMoveListener mIntersectsListener = new OnTouchMoveListener()
@@ -721,8 +694,7 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         {
             Intent intent = DeviceActivityAbs.getDeviceIntent(getBaseContext(), deviceArray);
             intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-            intent.putExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, true);
-            DeviceActivityAbs.TEMP_DEVICE = deviceArray;
+            DeviceActivityAbs.setTempDevice(deviceArray);
             startActivity(intent);
         }
         else

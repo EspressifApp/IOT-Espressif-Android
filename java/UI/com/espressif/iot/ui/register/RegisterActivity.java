@@ -41,16 +41,21 @@ public class RegisterActivity extends Activity
             .commit();
     }
     
+    /**
+     * Show the target Fragment
+     * 
+     * @param tag Use RegisterEmailFragment.TAG or RegisterPhoneFragment.TAG
+     */
     public void showFragment(String tag)
     {
-        Fragment showFg;
-        Fragment hideFg;
+        Fragment showFg = null;
+        Fragment hideFg = null;
         if (tag.equals(RegisterEmailFragment.TAG))
         {
             showFg = mEmailFragment;
             hideFg = mPhoneFragment;
         }
-        else
+        else if (tag.equals(RegisterPhoneFragment.TAG))
         {
             showFg = mPhoneFragment;
             hideFg = mEmailFragment;
@@ -85,16 +90,19 @@ public class RegisterActivity extends Activity
         
         if (password.length() < PASSOWRD_WORDS_NUMBER_MIN)
         {
+            // The password is too short
             Toast.makeText(this, R.string.esp_register_input_password, Toast.LENGTH_LONG).show();
             return false;
         }
         
         if (password.equals(passwordAgain))
         {
+            // The password is legal
             return true;
         }
         else
         {
+            // Two passwords is not same
             Toast.makeText(this, R.string.esp_register_same_password_toast, Toast.LENGTH_LONG).show();
             return false;
         }

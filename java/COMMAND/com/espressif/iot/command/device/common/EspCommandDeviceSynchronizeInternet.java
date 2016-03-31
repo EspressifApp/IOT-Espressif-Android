@@ -28,7 +28,11 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
     
     private static final long ONLINE_TIMEOUT_PLUG = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
+    private static final long ONLINE_TIMEOUT_PLUG_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_LIGHT = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
+    private static final long ONLINE_TIMEOUT_LIGHT_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_TEMPERATURE = 5 * TimeUtil.ONE_MINUTE_LONG_VALUE;
     
@@ -36,9 +40,15 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
     
     private static final long ONLINE_TIMEOUT_REMOTE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
+    private static final long ONLINE_TIMEOUT_REMOTE_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_PLUGS = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
+    private static final long ONLINE_TIMEOUT_PLUGS_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
     private static final long ONLINE_TIMEOUT_VOLTAGE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
+    private static final long ONLINE_TIMEOUT_VOLTAGE_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private JSONArray getJSONArrayGroups(String userKey)
     {
@@ -66,7 +76,7 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
         return null;
     }
     
-    private boolean isDeviceOnline(EspDeviceType deviceType, long last_active, long currentTime)
+    private boolean isDeviceOnline(boolean isMeshDevice, EspDeviceType deviceType, long last_active, long currentTime)
     {
         long timeout = 0;
         switch (deviceType)
@@ -78,19 +88,54 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                 timeout = ONLINE_TIMEOUT_TEMPERATURE;
                 break;
             case VOLTAGE:
-                timeout = ONLINE_TIMEOUT_VOLTAGE;
+                if (isMeshDevice)
+                {
+                    timeout = ONLINE_TIMEOUT_VOLTAGE_MESH;
+                }
+                else
+                {
+                    timeout = ONLINE_TIMEOUT_VOLTAGE;
+                }
                 break;
             case LIGHT:
-                timeout = ONLINE_TIMEOUT_LIGHT;
+                if (isMeshDevice)
+                {
+                    timeout = ONLINE_TIMEOUT_LIGHT_MESH;
+                }
+                else
+                {
+                    timeout = ONLINE_TIMEOUT_LIGHT;
+                }
                 break;
             case PLUG:
-                timeout = ONLINE_TIMEOUT_PLUG;
+                if (isMeshDevice)
+                {
+                    timeout = ONLINE_TIMEOUT_PLUG_MESH;
+                }
+                else
+                {
+                    timeout = ONLINE_TIMEOUT_PLUG;
+                }
                 break;
             case REMOTE:
-                timeout = ONLINE_TIMEOUT_REMOTE;
+                if (isMeshDevice)
+                {
+                    timeout = ONLINE_TIMEOUT_REMOTE_MESH;
+                }
+                else
+                {
+                    timeout = ONLINE_TIMEOUT_REMOTE;
+                }
                 break;
             case PLUGS:
-                timeout = ONLINE_TIMEOUT_PLUGS;
+                if (isMeshDevice)
+                {
+                    timeout = ONLINE_TIMEOUT_PLUGS_MESH;
+                }
+                else
+                {
+                    timeout = ONLINE_TIMEOUT_PLUGS;
+                }
                 break;
             case NEW:
                 break;
@@ -182,8 +227,9 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     String rom_version = deviceJsonObject.getString(Rom_Version);
                     String latest_rom_version = deviceJsonObject.getString(Latest_Rom_Version);
                     // check isOnline
+                    boolean isMeshDevice = !deviceJsonObject.isNull(Parent_Mdev_Mac);
                     long last_active = deviceJsonObject.getLong(Last_Active) * TimeUtil.ONE_SECOND_LONG_VALUE;
-                    boolean isOnline = isDeviceOnline(deviceType, last_active, currentTime);
+                    boolean isOnline = isDeviceOnline(isMeshDevice, deviceType, last_active, currentTime);
                     // set state
                     EspDeviceState deviceState = new EspDeviceState();
                     if (isOnline)

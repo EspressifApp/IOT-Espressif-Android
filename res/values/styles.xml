@@ -21,6 +21,7 @@
     </style>
 
     <style name="NoTitleBar" parent="android:Theme.Holo.NoActionBar"></style>
+
     <style name="FullScreen" parent="android:Theme.Holo.NoActionBar.Fullscreen"></style>
 
     <style name="LoginEditText">
@@ -32,6 +33,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:drawablePadding">15dip</item>
         <item name="android:background">@drawable/esp_edit_underline_bg</item>
+        <item name="android:selectAllOnFocus">true</item>
     </style>
 
     <style name="YellowButton">
@@ -52,6 +54,7 @@
         <item name="android:textColorHint">@color/esp_text_hint_color</item>
         <item name="android:textSize">19sp</item>
         <item name="android:singleLine">true</item>
+        <item name="android:selectAllOnFocus">true</item>
     </style>
 
     <style name="BlueButton">
@@ -83,4 +86,5 @@
         <item name="android:minWidth">80dip</item>
         <item name="android:minHeight">80dip</item>
     </style>
+
 </resources>

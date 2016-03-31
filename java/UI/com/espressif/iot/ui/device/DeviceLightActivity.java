@@ -16,7 +16,6 @@ import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity;
-import com.espressif.iot.ui.device.trigger.DeviceTriggerActivity;
 import com.espressif.iot.ui.view.EspColorPicker;
 import com.espressif.iot.ui.view.EspColorPicker.OnColorChangedListener;
 import com.espressif.iot.util.EspStrings;
@@ -79,12 +78,9 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     
     private EspLightRecord mLightRecord;
     
-    protected View mLightLayout;
-    
     private IEspLongSocket mLongSocket;
     
     private static final int MENU_ID_ESPBUTTON_SETTINGS = 0x2001;
-    private static final int MENU_ID_TRIGGER = 0x2002;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -93,10 +89,13 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         
         mDeviceLight = (IEspDeviceLight)mIEspDevice;
         mLightRecord = EspLightRecord.createFakeInstance();
+        boolean isDeviceArray = isDeviceArray();
+        if (isDeviceArray) {
+            mLightRecord.saveLastStatus();
+        }
         
         boolean compatibility = isDeviceCompatibility();
-        checkHelpModeLight(compatibility);
-        if (compatibility && !isDeviceArray())
+        if (compatibility && !isDeviceArray)
         {
             executeGet();
         }
@@ -166,8 +165,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         mSwitch = (CheckBox)view.findViewById(R.id.light_switch);
         mSwitch.setOnClickListener(this);
         
-        mLightLayout = view.findViewById(R.id.light_layout);
-        
         mColorPickerSwap = (ImageView)view.findViewById(R.id.light_colorpicker_swap);
         mColorPickerSwap.setOnClickListener(this);
         mSeekBarContainer = view.findViewById(R.id.light_seekbar_container);
@@ -183,10 +180,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings);
         }
 
-//        if (mIEspDevice.getDeviceState().isStateInternet()) {
-//            menu.add(Menu.NONE, MENU_ID_TRIGGER, 1, R.string.esp_device_menu_trigger);
-//        }
-
         return super.onCreateOptionsMenu(menu);
     }
     
@@ -199,11 +192,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 Intent intent = new Intent(this, EspButtonCustomKeySettingsActivity.class);
                 intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mDeviceLight.getKey());
                 startActivity(intent);
-                return true;
-            case MENU_ID_TRIGGER:
-                Intent triggerIntent = new Intent(this, DeviceTriggerActivity.class);
-                triggerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
-                startActivity(triggerIntent);
                 return true;
         }
         
@@ -864,11 +852,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
         }
         else if (view == mColorPickerSwap)
         {
-            if (checkHelpClickSwap())
-            {
-                return;
-            }
-            
             if (mDeviceLight.getIsMeshDevice() || isDeviceArray())
             {
                 Toast.makeText(this, R.string.esp_device_light_continuous_control_forbidden, Toast.LENGTH_SHORT).show();
@@ -1033,8 +1016,6 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
             mSwitch.setChecked(false);
         }
         
-        checkHelpExecuteFinish(command, result);
-        
         if (command == COMMAND_GET && result)
         {
             checkLowBatteryEspnow();
@@ -1175,18 +1156,5 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
                 updateLightWwUIByNorm();
             }
         }
-    }
-    
-    protected void checkHelpModeLight(boolean compatibility)
-    {
-    }
-    
-    protected void checkHelpExecuteFinish(int command, boolean result)
-    {
-    }
-    
-    protected boolean checkHelpClickSwap()
-    {
-        return false;
     }
 }

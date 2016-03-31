@@ -13,7 +13,7 @@ import com.espressif.iot.action.device.sensor.IEspActionSensorGetStatusListInter
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.db.IOTGenericDataDBManager;
 import com.espressif.iot.db.IOTGenericDataDirectoryDBManager;
-import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
+import com.espressif.iot.object.db.IGenericDataDB;
 import com.espressif.iot.object.db.IGenericDataDBManager;
 import com.espressif.iot.object.db.IGenericDataDirectoryDBManager;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -54,10 +54,10 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
         }
     }
     
-    private List<IEspStatusSensor> parseStatusSensorList(final List<GenericDataDB> dataListInDB)
+    private List<IEspStatusSensor> parseStatusSensorList(final List<IGenericDataDB> dataListInDB)
     {
         List<IEspStatusSensor> result = new ArrayList<IEspStatusSensor>();
-        for (GenericDataDB dataInDB : dataListInDB)
+        for (IGenericDataDB dataInDB : dataListInDB)
         {
             IEspStatusSensor statusSensor = this.parseStatus(dataInDB);
             result.add(statusSensor);
@@ -65,12 +65,12 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
         return result;
     }
     
-    private List<GenericDataDB> parseDataDBList(final long deviceId, final List<IEspStatusSensor> statusSensorList)
+    private List<IGenericDataDB> parseDataDBList(final long deviceId, final List<IEspStatusSensor> statusSensorList)
     {
-        List<GenericDataDB> result = new ArrayList<GenericDataDB>();
+        List<IGenericDataDB> result = new ArrayList<IGenericDataDB>();
         for (IEspStatusSensor statusSensor : statusSensorList)
         {
-            GenericDataDB genericDataDB = this.parseStatus(deviceId, statusSensor);
+            IGenericDataDB genericDataDB = this.parseStatus(deviceId, statusSensor);
             result.add(genericDataDB);
         }
         return result;
@@ -97,7 +97,7 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
             @Override
             public void run()
             {
-                List<GenericDataDB> dataDBList = parseDataDBList(deviceId, statusSensorList);
+                List<IGenericDataDB> dataDBList = parseDataDBList(deviceId, statusSensorList);
                 log.info("insertOrReplaceDataList start");
                 iotGenericDataDBManager.insertOrReplaceDataList(dataDBList, startTimestampUTCDay, endTimestampUTCDay);
                 log.info("deleteExpiredDataDirectoryAndData start");
@@ -294,7 +294,7 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
             public List<IEspStatusSensor> call()
                 throws Exception
             {
-                List<GenericDataDB> dataListInDB =
+                List<IGenericDataDB> dataListInDB =
                     iotGenericDataDBManager.getDataList(deviceId, startTimestampUTCday, startTimestampFromServer);
                 List<IEspStatusSensor> result = parseStatusSensorList(dataListInDB);
                 return result;
@@ -327,7 +327,7 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
             public List<IEspStatusSensor> call()
                 throws Exception
             {
-                List<GenericDataDB> dataListInDB =
+                List<IGenericDataDB> dataListInDB =
                     iotGenericDataDBManager.getDataList(deviceId, endTimestampFromServer, endTimestampUTCday);
                 List<IEspStatusSensor> result = parseStatusSensorList(dataListInDB);
                 return result;

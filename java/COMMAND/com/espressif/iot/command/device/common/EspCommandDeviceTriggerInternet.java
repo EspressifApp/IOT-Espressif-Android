@@ -172,7 +172,7 @@ public class EspCommandDeviceTriggerInternet implements IEspCommandDeviceTrigger
         int dimension = triggerJSON.getInt(KEY_DIMENSION);
         String stream = triggerJSON.optString(KEY_STREAM, null);
         if (stream == null) {
-            stream = EspDeviceTrigger.STREAM_LIGHT;
+            stream = EspDeviceTrigger.STREAM_ALARM;
         }
         int interval = triggerJSON.getInt(KEY_INTERVAL);
         int intervalFunc = triggerJSON.getInt(KEY_INTERVAL_FUNC);
@@ -195,7 +195,15 @@ public class EspCommandDeviceTriggerInternet implements IEspCommandDeviceTrigger
                 JSONObject ruleJSON = ruleArray.getJSONObject(i);
                 
                 String scope = ruleJSON.getString(KEY_SCOPE);
+                if (scope.equals("1")) {
+                    scope = EspDeviceTrigger.SCOPE_ME;
+                }
                 String via = ruleJSON.getString(KEY_VIA);
+                if (via.equals("1")) {
+                    via = EspDeviceTrigger.VIA_APP;
+                } else if (via.equals("2")) {
+                    via = EspDeviceTrigger.VIA_EMAIL;
+                }
                 
                 TriggerRule rule = new TriggerRule();
                 rule.setScope(scope);

@@ -21,7 +21,7 @@ public class DevicePlugsFixedTimeTimerEditActivity extends DeviceTimerEditFixedT
     @Override
     protected String getEditAction()
     {
-        return mActionValues[mActionSpinner.getSelectedItemPosition()] + mValue;
+        return mActionValues[getActionSpinner().getSelectedItemPosition()] + mValue;
     }
 
     @Override

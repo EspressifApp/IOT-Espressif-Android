@@ -365,6 +365,24 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
         return connect(ssid, type, false, password);
     }
     
+    private void addScanResult(List<ScanResult> scanResultList, ScanResult scanResult)
+    {
+        String scanResultBssid = scanResult.BSSID;
+        boolean isExist = false;
+        for (ScanResult scanResultInList : scanResultList)
+        {
+            if (scanResultInList.BSSID.equals(scanResultBssid))
+            {
+                isExist = true;
+                break;
+            }
+        }
+        if (!isExist)
+        {
+            scanResultList.add(scanResult);
+        }
+    }
+        
     @Override
     public List<ScanResult> scan()
     {
@@ -395,7 +413,7 @@ public class WifiAdmin implements IWifiAdmin, IEspSingletonObject
                 {
                     if (!TextUtils.isEmpty(scan.SSID))
                     {
-                        result.add(scan);
+                        addScanResult(result, scan);
                     }
                 }
                 log.info(Thread.currentThread().toString() + "##scan(): " + result);

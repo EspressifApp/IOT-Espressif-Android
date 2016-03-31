@@ -129,7 +129,7 @@ public class BSSIDUtil
     /**
      * restore the bssid from esptouch result
      * 
-     * @param BSSID like 18fe34abcdef
+     * @param BSSID like 18fe34abcdef or 18FE34ABCDEF
      * @return like 18:fe:34:ab:cd:ef
      */
     public static String restoreBSSID(String BSSID)
@@ -143,7 +143,7 @@ public class BSSIDUtil
                 sb.append(":");
             }
         }
-        return sb.toString();
+        return sb.toString().toLowerCase(Locale.US);
     }
     
     /**

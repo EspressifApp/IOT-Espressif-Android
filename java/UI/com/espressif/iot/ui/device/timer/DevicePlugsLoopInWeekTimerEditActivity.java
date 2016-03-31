@@ -21,7 +21,7 @@ public class DevicePlugsLoopInWeekTimerEditActivity extends DeviceTimerEditLoopI
     @Override
     protected String getEditAction()
     {
-        return mActionValues[mActionSpinner.getSelectedItemPosition()] + mValue;
+        return mActionValues[getActionSpinner().getSelectedItemPosition()] + mValue;
     }
 
     @Override

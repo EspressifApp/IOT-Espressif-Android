@@ -10,10 +10,8 @@
     <color name="esp_qrcode_result_view">#b0000000</color>
     <color name="esp_qrcode_possible_result_points">#c0ffff00</color>
     
-    <color name="esp_help_frame_background_dark">#99000000</color>
-    <color name="esp_help_hint_message_frame_bg">#55000000</color>
-    
-    <color name="esp_scene_move_view_background">#80ffffff</color>
+    <color name="esp_drag_view_background">#80ffffff</color>
+
     <color name="esp_scene_background_intersects">#70000000</color>
     <color name="esp_scene_background_selected">#40000000</color>
     <color name="esp_scene_fragment_background">#f9ffffff</color>

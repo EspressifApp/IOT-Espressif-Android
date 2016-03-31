@@ -10,7 +10,6 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDBDao;
 import com.espressif.iot.db.greenrobot.daos.DaoSession;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDBDao.Properties;
 import com.espressif.iot.object.IEspSingletonObject;
-import com.espressif.iot.object.db.IGenericDataDBManager;
 import com.espressif.iot.object.db.IGenericDataDirectoryDBManager;
 import com.espressif.iot.util.TimeUtil;
 
@@ -64,7 +63,7 @@ public class IOTGenericDataDirectoryDBManager implements IGenericDataDirectoryDB
     @Override
     public synchronized void deleteExpiredDataDirectoryAndData()
     {
-        IGenericDataDBManager genericDataDBManager = IOTGenericDataDBManager.getInstance();
+        IOTGenericDataDBManager genericDataDBManager = IOTGenericDataDBManager.getInstance();
         if (genericDataDBManager.__getDataTotalCount() < MAX_DATA_COUNT)
         {
             log.debug(Thread.currentThread().toString()

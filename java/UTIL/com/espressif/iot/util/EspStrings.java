@@ -134,10 +134,6 @@ public final class EspStrings
         public static final String DEVICE_KEY_SHOW_CHILDREN = "show_children";
         
         /**
-        * The Intent value name of extra whether temp device mode
-        */
-        public static final String DEVICE_KEY_TEMP_DEVICE = "temp_device";
-        /**
          * The Intent value name of extra Device Timer ID
          */
         public static final String DEVICE_TIMER_ID_KEY = "device_timer_id";

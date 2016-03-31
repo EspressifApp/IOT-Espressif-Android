@@ -12,7 +12,6 @@ public class MeshLog
         setLog4jLevel(BlockingFinishThread.class, level);
         setLog4jLevel(EspMeshSocketImpl.class, level);
         setLog4jLevel(EspMeshSocketManager.class, level);
-        setLog4jLevel(EspProxyMeshTypeUtil.class, level);
         setLog4jLevel(EspProxyServerImpl.class, level);
         setLog4jLevel(EspProxyTaskFactory.class, level);
         setLog4jLevel(EspProxyTaskImpl.class, level);

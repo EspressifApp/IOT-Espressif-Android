@@ -51,9 +51,11 @@ import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerDeleteI
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerGetInternet;
 import com.espressif.iot.action.device.common.timer.IEspActionDeviceTimerPostInternet;
 import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerCreate;
+import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerDelete;
 import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerGet;
 import com.espressif.iot.action.device.common.trigger.EspActionDeviceTriggerUpdate;
 import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerCreate;
+import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerDelete;
 import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerGet;
 import com.espressif.iot.action.device.common.trigger.IEspActionDeviceTriggerUpdate;
 import com.espressif.iot.action.device.common.upgrade.EspDeviceCheckCompatibility;
@@ -68,8 +70,6 @@ import com.espressif.iot.action.device.espbutton.IEspActionEspButtonActionSet;
 import com.espressif.iot.action.device.espbutton.IEspActionEspButtonConfigure;
 import com.espressif.iot.action.device.esptouch.EspActionDeviceEsptouch;
 import com.espressif.iot.action.device.esptouch.IEspActionDeviceEsptouch;
-import com.espressif.iot.action.device.humiture.EspActionHumitureGetStatusListInternetDB;
-import com.espressif.iot.action.device.humiture.IEspActionHumitureGetStatusListInternetDB;
 import com.espressif.iot.action.group.EspActionGroupDeviceDB;
 import com.espressif.iot.action.group.EspActionGroupEditDB;
 import com.espressif.iot.action.group.IEspActionGroupDeviceDB;
@@ -96,9 +96,6 @@ import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.db.EspGroupDBManager;
 import com.espressif.iot.db.IOTApDBManager;
 import com.espressif.iot.db.IOTUserDBManager;
-import com.espressif.iot.db.greenrobot.daos.ApDB;
-import com.espressif.iot.db.greenrobot.daos.DeviceDB;
-import com.espressif.iot.db.greenrobot.daos.GroupDB;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
@@ -118,6 +115,8 @@ import com.espressif.iot.model.device.statemachine.IEspDeviceStateMachineHandler
 import com.espressif.iot.model.group.EspGroup;
 import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.object.db.IApDB;
+import com.espressif.iot.object.db.IDeviceDB;
+import com.espressif.iot.object.db.IGroupDB;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
@@ -126,8 +125,6 @@ import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.state.EspDeviceState;
-import com.espressif.iot.type.device.status.IEspStatusFlammable;
-import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
@@ -293,9 +290,9 @@ public class EspUser implements IEspUser
     public List<String[]> getConfiguredAps()
     {
         IOTApDBManager iotApDBManager = IOTApDBManager.getInstance();
-        List<ApDB> apDBs = iotApDBManager.getAllApDBList();
+        List<IApDB> apDBs = iotApDBManager.getAllApDBList();
         List<String[]> result = new ArrayList<String[]>();
-        for (ApDB apDB : apDBs)
+        for (IApDB apDB : apDBs)
         {
             String[] ap = new String[3];
             ap[0] = apDB.getBssid();
@@ -387,11 +384,11 @@ public class EspUser implements IEspUser
         List<IEspDevice> userDevices = getAllDeviceList();
         
         EspGroupDBManager dbManager = EspGroupDBManager.getInstance();
-        List<GroupDB> groupDBs = new ArrayList<GroupDB>();
+        List<IGroupDB> groupDBs = new ArrayList<IGroupDB>();
         groupDBs.addAll(dbManager.getUserDBCloudGroup(mUserKey));
         groupDBs.addAll(dbManager.getUserDBLocalGroup(mUserKey));
         List<IEspGroup> groups = new ArrayList<IEspGroup>();
-        for (GroupDB groupDB : groupDBs)
+        for (IGroupDB groupDB : groupDBs)
         {
             IEspGroup group = new EspGroup();
             group.setId(groupDB.getId());
@@ -534,10 +531,10 @@ public class EspUser implements IEspUser
     {
         lockUserDeviceLists();
         IOTUserDBManager iotUserDBManager = IOTUserDBManager.getInstance();
-        List<DeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(mUserId);
+        List<IDeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(mUserId);
         mDeviceList.clear();
         // add device into mDeviceList by deviceDBList
-        for (DeviceDB deviceDB : deviceDBList)
+        for (IDeviceDB deviceDB : deviceDBList)
         {
             IEspDevice device = BEspDevice.getInstance().alloc(deviceDB);
             IEspDeviceState deviceState = device.getDeviceState();
@@ -972,28 +969,6 @@ public class EspUser implements IEspUser
     {
         IEspActionDeviceSleepRebootLocal action = new EspActionDeviceSleepRebootLocal();
         action.doActionDeviceSleepRebootLocal(type);
-    }
-    
-    @Override
-    public List<IEspStatusHumiture> doActionGetHumitureStatusList(IEspDevice device, long startTimestamp,
-        long endTimestamp, long interval)
-    {
-        IEspActionHumitureGetStatusListInternetDB action = new EspActionHumitureGetStatusListInternetDB();
-        long deviceId = device.getId();
-        String deviceKey = device.getKey();
-        return action.doActionHumitureGetStatusListInternetDB(deviceId,
-            deviceKey,
-            startTimestamp,
-            endTimestamp,
-            interval);
-    }
-    
-    @Override
-    public List<IEspStatusFlammable> doActionGetFlammableStatusList(IEspDevice device, long startTimestamp,
-        long endTimestamp, long interval)
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
     
     @Override
@@ -1772,5 +1747,11 @@ public class EspUser implements IEspUser
     {
         IEspActionDeviceTriggerUpdate action = new EspActionDeviceTriggerUpdate();
         return action.updateTriggerInternet(device, trigger);
+    }
+    
+    @Override
+    public boolean doActionDeviceTriggerDelete(IEspDevice device, EspDeviceTrigger trigger) {
+        IEspActionDeviceTriggerDelete action = new EspActionDeviceTriggerDelete();
+        return action.deleteTriggerInternet(device, trigger.getId());
     }
 }

@@ -4,17 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.espressif.iot.R;
-import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
-import com.espressif.iot.help.ui.IEspHelpUI;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.ui.view.menu.IEspBottomMenu;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -31,7 +25,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public abstract class EspActivityAbs extends Activity implements IEspHelpUI
+public abstract class EspActivityAbs extends Activity
 {
     private FrameLayout mContentView;
     
@@ -43,19 +37,10 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
     private ImageView mRightIcon;
     private ViewGroup mTitleContentView;
     
-    protected FrameLayout mHelpContainer;
-    
-    protected static IEspHelpStateMachine mHelpMachine;
-    
-    public static final int HELP_BUTTON_ALL = -1;
-    public static final int HELP_BUTTON_EXIT = -2;
-    public static final int HELP_BUTTON_RETRY = -3;
-    public static final int HELP_BUTTON_NEXT = -4;
-    
-    public static final int InputType_PASSWORD_VISIBLE = InputType.TYPE_CLASS_TEXT
-        | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-    public static final int InputType_PAssWORD_NORMAL = InputType.TYPE_CLASS_TEXT
-        | InputType.TYPE_TEXT_VARIATION_PASSWORD;
+    public static final int InputType_PASSWORD_VISIBLE =
+        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+    public static final int InputType_PASSWORD_NORMAL =
+        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
     
     private int mScreenWidth;
     
@@ -67,8 +52,6 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         super.setContentView(R.layout.esp_activity_abs);
         getActionBar().hide();
         
-        mHelpMachine = EspHelpStateMachine.getInstance();
-        
         mContentView = (FrameLayout)findViewById(R.id.content);
         mBottomView = (LinearLayout)findViewById(R.id.bottom_bar);
         
@@ -79,8 +62,6 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         mTitleContentView = (ViewGroup)findViewById(R.id.title_content);
         
         setTitleLeftIcon(R.drawable.esp_icon_back);
-        
-        mHelpContainer = (FrameLayout)findViewById(R.id.help_container);
         
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
@@ -101,6 +82,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         final List<View> items = bottomMenu.getItemViews();
         if (items.size() <= visibleItemCount)
         {
+            // All menus can show on bottom bar
             if (items.size() > 0)
             {
                 int margin = (mScreenWidth - (width * items.size())) / items.size() / 2;
@@ -113,6 +95,7 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         }
         else
         {
+            // Bottom bar hasn't enough room to show all menus
             for (int i = 0; i < visibleItemCount - 1; i++)
             {
                 View item = items.get(i);
@@ -200,11 +183,25 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         checkTitleRightIconAndTitleContentView();
     }
     
+    /**
+     * Set the view on the left side of right title icon
+     * 
+     * @param view
+     */
     public void setTitleContentView(View view)
     {
         setTitleContentView(view, 0, 0, 0, 0);
     }
     
+    /**
+     * Set the view on the left side of right title icon
+     * 
+     * @param view
+     * @param paddingLeft of the content view
+     * @param paddingTop of the content view
+     * @param paddingRight of the content view
+     * @param paddingBottom of the content view
+     */
     public void setTitleContentView(View view, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom)
     {
         mTitleContentView.removeAllViews();
@@ -235,11 +232,17 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         }
     }
     
+    /**
+     * Show ESP title bar
+     */
     protected void showTitleBar()
     {
         mTitleView.setVisibility(View.VISIBLE);
     }
     
+    /**
+     * Hide ESP title bar
+     */
     protected void hideTitleBar()
     {
         mTitleView.setVisibility(View.GONE);
@@ -282,6 +285,14 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
             return item;
         }
         
+        /**
+         * Create normal menu item view
+         * 
+         * @param itemId
+         * @param iconRes
+         * @param title
+         * @return
+         */
         private TextView createItemView(int itemId, int iconRes, CharSequence title)
         {
             TextView item = new TextView(mActivity);
@@ -302,6 +313,12 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
             return item;
         }
         
+        /**
+         * Create more overflow item view. Set the items can't show on bottom bar in PopupMenu
+         * 
+         * @param firstMoreItemIndex
+         * @return
+         */
         public TextView createMoreOverflowItemView(final int firstMoreItemIndex)
         {
             TextView moreItem =
@@ -422,11 +439,21 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
         }
     };
     
+    /**
+     * Get left icon on title
+     * 
+     * @return
+     */
     protected View getLeftTitleIcon()
     {
         return mLeftIcon;
     }
     
+    /**
+     * Get right icon on title
+     * 
+     * @return
+     */
     protected View getRightTitleIcon()
     {
         return mRightIcon;
@@ -445,253 +472,5 @@ public abstract class EspActivityAbs extends Activity implements IEspHelpUI
      */
     protected void onTitleRightIconClick(View rightIcon)
     {
-    }
-    
-    /**
-     * Clear all the Views in help container
-     */
-    public void clearHelpContainer()
-    {
-        clearAnimation(mHelpContainer);
-        mHelpContainer.removeAllViews();
-    }
-    
-    private void clearAnimation(View view)
-    {
-        view.clearAnimation();
-        if (view instanceof ViewGroup)
-        {
-            ViewGroup vg = (ViewGroup)view;
-            for (int i = 0; i < vg.getChildCount(); i++)
-            {
-                View child = vg.getChildAt(i);
-                clearAnimation(child);
-            }
-        }
-    }
-    
-    /**
-     * Add text in help container
-     * 
-     * @param hintResId
-     */
-    public void setHelpHintMessage(int hintResId)
-    {
-        setHelpHintMessage(getString(hintResId));
-    }
-    
-    /**
-     * Add text in help container
-     * 
-     * @param hint
-     */
-    public void setHelpHintMessage(CharSequence hint)
-    {
-        View view = View.inflate(this, R.layout.esp_help_hint_content, null);
-        TextView hintTextView = (TextView)view.findViewById(R.id.help_hint_text);
-        hintTextView.setText(hint);
-        
-        View btnsContainer = view.findViewById(R.id.help_hint_btn_contariner);
-        btnsContainer.findViewById(R.id.help_hint_exit_btn).setOnClickListener(mHelpButtonListener);
-        btnsContainer.findViewById(R.id.help_hint_retry_btn).setOnClickListener(mHelpButtonListener);
-        btnsContainer.findViewById(R.id.help_hint_next_btn).setOnClickListener(mHelpButtonListener);
-        
-        FrameLayout.LayoutParams lp =
-            new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-        lp.setMargins(0, 0, 0, mBottomView.getHeight());
-        mHelpContainer.addView(view, lp);
-    }
-    
-    /**
-     * Show or hide the hint button
-     * 
-     * @param whichButton
-     * @param visible
-     */
-    public void setHelpButtonVisible(int whichButton, boolean visible)
-    {
-        View btnsContainer = findViewById(R.id.help_hint_btn_contariner);
-        if (btnsContainer != null)
-        {
-            View exitBtn = findViewById(R.id.help_hint_exit_btn);
-            View retryBtn = findViewById(R.id.help_hint_retry_btn);
-            View nextBtn = findViewById(R.id.help_hint_next_btn);
-            switch (whichButton)
-            {
-                case HELP_BUTTON_ALL:
-                    int visibility = visible ? View.VISIBLE : View.GONE;
-                    exitBtn.setVisibility(visibility);
-                    retryBtn.setVisibility(visibility);
-                    nextBtn.setVisibility(visibility);
-                    break;
-                case HELP_BUTTON_EXIT:
-                    exitBtn.setVisibility(visible ? View.VISIBLE : View.GONE);
-                    break;
-                case HELP_BUTTON_RETRY:
-                    retryBtn.setVisibility(visible ? View.VISIBLE : View.GONE);
-                    break;
-                case HELP_BUTTON_NEXT:
-                    nextBtn.setVisibility(visible ? View.VISIBLE : View.GONE);
-                    break;
-            }
-        }
-    }
-    
-    /**
-     * Get the system status bar height
-     * 
-     * @return The height of StatusBar
-     */
-    protected int getStatusBarHeight()
-    {
-        int[] location = new int[2];
-        View top = findViewById(R.id.title_bar);
-        top.getLocationInWindow(location);
-        
-        return location[1];
-    }
-    
-    @Override
-    public void onBackPressed()
-    {
-        if (mHelpMachine.isHelpOn())
-        {
-            showExitHelpDialog();
-        }
-        else
-        {
-            super.onBackPressed();
-        }
-    }
-    
-    private void showExitHelpDialog()
-    {
-        new AlertDialog.Builder(this).setTitle(R.string.esp_help_exit_message)
-            .setMessage(R.string.esp_help_exit_message)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-            {
-                
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    mHelpMachine.exit();
-                    onExitHelpMode();
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
-    }
-    
-    private View.OnClickListener mHelpButtonListener = new View.OnClickListener()
-    {
-        
-        @Override
-        public void onClick(View v)
-        {
-            switch (v.getId())
-            {
-                case R.id.help_hint_exit_btn:
-                    showExitHelpDialog();
-                    break;
-                case R.id.help_hint_retry_btn:
-                    mHelpMachine.retry();
-                    onHelpRetryClick();
-                    break;
-                case R.id.help_hint_next_btn:
-                    onHelpNextClick();
-                    break;
-            }
-        }
-    };
-    
-    /**
-     * When exit help, run here
-     */
-    public void onExitHelpMode(){}
-    
-    /**
-     * When click help retry button
-     */
-    public void onHelpRetryClick(){}
-    
-    /**
-     * When click help next button
-     */
-    public void onHelpNextClick(){}
-    
-    /**
-     * Set the whole layout dark except param view
-     * 
-     * @param view
-     */
-    public void highlightHelpView(View view)
-    {
-        clearHelpContainer();
-        
-        int[] location = new int[2];
-        view.getLocationInWindow(location);
-        
-        int statusBarHeight = getStatusBarHeight();
-        
-        Rect rect =
-            new Rect(location[0], location[1] - statusBarHeight, location[0] + view.getWidth(), location[1]
-                + view.getHeight() - statusBarHeight);
-        
-        int bgColor = getResources().getColor(R.color.esp_help_frame_background_dark);
-        
-        if (rect.top > 0)
-        {
-            View topView = new View(this);
-            topView.setBackgroundColor(bgColor);
-            topView.setClickable(true);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, rect.top);
-            mHelpContainer.addView(topView, lp);
-        }
-        
-        if (rect.bottom < mHelpContainer.getHeight())
-        {
-            View bottomView = new View(this);
-            bottomView.setBackgroundColor(bgColor);
-            bottomView.setClickable(true);
-            FrameLayout.LayoutParams lp =
-                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, mHelpContainer.getHeight() - rect.bottom,
-                    Gravity.BOTTOM);
-            mHelpContainer.addView(bottomView, lp);
-        }
-        
-        if (rect.left > 0)
-        {
-            View leftView = new View(this);
-            leftView.setBackgroundColor(bgColor);
-            leftView.setClickable(true);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(rect.left, view.getHeight());
-            mHelpContainer.addView(leftView, lp);
-            leftView.setY(rect.top);
-        }
-        
-        if (rect.right < mHelpContainer.getWidth())
-        {
-            View rightView = new View(this);
-            rightView.setBackgroundColor(bgColor);
-            rightView.setClickable(true);
-            FrameLayout.LayoutParams lp =
-                new FrameLayout.LayoutParams(mHelpContainer.getWidth() - rect.right, view.getHeight(), Gravity.END);
-            mHelpContainer.addView(rightView, lp);
-            rightView.setY(rect.top);
-        }
-    }
-    
-    public void setHelpFrameDark()
-    {
-        clearHelpContainer();
-        
-        View view = new View(this);
-        view.setClickable(true);
-        int bgColor = getResources().getColor(R.color.esp_help_frame_background_dark);
-        view.setBackgroundColor(bgColor);
-        FrameLayout.LayoutParams lp =
-            new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        mHelpContainer.addView(view, lp);
     }
 }

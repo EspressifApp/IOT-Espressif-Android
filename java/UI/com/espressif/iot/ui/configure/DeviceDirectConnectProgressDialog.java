@@ -14,7 +14,7 @@ import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.BSSIDUtil;
 
-public class DeviceDirectConnectProgressDialog extends DeviceConfigureDialogAbs implements
+public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDialogAbs implements
     DialogInterface.OnCancelListener
 {
     private ProgressDialog mDialog;
@@ -28,7 +28,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceConfigureDialogAbs 
     
     private ConnectTask mConnectTask;
     
-    public DeviceDirectConnectProgressDialog(DeviceConfigureActivity activity, IEspDeviceNew device)
+    public DeviceDirectConnectProgressDialog(DeviceSoftAPConfigureActivity activity, IEspDeviceNew device)
     {
         super(activity, device);
     }

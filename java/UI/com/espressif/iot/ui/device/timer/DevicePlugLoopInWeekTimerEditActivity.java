@@ -4,11 +4,10 @@ import com.espressif.iot.type.device.timer.EspDeviceLoopWeekTimer;
 
 public class DevicePlugLoopInWeekTimerEditActivity extends DeviceTimerEditLoopInWeekActivityAbs
 {
-    
     @Override
     protected String getEditAction()
     {
-        return mActionValues[mActionSpinner.getSelectedItemPosition()];
+        return mActionValues[getActionSpinner().getSelectedItemPosition()];
     }
     
     @Override
@@ -16,5 +15,4 @@ public class DevicePlugLoopInWeekTimerEditActivity extends DeviceTimerEditLoopIn
     {
         return timer.getTimeAction().get(0).getAction();
     }
-    
 }

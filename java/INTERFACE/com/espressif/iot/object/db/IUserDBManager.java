@@ -2,7 +2,6 @@ package com.espressif.iot.object.db;
 
 import java.util.List;
 
-import com.espressif.iot.db.greenrobot.daos.DeviceDB;
 import com.espressif.iot.object.IEspDBManager;
 
 public interface IUserDBManager extends IEspDBManager
@@ -31,5 +30,5 @@ public interface IUserDBManager extends IEspDBManager
      * @param userId the user Id
      * @return the device list
      */
-    List<DeviceDB> getUserDeviceList(long userId);
+    List<IDeviceDB> getUserDeviceList(long userId);
 }

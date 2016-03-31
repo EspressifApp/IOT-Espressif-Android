@@ -18,8 +18,6 @@ import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.other.EspButtonKeySettings;
-import com.espressif.iot.type.device.status.IEspStatusFlammable;
-import com.espressif.iot.type.device.status.IEspStatusHumiture;
 import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
@@ -225,30 +223,6 @@ public interface IEspUser extends IEspSingletonObject
      * @return whether the get action is suc
      */
     boolean doActionGetDeviceStatus(final IEspDevice device);
-    
-    /**
-     * get the Humiture status list
-     * 
-     * @param device the Humiture
-     * @param startTimestamp startTimestamp
-     * @param endTimestamp endTimestamp
-     * @param interval the interval of each point
-     * @return the Humiture status list
-     */
-    List<IEspStatusHumiture> doActionGetHumitureStatusList(final IEspDevice device, long startTimestamp,
-        long endTimestamp, long interval);
-    
-    /**
-     * get the Flammable status list
-     * 
-     * @param device the Humiture
-     * @param startTimestamp startTimestamp
-     * @param endTimestamp endTimestamp
-     * @param interval the interval of each point
-     * @return the Flammable status list
-     */
-    List<IEspStatusFlammable> doActionGetFlammableStatusList(final IEspDevice device, long startTimestamp,
-        long endTimestamp, long interval);
     
     /**
      * delete the device both in local db and server
@@ -792,4 +766,12 @@ public interface IEspUser extends IEspSingletonObject
      * @return true is successful, false is failed
      */
     boolean doActionDeviceTriggerUpdate(IEspDevice device, EspDeviceTrigger trigger);
+    
+    /**
+     * 
+     * @param device
+     * @param trigger
+     * @return
+     */
+    boolean doActionDeviceTriggerDelete(IEspDevice device, EspDeviceTrigger trigger);
 }

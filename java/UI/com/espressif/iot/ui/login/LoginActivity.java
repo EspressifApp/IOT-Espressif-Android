@@ -1,9 +1,9 @@
 package com.espressif.iot.ui.login;
 
 import com.espressif.iot.R;
-import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
+import com.espressif.iot.ui.main.EspUIActivity;
 import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -55,8 +55,8 @@ public class LoginActivity extends Activity implements OnClickListener
         mSettingsShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         if (mSettingsShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
         {
+            // Auto login is selected, go to devices list page
             mUser.doActionUserLoginDB();
-            
             gotoEspUIActivity();
         }
         else
@@ -127,6 +127,7 @@ public class LoginActivity extends Activity implements OnClickListener
         {
             if (resultCode == RESULT_OK)
             {
+                // Register completed, set the new account email and password
                 String email = data.getStringExtra(EspStrings.Key.REGISTER_NAME_EMAIL);
                 String password = data.getStringExtra(EspStrings.Key.REGISTER_NAME_PASSWORD);
                 mEmailEdt.setText(email);
@@ -137,7 +138,7 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private void gotoEspUIActivity()
     {
-        Intent intent = new Intent(this, EspApplication.getEspUIActivity());
+        Intent intent = new Intent(this, EspUIActivity.class);
         startActivity(intent);
         finish();
     }
@@ -148,12 +149,14 @@ public class LoginActivity extends Activity implements OnClickListener
         final int accountType = AccountUtil.getAccountType(account);
         if (accountType == AccountUtil.TYPE_NONE)
         {
+            // Account id is illegal
             Toast.makeText(this, R.string.esp_login_email_hint, Toast.LENGTH_SHORT).show();
             return;
         }
         final String password = mPasswordEdt.getText().toString();
         if (TextUtils.isEmpty(password))
         {
+            // The password can't be empty
             Toast.makeText(this, R.string.esp_login_password_hint, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -164,10 +167,12 @@ public class LoginActivity extends Activity implements OnClickListener
             {
                 if (accountType == AccountUtil.TYPE_EMAIL)
                 {
+                    // Login with Email
                     return mUser.doActionUserLoginInternet(account, password);
                 }
                 else if (accountType == AccountUtil.TYPE_PHONE)
                 {
+                    // Login with Phone number
                     return mUser.doActionUserLoginPhone(account, password);
                 }
                 

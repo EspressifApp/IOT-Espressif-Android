@@ -57,4 +57,47 @@ public interface IApDB extends IEspDBObject
      * @param isLastSelected the ap is selected last time
      */
     void setIsLastSelected(boolean isLastSelected);
+    
+    /**
+     * get device's bssids
+     * 
+     * @return device's bssids
+     */
+    String getDeviceBssids();
+    
+    /**
+     * set device's bssids
+     * 
+     * @param deviceBssids device's bssids
+     */
+    void setDeviceBssids(String deviceBssids);
+    
+    /**
+     * get Ap's ssid
+     * 
+     * @return Ap's ssid
+     */
+    String getSsid();
+    
+    /**
+     * set Ap's ssid
+     * 
+     * @param ssid Ap's ssid
+     */
+    void setSsid(String ssid);
+    
+    /**
+     * get configured failed count
+     * 
+     * @return configure failed count
+     */
+    int getConfiguredFailedCount();
+    
+    /**
+     * set configured failed count
+     * 
+     * @param configuredFailedCount configure failed count
+     */
+    void setConfiguredFailedCount(int configuredFailedCount);
+    
 }

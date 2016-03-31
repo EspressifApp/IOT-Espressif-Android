@@ -189,6 +189,9 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
         }
     };
     
+    /**
+     * Start count down, show info bottom
+     */
     private void startCountdown()
     {
         mTimeoutTV.removeCallbacks(mTimeoutCounter);
@@ -196,6 +199,9 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
         mTimeoutTV.post(mTimeoutCounter);
     }
     
+    /**
+     * Stop count down, hide count down info
+     */
     private void stopCountdown()
     {
         mTimeoutTV.removeCallbacks(mTimeoutCounter);
@@ -204,8 +210,17 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
     
     private class AddEspButtonTask extends AsyncTask<String, Object, Boolean>
     {
+        /**
+         * The message pair broadcast complete, start pair progress
+         */
         private static final String PAIR_BUTTON_CONFIGURE = "button_configure";
+        /**
+         * The message receive pair request
+         */
         private static final String PAIR_REQUEST = "request";
+        /**
+         * The message receive pair result
+         */
         private static final String PAIR_RESULT = "result";
         
         private Activity mActivity;
@@ -320,6 +335,13 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
             }
         }
         
+        /**
+         * Call when receive pair request, show pair request dialog
+         * 
+         * @param deviceMac
+         * @param buttonMac
+         * @param queue
+         */
         private void onPairRequest(String deviceMac, String buttonMac, final Queue<String> queue)
         {
             PairRequestDialogListener buttonListener = new PairRequestDialogListener(queue);
@@ -337,6 +359,13 @@ public class EspButtonConfigureActivity extends EspActivityAbs implements OnClic
             mPairRequestDialog.show();
         }
         
+        /**
+         * Call when receive pair result, show pair result dialog
+         * 
+         * @param deviceMac
+         * @param success
+         * @param queue
+         */
         private void onPairResult(String deviceMac, boolean success, final Queue<String> queue)
         {
             PairResultDialogListener buttonListener = new PairResultDialogListener(queue);

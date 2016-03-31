@@ -1,5 +1,6 @@
 package com.espressif.iot.db;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import com.espressif.iot.db.greenrobot.daos.DaoSession;
 import com.espressif.iot.db.greenrobot.daos.UserDB;
 import com.espressif.iot.db.greenrobot.daos.UserDBDao;
 import com.espressif.iot.object.IEspSingletonObject;
+import com.espressif.iot.object.db.IDeviceDB;
 import com.espressif.iot.object.db.IUserDB;
 import com.espressif.iot.object.db.IUserDBManager;
 
@@ -88,7 +90,7 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
     }
     
     @Override
-    public List<DeviceDB> getUserDeviceList(long userId)
+    public List<IDeviceDB> getUserDeviceList(long userId)
     {
         Query<UserDB> query = userDao.queryBuilder().where(Properties.Id.eq(userId)).build();
         UserDB user = query.unique();
@@ -101,7 +103,9 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
         log.debug(Thread.currentThread().toString() + "##getUserDeviceList(userId=[" + userId + "]): " + result);
         if (result != null)
         {
-            return result;
+            List<IDeviceDB> deviceList = new ArrayList<IDeviceDB>();
+            deviceList.addAll(result);
+            return deviceList;
         }
         else
         {

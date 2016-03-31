@@ -20,7 +20,7 @@ public abstract class DeviceTimerEditFixedTimerActivityAbs extends DeviceTimerEd
     
     private TimePicker mTimePicker;
     
-    protected Spinner mActionSpinner;
+    private Spinner mActionSpinner;
     
     private ArrayAdapter<String> mActionsAdapter;
     
@@ -115,7 +115,11 @@ public abstract class DeviceTimerEditFixedTimerActivityAbs extends DeviceTimerEd
             }
         }
     }
-    
+
+    protected Spinner getActionSpinner() {
+        return mActionSpinner;
+    }
+
     /**
      * 
      * @return the new action need post

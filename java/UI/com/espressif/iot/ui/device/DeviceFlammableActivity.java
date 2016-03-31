@@ -152,8 +152,6 @@ public class DeviceFlammableActivity extends DeviceChartActivityAbs
                 mDialog = null;
             }
             
-            checkHelpExecuteFinish(result != null);
-            
             setChartViewDrawn(true);
         }
     }

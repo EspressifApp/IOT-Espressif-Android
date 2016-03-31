@@ -14,7 +14,6 @@ import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil;
 import com.espressif.iot.base.net.rest2.EspHttpDownloadUtil.ProgressUpdateListener;
 import com.espressif.iot.base.net.rest2.EspHttpUtil;
 import com.espressif.iot.base.net.rest2.EspMeshDiscoverUtil;
-import com.espressif.iot.base.net.rest2.EspMeshHttpUtil;
 import com.espressif.iot.base.net.wifi.WifiAdmin;
 import com.espressif.iot.base.threadpool.CachedThreadPool;
 import com.espressif.iot.base.time.EspTimeManager;
@@ -130,7 +129,7 @@ public class EspBaseApiUtil
     public static void PostForJsonInstantly(String url, String deviceBssid, JSONObject json,
         Runnable disconnectedCallback, HeaderPair... headers)
     {
-        EspMeshHttpUtil.PostForJsonInstantly(url, deviceBssid, json, disconnectedCallback, headers);
+        MeshCommunicationUtils.HttpNonResponsePost(url, deviceBssid, json, headers);
     }
     
     /**

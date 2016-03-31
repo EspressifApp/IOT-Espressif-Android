@@ -198,6 +198,12 @@ public class RegisterEmailFragment extends Fragment implements OnClickListener, 
         }
     }
     
+    /**
+     * Check the account has be registered or not
+     * 
+     * @param editText
+     * @param type @see #FIND_EMAIL_EXIST and #FIND_USERNAME_EXIST
+     */
     private void findAccount(EditText editText, int type)
     {
         if (!TextUtils.isEmpty(editText.getText().toString()))

@@ -27,8 +27,6 @@ import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine.Direction;
-import com.espressif.iot.help.statemachine.IEspHelpStateMachine;
-import com.espressif.iot.model.help.statemachine.EspHelpStateMachine;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -639,7 +637,6 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 {
                     log.debug("ActivateLocalTask suc:: entrance");
                     EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
-                    stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), true);
                     stateMachine.transformState(mDeviceConfigure, Direction.ACTIVATE);
                 }
                 
@@ -656,8 +653,6 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 public void run()
                 {
                     log.debug("ActivateLocalTask fail:: entrance");
-                    EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
-                    stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), false);
                     __transformToFail(mDeviceConfigure);
                 }
                 
@@ -736,7 +731,6 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                     
                     EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
                     stateMachine.transformState(mDeviceResult, Direction.SUC);
-                    stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), true);
                     
                     // save new activated device key to make new device different from others
                     IEspUser user = BEspUser.getBuilder().getInstance();
@@ -769,18 +763,6 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                 public void run()
                 {
                     log.debug("ActivateInternetTask fail:: entrance");
-                    EspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
-                    IEspHelpStateMachine helpStateMachine = EspHelpStateMachine.getInstance();
-                    if (mDeviceConfigure.getBssid().equals(helpStateMachine.__getCurrentDeviceBssid()))
-                    {
-                        // for we won't change the phone's wifi, so there's unnecessary to
-                        // check whether connect Ap is suc
-                        
-                        // activate fail
-                        log.warn("deviceBssid: " + mDeviceConfigure.getBssid() + " activate fail");
-                        stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), false);
-                        stateMachine.__transformHelpStateMachine(mDeviceConfigure.getBssid(), false);
-                    }
                     __transformToFail(mDeviceConfigure);
                 }
                 

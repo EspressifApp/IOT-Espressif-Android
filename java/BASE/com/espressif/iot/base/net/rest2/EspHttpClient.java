@@ -36,8 +36,6 @@ class EspHttpClient extends DefaultHttpClient
     
     private final static int MAX_RETRY_TIMES = 0;
     
-    private static final int HTTP_MESH_PORT = 8000;
-    
     private static final int HTTP_DEFAULT_PORT = 80;
     
     private static final int HTTPS_DEFAULT_PORT = 443;
@@ -46,26 +44,14 @@ class EspHttpClient extends DefaultHttpClient
     
     private final static int SO_TIMEOUT = 20 * 1000;
     
-    private boolean mIsMesh;
-    
     private static class EspHttpClientHolder
     {
-        static EspHttpClient instance = new EspHttpClient(false);
+        static EspHttpClient instance = new EspHttpClient();
     }
     
     static EspHttpClient getEspHttpClient()
     {
         return EspHttpClientHolder.instance;
-    }
-    
-    private static class EspMeshHttpClientHolder
-    {
-        static EspHttpClient instance = new EspHttpClient(true);
-    }
-    
-    static EspHttpClient getEspMeshHttpClient()
-    {
-        return EspMeshHttpClientHolder.instance;
     }
     
     private EspHttpClient(final ClientConnectionManager conman, final HttpParams params)
@@ -82,26 +68,20 @@ class EspHttpClient extends DefaultHttpClient
     
     private EspHttpClient()
     {
-        this(false);
-    }
-    
-    private EspHttpClient(boolean isMesh)
-    {
         super(null, null);
-        init(isMesh);
+        init();
         // Set Retry Handler
         MyHttpRequestRetryHandler retryHandler = new MyHttpRequestRetryHandler();
         this.setHttpRequestRetryHandler(retryHandler);
     }
     
-    private void init(boolean isMesh)
+    private void init()
     {
         BasicHttpParams params = new BasicHttpParams();
         params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CONNECTION_TIMEOUT);
         params.setParameter(CoreConnectionPNames.SO_TIMEOUT, SO_TIMEOUT);
         params.setParameter("timemout", 6);
         this.setParams(params);
-        this.mIsMesh = isMesh;
         // set keep alive strategy
         this.setKeepAliveStrategy(new ConnectionKeepAliveStrategy()
         {
@@ -148,28 +128,14 @@ class EspHttpClient extends DefaultHttpClient
     @Override
     protected HttpRequestExecutor createRequestExecutor()
     {
-        if (!mIsMesh)
-        {
-            return new EspHttpRequestExecutor();
-        }
-        else
-        {
-            return new EspMeshHttpRequestExecutor();
-        }
+        return new EspHttpRequestExecutor();
     }
     
     @Override
     protected ClientConnectionManager createClientConnectionManager()
     {
         SchemeRegistry registry = new SchemeRegistry();
-        if (mIsMesh)
-        {
-            registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), HTTP_MESH_PORT));
-        }
-        else
-        {
-            registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), HTTP_DEFAULT_PORT));
-        }
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), HTTP_DEFAULT_PORT));
         registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), HTTPS_DEFAULT_PORT));
         
         ClientConnectionManager connManager = null;
@@ -210,16 +176,7 @@ class EspHttpClient extends DefaultHttpClient
         }
         else
         {
-            if (mIsMesh)
-            {
-                connManager = new EspThreadSafeClientConnManager(getParams(), registry);
-            }
-            else
-            {
-                connManager = new ThreadSafeClientConnManager(getParams(), registry);
-                // connManager = new SingleClientConnManager(getParams(),
-                // registry);
-            }
+            connManager = new ThreadSafeClientConnManager(getParams(), registry);
         }
         
         return connManager;

@@ -118,8 +118,12 @@ public class EspCommandLightPostStatusInternet implements IEspCommandLightPostSt
         HeaderPair header = new HeaderPair(headerKey, headerValue);
         
         StringBuilder urlBuilder = new StringBuilder(URL_MULTICAST);
-        for (String mac : macList) {
-            urlBuilder.append(mac).append(",");
+        for (int i = 0; i < macList.size(); i++) {
+            String mac = macList.get(i);
+            urlBuilder.append(mac);
+            if (i < macList.size() - 1) {
+                urlBuilder.append(",");
+            }
         }
         
         try

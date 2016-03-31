@@ -12,7 +12,6 @@ public final class EspDefaults
     
     // About Device
     public static final boolean SHOW_CHILDREN = true;
-    public static final boolean USE_TEMP_DEVICE = false;
     public static final long DEVICE_TIMER_ID = -1;
     
     // About Group

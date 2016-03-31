@@ -1,6 +1,5 @@
 package com.espressif.iot.ui.device;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,27 +7,17 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
-import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
-import com.espressif.iot.help.ui.IEspHelpUIUpgradeLocal;
-import com.espressif.iot.help.ui.IEspHelpUIUpgradeOnline;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
-import com.espressif.iot.type.help.HelpStepUpgradeLocal;
-import com.espressif.iot.type.help.HelpStepUpgradeOnline;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.ui.configure.EspButtonConfigureActivity;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
-import com.espressif.iot.ui.help.HelpDeviceFlammableActivity;
-import com.espressif.iot.ui.help.HelpDeviceHumitureActivity;
-import com.espressif.iot.ui.help.HelpDeviceLightActivity;
-import com.espressif.iot.ui.help.HelpDevicePlugActivity;
-import com.espressif.iot.ui.help.HelpDevicePlugsActivity;
-import com.espressif.iot.ui.help.HelpDeviceVoltageActivity;
+import com.espressif.iot.ui.device.trigger.DeviceTriggerActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
 import com.espressif.iot.ui.settings.SettingsActivity;
 import com.espressif.iot.ui.view.EspPagerAdapter;
@@ -52,8 +41,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,18 +48,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
-public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHelpUIUpgradeLocal,
-    IEspHelpUIUpgradeOnline
-{
+public abstract class DeviceActivityAbs extends EspActivityAbs {
     private static final Logger log = Logger.getLogger(DeviceActivityAbs.class);
-    
-    public static IEspDevice TEMP_DEVICE;
     
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
     protected static final int MENU_ID_UPGRADE_LOCAL = 0x1002;
     protected static final int MENU_ID_UPGRADE_ONLINE = 0x1003;
     protected static final int MENU_ID_ESPBUTTON_CONFIGURE = 0x1004;
+    protected static final int MENU_ID_TRIGGER = 0x1005;
     
     protected IEspDevice mIEspDevice;
     
@@ -82,8 +66,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     
     protected static final int COMMAND_GET = 0;
     protected static final int COMMAND_POST = 1;
-    
-    private HelpHandler mHelpHandler;
     
     protected EspViewPager mPager;
     private List<View> mViewList;
@@ -101,25 +83,24 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
-        boolean isTempDeviceMode =
-            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_TEMP_DEVICE, EspDefaults.USE_TEMP_DEVICE);
         
         mUser = BEspUser.getBuilder().getInstance();
-        IEspDevice device = isTempDeviceMode ? TEMP_DEVICE : mUser.getUserDevice(deviceKey);
-        if (device instanceof IEspDeviceSSS)
-        {
-            mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
+        IEspDevice device;
+        if (sTempDevice != null && deviceKey.equals(sTempDevice.getKey())) {
+            device = sTempDevice;
+        } else {
+            device = mUser.getUserDevice(deviceKey);
         }
-        else
-        {
+        if (device instanceof IEspDeviceSSS) {
+            mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
+        } else {
             mIEspDevice = device;
         }
         
         SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        mShowChildren =
-            intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, EspDefaults.SHOW_CHILDREN)
-                && mIEspDevice.getIsMeshDevice()
-                && shared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
+        mShowChildren = mIEspDevice.getIsMeshDevice()
+            && intent.getBooleanExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, EspDefaults.SHOW_CHILDREN)
+            && shared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
         
         setTitle(mIEspDevice.getName());
         
@@ -130,8 +111,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             setTitleRightIcon(R.drawable.esp_icon_menu_moreoverflow);
         }
         
-        checkHelpHandlerInit();
-        
         initViews();
     }
     
@@ -140,7 +119,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     {
         super.onDestroy();
         
-        TEMP_DEVICE = null;
+        setTempDevice(null);
     }
     
     private void checkDeviceCompatibility()
@@ -149,8 +128,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         {
             case COMPATIBILITY:
                 mDeviceCompatibility = true;
-                
-                checkHelpDeviceCompatibility();
                 break;
             case APK_NEED_UPGRADE:
                 showUpgradeApkHintDialog();
@@ -159,8 +136,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             case DEVICE_NEED_UPGRADE:
                 showUpgradeDeviceHintDialog();
                 mDeviceCompatibility = false;
-                
-                checkHelpDeviceNeedUpgrade();
                 break;
         }
     }
@@ -176,23 +151,20 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         if (mShowChildren)
         {
             initTreeView();
-            
-            mSwapView = new ImageView(this);
-            ViewGroup.LayoutParams lp =
-                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            mSwapView.setLayoutParams(lp);
-            mSwapView.setImageResource(R.drawable.esp_icon_swap);
-            mSwapView.setBackgroundResource(R.drawable.esp_activity_icon_background);
-            mSwapView.setScaleType(ScaleType.CENTER);
-            mSwapView.setOnClickListener(mSwapListener);
-            setTitleContentView(mSwapView);
+
+            if (mIEspDevice.getDeviceType() != EspDeviceType.ROOT) {
+                mSwapView = new ImageView(this);
+                ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+                mSwapView.setLayoutParams(lp);
+                mSwapView.setImageResource(R.drawable.esp_icon_swap);
+                mSwapView.setBackgroundResource(R.drawable.esp_activity_icon_background);
+                mSwapView.setScaleType(ScaleType.CENTER);
+                mSwapView.setOnClickListener(mSwapListener);
+                setTitleContentView(mSwapView);
+            }
         }
-        
-        if (mIEspDevice.getDeviceType() == EspDeviceType.ROOT) // hide mesh child control
-        {
-            setTitleContentView(null);
-        }
-        
+
         mControlView = initControlView();
         mViewList = new ArrayList<View>();
         mViewList.add(mControlView);
@@ -202,7 +174,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
     
     private void initTreeView()
     {
-        
         mTreeView = (TreeView)mMeshView.findViewById(R.id.mesh_children_list);
         List<IEspDevice> allDeviceList = mUser.getAllDeviceList();
         List<IEspDeviceTreeElement> childList = mIEspDevice.getDeviceTreeElementList(allDeviceList);
@@ -221,10 +192,10 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             switch (device.getDeviceType())
             {
                 case PLUG:
-                    cls = EspApplication.HELP_ON ? HelpDevicePlugActivity.class : DevicePlugActivity.class;
+                    cls = DevicePlugActivity.class;
                     break;
                 case LIGHT:
-                    cls = EspApplication.HELP_ON ? HelpDeviceLightActivity.class : DeviceLightActivity.class;
+                    cls = DeviceLightActivity.class;
                     break;
                     
                 case REMOTE:
@@ -399,9 +370,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                     break;
             }
         }
-        AlertDialog dialog = builder.show();
-        
-        checkHelpShowHintDialog(dialog);
+        builder.show();
     }
     
     @Override
@@ -430,6 +399,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         {
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
         }
+        
+        menu.add(Menu.NONE, MENU_ID_TRIGGER, 10, R.string.esp_device_menu_trigger);
         
         return super.onCreateOptionsMenu(menu);
     }
@@ -478,8 +449,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
         }
         
-        checkHelpOnPreOptionMenu(menu);
-        
         return super.onPrepareOptionsMenu(menu);
     }
     
@@ -497,14 +466,10 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 startActivity(timerIntent);
                 return true;
             case MENU_ID_UPGRADE_LOCAL:
-                checkHelpOnSelectUpgradeLocal();
-                
                 mUser.doActionUpgradeLocal(mIEspDevice);
                 finish();
                 return true;
             case MENU_ID_UPGRADE_ONLINE:
-                checkHelpOnSelectUpgradeOnline();
-                
                 mUser.doActionUpgradeInternet(mIEspDevice);
                 finish();
                 return true;
@@ -513,6 +478,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
                 String[] deviceKeys = new String[] {mIEspDevice.getKey()};
                 configureIntent.putExtra(EspStrings.Key.KEY_ESPBUTTON_DEVICE_KEYS, deviceKeys);
                 startActivity(configureIntent);
+                return true;
+            case MENU_ID_TRIGGER:
+                Intent triggerIntent = new Intent(this, DeviceTriggerActivity.class);
+                triggerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
+                startActivity(triggerIntent);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -707,6 +677,13 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
     }
     
+    /**
+     * Get the intent which can start device Activity
+     * 
+     * @param context
+     * @param device
+     * @return
+     */
     public static Intent getDeviceIntent(Context context, IEspDevice device)
     {
         Class<?> cls = getDeviceClass(device);
@@ -722,41 +699,46 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         }
     }
     
+    /**
+     * Get device type's function use class
+     * 
+     * @param device
+     * @return
+     */
     public static Class<?> getDeviceClass(IEspDevice device)
     {
         IEspDeviceState state = device.getDeviceState();
         Class<?> _class = null;
-        boolean helpOn = EspApplication.HELP_ON;
         switch (device.getDeviceType())
         {
             case PLUG:
                 if (state.isStateInternet() || state.isStateLocal())
                 {
-                    _class = helpOn ? DevicePlugActivity.class : HelpDevicePlugActivity.class;
+                    _class = DevicePlugActivity.class;
                 }
                 break;
             case LIGHT:
                 if (state.isStateInternet() || state.isStateLocal())
                 {
-                    _class = helpOn ? DeviceLightActivity.class : HelpDeviceLightActivity.class;
+                    _class = DeviceLightActivity.class;
                 }
                 break;
             case FLAMMABLE:
                 if (state.isStateInternet() || state.isStateOffline())
                 {
-                    _class = helpOn ? DeviceFlammableActivity.class : HelpDeviceFlammableActivity.class;
+                    _class = DeviceFlammableActivity.class;
                 }
                 break;
             case HUMITURE:
                 if (state.isStateInternet() || state.isStateOffline())
                 {
-                    _class = helpOn ? DeviceHumitureActivity.class : HelpDeviceHumitureActivity.class;
+                    _class = DeviceHumitureActivity.class;
                 }
                 break;
             case VOLTAGE:
                 if (state.isStateInternet() || state.isStateOffline())
                 {
-                    _class = helpOn ? DeviceVoltageActivity.class : HelpDeviceVoltageActivity.class;
+                    _class = DeviceVoltageActivity.class;
                 }
                 break;
             case REMOTE:
@@ -768,7 +750,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
             case PLUGS:
                 if (state.isStateInternet() || state.isStateLocal())
                 {
-                    _class = helpOn ? DevicePlugsActivity.class : HelpDevicePlugsActivity.class;
+                    _class = DevicePlugsActivity.class;
                 }
                 break;
             case ROOT:
@@ -785,166 +767,24 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements IEspHe
         return _class;
     }
     
+    /**
+     * The device is normal device or IEspDeviceArray
+     * 
+     * @return
+     */
     protected boolean isDeviceArray()
     {
         return mIEspDevice instanceof IEspDeviceArray;
     }
     
-    // *************About help below***********//
-    @Override
-    public void onExitHelpMode()
-    {
-        setResult(RESULT_EXIT_HELP_MODE);
-        finish();
+    private static IEspDevice sTempDevice;
+
+    /**
+     * Set the temp device for IEspDeviceArray(Group mode etc.) or IEspDeviceSSS(DirectConnect mode etc.)
+     * 
+     * @param device
+     */
+    public static void setTempDevice(IEspDevice device) {
+        sTempDevice = device;
     }
-    
-    @Override
-    public void onHelpUpgradeLocal()
-    {
-        clearHelpContainer();
-        
-        HelpStepUpgradeLocal step = HelpStepUpgradeLocal.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch (step)
-        {
-            case UPGRADING:
-                highlightHelpView(findViewById(R.id.right_icon));
-                setHelpHintMessage(R.string.esp_help_upgrade_local_click_upgrade_msg);
-                break;
-            default:
-                break;
-        }
-    }
-    
-    @Override
-    public void onHelpUpgradeOnline()
-    {
-        clearHelpContainer();
-        
-        HelpStepUpgradeOnline step = HelpStepUpgradeOnline.valueOf(mHelpMachine.getCurrentStateOrdinal());
-        switch (step)
-        {
-            case UPGRADING:
-                highlightHelpView(findViewById(R.id.right_icon));
-                setHelpHintMessage(R.string.esp_help_upgrade_online_click_upgrade_msg);
-                break;
-            default:
-                break;
-        }
-    }
-    
-    private static class HelpHandler extends Handler
-    {
-        
-        private WeakReference<DeviceActivityAbs> mActivity;
-        
-        public HelpHandler(DeviceActivityAbs activity)
-        {
-            mActivity = new WeakReference<DeviceActivityAbs>(activity);
-        }
-        
-        @Override
-        public void handleMessage(Message msg)
-        {
-            DeviceActivityAbs activity = mActivity.get();
-            if (activity == null)
-            {
-                return;
-            }
-            
-            switch (msg.what)
-            {
-                case RESULT_HELP_UPGRADE_LOCAL:
-                    activity.onHelpUpgradeLocal();
-                    break;
-                case RESULT_HELP_UPGRADE_ONLINE:
-                    activity.onHelpUpgradeOnline();
-                    break;
-            }
-        }
-    }
-    
-    private void checkHelpHandlerInit()
-    {
-        mHelpHandler = new HelpHandler(this);
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_LOCAL, 300);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            mHelpHandler.sendEmptyMessageDelayed(RESULT_HELP_UPGRADE_ONLINE, 300);
-        }
-    }
-    
-    private void checkHelpDeviceCompatibility()
-    {
-        if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            mHelpMachine.transformState(true);
-        }
-    }
-    
-    private void checkHelpDeviceNeedUpgrade()
-    {
-        if (mHelpMachine.isHelpModeUpgradeLocal() || mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            mHelpMachine.exit();
-            setResult(RESULT_EXIT_HELP_MODE);
-        }
-    }
-    
-    private void checkHelpShowHintDialog(AlertDialog dialog)
-    {
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-        }
-    }
-    
-    private void checkHelpOnPreOptionMenu(Menu menu)
-    {
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            setHelpMenuItem(menu, MENU_ID_UPGRADE_LOCAL);
-        }
-        else if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            setHelpMenuItem(menu, MENU_ID_UPGRADE_ONLINE);
-        }
-    }
-    
-    private void setHelpMenuItem(Menu menu, int itemId)
-    {
-        for (int i = 0; i < menu.size(); i++)
-        {
-            MenuItem item = menu.getItem(i);
-            if (item.getItemId() != itemId)
-            {
-                item.setEnabled(false);
-            }
-        }
-    }
-    
-    private void checkHelpOnSelectUpgradeLocal()
-    {
-        if (mHelpMachine.isHelpModeUpgradeLocal())
-        {
-            mHelpMachine.transformState(true);
-            setResult(RESULT_HELP_UPGRADE_LOCAL);
-        }
-    }
-    
-    private void checkHelpOnSelectUpgradeOnline()
-    {
-        if (mHelpMachine.isHelpModeUpgradeOnline())
-        {
-            mHelpMachine.transformState(true);
-            setResult(RESULT_HELP_UPGRADE_ONLINE);
-        }
-    }
-    // *************About help up***********//
 }

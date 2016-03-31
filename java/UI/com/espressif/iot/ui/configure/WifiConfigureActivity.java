@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.db.IOTApDBManager;
-import com.espressif.iot.db.greenrobot.daos.ApDB;
+import com.espressif.iot.object.db.IApDB;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.main.EspActivityAbs;
 
@@ -57,8 +57,8 @@ public class WifiConfigureActivity extends EspActivityAbs
         mWifiListView = (ListView)findViewById(R.id.wifi_listview);
         mApInfoAdapter = new ApInfoAdapter(this);
         mApInfoList = new ArrayList<ApInfo>();
-        List<ApDB> apDBList = mIOTApDBManager.getAllApDBList();
-        for (ApDB apDB : apDBList)
+        List<IApDB> apDBList = mIOTApDBManager.getAllApDBList();
+        for (IApDB apDB : apDBList)
         {
             ApInfo apInfo =
                 new ApInfo(apDB.getBssid(), apDB.getSsid(), apDB.getPassword(), WifiCipherType.WIFICIPHER_INVALID);

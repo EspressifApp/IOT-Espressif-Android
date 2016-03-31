@@ -7,7 +7,7 @@ public class DevicePlugLoopPeriodTimerEditActivity extends DeviceTimerEditLoopPe
     @Override
     protected String getEditAction()
     {
-        return mActionValues[mActionSpinner.getSelectedItemPosition()];
+        return mActionValues[getActionSpinner().getSelectedItemPosition()];
     }
     
     @Override

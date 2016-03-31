@@ -2,8 +2,6 @@ package com.espressif.iot.object.db;
 
 import java.util.List;
 
-import com.espressif.iot.db.greenrobot.daos.ApDB;
-
 public interface IApDBManager
 {
     /**
@@ -55,13 +53,13 @@ public interface IApDBManager
      * get the last selected Ap
      * @return the last selected Ap
      */
-    ApDB getLastSelectedApDB();
+    IApDB getLastSelectedApDB();
     
     /**
      * get the list of all Aps
      * @return the list of all Aps
      */
-    List<ApDB> getAllApDBList();
+    List<IApDB> getAllApDBList();
     
     /**
      * delete the Ap(s) by the Ap's ssid

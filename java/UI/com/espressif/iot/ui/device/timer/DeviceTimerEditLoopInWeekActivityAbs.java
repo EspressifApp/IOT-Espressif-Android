@@ -19,7 +19,6 @@ import com.espressif.iot.type.device.timer.EspDeviceTimer;
 
 public abstract class DeviceTimerEditLoopInWeekActivityAbs extends DeviceTimerEditActivityAbs
 {
-    
     private final int mWeekCheckBoxIds[] = new int[] {R.id.week_sunday, R.id.week_monday, R.id.week_tuesday,
         R.id.week_wednesday, R.id.week_thursday, R.id.week_friday, R.id.week_saturday};
     
@@ -27,7 +26,7 @@ public abstract class DeviceTimerEditLoopInWeekActivityAbs extends DeviceTimerEd
     
     private TimePicker mTimePicker;
     
-    protected Spinner mActionSpinner;
+    private Spinner mActionSpinner;
     
     private ArrayAdapter<String> mActionsAdapter;
     
@@ -137,7 +136,11 @@ public abstract class DeviceTimerEditLoopInWeekActivityAbs extends DeviceTimerEd
             }
         }
     }
-    
+
+    protected Spinner getActionSpinner() {
+        return mActionSpinner;
+    }
+
     /**
      * 
      * @return the new action need post

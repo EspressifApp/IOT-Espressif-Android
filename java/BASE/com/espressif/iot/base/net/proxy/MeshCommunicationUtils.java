@@ -103,7 +103,6 @@ public final class MeshCommunicationUtils
             // Connect or post
             if (postJSON != null)
             {
-                addMeshJSONKey(postJSON, bssid);
                 MeshLog.i(DEBUG, USE_LOG4J, CLASS, "Post json = " + postJSON.toString());
                 byte[] bytes = postJSON.toString().replace("\\/", "/").getBytes();
                 urlConn.setDoOutput(true);
@@ -163,22 +162,6 @@ public final class MeshCommunicationUtils
             }
         }
         return null;
-    }
-    
-    private static final String KEY_MDEV_MAC = "mdev_mac";
-    private static final String KEY_SIP = "sip";
-    private static final String KEY_SPORT = "sport";
-    
-    private static void addMeshJSONKey(JSONObject json, String bssid)
-        throws JSONException
-    {
-        String localPort = "FFFF";
-        json.put(KEY_SPORT, localPort);
-        String localHostAddress = "FFFFFFFF";
-        json.put(KEY_SIP, localHostAddress);
-        
-        String mac = bssid;
-        json.put(KEY_MDEV_MAC, mac);
     }
     
     private static HeaderPair[] newDstHeaders(HeaderPair[] srcHeaders, HeaderPair... newHeaders) {

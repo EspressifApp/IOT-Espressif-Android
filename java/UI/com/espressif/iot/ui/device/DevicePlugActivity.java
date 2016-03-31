@@ -13,7 +13,7 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
 {
     private IEspDevicePlug mDevicePlug;
     
-    protected CheckBox mPlugSwitch;
+    private CheckBox mPlugSwitch;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -23,7 +23,6 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
         mDevicePlug = (IEspDevicePlug)mIEspDevice;
         
         boolean compatibility = isDeviceCompatibility();
-        checkHelpModePlug(compatibility);
         if (compatibility && !isDeviceArray())
         {
             executeGet();
@@ -69,15 +68,5 @@ public class DevicePlugActivity extends DeviceActivityAbs implements OnClickList
     {
         boolean isOn = mDevicePlug.getStatusPlug().isOn();
         mPlugSwitch.setChecked(isOn);
-        
-        checkHelpExecuteFinish(command, result);
-    }
-    
-    protected void checkHelpModePlug(boolean compatibility)
-    {
-    }
-    
-    protected void checkHelpExecuteFinish(int command, boolean result)
-    {
     }
 }

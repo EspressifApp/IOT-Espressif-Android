@@ -15,7 +15,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,14 +22,12 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 public class WelcomeActivity extends Activity
 {
     private static final Logger log = Logger.getLogger(WelcomeActivity.class);
-    
-    private Point mScreenSize;
     
     private ImageView mMainIV;
     
@@ -59,8 +56,6 @@ public class WelcomeActivity extends Activity
         
         mApplication = EspApplication.sharedInstance();
         
-        mScreenSize = getScreenSize();
-        
         mMainIV = (ImageView)findViewById(R.id.welcome_main_img);
         mPager = (ViewPager)findViewById(R.id.welcome_pager);
         mPagerViewList = new ArrayList<View>();
@@ -80,14 +75,6 @@ public class WelcomeActivity extends Activity
         {
             mHandler.sendEmptyMessage(MSG_LOGIN);
         }
-    }
-    
-    private Point getScreenSize()
-    {
-        Point point = new Point();
-        getWindowManager().getDefaultDisplay().getSize(point);
-        log.info("Screen width = " + point.x + " | Screen height = " + point.y);
-        return point;
     }
     
     private void initPagerItem()
@@ -128,54 +115,42 @@ public class WelcomeActivity extends Activity
     
     private void showPager()
     {
-        final long duration = 800;
-        Animation mainOutAnim = new TranslateAnimation(0, -mScreenSize.x, 0, 0);
-        mainOutAnim.setDuration(duration);
-        mainOutAnim.setAnimationListener(new Animation.AnimationListener()
-        {
-            
+        Animation mainOutAnim = AnimationUtils.loadAnimation(this, R.anim.esp_welcome_translate_out);
+        mainOutAnim.setAnimationListener(new Animation.AnimationListener() {
+
             @Override
-            public void onAnimationStart(Animation animation)
-            {
+            public void onAnimationStart(Animation animation) {
             }
-            
+
             @Override
-            public void onAnimationRepeat(Animation animation)
-            {
+            public void onAnimationRepeat(Animation animation) {
             }
-            
+
             @Override
-            public void onAnimationEnd(Animation animation)
-            {
+            public void onAnimationEnd(Animation animation) {
                 mMainIV.clearAnimation();
                 mMainIV.setVisibility(View.GONE);
             }
         });
         
-        Animation pagerInAnim = new TranslateAnimation(mScreenSize.x, 0, 0, 0);
-        pagerInAnim.setDuration(duration);
-        pagerInAnim.setAnimationListener(new Animation.AnimationListener()
-        {
-            
+        Animation pagerInAnim = AnimationUtils.loadAnimation(this, R.anim.esp_welcome_translate_in);
+        pagerInAnim.setAnimationListener(new Animation.AnimationListener() {
+
             @Override
-            public void onAnimationStart(Animation animation)
-            {
+            public void onAnimationStart(Animation animation) {
             }
-            
+
             @Override
-            public void onAnimationRepeat(Animation animation)
-            {
+            public void onAnimationRepeat(Animation animation) {
             }
-            
+
             @Override
-            public void onAnimationEnd(Animation animation)
-            {
+            public void onAnimationEnd(Animation animation) {
                 mPager.clearAnimation();
             }
         });
-        
+
         mMainIV.startAnimation(mainOutAnim);
-        
         mPager.setVisibility(View.VISIBLE);
         mPager.startAnimation(pagerInAnim);
     }

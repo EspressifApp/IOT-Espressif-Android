@@ -159,16 +159,31 @@ public class DeviceAdapter extends BaseAdapter
         return convertView;
     }
     
+    /**
+     * Set the devices could be checked
+     * 
+     * @param editable
+     */
     public void setEditable(boolean editable)
     {
         mEditable = editable;
     }
     
+    /**
+     * Whether the devices could set checked
+     * 
+     * @return
+     */
     public boolean isEditable()
     {
         return mEditable;
     }
     
+    /**
+     * Get the checked devices
+     * 
+     * @return
+     */
     public Set<IEspDevice> getEditCheckedDevices()
     {
         return mEditCheckedDevices;
@@ -179,11 +194,17 @@ public class DeviceAdapter extends BaseAdapter
         mEditCheckedChangeListener = listener;
     }
     
+    /**
+     * Set all devices checked
+     */
     public void selectAllDevice() {
         mEditCheckedDevices.addAll(mDeviceList);
         notifyDataSetChanged();
     }
     
+    /**
+     * Clear all devices' checked state
+     */
     public void cancelSelectAllDevice() {
         mEditCheckedDevices.clear();
         notifyDataSetChanged();

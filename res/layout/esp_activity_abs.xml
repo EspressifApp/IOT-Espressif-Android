@@ -1,81 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
     <LinearLayout
+        android:id="@+id/title_bar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:background="@color/esp_actionbar_color"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/esp_activity_title_min_height"
+        android:orientation="horizontal"
+        android:padding="5dip" >
 
-        <LinearLayout
-            android:id="@+id/title_bar"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/left_icon"
+            android:layout_width="@dimen/esp_activity_title_min_height"
+            android:layout_height="@dimen/esp_activity_title_min_height"
+            android:adjustViewBounds="true"
+            android:background="@drawable/esp_activity_icon_background"
+            android:padding="5dip"
+            android:scaleType="centerInside" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:background="@color/esp_actionbar_color"
-            android:gravity="center_vertical"
-            android:minHeight="@dimen/esp_activity_title_min_height"
-            android:orientation="horizontal"
-            android:padding="5dip" >
-
-            <ImageView
-                android:id="@+id/left_icon"
-                android:layout_width="@dimen/esp_activity_title_min_height"
-                android:layout_height="@dimen/esp_activity_title_min_height"
-                android:adjustViewBounds="true"
-                android:background="@drawable/esp_activity_icon_background"
-                android:padding="5dip"
-                android:scaleType="centerInside" />
-
-            <TextView
-                android:id="@+id/title_text"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:singleLine="true"
-                android:text="@string/app_name"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="@android:color/white" />
-
-            <RelativeLayout
-                android:id="@+id/title_content"
-                android:layout_width="@dimen/esp_activity_title_min_height"
-                android:layout_height="@dimen/esp_activity_title_min_height"
-                android:clickable="true"
-                android:gravity="center"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/right_icon"
-                android:layout_width="@dimen/esp_activity_title_min_height"
-                android:layout_height="@dimen/esp_activity_title_min_height"
-                android:adjustViewBounds="true"
-                android:background="@drawable/esp_activity_icon_background"
-                android:padding="5dip"
-                android:scaleType="centerInside" />
-        </LinearLayout>
-
-        <FrameLayout
-            android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1" />
-
-        <LinearLayout
-            android:id="@+id/bottom_bar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/esp_bottom_bar_height"
-            android:background="@color/esp_actionbar_color"
-            android:paddingTop="3dip"
+            android:layout_weight="1"
             android:gravity="center"
-            android:orientation="horizontal"
+            android:singleLine="true"
+            android:text="@string/app_name"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white" />
+
+        <RelativeLayout
+            android:id="@+id/title_content"
+            android:layout_width="@dimen/esp_activity_title_min_height"
+            android:layout_height="@dimen/esp_activity_title_min_height"
+            android:clickable="true"
+            android:gravity="center"
             android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/right_icon"
+            android:layout_width="@dimen/esp_activity_title_min_height"
+            android:layout_height="@dimen/esp_activity_title_min_height"
+            android:adjustViewBounds="true"
+            android:background="@drawable/esp_activity_icon_background"
+            android:padding="5dip"
+            android:scaleType="centerInside" />
     </LinearLayout>
 
     <FrameLayout
-        android:id="@+id/help_container"
+        android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dip"
+        android:layout_weight="1" />
 
-</FrameLayout>
+    <LinearLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/esp_bottom_bar_height"
+        android:background="@color/esp_actionbar_color"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="3dip"
+        android:visibility="gone" />
+
+</LinearLayout>

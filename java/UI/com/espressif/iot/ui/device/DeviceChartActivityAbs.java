@@ -41,7 +41,6 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
         super.onCreate(savedInstanceState);
         
         boolean compatibility = isDeviceCompatibility();
-        checkHelpModeDevice(compatibility);
         mChartViewDrawn = false;
         if (compatibility)
         {
@@ -85,10 +84,6 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
                 showSelectDateDialog();
                 return true;
             default:
-                if (checkHelpIsChartDeviceHelp())
-                {
-                    return true;
-                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -135,26 +130,23 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
         refresh(mSelectTime);
     }
     
+    /**
+     * Set the ChartView has drawn at least once
+     * 
+     * @param drawn
+     */
     protected void setChartViewDrawn(boolean drawn)
     {
         mChartViewDrawn = drawn;
     }
     
+    /**
+     * Get whether the ChartView has drawn at least once
+     * 
+     * @return
+     */
     protected boolean isChartViewDrawn()
     {
         return mChartViewDrawn;
-    }
-    
-    protected void checkHelpModeDevice(boolean compatibility)
-    {
-    }
-    
-    protected void checkHelpExecuteFinish(boolean suc)
-    {
-    }
-    
-    protected boolean checkHelpIsChartDeviceHelp()
-    {
-        return false;
     }
 }
