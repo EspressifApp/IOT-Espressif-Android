@@ -259,7 +259,19 @@ public interface IEspDevice extends IEspObject
      */
     List<EspDeviceTimer> getTimerList();
     
+    /**
+     * Whether the device support timer
+     * 
+     * @return
+     */
     boolean isSupportTimer();
+    
+    /**
+     * Whether the device support trigger
+     * 
+     * @return
+     */
+    boolean isSupportTrigger();
     
     /**
      * save the IEspDevice in local db

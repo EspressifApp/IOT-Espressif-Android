@@ -10,7 +10,6 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.device.DeviceLightActivity;
@@ -129,8 +128,9 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
     protected void onDestroy()
     {
         super.onDestroy();
-        
+
         mShared.unregisterOnSharedPreferenceChangeListener(this);
+        mHandler.removeMessages(MSG_REFRESH_LIST);
     }
     
     private void refreshSoftApList()
@@ -449,7 +449,7 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
         new DeviceDirectConnectProgressDialog(this, device).show();
     }
     
-    public void showLocalDevice(IEspDeviceSSS device, final String cacheSsid)
+    public void showLocalDevice(IEspDevice device, final String cacheSsid)
     {
         Class<?> cls = null;
         switch (device.getDeviceType())

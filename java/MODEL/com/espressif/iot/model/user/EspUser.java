@@ -99,7 +99,6 @@ import com.espressif.iot.db.IOTUserDBManager;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.builder.BEspDeviceNew;
@@ -152,8 +151,8 @@ public class EspUser implements IEspUser
     private String mUserEmail;
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
-    private final List<IEspDeviceSSS> mStaDeviceList = new ArrayList<IEspDeviceSSS>();
-    private final List<IEspDeviceSSS> mTempStaDeviceList = new ArrayList<IEspDeviceSSS>();
+    private final List<IEspDevice> mStaDeviceList = new ArrayList<IEspDevice>();
+    private final List<IEspDevice> mTempStaDeviceList = new ArrayList<IEspDevice>();
     private final ReentrantLock mDeviceListsLock = new ReentrantLock();
     
     private volatile IEspActionDeviceEsptouch mActionDeviceEsptouch = null;
@@ -972,22 +971,22 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public List<IEspDeviceSSS> __getOriginStaDeviceList()
+    public List<IEspDevice> __getOriginStaDeviceList()
     {
         return this.mStaDeviceList;
     }
     
     @Override
-    public List<IEspDeviceSSS> getStaDeviceList()
+    public List<IEspDevice> getStaDeviceList()
     {
         // for the mStaDeviceList maybe changed after the result return,
         // but we don't like UI layer get dirty device list,
         // so we return the copy list to prevent it
-        List<IEspDeviceSSS> result = new ArrayList<IEspDeviceSSS>();
+        List<IEspDevice> result = new ArrayList<IEspDevice>();
         lockUserDeviceLists();
         result.addAll(mStaDeviceList);
         // add temp sta device if not exist
-        for (IEspDeviceSSS tempStaDevice : mTempStaDeviceList)
+        for (IEspDevice tempStaDevice : mTempStaDeviceList)
         {
             __addOrUpdateStaDeivce(result, tempStaDevice);
         }
@@ -1010,7 +1009,7 @@ public class EspUser implements IEspUser
         unlockUserDeviceLists();
     }
 
-    private boolean __updateDevice(List<IEspDevice> deviceList, IEspDeviceSSS newStaDevice)
+    private boolean __updateDevice(List<IEspDevice> deviceList, IEspDevice newStaDevice)
     {
 //        log.debug("__updateDevice() deviceList:" + deviceList + ", newStaDevice:" + newStaDevice);
         // boolean isChanged = false;
@@ -1075,7 +1074,7 @@ public class EspUser implements IEspUser
         return isExist;
     }
     
-    private boolean __addOrUpdateStaDeivce(List<IEspDeviceSSS> staDeviceList, IEspDeviceSSS newStaDevice)
+    private boolean __addOrUpdateStaDeivce(List<IEspDevice> staDeviceList, IEspDevice newStaDevice)
     {
 //        log.debug("__addOrUpdateStaDeivce() staDeviceList:" + staDeviceList + ", newStaDevice:" + newStaDevice);
         boolean isChanged = false;
@@ -1084,7 +1083,7 @@ public class EspUser implements IEspUser
         InetAddress newInetAddress = newStaDevice.getInetAddress();
         String newParentBssid = newStaDevice.getParentDeviceBssid();
         String newRootBssid = newStaDevice.getRootDeviceBssid();
-        for (IEspDeviceSSS staDevice : staDeviceList)
+        for (IEspDevice staDevice : staDeviceList)
         {
             String bssid = staDevice.getBssid();
             if (newBssid.equals(bssid))
@@ -1141,7 +1140,7 @@ public class EspUser implements IEspUser
             String bssid = iotAddress.getBSSID();
             String ssid = BSSIDUtil.genDeviceNameByBSSID(bssid);
             iotAddress.setSSID(ssid);
-            IEspDeviceSSS tempStaDevice = BEspDevice.createSSSDevice(iotAddress);
+            IEspDevice tempStaDevice = BEspDevice.getInstance().createStaDevice(iotAddress);
             tempStaDevice.setRootDeviceBssid(rootBssid);
             boolean _isTempStaChanged = __addOrUpdateStaDeivce(mTempStaDeviceList, tempStaDevice);
             isDeviceChanged = isDeviceChanged ? true : _isTempStaChanged;
@@ -1168,9 +1167,9 @@ public class EspUser implements IEspUser
         lockUserDeviceLists();
         List<IEspDevice> deviceList = new ArrayList<IEspDevice>();
         deviceList.addAll(mDeviceList);
-        List<IEspDeviceSSS> staDeviceList = new ArrayList<IEspDeviceSSS>();
+        List<IEspDevice> staDeviceList = new ArrayList<IEspDevice>();
         staDeviceList.addAll(mStaDeviceList);
-        for (IEspDeviceSSS tempStaDevice : mTempStaDeviceList)
+        for (IEspDevice tempStaDevice : mTempStaDeviceList)
         {
             boolean isExist = __updateDevice(deviceList, tempStaDevice);
             if (!isExist)
@@ -1257,7 +1256,7 @@ public class EspUser implements IEspUser
     }
     
     @Override
-    public boolean addDeviceSyn(final IEspDeviceSSS device)
+    public boolean addDeviceSyn(final IEspDevice device)
     {
         log.debug("addDeviceSyn() device:" + device);
         // start add device task asyn
@@ -1422,7 +1421,7 @@ public class EspUser implements IEspUser
     
     
     @Override
-    public boolean addDeviceAsyn(final IEspDeviceSSS device)
+    public boolean addDeviceAsyn(final IEspDevice device)
     {
         log.info("addDeviceAsyn() device:" + device);
         IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
@@ -1433,7 +1432,7 @@ public class EspUser implements IEspUser
         }
         log.info("addDeviceAsyn() device:" + device + " is finished");
         String randomToken = RandomUtil.random40();
-        IEspDeviceConfigure deviceConfigure = device.createConfiguringDevice(randomToken);
+        IEspDeviceConfigure deviceConfigure = BEspDevice.getInstance().createConfiguringDevice(device, randomToken);
         String deviceName = device.getName();
         deviceConfigure.setName(deviceName);
         deviceConfigure.setUserId(mUserId);
@@ -1521,7 +1520,7 @@ public class EspUser implements IEspUser
                 String bssid = BSSIDUtil.restoreBSSID(esptouchResult.getBssid());
                 IOTAddress iotAddress = new IOTAddress(bssid, esptouchResult.getInetAddress());
                 iotAddress.setEspDeviceTypeEnum(EspDeviceType.NEW);
-                IEspDeviceSSS iotAddressDevice = BEspDevice.createSSSDevice(iotAddress);
+                IEspDevice iotAddressDevice = BEspDevice.getInstance().createStaDevice(iotAddress);
                 iotAddressDevice.getDeviceState().clearState();
                 String deviceName = BSSIDUtil.genDeviceNameByBSSID(bssid);
                 iotAddressDevice.setName(deviceName);

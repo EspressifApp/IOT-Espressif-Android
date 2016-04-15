@@ -68,25 +68,21 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     }
     
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    protected void onCreateTitleMenuItem(Menu menu) {
         menu.add(Menu.NONE, MENU_ID_SELECT_DATE, 0, R.string.esp_device_chartview_menu_select_date);
-        
-        return super.onCreateOptionsMenu(menu);
     }
     
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
             case MENU_ID_SELECT_DATE:
                 showSelectDateDialog();
                 return true;
             default:
                 break;
         }
-        return super.onOptionsItemSelected(item);
+
+        return super.onMenuItemClick(item);
     }
     
     private void showSelectDateDialog()

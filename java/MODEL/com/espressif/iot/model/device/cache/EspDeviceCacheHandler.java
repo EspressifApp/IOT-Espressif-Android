@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.cache.IEspDeviceCacheHandler;
 import com.espressif.iot.model.device.EspDevice;
@@ -560,7 +559,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
-    private void handleSta(List<IEspDevice> userDeviceList, List<IEspDeviceSSS> userStaDeviceList)
+    private void handleSta(List<IEspDevice> userDeviceList, List<IEspDevice> userStaDeviceList)
     {
         log.debug(Thread.currentThread().toString() + "##handleSta()");
         List<IOTAddress> staDeviceList = EspDeviceCache.getInstance().pollStaDeviceCacheList();
@@ -610,7 +609,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
                 staDevice.setSSID(ssid);
                 // generate IEspDeviceSSS and add it into userStaDeviceList
-                IEspDeviceSSS userStaDevice = BEspDevice.createSSSDevice(staDevice);
+                IEspDevice userStaDevice = BEspDevice.getInstance().createStaDevice(staDevice);
                 log.info("##handleSta() add device: " + userStaDevice);
                 userStaDeviceList.add(userStaDevice);
             }
@@ -632,7 +631,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
-    private void removeRedundantUserStaDevices(List<IEspDevice> userDeviceList, List<IEspDeviceSSS> userStaDeviceList)
+    private void removeRedundantUserStaDevices(List<IEspDevice> userDeviceList, List<IEspDevice> userStaDeviceList)
     {
         // when userDeviceList and userStaDeviceList has the same bssid device,
         // remove the device from userStaDeviceList
@@ -714,7 +713,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         IEspUser user = BEspUser.getBuilder().getInstance();
         user.lockUserDeviceLists();
         List<IEspDevice> userDeviceList = user.__getOriginDeviceList();
-        List<IEspDeviceSSS> userStaDeviceList = user.__getOriginStaDeviceList();
+        List<IEspDevice> userStaDeviceList = user.__getOriginStaDeviceList();
         log.debug(Thread.currentThread().toString() + "##handleUninterruptible(userDeviceList=[" + userDeviceList
             + "])");
         if (isStateMachine)

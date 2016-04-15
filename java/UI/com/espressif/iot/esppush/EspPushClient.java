@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -33,17 +34,17 @@ import com.espressif.iot.util.RandomUtil;
 public class EspPushClient
 {
     private final Logger log = Logger.getLogger(getClass());
-    
+
     private Context mContext;
     private IEspUser mUser;
-    
+
     private static final String SERVER_HOST = "iot.espressif.cn";
     private static final int SERVER_PORT = 8000;
     
     private Socket mSocket;
     private PrintStream mPrintStream;
     private BufferedReader mBufferedReader;
-    
+
     private static final String KEY_PATH = "path";
     private static final String KEY_METHOD = "method";
     private static final String KEY_BODY = "body";
@@ -56,16 +57,21 @@ public class EspPushClient
     private static final String KEY_STATUS = "status";
     private static final String KEY_DATA = "data";
     private static final String KEY_ALERT = "alert";
-    
+
     public static final String ESPPUSH_ACTION_RECEIVE_MESSAGE = "esppush_action_receive_message";
     public static final String ESPPUSH_KEY_MESSAGE = "key_message";
-    
+
     private ConnectTask mConnectTask;
     private static final String ESP_PNS_TOKEN = "mbox-fc36a67c11d41f70cf24db0e89e2ab7e113e6a89";
-    
+
     private static final int PEER_TOKEN_MIN_LENGTH = 41;
     private static final String TOKEN_LEGAL_CHARS = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
-    
+
+    private final Object mConnectLock = new Object();
+
+    private long mLastPostTime = 0;
+    private long mLastReceiveTime = 0;
+
     public EspPushClient(Context context)
     {
         mContext = context;
@@ -78,10 +84,12 @@ public class EspPushClient
     public void connect()
     {
         log.debug("connect()");
-        if (mConnectTask == null)
-        {
-            mConnectTask = new ConnectTask();
-            mConnectTask.execute();
+        synchronized (mConnectLock) {
+            if (mConnectTask == null)
+            {
+                mConnectTask = new ConnectTask();
+                mConnectTask.execute();
+            }
         }
     }
     
@@ -98,27 +106,23 @@ public class EspPushClient
         
         // Close OutputStream
         mPrintStream.close();
-        try
-        {
+        try {
             // Close InputStream
             mBufferedReader.close();
-        }
-        catch (IOException i)
-        {
+        } catch (IOException i) {
             log.error("disconnect() close mBufferedReader IOException");
             i.printStackTrace();
         }
-        try
-        {
+        try {
             // Close Socket
             mSocket.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             log.error("disconnect() close mSocket IOException");
             e.printStackTrace();
         }
         
+        mLastPostTime = 0;
+        mLastReceiveTime = 0;
         mSocket = null;
         mPrintStream = null;
         mBufferedReader = null;
@@ -135,6 +139,7 @@ public class EspPushClient
         {
             log.info("Post message = " + message);
             mPrintStream.print(message + "\n");
+            mLastPostTime = SystemClock.elapsedRealtime();
         }
     }
     
@@ -150,6 +155,7 @@ public class EspPushClient
         try
         {
             String line = mBufferedReader.readLine();
+            mLastReceiveTime = SystemClock.elapsedRealtime();
             return line;
         }
         catch (IOException e)
@@ -188,6 +194,7 @@ public class EspPushClient
         post(postJSON.toString());
         
         String response = receive();
+        log.info("subscribe response = " + response);
         if (response == null) {
             return false;
         }
@@ -236,6 +243,7 @@ public class EspPushClient
         {
             if (mSocket != null)
             {
+                log.debug("ConnectTask mSocket not null");
                 disconnect();
             }
             log.debug("start connecting");
@@ -243,6 +251,7 @@ public class EspPushClient
             {
                 InetAddress address = InetAddress.getByName(SERVER_HOST);
                 mSocket = new Socket(address, SERVER_PORT);
+                System.out.println("Scoket conneted");
                 mPrintStream = new PrintStream(mSocket.getOutputStream());
                 mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
                 
@@ -270,6 +279,7 @@ public class EspPushClient
             {
                 // Create long connection successfully, start a thread to receive message
                 new ReceivePushMessageThread().start();
+                ping();
             }
             else
             {
@@ -294,8 +304,10 @@ public class EspPushClient
                     log.info("receive msg = " + receiveMsg);
                     
                     if (receiveMsg == null) {
-                        continue;
+                        disconnect();
+                        return;
                     }
+                    mLastReceiveTime = SystemClock.elapsedRealtime();
                     JSONObject receiveJSON = new JSONObject(receiveMsg);
                     if (receiveJSON.has(KEY_BODY))
                     {
@@ -424,5 +436,15 @@ public class EspPushClient
         }
         
         return "";
+    }
+
+    /**
+     * The socket is timeout
+     * 
+     * @return
+     */
+    public boolean isTimeout() {
+        final long timeout = 8000;
+        return (SystemClock.elapsedRealtime() - mLastPostTime > timeout) && (mLastReceiveTime < mLastPostTime);
     }
 }

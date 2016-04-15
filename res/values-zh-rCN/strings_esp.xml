@@ -187,7 +187,11 @@
     <string name="esp_device_timer_delete_result_failed">删除失败</string>
 
     <string name="esp_device_trigger">警报设置</string>
+    <string name="esp_device_trigger_add">新建</string>
     <string name="esp_device_trigger_delete">删除</string>
+    <string name="esp_device_trigger_name">名字</string>
+    <string name="esp_device_trigger_name_hint">请输入名字</string>
+    <string name="esp_device_trigger_dimension">维度</string>
     <string name="esp_device_trigger_get_failed">获取信息失败，请检查网络</string>
     <string name="esp_device_trigger_settings_add_notification">增加通知</string>
     <string name="esp_device_trigger_settings_delete_notification">删除</string>
@@ -319,4 +323,7 @@
     <string name="esp_espbutton_custom_timer_hint">0 ~ 3600 秒</string>
     <string name="esp_espbutton_custom_turnonoff">设置开关</string>
     <string name="esp_espbutton_custom_turnonoff_reversing">反向开关</string>
+
+    <string name="esp_soundbox_xima_hot_title">热门</string>
+    <string name="esp_soundbox_xima_search_title">查找</string>
 </resources>

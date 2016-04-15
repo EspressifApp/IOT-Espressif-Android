@@ -175,29 +175,25 @@ public class DeviceLightActivity extends DeviceActivityAbs implements OnClickLis
     }
     
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    protected void onCreateTitleMenuItem(Menu menu) {
         if (mIEspDevice.getIsMeshDevice() && !isDeviceArray()) {
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings);
         }
-
-        return super.onCreateOptionsMenu(menu);
     }
-    
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch(item.getItemId())
-        {
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
             case MENU_ID_ESPBUTTON_SETTINGS:
                 Intent intent = new Intent(this, EspButtonCustomKeySettingsActivity.class);
                 intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mDeviceLight.getKey());
                 startActivity(intent);
                 return true;
         }
-        
-        return super.onOptionsItemSelected(item);
+
+        return super.onMenuItemClick(item);
     }
-    
+
     private void clearEditFocus()
     {
         if (mPeriodText.hasFocus())

@@ -17,7 +17,8 @@ public enum EspDeviceType
     FLAMMABLE(3835, "Flammable Gas", false),
     VOLTAGE(68574, "Voltage", false),
     REMOTE(2355, "Remote", true),
-    PLUGS(47446, "Plugs", true);
+    PLUGS(47446, "Plugs", true),
+    SOUNDBOX(43902, "Soundbox", true);
     
     private final int mSerial;
     
@@ -102,6 +103,10 @@ public enum EspDeviceType
         {
             return PLUGS;
         }
+        else if (serial == SOUNDBOX.getSerial())
+        {
+            return SOUNDBOX;
+        }
         return null;
     }
     
@@ -148,6 +153,10 @@ public enum EspDeviceType
         else if (typeEnumString.equals(EspDeviceType.PLUGS.toString()))
         {
             return PLUGS;
+        }
+        else if (typeEnumString.equals(EspDeviceType.SOUNDBOX.toString()))
+        {
+            return SOUNDBOX;
         }
         return null;
     }

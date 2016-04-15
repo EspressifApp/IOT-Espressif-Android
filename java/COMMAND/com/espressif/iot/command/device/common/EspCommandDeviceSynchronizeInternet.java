@@ -27,11 +27,9 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
     private final static Logger log = Logger.getLogger(EspCommandDeviceSynchronizeInternet.class);
     
     private static final long ONLINE_TIMEOUT_PLUG = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
-    
     private static final long ONLINE_TIMEOUT_PLUG_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_LIGHT = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
-    
     private static final long ONLINE_TIMEOUT_LIGHT_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_TEMPERATURE = 5 * TimeUtil.ONE_MINUTE_LONG_VALUE;
@@ -39,16 +37,16 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
     private static final long ONLINE_TIMEOUT_GAS_SIREN = 5 * TimeUtil.ONE_MINUTE_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_REMOTE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
-    
     private static final long ONLINE_TIMEOUT_REMOTE_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_PLUGS = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
-    
     private static final long ONLINE_TIMEOUT_PLUGS_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
     private static final long ONLINE_TIMEOUT_VOLTAGE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
-    
     private static final long ONLINE_TIMEOUT_VOLTAGE_MESH = 3 * 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
+    
+    private static final long ONLINE_TIME_SOUNDBOX = TimeUtil.ONE_MINUTE_LONG_VALUE;
+    private static final long ONLINE_TIME_SOUNDBOX_MESH = 3 * TimeUtil.ONE_MINUTE_LONG_VALUE;
     
     private JSONArray getJSONArrayGroups(String userKey)
     {
@@ -135,6 +133,13 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                 else
                 {
                     timeout = ONLINE_TIMEOUT_PLUGS;
+                }
+                break;
+            case SOUNDBOX:
+                if (isMeshDevice) {
+                    timeout = ONLINE_TIME_SOUNDBOX_MESH;
+                } else {
+                    timeout = ONLINE_TIME_SOUNDBOX;
                 }
                 break;
             case NEW:

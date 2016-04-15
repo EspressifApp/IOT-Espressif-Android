@@ -11,7 +11,6 @@ import android.net.wifi.ScanResult;
 import com.espressif.iot.command.device.espbutton.IEspButtonConfigureListener;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -480,14 +479,14 @@ public interface IEspUser extends IEspSingletonObject
      * 
      * @return the origin sta device list
      */
-    List<IEspDeviceSSS> __getOriginStaDeviceList();
+    List<IEspDevice> __getOriginStaDeviceList();
     
     /**
      * Get the sta devices(which could be found by local but don't belong to the user)
      * 
      * @return the sta devices(which could be found by local but don't belong to the user)
      */
-    List<IEspDeviceSSS> getStaDeviceList();
+    List<IEspDevice> getStaDeviceList();
     
     /**
      * Get the origin device list, don't call it or it will make a Woo surprise
@@ -537,7 +536,7 @@ public interface IEspUser extends IEspSingletonObject
      * @param device the device to be added
      * @return whether the device is added suc
      */
-    boolean addDeviceSyn(final IEspDeviceSSS device);
+    boolean addDeviceSyn(final IEspDevice device);
     
     /**
      * add one device in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
@@ -608,7 +607,7 @@ public interface IEspUser extends IEspSingletonObject
      * @param device the device to be added
      * @return whether the device is added suc
      */
-    boolean addDeviceAsyn(final IEspDeviceSSS device);
+    boolean addDeviceAsyn(final IEspDevice device);
     
     /**
      * add all devices in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it

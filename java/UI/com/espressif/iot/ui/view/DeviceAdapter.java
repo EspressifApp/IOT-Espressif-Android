@@ -63,28 +63,23 @@ public class DeviceAdapter extends BaseAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         final IEspDevice device = mDeviceList.get(position);
-        
-        if (convertView == null)
-        {
+        if (convertView == null) {
             convertView = mInflater.inflate(R.layout.device_layout, parent, false);
         }
-        
         convertView.setTag(device);
-        
+
         // Set icon
         ImageView iconIV = (ImageView)convertView.findViewById(R.id.device_icon);
         iconIV.setBackgroundResource(R.drawable.esp_device_icon_general);
-        
+
         // Set device name
         TextView nameTV = (TextView)convertView.findViewById(R.id.device_name);
         nameTV.setText(device.getName());
-        
+
         // Set state
         IEspDeviceState state = device.getDeviceState();
-        
         TextView statusTV = (TextView)convertView.findViewById(R.id.device_status_text);
-        switch (state.getDeviceState())
-        {
+        switch (state.getDeviceState()) {
             case UPGRADING_LOCAL:
                 statusTV.setText(R.string.esp_ui_status_upgrading_local);
                 break;
@@ -104,7 +99,7 @@ public class DeviceAdapter extends BaseAdapter
             case INTERNET:
                 statusTV.setText(R.string.esp_ui_status_online);
                 break;
-            
+
             case CLEAR:
             case CONFIGURING:
             case DELETED:
@@ -114,51 +109,51 @@ public class DeviceAdapter extends BaseAdapter
                 break;
         }
         statusTV.append(" | " + device.getDeviceType());
-        
+
         ImageView localStatusIV = (ImageView)convertView.findViewById(R.id.device_status1);
         localStatusIV.setBackgroundResource(R.drawable.esp_device_status_local);
         localStatusIV.setVisibility(state.isStateLocal() ? View.VISIBLE : View.GONE);
-        
+
         ImageView cloudStatusIV = (ImageView)convertView.findViewById(R.id.device_status2);
         cloudStatusIV.setVisibility(device.isActivated() ? View.VISIBLE : View.GONE);
-        if (state.isStateInternet())
-        {
+        if (state.isStateInternet()) {
             cloudStatusIV.setBackgroundResource(R.drawable.esp_device_status_cloud);
-        }
-        else
-        {
+        } else {
             cloudStatusIV.setBackgroundResource(R.drawable.esp_device_status_offline);
         }
-        
-        final CheckBox editCB = (CheckBox)convertView.findViewById(R.id.edit_check);
+
+        CheckBox editCB = (CheckBox)convertView.findViewById(R.id.edit_check);
         editCB.setChecked(mEditCheckedDevices.contains(device) ? true : false);
-        editCB.setOnClickListener(new View.OnClickListener()
-        {
-            
-            @Override
-            public void onClick(View v)
-            {
-                boolean isChecked = editCB.isChecked();
-                if (isChecked)
-                {
-                    mEditCheckedDevices.add(device);
-                }
-                else
-                {
-                    mEditCheckedDevices.remove(device);
-                }
-                
-                if (mEditCheckedChangeListener != null)
-                {
-                    mEditCheckedChangeListener.onEditCheckedChanged(editCB, device, isChecked);
-                }
-            }
-        });
+        editCB.setOnClickListener(new CheckClickListener(device));
         editCB.setVisibility(mEditable ? View.VISIBLE : View.GONE);
-        
+
         return convertView;
     }
-    
+
+    private class CheckClickListener implements View.OnClickListener {
+        private IEspDevice mDevice;
+
+        public CheckClickListener(IEspDevice device) {
+            mDevice = device;
+        }
+
+        @Override
+        public void onClick(View v) {
+            CheckBox cb = (CheckBox)v;
+            boolean isChecked = cb.isChecked();
+            if (isChecked) {
+                mEditCheckedDevices.add(mDevice);
+            } else {
+                mEditCheckedDevices.remove(mDevice);
+            }
+
+            if (mEditCheckedChangeListener != null) {
+                mEditCheckedChangeListener.onEditCheckedChanged(cb, mDevice, isChecked);
+            }
+        }
+
+    }
+
     /**
      * Set the devices could be checked
      * 

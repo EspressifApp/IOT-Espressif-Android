@@ -1,9 +1,8 @@
 package com.espressif.iot.device.builder;
 
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.IEspDeviceSSS;
+import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.device.array.IEspDeviceArray;
-import com.espressif.iot.model.device.EspDeviceSSS;
 import com.espressif.iot.model.device.array.EspDeviceLightArray;
 import com.espressif.iot.model.device.array.EspDevicePlugArray;
 import com.espressif.iot.object.db.IDeviceDB;
@@ -69,6 +68,9 @@ public class BEspDevice implements IBEspDevice
                 break;
             case PLUGS:
                 device = BEspDevicePlugs.getInstance().alloc();
+                break;
+            case SOUNDBOX:
+                device = BEspDeviceSoundbox.getInstance().alloc();
                 break;
             case ROOT:
                 throw new IllegalArgumentException("Not support alloc ROOT device");
@@ -156,35 +158,29 @@ public class BEspDevice implements IBEspDevice
             case REMOTE:
             case ROOT:
             case VOLTAGE:
+            case SOUNDBOX:
                 break;
         }
         
         return null;
     }
-    
-    public static IEspDeviceSSS createSSSDevice(IOTAddress iotAddress)
-    {
-        EspDeviceSSS device = new EspDeviceSSS(iotAddress);
-        
-        return device;
+
+    // -1, -2, ... is used to activate softap device by direct connect,
+    // 1, 2, ... is used by server
+    private static long mIdCreator = -Long.MAX_VALUE / 2;
+
+    private synchronized long getNextId() {
+        return --mIdCreator;
     }
-    
-    public static IEspDevice convertSSSToTypeDevice(IEspDeviceSSS deviceSSS)
-    {
+
+    public IEspDevice createStaDevice(IOTAddress iotAddress) {
         IEspDevice device = null;
-        switch (deviceSSS.getDeviceType())
-        {
+        switch (iotAddress.getDeviceTypeEnum()) {
             case LIGHT:
                 device = BEspDeviceLight.getInstance().alloc();
                 break;
             case PLUG:
                 device = BEspDevicePlug.getInstance().alloc();
-                break;
-            case FLAMMABLE:
-                break;
-            case HUMITURE:
-                break;
-            case NEW:
                 break;
             case PLUGS:
                 device = BEspDevicePlugs.getInstance().alloc();
@@ -192,26 +188,49 @@ public class BEspDevice implements IBEspDevice
             case REMOTE:
                 device = BEspDeviceRemote.getInstance().alloc();
                 break;
-            case ROOT:
+            case SOUNDBOX:
+                device = BEspDeviceSoundbox.getInstance().alloc();
+                break;
+            case FLAMMABLE:
+                device = BEspDeviceFlammable.getInstance().alloc();
+                break;
+            case HUMITURE:
+                device = BEspDeviceHumiture.getInstance().alloc();
                 break;
             case VOLTAGE:
+                device = BEspDeviceVoltage.getInstance().alloc();
+                break;
+            case NEW:
+                device = BEspDeviceNew.getInstance().alloc(null, iotAddress.getBSSID(), null, 0);
+                break;
+            case ROOT:
                 break;
         }
-        
-        if (device != null)
-        {
-            device.setId(deviceSSS.getId());
-            device.setKey(deviceSSS.getKey());
+
+        if (device != null) {
+            EspDeviceState stateLocal = new EspDeviceState();
+            stateLocal.addStateLocal();
+            device.setDeviceState(stateLocal);
+            device.setName(iotAddress.getSSID());
+            device.setBssid(iotAddress.getBSSID());
+            device.setInetAddress(iotAddress.getInetAddress());
+            device.setDeviceType(iotAddress.getDeviceTypeEnum());
+            device.setParentDeviceBssid(iotAddress.getParentBssid());
+            device.setIsMeshDevice(iotAddress.isMeshDevice());
+            device.setKey(iotAddress.getBSSID());
+            device.setId(getNextId());
             device.setIsOwner(false);
-            device.setBssid(deviceSSS.getBssid());
-            device.setDeviceState(deviceSSS.getDeviceState());
-            device.setDeviceType(deviceSSS.getDeviceType());
-            device.setName(deviceSSS.getName());
-            device.setInetAddress(deviceSSS.getInetAddress());
-            device.setParentDeviceBssid(deviceSSS.getParentDeviceBssid());
-            device.setIsMeshDevice(deviceSSS.getIsMeshDevice());
         }
-        
+
+        return device;
+    }
+    
+    public IEspDeviceConfigure createConfiguringDevice(IEspDevice staDevice, String random40) {
+        IEspDeviceConfigure device = BEspDeviceConfigure.getInstance().alloc(staDevice.getBssid(), random40);
+        device.setInetAddress(staDevice.getInetAddress());
+        device.setIsMeshDevice(staDevice.getIsMeshDevice());
+        device.setParentDeviceBssid(staDevice.getParentDeviceBssid());
+        device.setName(staDevice.getName());
         return device;
     }
 }

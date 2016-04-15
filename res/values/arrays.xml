@@ -102,4 +102,12 @@
         <item>Set timer</item>
         <item>Set brightness</item>
     </string-array>
+
+    <string-array name="esp_trigger_dimensions">
+        <item>X</item>
+        <item>Y</item>
+        <item>Z</item>
+        <item>K</item>
+        <item>L</item>
+    </string-array>
 </resources>

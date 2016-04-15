@@ -248,6 +248,8 @@ public class EspActionDeviceArrayPostStatus implements IEspActionDeviceArrayPost
                 break;
             case VOLTAGE:
                 break;
+            case SOUNDBOX:
+                break;
         }
         
         return false;
@@ -281,6 +283,8 @@ public class EspActionDeviceArrayPostStatus implements IEspActionDeviceArrayPost
             case ROOT:
                 break;
             case VOLTAGE:
+                break;
+            case SOUNDBOX:
                 break;
         }
         

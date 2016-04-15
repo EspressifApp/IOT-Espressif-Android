@@ -128,6 +128,8 @@ public abstract class EspActionSensorGetStatusListInternetDB implements IEspActi
                 break;
             case REMOTE:
                 break;
+            case SOUNDBOX:
+                break;
             case ROOT:
                 break;
         }

@@ -15,7 +15,6 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.net.proxy.EspProxyServerImpl;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
 import com.espressif.iot.esppush.EspPushService;
 import com.espressif.iot.esppush.EspPushUtils;
@@ -230,18 +229,13 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         setTitleLeftIcon(0);
         setTitleRightIcon(R.drawable.esp_menu_icon_settings);
         setTitleProgressing();
-        
+
         mRefreshing = false;
-        if (mUser.isLogin())
-        {
-            refresh();
-        }
-        else
-        {
+        if (!mUser.isLogin()) {
             Toast.makeText(this, R.string.esp_ui_not_login_msg, Toast.LENGTH_LONG).show();
-            scanSta();
         }
-        
+        refresh();
+
         EspGroupHandler.getInstance().call();
         
         if (mUser.isLogin())
@@ -301,14 +295,17 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
     protected void onDestroy()
     {
         super.onDestroy();
-        
+
         mSettingsShared.unregisterOnSharedPreferenceChangeListener(this);
         mNewDevicesShared.unregisterOnSharedPreferenceChangeListener(this);
-        
+
         mBraodcastManager.unregisterReceiver(mDeviceChangeReciever);
         mBraodcastManager.unregisterReceiver(mTempDeviceReciever);
         mBraodcastManager.unregisterReceiver(mLoginReceiver);
-        
+
+        mRefreshHandler.removeMessages(MSG_AUTO_REFRESH);
+        mRefreshHandler.removeMessages(MSG_UPDATE_TEMPDEVICE);
+
         mUser.clearUserDeviceLists();
     }
     
@@ -405,11 +402,14 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         {
             case MENU_ID_ADD_DEVICE:
                 startActivityForResult(new Intent(this, DeviceEspTouchActivity.class), REQUEST_ESPTOUCH);
-                break;
+                return;
             case MENU_ID_SCENE:
                 startActivity(new Intent(this, EspSceneActivity.class));
-                break;
+                return;
             case MENU_ID_EDIT:
+                if (mRefreshing) {
+                    return;
+                }
                 boolean bottomBarEnable = mEditBar.getVisibility() == View.VISIBLE;
                 setEditBarEnable(!bottomBarEnable);
                 break;
@@ -1057,7 +1057,7 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
                 @Override
                 protected Boolean doInBackground(Void... params)
                 {
-                    boolean isSuc = mUser.addDeviceSyn((IEspDeviceSSS)mItemDevice);
+                    boolean isSuc = mUser.addDeviceSyn(mItemDevice);
                     mUser.doActionRefreshStaDevices(true);
                     return isSuc;
                 }

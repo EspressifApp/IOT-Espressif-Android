@@ -2,6 +2,8 @@ package com.espressif.iot.esppush;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.espressif.iot.R;
 import com.espressif.iot.ui.main.WelcomeActivity;
 
@@ -24,6 +26,7 @@ import android.support.v4.app.NotificationCompat;
 
 public class EspPushService extends Service
 {
+    private static Logger log = Logger.getLogger(EspPushService.class);
     /**
      * 
      * @param context
@@ -70,7 +73,7 @@ public class EspPushService extends Service
     private EspPushClient mPushClient;
     
     private AlarmManager mAlarmManager;
-    private static final long HEART_BEAT_INTERVAL = 60000; // one minute
+    private static final long HEART_BEAT_INTERVAL = 50000; // 50 seconds
     private static final String ACTION_HEART_BEAT = "esppush_action_heart_beating";
     private PendingIntent mHeartBeatIntent;
     
@@ -120,6 +123,7 @@ public class EspPushService extends Service
     {
         super.onDestroy();
         
+        log.debug("EspPushService onDestroy()");
         mAlarmManager.cancel(mHeartBeatIntent);
         unregisterReceiver(mReceiver);
         mPushClient.disconnect();
@@ -145,6 +149,7 @@ public class EspPushService extends Service
                 else
                 {
                     // if the network is unavailable, disconnect the client.
+                    log.debug("Network is unavailable");
                     mPushClient.disconnect();
                 }
             }
@@ -156,6 +161,11 @@ public class EspPushService extends Service
             }
             else if (action.equals(ACTION_HEART_BEAT))
             {
+                if (mPushClient.isTimeout()) {
+                    log.debug("long connection timeout");
+                    mPushClient.disconnect();
+                }
+
                 // Alarm heart beating
                 if (mPushClient.isConnteted())
                 {

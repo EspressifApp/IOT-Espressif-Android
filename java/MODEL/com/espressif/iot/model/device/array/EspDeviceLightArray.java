@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.array.IEspDeviceArray;
-import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.model.device.EspDeviceLight;
 
 public class EspDeviceLightArray extends EspDeviceLight implements IEspDeviceArray
@@ -23,10 +21,6 @@ public class EspDeviceLightArray extends EspDeviceLight implements IEspDeviceArr
     @Override
     public synchronized void addDevice(IEspDevice device)
     {
-        if (device instanceof IEspDeviceSSS)
-        {
-            device = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
-        }
         mDeviceSet.add(device);
     }
 

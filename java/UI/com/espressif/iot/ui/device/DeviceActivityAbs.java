@@ -8,14 +8,13 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.array.IEspDeviceArray;
-import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.ui.configure.EspButtonConfigureActivity;
+import com.espressif.iot.ui.device.soundbox.DeviceSoundboxActivity;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
 import com.espressif.iot.ui.device.trigger.DeviceTriggerActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
@@ -47,35 +46,37 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.PopupMenu;
+import android.widget.PopupMenu.OnMenuItemClickListener;
 
-public abstract class DeviceActivityAbs extends EspActivityAbs {
+public abstract class DeviceActivityAbs extends EspActivityAbs implements OnMenuItemClickListener {
     private static final Logger log = Logger.getLogger(DeviceActivityAbs.class);
-    
+
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
     protected static final int MENU_ID_UPGRADE_LOCAL = 0x1002;
     protected static final int MENU_ID_UPGRADE_ONLINE = 0x1003;
     protected static final int MENU_ID_ESPBUTTON_CONFIGURE = 0x1004;
     protected static final int MENU_ID_TRIGGER = 0x1005;
-    
+
     protected IEspDevice mIEspDevice;
-    
+
     protected IEspUser mUser;
-    
+
     private boolean mDeviceCompatibility;
-    
+
     protected static final int COMMAND_GET = 0;
     protected static final int COMMAND_POST = 1;
-    
+
     protected EspViewPager mPager;
     private List<View> mViewList;
     private View mControlView;
     private View mMeshView;
     private TreeView mTreeView;
     private ImageView mSwapView;
-    
+
     private boolean mShowChildren;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -91,11 +92,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
         } else {
             device = mUser.getUserDevice(deviceKey);
         }
-        if (device instanceof IEspDeviceSSS) {
-            mIEspDevice = BEspDevice.convertSSSToTypeDevice((IEspDeviceSSS)device);
-        } else {
-            mIEspDevice = device;
-        }
+        mIEspDevice = device;
         
         SharedPreferences shared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShowChildren = mIEspDevice.getIsMeshDevice()
@@ -205,6 +202,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
                 case ROOT:
                 case NEW:
                 case PLUGS:
+                case SOUNDBOX:
                     break;
             }
             
@@ -241,9 +239,117 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
     @Override
     protected void onTitleRightIconClick(View rightIcon)
     {
-        openOptionsMenu();
+        PopupMenu popupMenu = new PopupMenu(this, rightIcon);
+        Menu menu = popupMenu.getMenu();
+        createMenuItem(menu);
+        onCreateTitleMenuItem(menu);
+        popupMenu.setOnMenuItemClickListener(this);
+        popupMenu.show();
     }
-    
+
+    private void createMenuItem(Menu menu) {
+        // Share device menu
+        if (mIEspDevice.getIsOwner()) {
+            menu.add(Menu.NONE, MENU_ID_SHARE_DEVICE, 0, R.string.esp_device_menu_share)
+                .setIcon(R.drawable.esp_menu_icon_share);
+        }
+
+        // Timer menu
+        if (mIEspDevice.isSupportTimer()) {
+            menu.add(Menu.NONE, MENU_ID_DEVICE_TIMERS, 0, R.string.esp_device_menu_timer);
+        }
+
+        // Trigger menu
+        if (mIEspDevice.isSupportTrigger()) {
+            menu.add(Menu.NONE, MENU_ID_TRIGGER, 0, R.string.esp_device_menu_trigger);
+        }
+
+        // Upgrade menu
+        boolean upgradeLocalEnable = true;
+        boolean upgradeOnlineEnable = true;
+        switch (mUser.getDeviceUpgradeTypeResult(mIEspDevice)) {
+            case SUPPORT_ONLINE_LOCAL:
+                break;
+            case SUPPORT_LOCAL_ONLY:
+                upgradeOnlineEnable = false;
+                break;
+            case SUPPORT_ONLINE_ONLY:
+                upgradeLocalEnable = false;
+                break;
+            case CURRENT_ROM_INVALID:
+            case CURRENT_ROM_IS_NEWEST:
+            case DEVICE_TYPE_INCONSISTENT:
+            case LATEST_ROM_INVALID:
+            case NOT_SUPPORT_UPGRADE:
+                upgradeLocalEnable = false;
+                upgradeOnlineEnable = false;
+                break;
+        }
+        if (!mIEspDevice.getDeviceState().isStateLocal()) {
+            upgradeLocalEnable = false;
+        }
+        if (!mIEspDevice.getDeviceState().isStateInternet()) {
+            upgradeOnlineEnable = false;
+        }
+        if (mIEspDevice.getDeviceState().isStateUpgradingLocal()
+            || mIEspDevice.getDeviceState().isStateUpgradingInternet()) {
+            upgradeLocalEnable = false;
+            upgradeOnlineEnable = false;
+        }
+        menu.add(Menu.NONE, MENU_ID_UPGRADE_LOCAL, 0, R.string.esp_device_menu_upgrade_local)
+            .setEnabled(upgradeLocalEnable);
+        menu.add(Menu.NONE, MENU_ID_UPGRADE_ONLINE, 0, R.string.esp_device_menu_upgrade_online)
+            .setEnabled(upgradeOnlineEnable);
+
+        // EspButton menu
+        if (mIEspDevice.getIsMeshDevice() && mIEspDevice.getDeviceState().isStateLocal()) {
+            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
+        }
+    }
+
+    /**
+     * Add menu item in title right icon PopupMenu
+     * 
+     * @param menu
+     */
+    protected void onCreateTitleMenuItem(Menu menu) {
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case MENU_ID_SHARE_DEVICE:
+                new GenerateShareKeyTask(this).execute(mIEspDevice.getKey());
+                return true;
+            case MENU_ID_DEVICE_TIMERS:
+                Intent timerIntent = new Intent(this, DeviceTimersActivity.class);
+                timerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
+                startActivity(timerIntent);
+                return true;
+            case MENU_ID_UPGRADE_LOCAL:
+                mUser.doActionUpgradeLocal(mIEspDevice);
+                finish();
+                return true;
+            case MENU_ID_UPGRADE_ONLINE:
+                mUser.doActionUpgradeInternet(mIEspDevice);
+                finish();
+                return true;
+            case MENU_ID_ESPBUTTON_CONFIGURE:
+                Intent configureIntent = new Intent(this, EspButtonConfigureActivity.class);
+                String[] deviceKeys = new String[] {mIEspDevice.getKey()};
+                configureIntent.putExtra(EspStrings.Key.KEY_ESPBUTTON_DEVICE_KEYS, deviceKeys);
+                startActivity(configureIntent);
+                return true;
+            case MENU_ID_TRIGGER:
+                Intent triggerIntent = new Intent(this, DeviceTriggerActivity.class);
+                triggerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
+                startActivity(triggerIntent);
+                return true;
+        }
+
+        return false;
+    }
+
     /**
      * The device is compatibility or not
      */
@@ -371,121 +477,6 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
             }
         }
         builder.show();
-    }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        if (isDeviceArray())
-        {
-            return super.onCreateOptionsMenu(menu);
-        }
-        
-        if (mIEspDevice.getIsOwner())
-        {
-            menu.add(Menu.NONE, MENU_ID_SHARE_DEVICE, 0, R.string.esp_device_menu_share)
-                .setIcon(R.drawable.esp_menu_icon_share);
-        }
-        
-        if (mIEspDevice.isSupportTimer())
-        {
-            menu.add(Menu.NONE, MENU_ID_DEVICE_TIMERS, 0, R.string.esp_device_menu_timer);
-        }
-        
-        menu.add(Menu.NONE, MENU_ID_UPGRADE_LOCAL, 0, R.string.esp_device_menu_upgrade_local);
-        menu.add(Menu.NONE, MENU_ID_UPGRADE_ONLINE, 0, R.string.esp_device_menu_upgrade_online);
-        
-        if (mIEspDevice.getIsMeshDevice() && mIEspDevice.getDeviceState().isStateLocal())
-        {
-            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
-        }
-        
-        menu.add(Menu.NONE, MENU_ID_TRIGGER, 10, R.string.esp_device_menu_trigger);
-        
-        return super.onCreateOptionsMenu(menu);
-    }
-    
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu)
-    {
-        if (isDeviceArray())
-        {
-            return super.onPrepareOptionsMenu(menu);
-        }
-        
-        log.debug("onPrepareOptionsMenu mIEspDevice state = " + mIEspDevice.getDeviceState());
-        switch (mUser.getDeviceUpgradeTypeResult(mIEspDevice))
-        {
-            case SUPPORT_ONLINE_LOCAL:
-                break;
-            case SUPPORT_LOCAL_ONLY:
-                menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
-                break;
-            case SUPPORT_ONLINE_ONLY:
-                menu.findItem(MENU_ID_UPGRADE_LOCAL).setEnabled(false);
-                break;
-            case CURRENT_ROM_INVALID:
-            case CURRENT_ROM_IS_NEWEST:
-            case DEVICE_TYPE_INCONSISTENT:
-            case LATEST_ROM_INVALID:
-            case NOT_SUPPORT_UPGRADE:
-                menu.findItem(MENU_ID_UPGRADE_LOCAL).setEnabled(false);
-                menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
-                break;
-        }
-        
-        if (!mIEspDevice.getDeviceState().isStateLocal())
-        {
-            menu.findItem(MENU_ID_UPGRADE_LOCAL).setEnabled(false);
-        }
-        if (!mIEspDevice.getDeviceState().isStateInternet())
-        {
-            menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
-        }
-        if (mIEspDevice.getDeviceState().isStateUpgradingLocal()
-            || mIEspDevice.getDeviceState().isStateUpgradingInternet())
-        {
-            menu.findItem(MENU_ID_UPGRADE_LOCAL).setEnabled(false);
-            menu.findItem(MENU_ID_UPGRADE_ONLINE).setEnabled(false);
-        }
-        
-        return super.onPrepareOptionsMenu(menu);
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case MENU_ID_SHARE_DEVICE:
-                new GenerateShareKeyTask(this).execute(mIEspDevice.getKey());
-                return true;
-            case MENU_ID_DEVICE_TIMERS:
-                Intent timerIntent = new Intent(this, DeviceTimersActivity.class);
-                timerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
-                startActivity(timerIntent);
-                return true;
-            case MENU_ID_UPGRADE_LOCAL:
-                mUser.doActionUpgradeLocal(mIEspDevice);
-                finish();
-                return true;
-            case MENU_ID_UPGRADE_ONLINE:
-                mUser.doActionUpgradeInternet(mIEspDevice);
-                finish();
-                return true;
-            case MENU_ID_ESPBUTTON_CONFIGURE:
-                Intent configureIntent = new Intent(this, EspButtonConfigureActivity.class);
-                String[] deviceKeys = new String[] {mIEspDevice.getKey()};
-                configureIntent.putExtra(EspStrings.Key.KEY_ESPBUTTON_DEVICE_KEYS, deviceKeys);
-                startActivity(configureIntent);
-                return true;
-            case MENU_ID_TRIGGER:
-                Intent triggerIntent = new Intent(this, DeviceTriggerActivity.class);
-                triggerIntent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, mIEspDevice.getKey());
-                startActivity(triggerIntent);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
     
     private void showQRCodeDialog(String shareKey)
@@ -753,6 +744,11 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
                     _class = DevicePlugsActivity.class;
                 }
                 break;
+            case SOUNDBOX:
+                if (state.isStateInternet() || state.isStateLocal()) {
+                    _class = DeviceSoundboxActivity.class;
+                }
+                break;
             case ROOT:
                 if (state.isStateInternet() || state.isStateLocal())
                 {
@@ -776,7 +772,7 @@ public abstract class DeviceActivityAbs extends EspActivityAbs {
     {
         return mIEspDevice instanceof IEspDeviceArray;
     }
-    
+
     private static IEspDevice sTempDevice;
 
     /**

@@ -19,7 +19,6 @@ import com.espressif.iot.device.IEspDevicePlug;
 import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.device.IEspDeviceRemote;
 import com.espressif.iot.device.IEspDeviceRoot;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.status.IEspStatusLight;
@@ -75,15 +74,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         result = lightCommand.doCommandLightPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
         if (result)
         {
-            IEspStatusLight lightStatus;
-            if (device instanceof IEspDeviceSSS)
-            {
-                lightStatus = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
-            }
-            else
-            {
-                lightStatus = ((IEspDeviceLight)device).getStatusLight();
-            }
+            IEspStatusLight lightStatus = ((IEspDeviceLight)device).getStatusLight();
             lightStatus.setPeriod(status.getPeriod());
             lightStatus.setRed(status.getRed());
             lightStatus.setGreen(status.getGreen());
@@ -106,15 +97,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         result = plugCommand.doCommandPlugPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
         if (result)
         {
-            IEspStatusPlug plugStatus;
-            if (device instanceof IEspDeviceSSS)
-            {
-                plugStatus = (IEspStatusPlug)((IEspDeviceSSS)device).getDeviceStatus();
-            }
-            else
-            {
-                plugStatus = ((IEspDevicePlug)device).getStatusPlug();
-            }
+            IEspStatusPlug plugStatus = ((IEspDevicePlug)device).getStatusPlug();
             plugStatus.setIsOn(status.isOn());
         }
         
@@ -132,15 +115,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         result = remoteCommand.doCommandRemotePostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
         if (result)
         {
-            IEspStatusRemote remoteStatus;
-            if (device instanceof IEspDeviceSSS)
-            {
-                remoteStatus = (IEspStatusRemote)((IEspDeviceSSS)device).getDeviceStatus();
-            }
-            else
-            {
-                remoteStatus = ((IEspDeviceRemote)device).getStatusRemote();
-            }
+            IEspStatusRemote remoteStatus = ((IEspDeviceRemote)device).getStatusRemote();
             remoteStatus.setAddress(remoteStatus.getAddress());
             remoteStatus.setCommand(remoteStatus.getCommand());
             remoteStatus.setRepeat(remoteStatus.getRepeat());
@@ -158,23 +133,10 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         
         IEspCommandPlugsPostStatusLocal plugsCommand = new EspCommandPlugsPostStatusLocal();
         result = plugsCommand.doCommandPlugsPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
-        if (result)
-        {
-            if (device instanceof IEspDevicePlugs)
-            {
-                IEspDevicePlugs devicePlugs = (IEspDevicePlugs)device;
-                for (IAperture postAperture : status.getStatusApertureList())
-                {
-                    devicePlugs.updateApertureOnOff(postAperture);
-                }
-            }
-            else if (device instanceof IEspDeviceSSS)
-            {
-                IEspStatusPlugs plugsStatus = (IEspStatusPlugs)((IEspDeviceSSS)device).getDeviceStatus();
-                for (IAperture postAperture : status.getStatusApertureList())
-                {
-                    plugsStatus.updateApertureOnOff(postAperture);
-                }
+        if (result) {
+            IEspDevicePlugs devicePlugs = (IEspDevicePlugs)device;
+            for (IAperture postAperture : status.getStatusApertureList()) {
+                devicePlugs.updateApertureOnOff(postAperture);
             }
         }
         

@@ -303,6 +303,11 @@ public class EspDevice implements IEspDevice, Cloneable
     }
     
     @Override
+    public boolean isSupportTrigger() {
+        return false;
+    }
+    
+    @Override
     public void saveInDB()
     {
         IOTDeviceDBManager iotDeviceDBManager = IOTDeviceDBManager.getInstance();

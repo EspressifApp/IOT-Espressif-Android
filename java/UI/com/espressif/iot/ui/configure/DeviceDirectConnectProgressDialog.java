@@ -8,8 +8,8 @@ import android.widget.Toast;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.BSSIDUtil;
@@ -68,7 +68,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
     
     private class ConnectTask extends AsyncTask<Void, Void, Integer>
     {
-        private IEspDeviceSSS mDeviceSSS;
+        private IEspDevice mDeviceSSS;
         
         @Override
         protected Integer doInBackground(Void... params)
@@ -128,7 +128,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
             }
         }
         
-        private IEspDeviceSSS getStaDevice(String bssid)
+        private IEspDevice getStaDevice(String bssid)
         {
             for (int i = 0; i < 5; i++)
             {
@@ -136,7 +136,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
                 if (ia != null)
                 {
                     ia.setSSID(BSSIDUtil.genDeviceNameByBSSID(bssid));
-                    return BEspDevice.createSSSDevice(ia);
+                    return BEspDevice.getInstance().createStaDevice(ia);
                 }
             }
             

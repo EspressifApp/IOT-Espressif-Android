@@ -21,6 +21,7 @@ public class EspActionDeviceSleepRebootLocal implements IEspActionDeviceSleepReb
             case PLUG:
             case REMOTE:
             case PLUGS:
+            case SOUNDBOX:
                 command.doCommandDeviceRebootLocal();
                 break;
             case NEW:

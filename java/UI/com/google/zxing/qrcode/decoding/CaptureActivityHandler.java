@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 import org.apache.log4j.Level;
@@ -50,7 +51,7 @@ public final class CaptureActivityHandler extends Handler
         log.setLevel(Level.OFF);
     }
     
-    private final ShareCaptureActivity activity;
+    private final WeakReference<ShareCaptureActivity> mActivity;
     
     private final DecodeThread decodeThread;
     
@@ -64,7 +65,7 @@ public final class CaptureActivityHandler extends Handler
     public CaptureActivityHandler(ShareCaptureActivity activity, Vector<BarcodeFormat> decodeFormats,
         String characterSet)
     {
-        this.activity = activity;
+        mActivity = new WeakReference<ShareCaptureActivity>(activity);
         decodeThread =
             new DecodeThread(activity, decodeFormats, characterSet, new ViewfinderResultPointCallback(
                 activity.getViewfinderView()));
@@ -73,12 +74,17 @@ public final class CaptureActivityHandler extends Handler
         
         // Start ourselves capturing previews and decoding.
         CameraManager.get().startPreview();
-        restartPreviewAndDecode();
+        restartPreviewAndDecode(activity);
     }
     
     @Override
     public void handleMessage(Message message)
     {
+        ShareCaptureActivity activity = mActivity.get();
+        if (activity == null) {
+            return;
+        }
+
         switch (message.what)
         {
             case HandlerMsg.MSG_AUTO_FOCUS:
@@ -94,7 +100,7 @@ public final class CaptureActivityHandler extends Handler
                 break;
             case HandlerMsg.MSG_RESTART_PREVIEW:
                 log.debug("Got restart preview message");
-                restartPreviewAndDecode();
+                restartPreviewAndDecode(activity);
                 break;
             case HandlerMsg.MSG_DECODE_SUCCEEDED:
                 log.debug("Got decode succeeded message");
@@ -144,7 +150,7 @@ public final class CaptureActivityHandler extends Handler
         removeMessages(HandlerMsg.MSG_DECODE_FAILED);
     }
     
-    private void restartPreviewAndDecode()
+    private void restartPreviewAndDecode(ShareCaptureActivity activity)
     {
         if (state == State.SUCCESS)
         {

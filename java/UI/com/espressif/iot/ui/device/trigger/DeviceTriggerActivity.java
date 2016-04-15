@@ -24,6 +24,7 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,15 +33,15 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClickListener, OnItemLongClickListener {
     private final Logger log = Logger.getLogger(getClass());
-
-    private static final int TRIGGER_NUM = 4;
 
     public static final String[] COMPARE_TYPE_ARRAY = new String[] {"=", "!=", ">", ">=", "<", "<="};
 
@@ -63,6 +64,7 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
         setContentView(R.layout.device_trigger_activity);
 
         setTitle(R.string.esp_device_trigger);
+        setTitleRightIcon(R.drawable.esp_menu_icon_add);
 
         Intent intent = getIntent();
         String deviceKey = intent.getStringExtra(EspStrings.Key.DEVICE_KEY_KEY);
@@ -108,35 +110,13 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
         return true;
     }
 
-    /**
-     * Check the triggers list from server, find dimension[x, y, z, k], if not found, create it
-     * 
-     * @param triggers
-     */
-    private void onGetTriggers(List<EspDeviceTrigger> triggers) {
-        mTriggerList.addAll(triggers);
-        mTriggerAdapter.notifyDataSetChanged();
-
-        List<Integer> addTriggerDimensions = new ArrayList<Integer>();
-        for (int i = 0; i < TRIGGER_NUM; i++) {
-            boolean exist = false;
-
-            for (EspDeviceTrigger trigger : triggers) {
-                if (i == trigger.getDimension()) {
-                    exist = true;
-                    break;
-                }
-            }
-
-            if (!exist) {
-                log.debug("onGetTriggers need create dimension " + i);
-                addTriggerDimensions.add(i);
-            }
-        }
-
-        if (!addTriggerDimensions.isEmpty()) {
-            new CreateTriggerTask(this, addTriggerDimensions).execute();
-        }
+    @Override
+    protected void onTitleRightIconClick(View rightIcon) {
+        View view = View.inflate(this, R.layout.device_trigger_add_dialog, null);
+        new AlertDialog.Builder(this).setTitle(R.string.esp_device_trigger_add)
+            .setView(view)
+            .setPositiveButton(android.R.string.ok, new AddTriggerListener(view))
+            .show();
     }
 
     private class MenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
@@ -156,6 +136,26 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
             return false;
         }
 
+    }
+
+    private class AddTriggerListener implements DialogInterface.OnClickListener {
+        private View mView;
+
+        public AddTriggerListener(View contentView) {
+            mView = contentView;
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            Activity activity = DeviceTriggerActivity.this;
+            String name = ((EditText)mView.findViewById(R.id.trigger_name_edit)).getText().toString();
+            if (TextUtils.isEmpty(name)) {
+                Toast.makeText(activity, R.string.esp_device_trigger_name_hint, Toast.LENGTH_SHORT).show();
+            }
+            int dimension = ((Spinner)mView.findViewById(R.id.trigger_dimension_spinner)).getSelectedItemPosition();
+
+            new CreateTriggerTask(activity, name, dimension).execute();
+        }
     }
 
     private class TriggerAdapter extends BaseAdapter {
@@ -248,74 +248,51 @@ public class DeviceTriggerActivity extends EspActivityAbs implements OnItemClick
                 Toast.makeText(mContext, R.string.esp_device_trigger_get_failed, Toast.LENGTH_LONG).show();
             } else {
                 log.info("GetTriggerTask result size = " + result.size());
-                onGetTriggers(result);
+                mTriggerList.addAll(result);
+                mTriggerAdapter.notifyDataSetChanged();
             }
         }
     }
 
-    private class CreateTriggerTask extends ProgressDialogTask<Void, Void, List<EspDeviceTrigger>> {
-        private List<Integer> mDimensionList;
+    private class CreateTriggerTask extends ProgressDialogTask<Void, Void,  EspDeviceTrigger> {
+        private String mName;
+        private int mDimension;
 
-        public CreateTriggerTask(Activity activity, List<Integer> dimensions) {
+        public CreateTriggerTask(Activity activity, String name, int dimension) {
             super(activity);
 
-            mDimensionList = dimensions;
+            mName = name;
+            mDimension = dimension;
         }
 
         @Override
-        protected List<EspDeviceTrigger> doInBackground(Void... params) {
+        protected EspDeviceTrigger doInBackground(Void... params) {
             log.debug("execute CreateTriggerTask");
-            List<EspDeviceTrigger> result = new ArrayList<EspDeviceTrigger>();
-            for (int dimension : mDimensionList) {
-                EspDeviceTrigger trigger = new EspDeviceTrigger();
-                trigger.setDimension(dimension);
+            EspDeviceTrigger trigger = new EspDeviceTrigger();
+            trigger.setDimension(mDimension);
+            trigger.setName(mName);
+            trigger.setStreamType(EspDeviceTrigger.STREAM_ALARM);
+            trigger.setInterval(0);
+            trigger.setIntervalFunc(EspDeviceTrigger.INTERVAL_FUNC_AVG);
+            trigger.setCompareType(EspDeviceTrigger.COMPARE_TYPE_EQ);
+            trigger.setCompareValue(0);
 
-                String name = "";
-                switch (dimension) {
-                    case 0:
-                        name = "event x";
-                        break;
-                    case 1:
-                        name = "event y";
-                        break;
-                    case 2:
-                        name = "event z";
-                        break;
-                    case 3:
-                        name = "event k";
-                        break;
-                }
-                trigger.setName(name);
-
-                trigger.setStreamType(EspDeviceTrigger.STREAM_ALARM);
-                trigger.setInterval(0);
-                trigger.setIntervalFunc(EspDeviceTrigger.INTERVAL_FUNC_AVG);
-                trigger.setCompareType(EspDeviceTrigger.COMPARE_TYPE_EQ);
-                trigger.setCompareValue(0);
-
-                long id = mUser.doActionDeviceTriggerCreate(mDevice, trigger);
-                log.info("create dimension " + dimension + " result id = " + id);
-                if (id > 0) {
-                    trigger.setId(id);
-                    result.add(trigger);
-                }
+            long id = mUser.doActionDeviceTriggerCreate(mDevice, trigger);
+            log.info("create dimension " + mDimension + " result id = " + id);
+            if (id > 0) {
+                trigger.setId(id);
+                return trigger;
+            } else {
+                return null;
             }
-
-            if (result.size() > 0) {
-                result.addAll(mTriggerList);
-                Collections.sort(result, mTriggerComparator);
-            }
-
-            return result;
         }
 
         @Override
-        protected void onPostExecute(List<EspDeviceTrigger> result) {
+        protected void onPostExecute(EspDeviceTrigger result) {
             super.onPostExecute(result);
 
-            if (result.size() > 0) {
-                mTriggerList.clear();
-                mTriggerList.addAll(result);
+            if (result != null) {
+                mTriggerList.add(result);
                 mTriggerAdapter.notifyDataSetChanged();
             }
         }

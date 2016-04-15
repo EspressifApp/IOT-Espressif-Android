@@ -33,6 +33,8 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
     
     private static final long ONLINE_TIMEOUT_VOLTAGE = 60 * TimeUtil.ONE_SECOND_LONG_VALUE;
     
+    private static final long ONLINE_TIMEOUT_SOUNDBOX = TimeUtil.ONE_MINUTE_LONG_VALUE;
+    
     private boolean isDeviceOnline(EspDeviceType deviceType, long last_active, long currentTime)
     {
         long timeout = 0;
@@ -58,6 +60,9 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                 break;
             case PLUGS:
                 timeout = ONLINE_TIMEOUT_PLUGS;
+                break;
+            case SOUNDBOX:
+                timeout = ONLINE_TIMEOUT_SOUNDBOX;
                 break;
             case NEW:
                 break;

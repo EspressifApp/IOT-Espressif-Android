@@ -18,7 +18,6 @@ import com.espressif.iot.device.IEspDeviceLight;
 import com.espressif.iot.device.IEspDevicePlug;
 import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.device.IEspDeviceRemote;
-import com.espressif.iot.device.IEspDeviceSSS;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.status.IEspStatusEspnow;
 import com.espressif.iot.type.device.status.IEspStatusLight;
@@ -64,15 +63,7 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         boolean isMeshDevice = device.getIsMeshDevice();
         boolean result = false;
         
-        IEspStatusLight status;
-        if (device instanceof IEspDeviceSSS)
-        {
-            status = (IEspStatusLight)((IEspDeviceSSS)device).getDeviceStatus();
-        }
-        else
-        {
-            status = ((IEspDeviceLight)device).getStatusLight();
-        }
+        IEspStatusLight status = ((IEspDeviceLight)device).getStatusLight();
         
         // Get rgb period white value
         IEspCommandLightGetStatusLocal lightCommand = new EspCommandLightGetStatusLocal();
@@ -120,15 +111,7 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         if (plugStatus != null)
         {
             result = true;
-            IEspStatusPlug status;
-            if (device instanceof IEspDeviceSSS)
-            {
-                status = (IEspStatusPlug)((IEspDeviceSSS)device).getDeviceStatus();
-            }
-            else
-            {
-                status = ((IEspDevicePlug)device).getStatusPlug();
-            }
+            IEspStatusPlug status = ((IEspDevicePlug)device).getStatusPlug();
             status.setIsOn(plugStatus.isOn());
         }
         
@@ -148,15 +131,7 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         if (remoteStatus != null)
         {
             result = true;
-            IEspStatusRemote status;
-            if (device instanceof IEspDeviceSSS)
-            {
-                status = (IEspStatusRemote)((IEspDeviceSSS)device).getDeviceStatus();
-            }
-            else
-            {
-                status = ((IEspDeviceRemote)device).getStatusRemote();
-            }
+            IEspStatusRemote status =((IEspDeviceRemote)device).getStatusRemote();
             status.setAddress(remoteStatus.getAddress());
             status.setCommand(remoteStatus.getCommand());
             status.setRepeat(remoteStatus.getRepeat());
@@ -178,16 +153,8 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         if (plugsStatus != null)
         {
             result = true;
-            if (device instanceof IEspDevicePlugs)
-            {
-                IEspDevicePlugs plugs = (IEspDevicePlugs)device;
-                plugs.setStatusPlugs(plugsStatus);
-            }
-            else if (device instanceof IEspDeviceSSS)
-            {
-                IEspStatusPlugs statusPlugs = (IEspStatusPlugs)((IEspDeviceSSS)device).getDeviceStatus();
-                statusPlugs.setStatusApertureList(plugsStatus.getStatusApertureList());
-            }
+            IEspDevicePlugs plugs = (IEspDevicePlugs)device;
+            plugs.setStatusPlugs(plugsStatus);
         }
         
         return result;

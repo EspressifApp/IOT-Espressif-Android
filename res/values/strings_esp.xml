@@ -187,7 +187,11 @@
     <string name="esp_device_timer_delete_result_failed">Delete failed</string>
 
     <string name="esp_device_trigger">Trigger</string>
+    <string name="esp_device_trigger_add">New trigger</string>
     <string name="esp_device_trigger_delete">Delete</string>
+    <string name="esp_device_trigger_name">Name</string>
+    <string name="esp_device_trigger_name_hint">Please input name</string>
+    <string name="esp_device_trigger_dimension">Dimension</string>
     <string name="esp_device_trigger_get_failed">Get trigger failed, please check your network</string>
     <string name="esp_device_trigger_settings_add_notification">Add notification</string>
     <string name="esp_device_trigger_settings_delete_notification">Delete</string>
@@ -321,6 +325,9 @@
     <string name="esp_espbutton_custom_timer_hint">0 ~ 3600 seconds</string>
     <string name="esp_espbutton_custom_turnonoff">Set switch</string>
     <string name="esp_espbutton_custom_turnonoff_reversing">Reversing</string>
+
+    <string name="esp_soundbox_xima_hot_title">Hot</string>
+    <string name="esp_soundbox_xima_search_title">Search</string>
 </resources>
 <!-- 
 &#8230;   =   ...

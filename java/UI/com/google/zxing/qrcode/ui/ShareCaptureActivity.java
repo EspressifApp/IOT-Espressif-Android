@@ -119,6 +119,10 @@ public class ShareCaptureActivity extends Activity implements Callback
     {
         inactivityTimer.shutdown();
         super.onDestroy();
+
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
     }
     
     private void initCamera(SurfaceHolder surfaceHolder)

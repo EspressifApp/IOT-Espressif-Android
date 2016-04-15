@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import java.lang.ref.WeakReference;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
@@ -40,7 +41,7 @@ final class DecodeHandler extends Handler
     
     private static final Logger log = Logger.getLogger(DecodeHandler.class);
     
-    private final ShareCaptureActivity activity;
+    private final WeakReference<ShareCaptureActivity> mActivity;
     
     private final MultiFormatReader multiFormatReader;
     
@@ -48,17 +49,22 @@ final class DecodeHandler extends Handler
     {
         multiFormatReader = new MultiFormatReader();
         multiFormatReader.setHints(hints);
-        this.activity = activity;
+        mActivity = new WeakReference<ShareCaptureActivity>(activity);
     }
     
     @Override
     public void handleMessage(Message message)
     {
+        ShareCaptureActivity activity = mActivity.get();
+        if (activity == null) {
+            return;
+        }
+
         switch (message.what)
         {
             case HandlerMsg.MSG_DECODE:
                 // Logger.d(TAG, "Got decode message");
-                decode((byte[])message.obj, message.arg1, message.arg2);
+                decode(activity, (byte[])message.obj, message.arg1, message.arg2);
                 break;
             case HandlerMsg.MSG_QUIT:
                 Looper.myLooper().quit();
@@ -74,7 +80,7 @@ final class DecodeHandler extends Handler
      * @param width The width of the preview frame.
      * @param height The height of the preview frame.
      */
-    private void decode(byte[] data, int width, int height)
+    private void decode(ShareCaptureActivity activity, byte[] data, int width, int height)
     {
         long start = System.currentTimeMillis();
         Result rawResult = null;
