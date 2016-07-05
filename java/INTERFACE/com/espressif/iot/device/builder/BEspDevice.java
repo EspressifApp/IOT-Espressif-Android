@@ -220,6 +220,7 @@ public class BEspDevice implements IBEspDevice
             device.setKey(iotAddress.getBSSID());
             device.setId(getNextId());
             device.setIsOwner(false);
+            device.setRom_version(iotAddress.getRomVersion());
         }
 
         return device;

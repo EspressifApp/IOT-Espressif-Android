@@ -31,9 +31,9 @@ import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.login.LoginActivity;
 import com.espressif.iot.ui.scene.EspSceneActivity;
 import com.espressif.iot.ui.settings.SettingsActivity;
-import com.espressif.iot.ui.view.DeviceAdapter;
-import com.espressif.iot.ui.view.DeviceAdapter.OnEditCheckedChangeListener;
 import com.espressif.iot.ui.view.menu.IEspBottomMenu;
+import com.espressif.iot.ui.widget.adapter.DeviceAdapter;
+import com.espressif.iot.ui.widget.adapter.DeviceAdapter.OnEditCheckedChangeListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspDefaults;
@@ -215,13 +215,13 @@ public class EspUIActivity extends EspActivityAbs implements OnRefreshListener<L
         mBraodcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter filter = new IntentFilter(EspStrings.Action.DEVICES_ARRIVE_PULLREFRESH);
         filter.addAction(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE);
-        filter.addAction(EspStrings.Action.LOGIN_NEW_ACCOUNT);
         mBraodcastManager.registerReceiver(mDeviceChangeReciever, filter);
         
         IntentFilter tempFilter = new IntentFilter(EspStrings.Action.UI_REFRESH_LOCAL_DEVICES);
         mBraodcastManager.registerReceiver(mTempDeviceReciever, tempFilter);
         
         IntentFilter loginFilter = new IntentFilter();
+        loginFilter.addAction(EspStrings.Action.LOGIN_NEW_ACCOUNT);
         mBraodcastManager.registerReceiver(mLoginReceiver, loginFilter);
         
         // Init title bar

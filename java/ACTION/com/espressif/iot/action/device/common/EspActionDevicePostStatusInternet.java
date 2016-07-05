@@ -63,15 +63,15 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
         boolean result = false;
         
         IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
-        result = lightCommand.doCommandLightPostStatusInternet(light.getKey(), status);
+        result = lightCommand.doCommandLightPostStatusInternet(light, status);
         if (result)
         {
+            light.getStatusLight().setStatus(status.getStatus());
             light.getStatusLight().setPeriod(status.getPeriod());
             light.getStatusLight().setRed(status.getRed());
             light.getStatusLight().setGreen(status.getGreen());
             light.getStatusLight().setBlue(status.getBlue());
-            light.getStatusLight().setCWhite(status.getCWhite());
-            light.getStatusLight().setWWhite(status.getWWhite());
+            light.getStatusLight().setWhite(status.getWhite());
         }
         
         return result;
@@ -156,7 +156,7 @@ public class EspActionDevicePostStatusInternet implements IEspActionDevicePostSt
             {
                 IEspStatusLight lightStatus = (IEspStatusLight)status;
                 IEspCommandLightPostStatusInternet lightCommand = new EspCommandLightPostStatusInternet();
-                lightCommand.doCommandLightPostStatusInternet(device.getKey(), lightStatus);
+                lightCommand.doCommandLightPostStatusInternet(device, lightStatus);
             }
             else if (status instanceof IEspStatusPlug)
             {

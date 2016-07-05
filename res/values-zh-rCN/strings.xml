@@ -9,5 +9,7 @@
     <string name="pull_to_refresh_from_bottom_pull_label">上拉刷新…</string>
     <string name="pull_to_refresh_from_bottom_release_label">放开以刷新…</string>
     <string name="pull_to_refresh_from_bottom_refreshing_label">正在刷新…</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 
 </resources>

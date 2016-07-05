@@ -5,10 +5,10 @@ import java.util.List;
 import android.content.Context;
 
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.type.device.esptouch.EsptouchTask;
-import com.espressif.iot.type.device.esptouch.IEsptouchListener;
-import com.espressif.iot.type.device.esptouch.IEsptouchResult;
-import com.espressif.iot.type.device.esptouch.IEsptouchTask;
+import com.espressif.iot.esptouch.EsptouchTask;
+import com.espressif.iot.esptouch.IEsptouchListener;
+import com.espressif.iot.esptouch.IEsptouchResult;
+import com.espressif.iot.esptouch.IEsptouchTask;
 
 public class EspCommandDeviceEsptouch implements IEspCommandDeviceEsptouch
 {

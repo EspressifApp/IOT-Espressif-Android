@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.espressif.iot.command.IEspCommandInternet;
 import com.espressif.iot.command.device.IEspCommandLight;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 
 public interface IEspCommandLightPostStatusInternet extends IEspCommandInternet, IEspCommandLight
@@ -13,11 +14,11 @@ public interface IEspCommandLightPostStatusInternet extends IEspCommandInternet,
     /**
      * post the statusLight to the Light by Internet
      * 
-     * @param deviceKey the device's key
+     * @param device the device
      * @param statusLight the status of Light
      * @return whether the command executed suc
      */
-    boolean doCommandLightPostStatusInternet(String deviceKey, IEspStatusLight statusLight);
+    boolean doCommandLightPostStatusInternet(IEspDevice device, IEspStatusLight statusLight);
     
     /**
      * post multicast by Internet

@@ -10,6 +10,8 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.espressif.iot.base.net.rest2.EspHttpUtil;
+import com.espressif.iot.type.device.other.DeviceResponseStatus;
 import com.espressif.iot.type.net.HeaderPair;
 
 public final class MeshCommunicationUtils
@@ -43,8 +45,6 @@ public final class MeshCommunicationUtils
     
     private static final String METHOD_POST = "POST";
     private static final String METHOD_GET = "GET";
-    private static final String RESPONSE = "response";
-    private static final int RESPONSE_ONLY_ROOT = 2;
     
     public static final int SERIAL_NORMAL_TASK = 0;
     private static volatile int SERIAL_LONG_TASK = 1;
@@ -94,17 +94,15 @@ public final class MeshCommunicationUtils
                 urlConn.addRequestProperty(header.getName(), header.getValue());
             }
             
-            // Add necessary json
-            if (!nonResponse && (bssid.equals(MULTICAST_MAC) || bssid.equals(BROADCAST_MAC)))
-            {
-                postJSON.put(RESPONSE, RESPONSE_ONLY_ROOT);
-            }
-            
             // Connect or post
             if (postJSON != null)
             {
+                // Add necessary json
+                if (!nonResponse && (bssid.equals(MULTICAST_MAC) || bssid.equals(BROADCAST_MAC))) {
+                    postJSON.put(DeviceResponseStatus.KEY_RESPONSE_STATUS, DeviceResponseStatus.RESPONSE_ROOT_ONLY);
+                }
                 MeshLog.i(DEBUG, USE_LOG4J, CLASS, "Post json = " + postJSON.toString());
-                byte[] bytes = postJSON.toString().replace("\\/", "/").getBytes();
+                byte[] bytes = EspHttpUtil.decoceJSON(postJSON).getBytes();
                 urlConn.setDoOutput(true);
                 // IllegalArgumentException: timeout < 0 when READ_TIMEOUT_INFINITE is Integer.MAX_VALUE
                 OutputStream os = urlConn.getOutputStream();

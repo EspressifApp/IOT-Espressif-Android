@@ -284,22 +284,28 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     }
                     device.setIsMeshDevice(parentBssid != null);
                     
+                    espGroup.addDevice(device);
                     if (!deviceList.contains(device))
                     {
                         deviceList.add(device);
-                        espGroup.addDevice(device);
                     }
-                    else
-                    {
-                        for (IEspDevice deviceInList : deviceList)
-                        {
-                            if (deviceInList.equals(device))
-                            {
-                                espGroup.addDevice(deviceInList);
-                                break;
-                            }
-                        }
-                    }
+                 
+//                    if (!deviceList.contains(device))
+//                    {
+//                        deviceList.add(device);
+//                        espGroup.addDevice(device);
+//                    }
+//                    else
+//                    {
+//                        for (IEspDevice deviceInList : deviceList)
+//                        {
+//                            if (deviceInList.equals(device))
+//                            {
+//                                espGroup.addDevice(deviceInList);
+//                                break;
+//                            }
+//                        }
+//                    }
                 }
             }
             catch (JSONException e)

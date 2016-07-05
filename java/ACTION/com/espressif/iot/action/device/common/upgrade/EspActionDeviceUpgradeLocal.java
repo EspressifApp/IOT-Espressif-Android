@@ -436,7 +436,7 @@ public class EspActionDeviceUpgradeLocal implements IEspActionDeviceUpgradeLocal
                 + "]): " + "__postUpgradeStart() fail");
             return false;
         }
-        suc = __pushUserBin(inetAddress, isUser1, userBin);
+        suc = __pushUserBin(inetAddress, !isUser1, userBin);
         if (!suc)
         {
             log.warn(Thread.currentThread().toString() + "##doUpgradeLocal(inetAddress=[" + inetAddress

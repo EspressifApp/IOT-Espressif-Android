@@ -1,6 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="esp_main_drawer_width">240dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="chart_title_margin">20dip</dimen>
@@ -13,18 +15,19 @@
     <dimen name="indicator_internal_padding">4dp</dimen>
     <dimen name="header_footer_left_right_padding">24dp</dimen>
     <dimen name="header_footer_top_bottom_padding">12dp</dimen>
-
     <dimen name="esp_bottom_bar_height">65dip</dimen>
     <dimen name="esp_bottom_item_padding">3dip</dimen>
     <dimen name="esp_bottom_item_width">68dip</dimen>
     <dimen name="esp_bottom_item_height">65dip</dimen>
     <dimen name="esp_activity_title_min_height">50dip</dimen>
-
     <dimen name="esp_activity_ui_progress_padding">5dip</dimen>
-
     <dimen name="esp_treeview_icon_base_padding">15dip</dimen>
     <dimen name="esp_treeview_icon_vertical_padding">10dip</dimen>
     <dimen name="esp_treeview_text_size">20sp</dimen>
-
     <dimen name="esp_light_frgb_edit_width">65dip</dimen>
+    <dimen name="esp_light_colors_views_width">90dip</dimen>
+    <dimen name="esp_light_colors_views_margin">15dip</dimen>
+    <dimen name="esp_light_arc_view_width">210dip</dimen>
+    <dimen name="esp_light_arc_view_padding">5dip</dimen>
+
 </resources>

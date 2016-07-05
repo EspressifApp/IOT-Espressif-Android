@@ -9,6 +9,7 @@ import com.espressif.iot.command.device.light.EspCommandLightPostStatusInternet;
 import com.espressif.iot.command.device.light.EspCommandLightPostStatusLocal;
 import com.espressif.iot.command.device.light.IEspCommandLightPostStatusInternet;
 import com.espressif.iot.command.device.light.IEspCommandLightPostStatusLocal;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.status.IEspStatusLight;
@@ -17,26 +18,20 @@ public class EspActionLongSocket implements IEspActionLongSocket
 {
     private static class EspLongSocketRequest
     {
-        private EspLongSocketRequest(final String deviceKey, final boolean isMeshDevice, final InetAddress inetAddress,
-            final String bssid, final IEspDeviceStatus status, final IEspDeviceState state,
-            final Runnable disconnectedCallback, long timestamp)
-        {
-            this.deviceKey = deviceKey;
-            this.isMeshDevice = isMeshDevice;
-            this.inetAddress = inetAddress;
-            this.bssid = bssid;
+        private EspLongSocketRequest(final IEspDevice device, final IEspDeviceStatus status,
+            final Runnable disconnectedCallback, long timestamp) {
+            this.device = device;
             this.status = status;
-            this.state = state;
+            this.state = device.getDeviceState();
             this.disconnectedCallback = disconnectedCallback;
             this.timestamp = timestamp;
         }
         
-        static EspLongSocketRequest createInstance(final String deviceKey, final boolean isMeshDevice,
-            final InetAddress inetAddress, final String bssid, final IEspDeviceStatus status, IEspDeviceState state,
+        static EspLongSocketRequest createInstance(final IEspDevice device, final IEspDeviceStatus status,
             Runnable disconnectedCallback, long timestamp)
         {
             EspLongSocketRequest instance =
-                new EspLongSocketRequest(deviceKey, isMeshDevice, inetAddress, bssid, status, state,
+                new EspLongSocketRequest(device, status,
                     disconnectedCallback, timestamp);
             return instance;
         }
@@ -52,17 +47,13 @@ public class EspActionLongSocket implements IEspActionLongSocket
                 if (state.isStateLocal())
                 {
                     IEspCommandLightPostStatusLocal command = new EspCommandLightPostStatusLocal();
-                    command.doCommandLightPostStatusLocalInstantly(inetAddress,
-                        statusLight,
-                        bssid,
-                        isMeshDevice,
-                        disconnectedCallback);
+                    command.doCommandLightPostStatusLocalInstantly(device, statusLight, disconnectedCallback);
                 }
                 // device is internet
                 else
                 {
                     IEspCommandLightPostStatusInternet command = new EspCommandLightPostStatusInternet();
-                    boolean isSuc = command.doCommandLightPostStatusInternet(deviceKey, statusLight);
+                    boolean isSuc = command.doCommandLightPostStatusInternet(device, statusLight);
                     if (!isSuc)
                     {
                         disconnectedCallback.run();
@@ -70,14 +61,7 @@ public class EspActionLongSocket implements IEspActionLongSocket
                 }
             }
         }
-        
-        final String deviceKey;
-        
-        final boolean isMeshDevice;
-        
-        final InetAddress inetAddress;
-        
-        final String bssid;
+        final IEspDevice device;
         
         final IEspDeviceStatus status;
         
@@ -198,9 +182,15 @@ public class EspActionLongSocket implements IEspActionLongSocket
         return true;
     }
     
-    private void addStatus(String deviceKey, boolean isMeshDevice, InetAddress inetAddress, String bssid,
-        IEspDeviceStatus status, IEspDeviceState state, final Runnable disconnectedCallback)
+    @Override
+    public void addStatus(IEspDevice device, IEspDeviceStatus status, final Runnable disconnectedCallback)
     {
+        String deviceKey = device.getKey();
+        String bssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        InetAddress inetAddress = device.getInetAddress();
+        IEspDeviceState state = device.getDeviceState();
+        
         // check whether parameters are valid
         boolean isValid = isValid(deviceKey, isMeshDevice, inetAddress, bssid, status, state, disconnectedCallback);
         if (!isValid)
@@ -228,35 +218,10 @@ public class EspActionLongSocket implements IEspActionLongSocket
                 }
             };
             EspLongSocketRequest request =
-                EspLongSocketRequest.createInstance(deviceKey,
-                    isMeshDevice,
-                    inetAddress,
-                    bssid,
-                    status,
-                    state,
-                    disconnectedCallback2,
-                    timestamp);
+                EspLongSocketRequest.createInstance(device, status, disconnectedCallback2, timestamp);
             mLastTask = request;
             mTaskDeque.addLast(request);
         }
-    }
-    
-    @Override
-    public void addStatus(String deviceKey, InetAddress inetAddress, IEspDeviceStatus status, IEspDeviceState state,
-        Runnable disconnectedCallback)
-    {
-        log.debug(Thread.currentThread().toString() + "##addStatus(deviceKey=[" + deviceKey + "],inetAddress=["
-            + inetAddress + "],status=[" + status + "],state=[" + state + "])");
-        addStatus(deviceKey, false, inetAddress, null, status, state, disconnectedCallback);
-    }
-    
-    @Override
-    public void addMeshStatus(String deviceKey, InetAddress inetAddress, String bssid, IEspDeviceStatus status,
-        IEspDeviceState state, Runnable disconnectedCallback)
-    {
-        log.debug(Thread.currentThread().toString() + "##addMeshStatus(deviceKey=[" + deviceKey + "],inetAddress=["
-            + inetAddress + "],bssid=[" + bssid + "],status=[" + status + "],state=[" + state + "])");
-        addStatus(deviceKey, false, inetAddress, bssid, status, state, disconnectedCallback);
     }
     
     @Override

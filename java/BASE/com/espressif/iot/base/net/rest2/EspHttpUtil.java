@@ -1,12 +1,15 @@
 package com.espressif.iot.base.net.rest2;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.util.Locale;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -26,6 +29,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.model.device.http.HttpRequest;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.util.EspStrings;
 
@@ -136,7 +140,7 @@ public class EspHttpUtil
         {
             try
             {
-                StringEntity se = new StringEntity(json.toString(), HTTP.UTF_8);
+                StringEntity se = new StringEntity(decoceJSON(json), HTTP.UTF_8);
                 request.setEntity(se);
             }
             catch (UnsupportedEncodingException e)
@@ -290,5 +294,80 @@ public class EspHttpUtil
         }
         
         return result;
+    }
+
+    /**
+     * Device can't decode slash in JSON like {"url":"http\/\/:iot.espressif.cn"}
+     * 
+     * @param json
+     * @return
+     */
+    public static String decoceJSON(JSONObject json) {
+        String jsonStr = json.toString();
+        jsonStr = jsonStr.replace("\\/", "/");
+
+        return jsonStr;
+    }
+
+    private static final String HEADER_END = "\r\n\r\n";
+    private static final String HEADER_SEPARATOR = "\r\n";
+    private static final String HEADER_CONTENT_SEPARATOR = ": ";
+
+    public static void readHttpRequest(Socket socket, HttpRequest request)
+        throws IOException, HttpException {
+        InputStream is = socket.getInputStream();
+
+        int i;
+        // Read headers
+        StringBuilder headerBuff = new StringBuilder();
+        while ((i = is.read()) != -1) {
+            headerBuff.append((char)i);
+            if (headerBuff.toString().endsWith(HEADER_END)) {
+                break;
+            }
+        }
+
+        if (i == -1) {
+            throw new IOException("read -1 when read headers");
+        }
+
+        // Set headers
+        try {
+            String[] headers = headerBuff.toString().split(HEADER_SEPARATOR);
+            String topHeader = headers[0];
+            String[] topParams = topHeader.split(" ");
+            String method = topParams[0];
+            String path = topParams[1];
+            String version = topParams[2];
+            request.setMethod(method);
+            request.setPath(path);
+            request.setHttpVersion(version);
+            for (int index = 1; index < headers.length; index++) {
+                String header = headers[index];
+                String[] params = header.split(HEADER_CONTENT_SEPARATOR);
+                String headerName = params[0];
+                String headerValue = params[1];
+                request.addHeader(headerName, headerValue);
+            }
+        } catch (Exception e) {
+            throw new HttpException(e.getMessage());
+        }
+
+        // Read content
+        final int contentLen = request.getContentLength();
+        if (contentLen > 0) {
+            StringBuilder contentBuff = new StringBuilder();
+            while ((i = is.read()) != -1) {
+                contentBuff.append((char)i);
+                if (contentBuff.length() >= contentLen) {
+                    request.setContent(contentBuff.toString());
+                    break;
+                }
+            }
+        }
+
+        if (i == -1) {
+            throw new IOException("read -1 when read contents");
+        }
     }
 }

@@ -6,7 +6,7 @@ public interface IEspDeviceCheckCompatibility extends IEspDeviceUpgrade
 {
     static final String OLDEST_IOT_DEMO_VERSION = "b1.1.0t45772(a)";
     
-    static final String NEWEST_IOT_DEMO_VERSION = "b1.1.4t45772(o)";
+    static final String NEWEST_IOT_DEMO_VERSION = "v1.3.9t45772(o)";
     
     /**
      * Lowest not mesh device version

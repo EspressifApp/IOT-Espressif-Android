@@ -80,4 +80,11 @@
     <declare-styleable name="EspPreference">
         <attr name="titleColor" format="reference|color" />
     </declare-styleable>
+
+    <declare-styleable name="HorizontalListView">
+        <attr name="dividerWidth" format="dimension" />
+        <attr name="android:divider" />
+        <attr name="android:requiresFadingEdge" />
+        <attr name="android:fadingEdgeLength" />
+    </declare-styleable>
 </resources>

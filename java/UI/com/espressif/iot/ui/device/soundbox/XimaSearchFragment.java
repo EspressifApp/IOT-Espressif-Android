@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.espressif.iot.R;
+import com.espressif.iot.type.device.other.EspAudio;
 import com.ximalaya.ting.android.opensdk.constants.DTransferConstants;
 import com.ximalaya.ting.android.opensdk.datatrasfer.CommonRequest;
 import com.ximalaya.ting.android.opensdk.datatrasfer.IDataCallBack;
@@ -23,7 +24,7 @@ import android.widget.ListView;
 
 public class XimaSearchFragment extends XimaBaseFragment {
     private ListView mListView;
-    private List<EspTrack> mTrackList;
+    private List<EspAudio> mTrackList;
     private TrackAdapter mTrackAdapter;
 
     private int mPageIndex = 1;
@@ -54,7 +55,7 @@ public class XimaSearchFragment extends XimaBaseFragment {
             }
         });
 
-        mTrackList = new ArrayList<EspTrack>();
+        mTrackList = new ArrayList<EspAudio>();
         mListView = (ListView)view.findViewById(R.id.list);
         mTrackAdapter = new TrackAdapter(getActivity(), mTrackList);
         mListView.setAdapter(mTrackAdapter);
@@ -74,8 +75,8 @@ public class XimaSearchFragment extends XimaBaseFragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                EspTrack track = mTrackList.get(position);
-                onTrackSelected(track);
+                EspAudio track = mTrackList.get(position);
+                onAduioSelected(track);
             }
         });
 
@@ -107,7 +108,7 @@ public class XimaSearchFragment extends XimaBaseFragment {
                 if (list != null && list.getTracks() != null && list.getTracks().size() != 0) {
                     mPageIndex++;
                     mTotalPage = list.getTotalPage();
-                    updateTrackList(mTrackList, list);
+                    updateTrackList(mTrackList, list.getTracks());
                 }
                 mTrackAdapter.notifyDataSetChanged();
                 if (newQuery) {

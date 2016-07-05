@@ -3,16 +3,16 @@ package com.espressif.iot.type.device.status;
 public class EspStatusLight implements IEspStatusLight, Cloneable
 {
     private int mCWhite;
-    
     private int mWWhite;
+    private int mWhite;
     
     private int mRed;
-    
     private int mGreen;
-    
     private int mBlue;
     
     private int mPeriod;
+    
+    private int mStatus;
     
     @Override
     public int getRed()
@@ -76,14 +76,13 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
         }
         IEspStatusLight other = (IEspStatusLight)o;
         return other.getPeriod() == this.mPeriod && other.getRed() == this.mRed && other.getGreen() == this.mGreen
-            && other.getBlue() == this.mBlue && other.getCWhite() == this.mCWhite && other.getWWhite() == this.mWWhite;
+            && other.getBlue() == this.mBlue && other.getWhite() == this.mWhite;
     }
     
     @Override
-    public String toString()
-    {
-        return "EspStatusLight: (mRed=[" + mRed + "],mGreen=[" + mGreen + "],mBlue=[" + mBlue + "],mPeriod=[" + mPeriod
-            + "])";
+    public String toString() {
+        return "EspStatusLight: (mRed=[" + mRed + "],mGreen=[" + mGreen + "],mBlue=[" + mBlue + "],mWhite=[" + mWhite
+            + "],mPeriod=[" + mPeriod + "])";
     }
     
     @Override
@@ -115,5 +114,27 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
     public void setWWhite(int white)
     {
         mWWhite = white;
+    }
+
+    @Override
+    public int getWhite() {
+        return mWhite;
+    }
+
+    @Override
+    public void setWhite(int white) {
+        mWhite = white;
+        mWWhite = white;
+        mCWhite = white;
+    }
+
+    @Override
+    public int getStatus() {
+        return mStatus;
+    }
+
+    @Override
+    public void setStatus(int status) {
+        mStatus = status;
     }
 }

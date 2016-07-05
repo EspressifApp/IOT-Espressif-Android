@@ -2,6 +2,7 @@ package com.espressif.iot.command.device.light;
 
 import com.espressif.iot.command.IEspCommandInternet;
 import com.espressif.iot.command.device.IEspCommandLight;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 
 public interface IEspCommandLightGetStatusInternet extends IEspCommandInternet, IEspCommandLight
@@ -11,8 +12,8 @@ public interface IEspCommandLightGetStatusInternet extends IEspCommandInternet, 
     /**
      * get the statusLight to the Light by Internet
      * 
-     * @param deviceKey the device key
+     * @param device
      * @return the status of the Light or null(if executed fail)
      */
-    IEspStatusLight doCommandLightGetStatusInternet(String deviceKey);
+    IEspStatusLight doCommandLightGetStatusInternet(IEspDevice device);
 }

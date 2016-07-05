@@ -105,6 +105,9 @@ import com.espressif.iot.device.builder.BEspDeviceNew;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine;
 import com.espressif.iot.device.statemachine.IEspDeviceStateMachine.Direction;
+import com.espressif.iot.esptouch.EsptouchResult;
+import com.espressif.iot.esptouch.IEsptouchListener;
+import com.espressif.iot.esptouch.IEsptouchResult;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
 import com.espressif.iot.model.device.cache.EspDeviceCacheHandler;
@@ -119,9 +122,6 @@ import com.espressif.iot.object.db.IGroupDB;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.IEspDeviceStatus;
-import com.espressif.iot.type.device.esptouch.EsptouchResult;
-import com.espressif.iot.type.device.esptouch.IEsptouchListener;
-import com.espressif.iot.type.device.esptouch.IEsptouchResult;
 import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
@@ -358,6 +358,25 @@ public class EspUser implements IEspUser
         }
         
         return null;
+    }
+    
+    @Override
+    public List<IEspDevice> getUserDevices(String[] deviceKeys) {
+        List<IEspDevice> result = new ArrayList<IEspDevice>();
+        List<IEspDevice> devices = getAllDeviceList();
+        for (IEspDevice device : devices) {
+            if (device.getDeviceState().isStateDeleted()) {
+                continue;
+            }
+
+            for (String key : deviceKeys) {
+                if (key.equals(device.getKey())) {
+                    result.add(device);
+                    break;
+                }
+            }
+        }
+        return result;
     }
     
     @Override
@@ -1287,7 +1306,48 @@ public class EspUser implements IEspUser
             return false;
         }
     }
-    
+
+    @Override
+    public List<IEspDevice> addDevicesSync(List<IEspDevice> devices) {
+        List<IEspDevice> result = new ArrayList<IEspDevice>();
+        List<IEspDevice> addSyncSucList = new ArrayList<IEspDevice>();
+
+        for (int i = devices.size() - 1; i >= 0; i--) {
+            IEspDevice device = devices.get(i);
+            boolean isAddDeviceAsynSuc = false;
+            if (device.getDeviceState().isStateLocal()) {
+                isAddDeviceAsynSuc = addDeviceAsyn(device);
+            }
+            if (isAddDeviceAsynSuc) {
+                addSyncSucList.add(device);
+            } else {
+                result.add(device);
+                devices.remove(i);
+            }
+        }
+
+        IEspDeviceStateMachineHandler handler = EspDeviceStateMachineHandler.getInstance();
+        while (addSyncSucList.size() > 0) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            for (int i = addSyncSucList.size() - 1; i >= 0; i--) {
+                IEspDevice syncDevice = addSyncSucList.get(i);
+                if (handler.isTaskFinished(syncDevice.getBssid())) {
+                    if (!handler.isTaskSuc(syncDevice.getBssid())) {
+                        result.add(syncDevice);
+                    }
+                    addSyncSucList.remove(i);
+                }
+            }
+        }
+        return result;
+    }
+
     private boolean __ping()
     {
         // send contacting server broadcast when start __ping()
@@ -1620,11 +1680,32 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public void doActionGroupDeviceMoveInto(List<IEspDevice> devices, IEspGroup group) {
+        // TODO Auto-generated method stub
+        IEspActionGroupDeviceDB action = new EspActionGroupDeviceDB();
+        for (IEspDevice device : devices) {
+            action.doActionMoveDeviceIntoGroupDB(mUserKey, device, group);
+        }
+
+        EspGroupHandler.getInstance().call();
+    }
+    
+    @Override
     public void doActionGroupDeviceRemove(IEspDevice device, IEspGroup group)
     {
         IEspActionGroupDeviceDB action = new EspActionGroupDeviceDB();
         action.doActionRemoveDevicefromGroupDB(mUserKey, device, group);
         
+        EspGroupHandler.getInstance().call();
+    }
+    
+    @Override
+    public void doActionGroupDeviceRemove(List<IEspDevice> devices, IEspGroup group) {
+        IEspActionGroupDeviceDB action = new EspActionGroupDeviceDB();
+        for (IEspDevice device : devices) {
+            action.doActionRemoveDevicefromGroupDB(mUserKey, device, group);
+        }
+
         EspGroupHandler.getInstance().call();
     }
     

@@ -9,7 +9,8 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.base.application.EspApplication;
 import com.espressif.iot.ui.login.LoginActivity;
-import com.espressif.iot.ui.view.EspPagerAdapter;
+import com.espressif.iot.ui.widget.adapter.EspPagerAdapter;
+import com.espressif.iot.ui.widget.view.EspViewPager;
 
 import android.app.Activity;
 import android.content.Context;
@@ -31,7 +32,7 @@ public class WelcomeActivity extends Activity
     
     private ImageView mMainIV;
     
-    private ViewPager mPager;
+    private EspViewPager mPager;
     private PagerAdapter mPagerAdapter;
     private List<View> mPagerViewList;
     
@@ -57,7 +58,8 @@ public class WelcomeActivity extends Activity
         mApplication = EspApplication.sharedInstance();
         
         mMainIV = (ImageView)findViewById(R.id.welcome_main_img);
-        mPager = (ViewPager)findViewById(R.id.welcome_pager);
+        mPager = (EspViewPager)findViewById(R.id.welcome_pager);
+        mPager.setInterceptTouchEvent(false);
         mPagerViewList = new ArrayList<View>();
         initPagerItem();
         mPagerAdapter = new EspPagerAdapter(mPagerViewList);
@@ -130,6 +132,7 @@ public class WelcomeActivity extends Activity
             public void onAnimationEnd(Animation animation) {
                 mMainIV.clearAnimation();
                 mMainIV.setVisibility(View.GONE);
+                mPager.setInterceptTouchEvent(true);
             }
         });
         
@@ -158,7 +161,7 @@ public class WelcomeActivity extends Activity
     private void login()
     {
         // Go to LoginActivity
-        Intent loginIntent = new Intent(this, LoginActivity.class);
+        Intent loginIntent = new Intent(this, EspMainActivity.class);
         startActivity(loginIntent);
         
         finish();

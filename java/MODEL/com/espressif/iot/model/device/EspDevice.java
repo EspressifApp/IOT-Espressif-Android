@@ -392,7 +392,7 @@ public class EspDevice implements IEspDevice, Cloneable
     public void copyDeviceRomVersion(IEspDevice deivce)
     {
         IEspDeviceUpgradeParser parser = EspDeviceUpgradeParser.getInstance();
-        IEspDeviceUpgradeInfo deviceUpgradeInfoCurrent = parser.parseUpgradeInfo(this.mRomVersion);
+//        IEspDeviceUpgradeInfo deviceUpgradeInfoCurrent = parser.parseUpgradeInfo(this.mRomVersion);
         IEspDeviceUpgradeInfo deviceUpgradeInfoNew = parser.parseUpgradeInfo(deivce.getRom_version());
         if (deviceUpgradeInfoNew == null)
         {
@@ -400,11 +400,11 @@ public class EspDevice implements IEspDevice, Cloneable
             return;
         }
         // only the higher version could be copied to low version
-        if (deviceUpgradeInfoCurrent == null
-            || deviceUpgradeInfoNew.getVersionValue() > deviceUpgradeInfoCurrent.getVersionValue())
-        {
-            this.mRomVersion = deivce.getRom_version();
-        }
+//        if (deviceUpgradeInfoCurrent == null
+//            || deviceUpgradeInfoNew.getVersionValue() > deviceUpgradeInfoCurrent.getVersionValue())
+//        {
+        this.mRomVersion = deivce.getRom_version();
+//        }
         this.mLatestRomVersion = deivce.getLatest_rom_version();
     }
     

@@ -11,7 +11,7 @@ import cn.sharesdk.framework.ShareSDK;
 import com.espressif.iot.R;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
-import com.espressif.iot.ui.view.NoBgDialog;
+import com.espressif.iot.ui.widget.dialog.NoBgDialog;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 

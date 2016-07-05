@@ -12,7 +12,7 @@
         android:padding="10dip"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <com.espressif.iot.ui.view.TreeView
+    <com.espressif.iot.ui.widget.view.TreeView
         android:id="@+id/mesh_children_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.espressif.iot.ui.widget.view.EspRefreshableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/refresh_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.espressif.iot.ui.device.light.DeviceLightActivity" >
+
+    <CheckBox
+        android:id="@+id/light_on_off"
+        android:layout_width="match_parent"
+        android:layout_height="100dip"
+        android:background="#0b0b0c"
+        android:button="@null"
+        android:clickable="false"
+        android:gravity="center"
+        android:text="@string/esp_device_light_on"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <include layout="@layout/device_activity_light_content" />
+
+</com.espressif.iot.ui.widget.view.EspRefreshableLayout>

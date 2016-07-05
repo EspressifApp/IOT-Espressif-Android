@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/esp_light_activity_background"
+    android:orientation="vertical"
+    android:padding="15dip"
+    tools:context="com.espressif.iot.ui.device.light.DeviceLightActivity" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <ImageView
+            android:id="@+id/device_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/esp_icon_menu_moreoverflow" />
+    </RelativeLayout>
+
+    <com.espressif.iot.ui.widget.view.ColorView
+        android:id="@+id/light_color_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_marginTop="30dip"
+        android:layout_weight="2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dip"
+        android:layout_marginTop="15dip"
+        android:drawableLeft="@drawable/esp_light_colorpicker_icon"
+        android:drawablePadding="5dip"
+        android:text="@string/esp_device_light_color" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1" >
+
+        <com.espressif.iot.ui.device.light.ArcView
+            android:layout_width="@dimen/esp_light_arc_view_width"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="@dimen/esp_light_arc_view_padding" />
+
+        <com.espressif.iot.ui.device.light.EspHorizontalListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dip"
+        android:layout_marginTop="15dip"
+        android:drawableLeft="@drawable/esp_light_brightness_icon"
+        android:drawablePadding="5dip"
+        android:text="@string/esp_device_light_brightness" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="0.4" >
+
+        <SeekBar
+            android:id="@+id/brightness_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressDrawable="@drawable/esp_light_brightness_progress" />
+    </FrameLayout>
+
+</LinearLayout>

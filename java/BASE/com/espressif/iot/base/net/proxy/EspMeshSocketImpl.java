@@ -277,6 +277,7 @@ public class EspMeshSocketImpl implements EspMeshSocket
         try
         {
             proxyTask = mRefreshProxyTaskQueue.take();
+            MeshLog.d(DEBUG, USE_LOG4J, CLASS, "loop() take1 proxyTask: " + proxyTask + " from mRefreshProxyTaskQueue");
         }
         catch (InterruptedException e)
         {
@@ -323,15 +324,9 @@ public class EspMeshSocketImpl implements EspMeshSocket
                 }
                 MeshLog.d(DEBUG, USE_LOG4J, CLASS, "loop() sendIsDeviceAvailable() " + retry + " time");
                 
-                // check whether the EspMeshSocket is half closed
-                if (isHalfClosed())
-                {
-                    MeshLog.d(DEBUG, USE_LOG4J, CLASS, "loop() is half closed, break");
-                    break;
-                }
-                
                 // wait is device available
-                Object token = waitDeviceAvailableToken();
+                int timeout = proxyTask.isReadOnlyTask() ? proxyTask.getTaskTimeout() : DEVICE_AVAILABLE_TIMEOUT;
+                Object token = waitDeviceAvailableToken(timeout);
                 if (token == null)
                 {
                     MeshLog.w(DEBUG, USE_LOG4J, CLASS,  "loop() waitDeviceAvailableToken() get null, break");
@@ -406,7 +401,7 @@ public class EspMeshSocketImpl implements EspMeshSocket
             try
             {
                 proxyTask = mRefreshProxyTaskQueue.take();
-                
+                MeshLog.d(DEBUG, USE_LOG4J, CLASS, "loop() take2 proxyTask: " + proxyTask + " from mRefreshProxyTaskQueue");
             }
             catch (InterruptedException e)
             {
@@ -437,11 +432,13 @@ public class EspMeshSocketImpl implements EspMeshSocket
         List<EspProxyTask> proxyTaskList = new ArrayList<EspProxyTask>();
         for (EspProxyTask proxyTask : mRefreshProxyTaskQueue)
         {
-            if (proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK && !proxyTask.isExpired() && !proxyTask.isFinished())
+            if (proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK && !proxyTask.isFinished())
             {
+                proxyTask.updateTimestamp();
                 proxyTaskList.add(proxyTask);
             }
         }
+        MeshLog.d(DEBUG, USE_LOG4J, CLASS, "mRefreshProxyTaskQueue: " + mRefreshProxyTaskQueue + ",getRefreshProxyTaskList() " + proxyTaskList);
         return proxyTaskList;
     }
     
@@ -449,6 +446,7 @@ public class EspMeshSocketImpl implements EspMeshSocket
     {
         // add new proxy task to mRefreshProxyTaskQueue
         mRefreshProxyTaskQueue.add(proxyTask);
+        MeshLog.d(DEBUG, USE_LOG4J, CLASS, "addNewProxyTask() proxyTask: " + proxyTask);
         // put long serial map if necessary
         int serial = proxyTask.getLongSocketSerial();
         if (serial != MeshCommunicationUtils.SERIAL_NORMAL_TASK)
@@ -526,34 +524,34 @@ public class EspMeshSocketImpl implements EspMeshSocket
                 }
             }
 
-            for (EspProxyTask proxyTask : mRefreshProxyTaskQueue)
-            {
-                boolean isClosedNecessary = false;
-                if (proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK && proxyTask.isExpired())
-                {
-                    isClosedNecessary = true;
-                }
-                if (!isClosedNecessary)
-                {
-                    int serial =
-                        proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK ? proxyTask.getLongSocketSerial()
-                            : MeshCommunicationUtils.SERIAL_NORMAL_TASK;
-                    String targetBssid = proxyTask.getTargetBssid();
-                    if (serial != MeshCommunicationUtils.SERIAL_NORMAL_TASK)
-                    {
-                        if (isLongSocketSerialExistMap(targetBssid, serial))
-                        {
-                            isClosedNecessary = true;
-                        }
-                    }
-                }
-                if (isClosedNecessary)
-                {
-                    proxyTask.replyClose();
-                    MeshLog.d(DEBUG, USE_LOG4J, CLASS, "close() expired proxyTask in mRefreshProxyTaskQueue :"
-                        + proxyTask + " replyClose()");
-                }
-            }
+//            for (EspProxyTask proxyTask : mRefreshProxyTaskQueue)
+//            {
+//                boolean isClosedNecessary = false;
+//                if (proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK && proxyTask.isExpired())
+//                {
+//                    isClosedNecessary = true;
+//                }
+//                if (!isClosedNecessary)
+//                {
+//                    int serial =
+//                        proxyTask != EspProxyTaskImpl.CLOSE_PROXYTASK ? proxyTask.getLongSocketSerial()
+//                            : MeshCommunicationUtils.SERIAL_NORMAL_TASK;
+//                    String targetBssid = proxyTask.getTargetBssid();
+//                    if (serial != MeshCommunicationUtils.SERIAL_NORMAL_TASK)
+//                    {
+//                        if (isLongSocketSerialExistMap(targetBssid, serial))
+//                        {
+//                            isClosedNecessary = true;
+//                        }
+//                    }
+//                }
+//                if (isClosedNecessary)
+//                {
+//                    proxyTask.replyClose();
+//                    MeshLog.d(DEBUG, USE_LOG4J, CLASS, "close() expired proxyTask in mRefreshProxyTaskQueue :"
+//                        + proxyTask + " replyClose()");
+//                }
+//            }
             
             clearLongSocketBuffer();
             clearLongSocketSerialMap();
@@ -887,9 +885,10 @@ public class EspMeshSocketImpl implements EspMeshSocket
     /**
      * wait the mesh root device is available token
      * 
+     * @param timeout timeout in milliseconds
      * @return the mesh root device is available token or null(if timeout)
      */
-    private Object waitDeviceAvailableToken()
+    private Object waitDeviceAvailableToken(int timeout)
     {
         Object deviceAvailableToken = null;
         if (!isConnected())
@@ -899,7 +898,7 @@ public class EspMeshSocketImpl implements EspMeshSocket
         }
         try
         {
-            deviceAvailableToken = mDeviceAvailableToken.poll(DEVICE_AVAILABLE_TIMEOUT, TimeUnit.MILLISECONDS);
+            deviceAvailableToken = mDeviceAvailableToken.poll(timeout, TimeUnit.MILLISECONDS);
         }
         catch (InterruptedException e)
         {

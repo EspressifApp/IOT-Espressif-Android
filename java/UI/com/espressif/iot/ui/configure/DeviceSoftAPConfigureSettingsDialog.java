@@ -20,7 +20,7 @@ import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.view.WifiAdapter;
+import com.espressif.iot.ui.widget.adapter.WifiAdapter;
 import com.espressif.iot.util.BSSIDUtil;
 
 public class DeviceSoftAPConfigureSettingsDialog extends DeviceSoftAPConfigureDialogAbs

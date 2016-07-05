@@ -3,6 +3,7 @@ package com.espressif.iot.ui.device.soundbox;
 import java.util.List;
 
 import com.espressif.iot.R;
+import com.espressif.iot.type.device.other.EspAudio;
 
 import android.content.Context;
 import android.view.View;
@@ -15,7 +16,7 @@ import net.tsz.afinal.FinalBitmap;
 public class TrackAdapter extends BaseAdapter {
 
     private Context mContext;
-    private List<EspTrack> mTrackList;
+    private List<EspAudio> mTrackList;
     private FinalBitmap mFinalBitmap;
 
     private class ViewHolder {
@@ -24,7 +25,7 @@ public class TrackAdapter extends BaseAdapter {
         public TextView intro;
     }
 
-    public TrackAdapter(Context context, List<EspTrack> list) {
+    public TrackAdapter(Context context, List<EspAudio> list) {
         mContext = context;
         mTrackList = list;
 
@@ -63,7 +64,7 @@ public class TrackAdapter extends BaseAdapter {
             holder = (ViewHolder)convertView.getTag();
         }
 
-        EspTrack sound = mTrackList.get(position);
+        EspAudio sound = mTrackList.get(position);
         holder.title.setText(sound.getTitle());
         holder.intro.setText(sound.getIntro());
         mFinalBitmap.display(holder.cover, sound.getCoverUrlLarge());

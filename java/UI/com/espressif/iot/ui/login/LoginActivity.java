@@ -8,13 +8,10 @@ import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.AccountUtil;
-import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -44,26 +41,13 @@ public class LoginActivity extends Activity implements OnClickListener
     
     private LoginThirdPartyDialog mThirdPartyLoginDialog;
     
-    private SharedPreferences mSettingsShared;
-    
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         mUser = BEspUser.getBuilder().getInstance();
-        mSettingsShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        if (mSettingsShared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
-        {
-            // Auto login is selected, go to devices list page
-            mUser.doActionUserLoginDB();
-            gotoEspUIActivity();
-        }
-        else
-        {
-            setContentView(R.layout.login_activity);
-            init();
-        }
+        setContentView(R.layout.login_activity);
+        init();
     }
     
     private void init()
@@ -203,10 +187,8 @@ public class LoginActivity extends Activity implements OnClickListener
         }
     };
     
-    private void loginSuccess()
-    {
-        mSettingsShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, mAutoLoginCB.isChecked()).apply();
-        
-        gotoEspUIActivity();
+    private void loginSuccess() {
+        setResult(RESULT_OK);
+        finish();
     }
 }

@@ -81,7 +81,7 @@
         <item>删除</item>
     </string-array>
 
-    <string-array name="esp_ui_device_sort">
+    <string-array name="esp_main_device_sort">
         <item>设备名</item>
         <item>激活时间</item>
     </string-array>

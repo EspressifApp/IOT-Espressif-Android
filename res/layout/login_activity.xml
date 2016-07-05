@@ -47,7 +47,8 @@
             android:background="@drawable/esp_checkbox"
             android:button="@null"
             android:text="@string/esp_login_auto_login"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:visibility="gone" />
 
         <Space
             android:layout_width="0dip"

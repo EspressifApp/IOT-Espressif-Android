@@ -34,7 +34,8 @@
             android:id="@+id/login_btn_quick_usage"
             style="@style/YellowButton"
             android:layout_gravity="left"
-            android:text="@string/esp_login_quick_usage" />
+            android:text="@string/esp_login_quick_usage"
+            android:visibility="gone" />
     </FrameLayout>
 
     <TextView

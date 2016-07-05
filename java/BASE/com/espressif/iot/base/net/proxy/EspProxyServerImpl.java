@@ -294,7 +294,12 @@ public class EspProxyServerImpl implements EspProxyServer
                     mAddedTaskList.remove(i--);
                     continue;
                 }
-                
+                if (task.isExpired())
+                {
+                    MeshLog.d(DEBUG, USE_LOG4J, CLASS, task.getTargetBssid() + " is expired, remove it");
+                    mAddedTaskList.remove(i--);
+                    continue;
+                }
                 if (task.getTargetBssid().equals(bssid))
                 {
                     result = true;

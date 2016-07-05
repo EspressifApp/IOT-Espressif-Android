@@ -3,8 +3,8 @@ package com.espressif.iot.command.device.esptouch;
 import java.util.List;
 
 import com.espressif.iot.command.device.IEspCommandUnactivated;
-import com.espressif.iot.type.device.esptouch.IEsptouchListener;
-import com.espressif.iot.type.device.esptouch.IEsptouchResult;
+import com.espressif.iot.esptouch.IEsptouchListener;
+import com.espressif.iot.esptouch.IEsptouchResult;
 
 public interface IEspCommandDeviceEsptouch extends IEspCommandUnactivated
 {

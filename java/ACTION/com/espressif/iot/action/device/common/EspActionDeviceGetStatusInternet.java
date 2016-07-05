@@ -126,16 +126,16 @@ public class EspActionDeviceGetStatusInternet implements IEspActionDeviceGetStat
         
         // get rgb period white value
         IEspCommandLightGetStatusInternet lightCommand = new EspCommandLightGetStatusInternet();
-        IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusInternet(device.getKey());
+        IEspStatusLight lightStatus = lightCommand.doCommandLightGetStatusInternet(device);
         if (lightStatus != null)
         {
             result = true;
+            light.getStatusLight().setStatus(lightStatus.getStatus());
             light.getStatusLight().setPeriod(lightStatus.getPeriod());
             light.getStatusLight().setRed(lightStatus.getRed());
             light.getStatusLight().setGreen(lightStatus.getGreen());
             light.getStatusLight().setBlue(lightStatus.getBlue());
-            light.getStatusLight().setCWhite(lightStatus.getCWhite());
-            light.getStatusLight().setWWhite(lightStatus.getWWhite());
+            light.getStatusLight().setWhite(lightStatus.getWhite());
         }
         
         // get battery value

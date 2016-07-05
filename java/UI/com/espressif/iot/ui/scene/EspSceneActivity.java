@@ -8,19 +8,17 @@ import java.util.Set;
 import com.espressif.iot.R;
 import com.espressif.iot.db.EspGroupDBManager;
 import com.espressif.iot.device.IEspDevice;
-import com.espressif.iot.device.array.IEspDeviceArray;
-import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.group.EspGroupHandler;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.view.DeviceAdapter;
-import com.espressif.iot.ui.view.DeviceAdapter.OnEditCheckedChangeListener;
-import com.espressif.iot.ui.view.TouchPointMoveLayout;
-import com.espressif.iot.ui.view.TouchPointMoveLayout.IntersectsView;
-import com.espressif.iot.ui.view.TouchPointMoveLayout.OnTouchMoveListener;
+import com.espressif.iot.ui.widget.adapter.DeviceAdapter;
+import com.espressif.iot.ui.widget.adapter.DeviceAdapter.OnEditCheckedChangeListener;
+import com.espressif.iot.ui.widget.view.TouchPointMoveLayout;
+import com.espressif.iot.ui.widget.view.TouchPointMoveLayout.IntersectsView;
+import com.espressif.iot.ui.widget.view.TouchPointMoveLayout.OnTouchMoveListener;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspDefaults;
@@ -677,32 +675,34 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         })
         .show();
     }
-    
-    private void gotoSelectedDeviceArray(EspDeviceType type)
-    {
-        IEspDeviceArray deviceArray = BEspDevice.createDeviceArray(type);
-        for (IEspDevice device : mDeviceAdapter.getEditCheckedDevices())
-        {
+
+    private void gotoSelectedDeviceArray(EspDeviceType type) {
+        List<String> deviceKeys = new ArrayList<String>();
+        for (IEspDevice device : mDeviceAdapter.getEditCheckedDevices()) {
             IEspDeviceState state = device.getDeviceState();
-            if (device.getDeviceType() == type && (state.isStateInternet() || state.isStateLocal()))
-            {
-                deviceArray.addDevice(device);
+            if (device.getDeviceType() == type && (state.isStateInternet() || state.isStateLocal())) {
+                deviceKeys.add(device.getKey());
             }
         }
-        
-        if (deviceArray.getDeviceList().size() > 0)
-        {
-            Intent intent = DeviceActivityAbs.getDeviceIntent(getBaseContext(), deviceArray);
-            intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-            DeviceActivityAbs.setTempDevice(deviceArray);
-            startActivity(intent);
-        }
-        else
-        {
+        if (deviceKeys.size() > 0) {
+            String[] keyArray = new String[deviceKeys.size()];
+            int i = 0;
+            for (String key : deviceKeys) {
+                keyArray[i++] = key;
+            }
+            Class<?> cls = DeviceActivityAbs.getLocalDeviceClass(type);
+            if (cls != null) {
+                Intent intent = new Intent(this, cls);
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_TYPE, type.toString());
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY_ARRAY, keyArray);
+                intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
+                startActivity(intent);
+            }
+        } else {
             Toast.makeText(this, R.string.esp_secen_no_online_device_msg, Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver()
     {
         @Override

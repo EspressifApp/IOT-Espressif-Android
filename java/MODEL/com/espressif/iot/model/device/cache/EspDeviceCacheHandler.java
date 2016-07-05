@@ -7,6 +7,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
+import android.util.Log;
+
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
@@ -291,6 +293,15 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     userDevice.setInetAddress(localIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localIOTAddress.isMeshDevice());
                     userDevice.setParentDeviceBssid(localIOTAddress.getParentBssid());
+                    // set current version by local
+                    String romVersionLocal = localIOTAddress.getRomVersion();
+                    String romVersionInternet = userDevice.getRom_version();
+                    if (romVersionLocal != null && romVersionLocal.equals(romVersionInternet))
+                    {
+                        Log.w("EspDeviceCacheHandler", "romVersionLocal=" + romVersionLocal + ",romVersionInternet="
+                            + romVersionInternet + " is different");
+                        userDevice.setRom_version(romVersionLocal);
+                    }
                 }
             }
         }
@@ -348,6 +359,15 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     userDevice.setInetAddress(localUpgradeSucIOTAddress.getInetAddress());
                     userDevice.setIsMeshDevice(localUpgradeSucIOTAddress.isMeshDevice());
                     userDevice.setParentDeviceBssid(localUpgradeSucIOTAddress.getParentBssid());
+                    // set current version by local
+                    String romVersionLocal = localUpgradeSucIOTAddress.getRomVersion();
+                    String romVersionInternet = userDevice.getRom_version();
+                    if (romVersionLocal != null && romVersionLocal.equals(romVersionInternet))
+                    {
+                        Log.w("EspDeviceCacheHandler", "romVersionLocal=" + romVersionLocal + ",romVersionInternet="
+                            + romVersionInternet + " is different");
+                        userDevice.setRom_version(romVersionLocal);
+                    }
                     break;
                 }
             }

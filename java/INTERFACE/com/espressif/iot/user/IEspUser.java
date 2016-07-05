@@ -11,11 +11,11 @@ import android.net.wifi.ScanResult;
 import com.espressif.iot.command.device.espbutton.IEspButtonConfigureListener;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
+import com.espressif.iot.esptouch.IEsptouchListener;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
-import com.espressif.iot.type.device.esptouch.IEsptouchListener;
 import com.espressif.iot.type.device.other.EspButtonKeySettings;
 import com.espressif.iot.type.device.trigger.EspDeviceTrigger;
 import com.espressif.iot.type.net.IOTAddress;
@@ -110,6 +110,11 @@ public interface IEspUser extends IEspSingletonObject
      * @return the device
      */
     IEspDevice getUserDevice(String deviceKey);
+    
+    /**
+     * Get the devices in user device list
+     */
+    List<IEspDevice> getUserDevices(String[] deviceKeys);
     
     /**
      * Get the SoftAp devices
@@ -539,6 +544,14 @@ public interface IEspUser extends IEspSingletonObject
     boolean addDeviceSyn(final IEspDevice device);
     
     /**
+     * add devices(make devices are available on server) syn
+     * 
+     * @param devices
+     * @return activated failed devices
+     */
+    List<IEspDevice> addDevicesSync(final List<IEspDevice> devices);
+    
+    /**
      * add one device in SmartConfig connect to the AP which the phone is connected, if requiredActivate is true, it
      * will make device available on server. the task is syn
      * 
@@ -666,12 +679,28 @@ public interface IEspUser extends IEspSingletonObject
     void doActionGroupDeviceMoveInto(IEspDevice device, IEspGroup group);
     
     /**
+     * Move the device into the group
+     * 
+     * @param devices
+     * @param group
+     */
+    void doActionGroupDeviceMoveInto(List<IEspDevice> devices, IEspGroup group);
+    
+    /**
      * Remove device from the group
      * 
      * @param device
      * @param group
      */
     void doActionGroupDeviceRemove(IEspDevice device, IEspGroup group);
+    
+    /**
+     * Remove devices from the group
+     * 
+     * @param devices
+     * @param group
+     */
+    void doActionGroupDeviceRemove(List<IEspDevice> devices, IEspGroup group);
     
     /**
      * Get the devices never used after activated

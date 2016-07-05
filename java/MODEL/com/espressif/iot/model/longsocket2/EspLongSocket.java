@@ -1,10 +1,8 @@
 package com.espressif.iot.model.longsocket2;
 
-import java.net.InetAddress;
-
 import com.espressif.iot.action.longsocket2.EspActionLongSocket;
 import com.espressif.iot.action.longsocket2.IEspActionLongSocket;
-import com.espressif.iot.type.device.IEspDeviceState;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 
 public class EspLongSocket implements IEspLongSocket
@@ -24,17 +22,8 @@ public class EspLongSocket implements IEspLongSocket
     }
     
     @Override
-    public void addStatus(String deviceKey, InetAddress inetAddress, IEspDeviceStatus status, IEspDeviceState state,
-        Runnable disconnectedCallback)
-    {
-        mEspActionLongSocket.addStatus(deviceKey, inetAddress, status, state, disconnectedCallback);
-    }
-    
-    @Override
-    public void addMeshStatus(String deviceKey, InetAddress inetAddress, String bssid, IEspDeviceStatus status,
-        IEspDeviceState state, Runnable disconnectedCallback)
-    {
-        mEspActionLongSocket.addMeshStatus(deviceKey, inetAddress, bssid, status, state, disconnectedCallback);
+    public void addStatus(IEspDevice device, IEspDeviceStatus status, Runnable disconnectedCallback) {
+        mEspActionLongSocket.addStatus(device, status, disconnectedCallback);
     }
     
     @Override

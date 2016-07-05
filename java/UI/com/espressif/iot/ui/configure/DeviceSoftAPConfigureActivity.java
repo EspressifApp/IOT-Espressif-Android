@@ -10,12 +10,11 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
+import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
-import com.espressif.iot.ui.device.DeviceLightActivity;
-import com.espressif.iot.ui.device.DevicePlugActivity;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.view.SoftAPAdapter;
+import com.espressif.iot.ui.widget.adapter.SoftAPAdapter;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -449,29 +448,15 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
         new DeviceDirectConnectProgressDialog(this, device).show();
     }
     
-    public void showLocalDevice(IEspDevice device, final String cacheSsid)
+    public void showLocalDevice(IOTAddress iotAddress, final String cacheSsid)
     {
-        Class<?> cls = null;
-        switch (device.getDeviceType())
-        {
-            case PLUG:
-                cls = DevicePlugActivity.class;
-                break;
-            case LIGHT:
-                cls = DeviceLightActivity.class;
-                break;
-            
-            default:
-                break;
-        }
-        
+        Class<?> cls = DeviceActivityAbs.getLocalDeviceClass(iotAddress.getDeviceTypeEnum());
         if (cls != null)
         {
             mCacheSSID = cacheSsid;
             Intent intent = new Intent(getBaseContext(), cls);
-            intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY, device.getKey());
+            intent.putExtra(EspStrings.Key.DEVICE_KEY_IOTADDRESS, iotAddress);
             intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
-            DeviceActivityAbs.setTempDevice(device);
             startActivity(intent);
         }
     }

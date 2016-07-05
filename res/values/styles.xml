@@ -2,7 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light">
+    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/ActionBarStyle</item>
     </style>
 
@@ -87,4 +87,13 @@
         <item name="android:minHeight">80dip</item>
     </style>
 
+    <style name="MainDrawerItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">60dip</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:layout_margin">5dip</item>
+        <item name="android:drawablePadding">15dip</item>
+        <item name="android:background">@drawable/esp_activity_icon_background</item>
+    </style>
 </resources>

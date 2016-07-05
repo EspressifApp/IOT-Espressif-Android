@@ -241,7 +241,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <com.espressif.iot.ui.view.EspColorPicker
+    <com.espressif.iot.ui.widget.view.EspColorPicker
         android:id="@+id/light_color_picker"
         android:layout_width="match_parent"
         android:layout_height="200dip"

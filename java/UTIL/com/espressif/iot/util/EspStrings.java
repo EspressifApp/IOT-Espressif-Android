@@ -129,6 +129,21 @@ public final class EspStrings
         public static final String DEVICE_KEY_KEY = "device_key";
         
         /**
+         * The Intent value name of extra Device IOTAddress
+         */
+        public static final String DEVICE_KEY_IOTADDRESS = "device_iotaddress";
+        
+        /**
+         * The Intent value name of extra Device type string
+         */
+        public static final String DEVICE_KEY_TYPE = "device_type";
+        
+        /**
+         * The Intent value name of extra array of Device Key
+         */
+        public static final String DEVICE_KEY_KEY_ARRAY = "device_key_array";
+        
+        /**
          * The Intent value name of extra whether show mesh tree view
          */
         public static final String DEVICE_KEY_SHOW_CHILDREN = "show_children";

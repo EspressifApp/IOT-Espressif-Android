@@ -13,18 +13,22 @@ import com.espressif.iot.command.device.plugs.EspCommandPlugsPostStatusLocal;
 import com.espressif.iot.command.device.plugs.IEspCommandPlugsPostStatusLocal;
 import com.espressif.iot.command.device.remote.EspCommandRemotePostStatusLocal;
 import com.espressif.iot.command.device.remote.IEspCommandRemotePostStatusLocal;
+import com.espressif.iot.command.device.soundbox.EspCommandSoundboxPostStatusLocal;
+import com.espressif.iot.command.device.soundbox.IEspCommandSoundboxPostStatusLocal;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceLight;
 import com.espressif.iot.device.IEspDevicePlug;
 import com.espressif.iot.device.IEspDevicePlugs;
 import com.espressif.iot.device.IEspDeviceRemote;
 import com.espressif.iot.device.IEspDeviceRoot;
+import com.espressif.iot.device.IEspDeviceSoundbox;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusPlug;
 import com.espressif.iot.type.device.status.IEspStatusPlugs;
 import com.espressif.iot.type.device.status.IEspStatusRemote;
+import com.espressif.iot.type.device.status.IEspStatusSoundbox;
 import com.espressif.iot.type.device.status.IEspStatusPlugs.IAperture;
 
 public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatusLocal
@@ -48,6 +52,8 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
                 return executePostRemoteStatusLocal(device, (IEspStatusRemote)status);
             case PLUGS:
                 return executePostPlugsStatusLocal(device, (IEspStatusPlugs)status);
+            case SOUNDBOX:
+                return executePostSoundboxStatusLocal(device, (IEspStatusSoundbox)status);
             case ROOT:
                 executePostRootStatusLocal((IEspDeviceRoot)device, status);
                 return true;
@@ -65,22 +71,19 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
     
     private boolean executePostLightStatusLocal(IEspDevice device, IEspStatusLight status)
     {
-        InetAddress inetAddress = device.getInetAddress();
-        String deviceBssid = device.getBssid();
-        boolean isMeshDevice = device.getIsMeshDevice();
         boolean result = false;
         
         IEspCommandLightPostStatusLocal lightCommand = new EspCommandLightPostStatusLocal();
-        result = lightCommand.doCommandLightPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        result = lightCommand.doCommandLightPostStatusLocal(device, status);
         if (result)
         {
             IEspStatusLight lightStatus = ((IEspDeviceLight)device).getStatusLight();
+            lightStatus.setStatus(status.getStatus());
             lightStatus.setPeriod(status.getPeriod());
             lightStatus.setRed(status.getRed());
             lightStatus.setGreen(status.getGreen());
             lightStatus.setBlue(status.getBlue());
-            lightStatus.setCWhite(status.getCWhite());
-            lightStatus.setWWhite(status.getWWhite());
+            lightStatus.setWhite(status.getWhite());
         }
         
         return result;
@@ -142,7 +145,33 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
         
         return result;
     }
-    
+
+    private boolean executePostSoundboxStatusLocal(IEspDevice device, IEspStatusSoundbox status) {
+        InetAddress inetAddress = device.getInetAddress();
+        String deviceBssid = device.getBssid();
+        boolean isMeshDevice = device.getIsMeshDevice();
+        boolean result = false;
+
+        IEspCommandSoundboxPostStatusLocal command = new EspCommandSoundboxPostStatusLocal();
+        result = command.doCommandPlugsPostStatusLocal(inetAddress, status, deviceBssid, isMeshDevice);
+        if (result) {
+            IEspStatusSoundbox deviceStatus = ((IEspDeviceSoundbox)device).getStatusSoundbox();
+            switch (status.getAction()) {
+                case IEspStatusSoundbox.ACTION_AUDIO:
+                    deviceStatus.setAudio(status.getAudio());
+                    break;
+                case IEspStatusSoundbox.ACTION_PLAY:
+                    deviceStatus.setPlayStatus(status.getPlayStatus());
+                    break;
+                case IEspStatusSoundbox.ACTION_VOLUME:
+                    deviceStatus.setVolume(status.getVolume());
+                    break;
+            }
+        }
+
+        return result;
+    }
+
     private void executePostRootStatusLocal(IEspDeviceRoot device, IEspDeviceStatus status)
     {
         List<IEspDeviceTreeElement> childList = device.getDeviceTreeElementList();
@@ -178,7 +207,7 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
             {
                 IEspStatusLight lightStatus = (IEspStatusLight)status;
                 IEspCommandLightPostStatusLocal lightCommand = new EspCommandLightPostStatusLocal();
-                lightCommand.doCommandLightPostStatusLocal(inetAddress, lightStatus, bssid, device.getIsMeshDevice());
+                lightCommand.doCommandLightPostStatusLocal(device, lightStatus);
             }
             else if (status instanceof IEspStatusPlug)
             {

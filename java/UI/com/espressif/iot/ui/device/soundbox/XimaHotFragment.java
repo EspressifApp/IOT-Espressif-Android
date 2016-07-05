@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.espressif.iot.R;
+import com.espressif.iot.type.device.other.EspAudio;
 import com.ximalaya.ting.android.opensdk.constants.DTransferConstants;
 import com.ximalaya.ting.android.opensdk.datatrasfer.CommonRequest;
 import com.ximalaya.ting.android.opensdk.datatrasfer.IDataCallBack;
@@ -22,7 +23,7 @@ import android.widget.ListView;
 public class XimaHotFragment extends XimaBaseFragment {
     private ListView mListView;
     private TrackAdapter mTrackAdapter;
-    private List<EspTrack> mTrackList;
+    private List<EspAudio> mTrackList;
     private int mTotalPage;
     private int mPageIndex = 1;
     private boolean mLoading = false;
@@ -30,7 +31,7 @@ public class XimaHotFragment extends XimaBaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mListView = (ListView)inflater.inflate(R.layout.xima_hot_fragment, container, false);
-        mTrackList = new ArrayList<EspTrack>();
+        mTrackList = new ArrayList<EspAudio>();
         mTrackAdapter = new TrackAdapter(getActivity(), mTrackList);
         mListView.setAdapter(mTrackAdapter);
         mListView.setOnScrollListener(new TrackScrollEndListener() {
@@ -49,8 +50,8 @@ public class XimaHotFragment extends XimaBaseFragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                EspTrack track = mTrackList.get(position);
-                onTrackSelected(track);
+                EspAudio track = mTrackList.get(position);
+                onAduioSelected(track);
             }
         });
 
@@ -65,19 +66,16 @@ public class XimaHotFragment extends XimaBaseFragment {
     }
 
     public void refresh() {
-        if (hasMore()) {
+        if (mTrackList.isEmpty()) {
             loadData();
         }
-    }
-
-    private boolean hasMore() {
-        return mTotalPage > mPageIndex;
     }
 
     private void loadData() {
         if (mLoading) {
             return;
         }
+
         mLoading = true;
         Map<String, String> param = new HashMap<String, String>();
         param.put(DTransferConstants.CATEGORY_ID, "" + 0);
@@ -90,7 +88,7 @@ public class XimaHotFragment extends XimaBaseFragment {
                 if (object != null && object.getTracks() != null && object.getTracks().size() != 0) {
                     mPageIndex++;
                     mTotalPage = object.getTotalPage();
-                    updateTrackList(mTrackList, object);
+                    updateTrackList(mTrackList, object.getTracks());
                     mTrackAdapter.notifyDataSetChanged();
                 }
                 mLoading = false;

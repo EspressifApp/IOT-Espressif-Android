@@ -1,82 +1,19 @@
 package com.espressif.iot.command.device.light;
 
-import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.command.device.plug.EspCommandPlugGetStatusInternet;
-import com.espressif.iot.type.device.status.EspStatusLight;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.status.IEspStatusLight;
-import com.espressif.iot.type.net.HeaderPair;
 
-public class EspCommandLightGetStatusInternet implements IEspCommandLightGetStatusInternet
-{
-    
-    private final static Logger log = Logger.getLogger(EspCommandPlugGetStatusInternet.class);
-    
-    private IEspStatusLight getCurrentLightStatus(String deviceKey)
-    {
-        String headerKey = Authorization;
-        String headerValue = Token + " " + deviceKey;
-        JSONObject result = null;
-        HeaderPair header = new HeaderPair(headerKey, headerValue);
-        result = EspBaseApiUtil.Get(URL, header);
-        if (result == null)
-        {
-            return null;
-        }
-        try
-        {
-            int status = -1;
-            try
-            {
-                if (result != null)
-                {
-                    status = Integer.parseInt(result.getString(Status));
-                }
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            if (status == HttpStatus.SC_OK)
-            {
-                JSONObject data = result.getJSONObject(Datapoint);
-                int period = data.getInt(X);
-                int red = data.getInt(Y);
-                int green = data.getInt(Z);
-                int blue = data.getInt(K);
-                int white = data.getInt(L);
-                IEspStatusLight statusLight = new EspStatusLight();
-                statusLight.setPeriod(period);
-                statusLight.setRed(red);
-                statusLight.setGreen(green);
-                statusLight.setBlue(blue);
-                statusLight.setCWhite(white);
-                statusLight.setWWhite(white);
-                return statusLight;
-            }
-            else
-            {
-                return null;
-            }
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
+public class EspCommandLightGetStatusInternet extends EspCommandLight implements IEspCommandLightGetStatusInternet {
+
     @Override
-    public IEspStatusLight doCommandLightGetStatusInternet(String deviceKey)
-    {
-        IEspStatusLight result = getCurrentLightStatus(deviceKey);
-        log.debug(Thread.currentThread().toString() + "##doCommandLightGetStatusInternet(deviceKey=[" + deviceKey
-            + "]): " + result);
-        return result;
+    public IEspStatusLight doCommandLightGetStatusInternet(IEspDevice device) {
+        int deviceVersionValue = getDeviceVersionValue(device);
+        if (deviceVersionValue < getProtocolVersionValue()) {
+            EspCommandLightOldProtocol cmdOld = new EspCommandLightOldProtocol();
+            return cmdOld.getInternet(device);
+        } else {
+            EspCommandLightNewProtocol cmdNew = new EspCommandLightNewProtocol();
+            return cmdNew.getInternet(device);
+        }
     }
-    
 }

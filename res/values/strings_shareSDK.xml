@@ -98,6 +98,7 @@ function login(form){
     <string name="kakaotalk_client_inavailable">KakaoTalk client not exists or the version is too low</string>
     <string name="kakaostory_client_inavailable">KakaoStory client not exists or the version is too low</string>
     <string name="whatsapp_client_inavailable">WhatsApp client not exists or the version is too low</string>
+    <string name="baidutieba_client_inavailable">Tieba client not exists or the version is too low</string>
     <string name="laiwang_client_inavailable">Laiwangs client not exists or the version is too low</string>
     <string name="sinaweibo">Sina Weibo</string>
     <string name="tencentweibo">Tencent Weibo</string>

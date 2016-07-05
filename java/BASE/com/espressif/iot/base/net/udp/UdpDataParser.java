@@ -19,7 +19,7 @@ public class UdpDataParser
     
     private static final String DEVICE_PATTERN_TYPE = "^I'm ((\\w)+( )*)+\\.";
     private static final String DEVICE_PATTERN_BSSID = "([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2} )";
-    private static final String DEVICE_PATTERN_IP = "(\\d+\\.){3}(\\d+)$";
+    private static final String DEVICE_PATTERN_IP = "(\\d+\\.){3}(\\d+)";
     
     private static final String DEVICE_PATTERN = DEVICE_PATTERN_TYPE + DEVICE_PATTERN_BSSID + DEVICE_PATTERN_IP;
     

@@ -8,6 +8,8 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
+import android.util.Log;
+
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.command.device.common.EspCommandDeviceDiscoverLocal;
 import com.espressif.iot.command.device.common.EspCommandDeviceSynchronizeInternet;
@@ -278,6 +280,16 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                                 device.setIsMeshDevice(iotAddress.isMeshDevice());
                                 device.setParentDeviceBssid(iotAddress.getParentBssid());
                                 deviceState.addStateLocal();
+                                // update rom version by local if necessary
+                                String romVersionLocal = iotAddress.getRomVersion();
+                                String romVersionInternet = device.getRom_version();
+                                if (romVersionLocal != null && !romVersionLocal.equals(romVersionInternet))
+                                {
+                                    Log.w("EspActionDeviceSynchronizeInterentDiscoverLocal", "romVersionLocal="
+                                        + romVersionLocal + ",romVersionInternet=" + romVersionInternet
+                                        + " is different");
+                                    device.setRom_version(romVersionLocal);
+                                }
                                 break;
                             }
                         }

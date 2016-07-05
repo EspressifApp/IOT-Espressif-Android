@@ -5,8 +5,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.espressif.iot.command.device.esptouch.EspCommandDeviceEsptouch;
 import com.espressif.iot.command.device.esptouch.IEspCommandDeviceEsptouch;
-import com.espressif.iot.type.device.esptouch.IEsptouchListener;
-import com.espressif.iot.type.device.esptouch.IEsptouchResult;
+import com.espressif.iot.esptouch.IEsptouchListener;
+import com.espressif.iot.esptouch.IEsptouchResult;
 
 public class EspActionDeviceEsptouch implements IEspActionDeviceEsptouch
 {

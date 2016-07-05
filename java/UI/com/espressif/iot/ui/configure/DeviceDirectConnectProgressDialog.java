@@ -8,9 +8,7 @@ import android.widget.Toast;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
-import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceNew;
-import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.util.BSSIDUtil;
 
@@ -68,7 +66,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
     
     private class ConnectTask extends AsyncTask<Void, Void, Integer>
     {
-        private IEspDevice mDeviceSSS;
+        private IOTAddress mIOTAddress;
         
         @Override
         protected Integer doInBackground(Void... params)
@@ -90,13 +88,10 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
             }
             else
             {
-                mDeviceSSS = getStaDevice(mDevice.getBssid());
-                if (mDeviceSSS != null)
-                {
+                mIOTAddress = getIOTAddress(mDevice.getBssid());
+                if (mIOTAddress != null) {
                     return RESULT_SUC;
-                }
-                else
-                {
+                } else {
                     return RESULT_FIND_STA_FAILED;
                 }
             }
@@ -123,12 +118,12 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
                 case RESULT_SUC:
                     Toast.makeText(mActivity, R.string.esp_configure_direct_result_suc, Toast.LENGTH_LONG).show();
                     mDialog.dismiss();
-                    mActivity.showLocalDevice(mDeviceSSS, mCacheSsid);
+                    mActivity.showLocalDevice(mIOTAddress, mCacheSsid);
                     break;
             }
         }
         
-        private IEspDevice getStaDevice(String bssid)
+        private IOTAddress getIOTAddress(String bssid)
         {
             for (int i = 0; i < 5; i++)
             {
@@ -136,7 +131,7 @@ public class DeviceDirectConnectProgressDialog extends DeviceSoftAPConfigureDial
                 if (ia != null)
                 {
                     ia.setSSID(BSSIDUtil.genDeviceNameByBSSID(bssid));
-                    return BEspDevice.getInstance().createStaDevice(ia);
+                    return ia;
                 }
             }
             

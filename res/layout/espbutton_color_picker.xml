@@ -12,7 +12,7 @@
         android:layout_gravity="center_horizontal"
         android:background="@android:color/black" />
 
-    <com.espressif.iot.ui.view.EspColorPicker
+    <com.espressif.iot.ui.widget.view.EspColorPicker
         android:id="@+id/color_picker"
         android:layout_width="match_parent"
         android:layout_height="200dip"

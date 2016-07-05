@@ -68,16 +68,16 @@ public class EspActionDeviceGetStatusLocal implements IEspActionDeviceGetStatusL
         // Get rgb period white value
         IEspCommandLightGetStatusLocal lightCommand = new EspCommandLightGetStatusLocal();
         IEspStatusLight lightStatus =
-            lightCommand.doCommandLightGetStatusLocal(inetAddress, deviceBssid, isMeshDevice);
+            lightCommand.doCommandLightGetStatusLocal(device);
         if (lightStatus != null)
         {
             result = true;
+            status.setStatus(lightStatus.getStatus());
             status.setPeriod(lightStatus.getPeriod());
             status.setRed(lightStatus.getRed());
             status.setGreen(lightStatus.getGreen());
             status.setBlue(lightStatus.getBlue());
-            status.setCWhite(lightStatus.getCWhite());
-            status.setWWhite(lightStatus.getWWhite());
+            status.setWhite(lightStatus.getWhite());
         }
         
         // Get battery value

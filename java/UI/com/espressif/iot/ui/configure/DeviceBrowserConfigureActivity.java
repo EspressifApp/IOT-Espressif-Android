@@ -9,7 +9,7 @@ import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.device.IEspDeviceNew;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.view.SoftAPAdapter;
+import com.espressif.iot.ui.widget.adapter.SoftAPAdapter;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;

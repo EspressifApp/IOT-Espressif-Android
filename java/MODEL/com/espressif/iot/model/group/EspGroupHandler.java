@@ -158,7 +158,7 @@ public class EspGroupHandler
             {
                 mFuture = EspBaseApiUtil.submit(new GroupTask());
             }
-            if (mHandleQueue.size() < 2)
+            if (mHandleQueue.size() < 1)
             {
                 mHandleQueue.add(true);
             }

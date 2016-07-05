@@ -90,7 +90,7 @@ public class EspMeshNetUtil2
             return mIsProcessing;
         }
         
-        void setIsProdessed(boolean isSuc)
+        void setIsProcessed(boolean isSuc)
         {
             if (isSuc)
             {
@@ -165,11 +165,12 @@ public class EspMeshNetUtil2
         static class CREATOR
         {
             static MeshDevice createInstance(String bssid, InetAddress rootInetAddress, String parentBssid,
-                EspDeviceType deviceTypeEnum, int childrenCount)
+                EspDeviceType deviceTypeEnum, int childrenCount, String romVersion)
             {
                 IOTAddress iotAddress = new IOTAddress(bssid, rootInetAddress, true);
                 iotAddress.setParentBssid(parentBssid);
                 iotAddress.setEspDeviceTypeEnum(deviceTypeEnum);
+                iotAddress.setRomVersion(romVersion);
                 MeshDevice meshDevice = new MeshDevice(iotAddress, childrenCount);
                 return meshDevice;
             }
@@ -180,7 +181,8 @@ public class EspMeshNetUtil2
     /*
      * {
      *    "parent": {
-     *        "mac": "1a:fe:34:a1:06:8f"
+     *        "mac": "1a:fe:34:a1:06:8f",
+     *        "ver": "v1.1.4t45772(o)"
      *     },
      *     "type": "Light",
      *     "num": 24,
@@ -188,15 +190,18 @@ public class EspMeshNetUtil2
      *     {
      *       "type": "Light",
      *       "mac": "18:fe:34:a2:c7:62",
+     *       "ver": "v1.1.4t45772(o)",
      *       "num": 13
      *     },
      *     {
      *       "type": "Light",
      *       "mac": "18:fe:34:a1:06:d7",
+     *       "ver": "v1.1.4t45772(o)",
      *       "num": 8
      *     }
      *     ],
-     *     "mdev_mac": "18FE34A1090C"
+     *     "mdev_mac": "18FE34A1090C",
+     *     "ver": "v1.1.4t45772(o)"
      *  }
      */
     
@@ -231,13 +236,16 @@ public class EspMeshNetUtil2
             EspDeviceType currentDeviceType = EspDeviceType.getEspTypeEnumByString(deviceTypeStr);
             // json response "num" including device itself, thus -1
             int currentCount = jsonResult.getInt("num") - 1;
+            // parse rom version
+            String romVersion = jsonResult.isNull("ver") ? null : jsonResult.getString("ver");
             // build current device
             currentDevice =
                 MeshDevice.CREATOR.createInstance(deviceBssid,
                     inetAddr,
                     currentParentBssid,
                     currentDeviceType,
-                    currentCount);
+                    currentCount,
+                    romVersion);
             // parse children device
             JSONArray jsonArrayChildren = jsonResult.getJSONArray("children");
             for (int i = 0; i < jsonArrayChildren.length(); ++i)
@@ -253,9 +261,16 @@ public class EspMeshNetUtil2
                 String childBssid = jsonChild.getString("mac");
                 // json response "num" excluding device itself
                 int childCount = jsonChild.getInt("num");
+                // parse rom version
+                String childRomVersion = jsonChild.isNull("ver") ? null : jsonChild.getString("ver");
                 // build child device
                 MeshDevice childDevice =
-                    MeshDevice.CREATOR.createInstance(childBssid, inetAddr, currentBssid, childDeviceType, childCount);
+                    MeshDevice.CREATOR.createInstance(childBssid,
+                        inetAddr,
+                        currentBssid,
+                        childDeviceType,
+                        childCount,
+                        childRomVersion);
                 // add child device into current device's child list
                 currentDevice.addChild(childDevice);
             }
@@ -397,20 +412,20 @@ public class EspMeshNetUtil2
             // process query device
             if (queryDevice == null)
             {
-                mFreshDevice.setIsProdessed(false);
+                mFreshDevice.setIsProcessed(false);
             }
             else
             {
                 // add devices
                 addNewDevices(queryDevice, mRootBssid, mMeshDeviceList);
                 
-                mFreshDevice.setIsProdessed(true);
+                mFreshDevice.setIsProcessed(true);
                 
                 for (MeshDevice childMeshDevice : queryDevice.getChildrenList())
                 {
                     if (childMeshDevice.getChildrenCount() == 0)
                     {
-                        childMeshDevice.setIsProdessed(true);
+                        childMeshDevice.setIsProcessed(true);
                     }
                 }
             }
@@ -436,7 +451,7 @@ public class EspMeshNetUtil2
             // root device clear processing
             rootDevice.setIsProcessing(false);
             // root device set processed
-            rootDevice.setIsProdessed(true);
+            rootDevice.setIsProcessed(true);
             // add devices
             addNewDevices(rootDevice, rootBssid, meshDeviceList);
             
@@ -518,8 +533,40 @@ public class EspMeshNetUtil2
                 
             }
         }
+        
+        int checkTime = 0;
+        while (hasDeviceProcessing(meshDeviceList))
+        {
+            checkTime++;
+            if (checkTime % 10 == 0) {
+                log.warn("Check hasDeviceProcessing " + checkTime + " times");
+            }
+            try
+            {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        log.debug("Check hasDeviceProcessing complete");
+        
         buildResultList(iotAddressList, meshDeviceList);
         return iotAddressList;
+    }
+    
+    private static boolean hasDeviceProcessing(List<MeshDevice> meshDeviceList)
+    {
+        for (MeshDevice device : meshDeviceList)
+        {
+            if (device.isProcessing())
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private static IOTAddress getTopoIOTAddress5(InetAddress rootInetAddress, String deviceBssid)

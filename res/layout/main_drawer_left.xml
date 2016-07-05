@@ -1,0 +1,54 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/esp_main_drawer_background" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@drawable/esp_drawer_divider"
+        android:dividerPadding="5dip"
+        android:orientation="vertical"
+        android:showDividers="middle" >
+
+        <TextView
+            android:id="@+id/drawer_item_account"
+            style="@style/MainDrawerItem"
+            android:layout_height="70dip"
+            android:drawableLeft="@drawable/drawer_left_account"
+            android:text="@string/esp_main_drawer_item_account"
+            android:textSize="23sp" />
+
+        <TextView
+            android:id="@+id/drawer_item_login"
+            style="@style/MainDrawerItem"
+            android:drawableLeft="@drawable/drawer_left_login"
+            android:text="@string/esp_main_drawer_item_login" />
+
+        <TextView
+            android:id="@+id/drawer_item_adddevice"
+            style="@style/MainDrawerItem"
+            android:drawableLeft="@drawable/drawer_left_add"
+            android:text="@string/esp_main_drawer_item_add_device" />
+
+        <TextView
+            android:id="@+id/drawer_item_settings"
+            style="@style/MainDrawerItem"
+            android:drawableLeft="@drawable/drawer_left_settings"
+            android:text="@string/esp_main_drawer_item_settings" />
+
+        <TextView
+            android:id="@+id/drawer_item_help"
+            style="@style/MainDrawerItem"
+            android:text="@string/esp_main_drawer_item_help"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/drawer_item_logout"
+            style="@style/MainDrawerItem"
+            android:drawableLeft="@drawable/drawer_left_logout"
+            android:text="@string/esp_main_drawer_item_logout" />
+    </LinearLayout>
+
+</ScrollView>
