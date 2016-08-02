@@ -13,176 +13,145 @@ import com.espressif.iot.object.db.IUserDB;
 /**
  * Entity mapped to table USER_DB.
  */
-public class UserDB implements IUserDB
-{
-    
+public class UserDB implements IUserDB {
+
     private long id;
-    
     /** Not-null value. */
     private String email;
-    
     /** Not-null value. */
     private String key;
-    
     /** Not-null value. */
     private String name;
-    
     private boolean isLastLogin;
-    
+
     /** Used to resolve relations */
     private transient DaoSession daoSession;
-    
+
     /** Used for active entity operations. */
     private transient UserDBDao myDao;
-    
+
     private List<DeviceDB> devices;
-    
+
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
-    
-    public UserDB()
-    {
+
+    public UserDB() {
     }
-    
-    public UserDB(long id)
-    {
+
+    public UserDB(long id) {
         this.id = id;
     }
-    
-    public UserDB(long id, String email, String key, String name, boolean isLastLogin)
-    {
+
+    public UserDB(long id, String email, String key, String name, boolean isLastLogin) {
         this.id = id;
         this.email = email;
         this.key = key;
         this.name = name;
         this.isLastLogin = isLastLogin;
     }
-    
+
     /** called by internal mechanisms, do not call yourself. */
-    public void __setDaoSession(DaoSession daoSession)
-    {
+    public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getUserDBDao() : null;
     }
-    
-    public long getId()
-    {
+
+    public long getId() {
         return id;
     }
-    
-    public void setId(long id)
-    {
+
+    public void setId(long id) {
         this.id = id;
     }
-    
+
     /** Not-null value. */
-    public String getEmail()
-    {
+    public String getEmail() {
         return email;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setEmail(String email)
-    {
+    public void setEmail(String email) {
         this.email = email;
     }
-    
+
     /** Not-null value. */
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setKey(String key)
-    {
+    public void setKey(String key) {
         this.key = key;
     }
-    
+
     /** Not-null value. */
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
-    
-    public boolean getIsLastLogin()
-    {
+
+    public boolean getIsLastLogin() {
         return isLastLogin;
     }
-    
-    public void setIsLastLogin(boolean isLastLogin)
-    {
+
+    public void setIsLastLogin(boolean isLastLogin) {
         this.isLastLogin = isLastLogin;
     }
-    
+
     /**
      * To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted,
      * make changes to the target entity.
      */
-    public List<DeviceDB> getDevices()
-    {
-        if (devices == null)
-        {
-            if (daoSession == null)
-            {
+    public List<DeviceDB> getDevices() {
+        if (devices == null) {
+            if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             DeviceDBDao targetDao = daoSession.getDeviceDBDao();
             List<DeviceDB> devicesNew = targetDao._queryUserDB_Devices(id);
-            synchronized (this)
-            {
-                if (devices == null)
-                {
+            synchronized (this) {
+                if (devices == null) {
                     devices = devicesNew;
                 }
             }
         }
         return devices;
     }
-    
+
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    public synchronized void resetDevices()
-    {
+    public synchronized void resetDevices() {
         devices = null;
     }
-    
+
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
-    public void delete()
-    {
-        if (myDao == null)
-        {
+    public void delete() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.delete(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
-    public void update()
-    {
-        if (myDao == null)
-        {
+    public void update() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
-    public void refresh()
-    {
-        if (myDao == null)
-        {
+    public void refresh() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.refresh(this);
     }
-    
+
     // KEEP METHODS - put your custom methods here
     // KEEP METHODS END
-    
+
 }

@@ -14,176 +14,144 @@ import com.espressif.iot.util.TimeUtil;
 /**
  * Entity mapped to table GENERIC_DATA_DIRECTORY_DB.
  */
-public class GenericDataDirectoryDB implements IGenericDataDirectoryDB
-{
-    
+public class GenericDataDirectoryDB implements IGenericDataDirectoryDB {
+
     private Long id;
-    
     private long deviceId;
-    
     private long day_start_timestamp;
-    
     private long index_timestamp;
-    
     private long lastest_accessed_timestamp;
-    
+
     /** Used to resolve relations */
     private transient DaoSession daoSession;
-    
+
     /** Used for active entity operations. */
     private transient GenericDataDirectoryDBDao myDao;
-    
+
     private List<GenericDataDB> datas;
-    
+
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
-    
-    public GenericDataDirectoryDB()
-    {
+
+    public GenericDataDirectoryDB() {
     }
-    
-    public GenericDataDirectoryDB(Long id)
-    {
+
+    public GenericDataDirectoryDB(Long id) {
         this.id = id;
     }
-    
+
     public GenericDataDirectoryDB(Long id, long deviceId, long day_start_timestamp, long index_timestamp,
-        long lastest_accessed_timestamp)
-    {
+        long lastest_accessed_timestamp) {
         this.id = id;
         this.deviceId = deviceId;
         this.day_start_timestamp = day_start_timestamp;
         this.index_timestamp = index_timestamp;
         this.lastest_accessed_timestamp = lastest_accessed_timestamp;
     }
-    
+
     /** called by internal mechanisms, do not call yourself. */
-    public void __setDaoSession(DaoSession daoSession)
-    {
+    public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getGenericDataDirectoryDBDao() : null;
     }
-    
-    public Long getId()
-    {
+
+    public Long getId() {
         return id;
     }
-    
-    public void setId(Long id)
-    {
+
+    public void setId(Long id) {
         this.id = id;
     }
-    
-    public long getDeviceId()
-    {
+
+    public long getDeviceId() {
         return deviceId;
     }
-    
-    public void setDeviceId(long deviceId)
-    {
+
+    public void setDeviceId(long deviceId) {
         this.deviceId = deviceId;
     }
-    
-    public long getDay_start_timestamp()
-    {
+
+    public long getDay_start_timestamp() {
         return day_start_timestamp;
     }
-    
-    public void setDay_start_timestamp(long day_start_timestamp)
-    {
+
+    public void setDay_start_timestamp(long day_start_timestamp) {
         this.day_start_timestamp = day_start_timestamp;
     }
-    
-    public long getIndex_timestamp()
-    {
+
+    public long getIndex_timestamp() {
         return index_timestamp;
     }
-    
-    public void setIndex_timestamp(long index_timestamp)
-    {
+
+    public void setIndex_timestamp(long index_timestamp) {
         this.index_timestamp = index_timestamp;
     }
-    
-    public long getLastest_accessed_timestamp()
-    {
+
+    public long getLastest_accessed_timestamp() {
         return lastest_accessed_timestamp;
     }
-    
-    public void setLastest_accessed_timestamp(long lastest_accessed_timestamp)
-    {
+
+    public void setLastest_accessed_timestamp(long lastest_accessed_timestamp) {
         this.lastest_accessed_timestamp = lastest_accessed_timestamp;
     }
-    
+
     /**
      * To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted,
      * make changes to the target entity.
      */
-    public List<GenericDataDB> getDatas()
-    {
-        if (datas == null)
-        {
-            if (daoSession == null)
-            {
+    public List<GenericDataDB> getDatas() {
+        if (datas == null) {
+            if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             GenericDataDBDao targetDao = daoSession.getGenericDataDBDao();
             List<GenericDataDB> datasNew = targetDao._queryGenericDataDirectoryDB_Datas(id);
-            synchronized (this)
-            {
-                if (datas == null)
-                {
+            synchronized (this) {
+                if (datas == null) {
                     datas = datasNew;
                 }
             }
         }
         return datas;
     }
-    
+
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    public synchronized void resetDatas()
-    {
+    public synchronized void resetDatas() {
         datas = null;
     }
-    
+
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
-    public void delete()
-    {
-        if (myDao == null)
-        {
+    public void delete() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.delete(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
-    public void update()
-    {
-        if (myDao == null)
-        {
+    public void update() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
-    public void refresh()
-    {
-        if (myDao == null)
-        {
+    public void refresh() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.refresh(this);
     }
-    
+
     // KEEP METHODS - put your custom methods here
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "GenericDataDB: (id=[" + id + "],deviceId=[" + deviceId + "],day_start_timestamp=["
             + TimeUtil.getDateStr(day_start_timestamp, null) + "],index_timestamp=["
             + TimeUtil.getDateStr(index_timestamp, null) + "],lastest_accessed_timestamp=["
             + TimeUtil.getDateStr(lastest_accessed_timestamp, null) + "])";
     }
     // KEEP METHODS END
-    
+
 }

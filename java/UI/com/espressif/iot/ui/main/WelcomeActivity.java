@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.base.application.EspApplication;
-import com.espressif.iot.ui.login.LoginActivity;
 import com.espressif.iot.ui.widget.adapter.EspPagerAdapter;
 import com.espressif.iot.ui.widget.view.EspViewPager;
 
@@ -20,7 +19,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;

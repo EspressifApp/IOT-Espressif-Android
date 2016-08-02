@@ -22,9 +22,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -35,7 +37,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class DeviceLightActivity extends DeviceBaseActivity
-    implements OnRefreshListener, OnCheckedChangeListener, OnSeekBarChangeListener {
+    implements OnRefreshListener, OnCheckedChangeListener, OnSeekBarChangeListener, OnClickListener {
     private static final Logger log = Logger.getLogger(DeviceLightActivity.class);
 
     private static final int[] COLORS =
@@ -65,23 +67,27 @@ public class DeviceLightActivity extends DeviceBaseActivity
     private DeviceStatusTask mStatusTask;
 
     private IEspStatusLight mCurrentStatus;
+    private int mOnColor;
+
+    private DeviceLightActivity mActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mLight = (IEspDeviceLight)mDevice;
+        mActivity = this;
 
         setContentView(R.layout.device_activity_light_main);
 
         mRefreshLayout = (EspRefreshableLayout)findViewById(R.id.refresh_layout);
         mRefreshLayout.setOnRefreshListener(this);
         mRefreshLayout.setRefreshable(isLightVersionNew());
+        mRefreshLayout.setRefreshable(false);
 
         mOnOffCB = (CheckBox)findViewById(R.id.light_on_off);
 
         mColorView = (ColorView)findViewById(R.id.light_color_view);
-        mColorView.setDrawShadowRing(true);
 
         mTitleTV = (TextView)findViewById(R.id.device_name);
         mTitleTV.setTextColor(mColorView.getColor());
@@ -113,7 +119,15 @@ public class DeviceLightActivity extends DeviceBaseActivity
                 int color = cv.getColor();
                 mBrightnessBar.setProgress(BRIGHTNESS_TRANSPARENT_PROGRESS);
                 setLightColor(color);
+                updateCurrentStatusLight(color);
                 executeColorTask(color);
+            }
+        });
+        new Handler().post(new Runnable() {
+
+            @Override
+            public void run() {
+                mListView.adjustChildrenLocation();
             }
         });
 
@@ -139,7 +153,8 @@ public class DeviceLightActivity extends DeviceBaseActivity
     @Override
     protected void onCreateMenuItems(Menu menu) {
         if (mDevice.getIsMeshDevice() && !isDeviceArray()) {
-            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings);
+            menu.add(Menu.NONE, MENU_ID_ESPBUTTON_SETTINGS, 1, R.string.esp_device_light_menu_espbutton_settings)
+                .setEnabled(mDevice.getDeviceState().isStateLocal());
         }
     }
 
@@ -160,6 +175,23 @@ public class DeviceLightActivity extends DeviceBaseActivity
     public void onRefresh() {
         mRefreshLayout.notifyRefreshComplete();
         mOnOffCB.setChecked(!mOnOffCB.isChecked());
+        if (mOnOffCB.isChecked()) {
+            executeTurnOn();
+        } else {
+            executeTurnOff();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mColorView) {
+            mOnOffCB.setChecked(!mOnOffCB.isChecked());
+            if (mOnOffCB.isChecked()) {
+                executeTurnOn();
+            } else {
+                executeTurnOff();
+            }
+        }
     }
 
     @Override
@@ -167,12 +199,8 @@ public class DeviceLightActivity extends DeviceBaseActivity
         if (buttonView == mOnOffCB) {
             if (isChecked) {
                 mOnOffCB.setText(R.string.esp_device_light_off);
-
-                executeTurnOn();
             } else {
                 mOnOffCB.setText(R.string.esp_device_light_on);
-
-                executeTurnOff();
             }
         }
     }
@@ -274,7 +302,7 @@ public class DeviceLightActivity extends DeviceBaseActivity
         int green = Color.green(color);
         int blue = Color.blue(color);
         log.debug("executeColorTask red = " + red + " green = " + green + " blue = " + blue);
-        executeDeviceTask(generateNewStatus(IEspStatusLight.STATUS_COLOR, red, green, blue));
+        executeDeviceTask(LightUtils.generateStatus(IEspStatusLight.STATUS_COLOR, red, green, blue));
     }
 
     private void executeDeviceTask(IEspStatusLight status) {
@@ -300,18 +328,42 @@ public class DeviceLightActivity extends DeviceBaseActivity
                         updateCurrentStatusLight(mLight.getStatusLight());
                     }
 
-                    mOnOffCB.setOnCheckedChangeListener(DeviceLightActivity.this);
+                    int status = mLight.getStatusLight().getStatus();
+                    if (status == IEspStatusLight.STATUS_OFF) {
+                        int red = mLight.getStatusLight().getRed();
+                        int green = mLight.getStatusLight().getGreen();
+                        int blue = mLight.getStatusLight().getBlue();
+                        if (red == green && red == blue && red == 0) {
+                            int white = mLight.getStatusLight().getWhite();
+                            mOnColor = Color.rgb(white, white, white);
+                        } else {
+                            mOnColor = Color.rgb(red, green, blue);
+                        }
+                    }
+                    mOnOffCB.setChecked(status != IEspStatusLight.STATUS_OFF);
+                    setOnOffListener();
                 }
 
                 @Override
                 public void onCancelled() {
-                    mOnOffCB.setOnCheckedChangeListener(DeviceLightActivity.this);
+                    setOnOffListener();
                 }
             });
             mStatusTask.execute();
         } else {
             log.debug("execute post task");
-            updateCurrentStatusLight(status);
+            switch (status.getStatus()) {
+                case IEspStatusLight.STATUS_BRIGHT:
+                    mOnColor = Color.rgb(status.getWhite(), status.getWhite(), status.getWhite());
+                    mOnOffCB.setChecked(true);
+                    break;
+                case IEspStatusLight.STATUS_COLOR:
+                    mOnColor = Color.rgb(status.getRed(), status.getGreen(), status.getBlue());
+                    mOnOffCB.setChecked(true);
+                    break;
+                default:
+                    break;
+            }
             mStatusTask.execute(status);
         }
     }
@@ -323,15 +375,19 @@ public class DeviceLightActivity extends DeviceBaseActivity
             mStatusTask.cancel(true);
         }
 
-        if (mCurrentStatus.getStatus() == IEspStatusLight.STATUS_COLOR) {
-            setLightColor(Color.rgb(mCurrentStatus.getRed(), mCurrentStatus.getGreen(), mCurrentStatus.getBlue()));
-        } else if (mCurrentStatus.getStatus() == IEspStatusLight.STATUS_BRIGHT) {
-            setLightColor(Color.rgb(mCurrentStatus.getWhite(), mCurrentStatus.getWhite(), mCurrentStatus.getWhite()));
+        int onRed = Color.red(mOnColor);
+        int onGreen = Color.green(mOnColor);
+        int onBlue = Color.blue(mOnColor);
+        IEspStatusLight onStatus = LightUtils.generateStatus(IEspStatusLight.STATUS_COLOR, onRed, onGreen, onBlue);
+        if (onStatus.getStatus() == IEspStatusLight.STATUS_COLOR) {
+            setLightColor(mOnColor);
+        } else if (onStatus.getStatus() == IEspStatusLight.STATUS_BRIGHT) {
+            setLightColor(mOnColor);
             int progress = mCurrentStatus.getWhite() / RGB_MAX * BRIGHTNESS_MAX;
             mBrightnessBar.setProgress(progress);
         }
         mStatusTask = new DeviceStatusTask(mDevice);
-        mStatusTask.execute(generateNewStatus(IEspStatusLight.STATUS_ON));
+        mStatusTask.execute(LightUtils.generateStatus(IEspStatusLight.STATUS_ON));
     }
 
     private void executeTurnOff() {
@@ -343,40 +399,14 @@ public class DeviceLightActivity extends DeviceBaseActivity
 
         setLightColor(BRIGHTNESS_COLOR_DARK);
         mStatusTask = new DeviceStatusTask(mDevice);
-        mStatusTask.execute(generateNewStatus(IEspStatusLight.STATUS_OFF));
+        mStatusTask.execute(LightUtils.generateStatus(IEspStatusLight.STATUS_OFF));
     }
 
-    private IEspStatusLight generateNewStatus(int status, int... colors) {
-        IEspStatusLight result = new EspStatusLight();
-        result.setStatus(status);
-        switch (status) {
-            case IEspStatusLight.STATUS_OFF:
-            case IEspStatusLight.STATUS_ON:
-                break;
-
-            case IEspStatusLight.STATUS_COLOR:
-                int red = colors[0];
-                int green = colors[1];
-                int blue = colors[2];
-                if (red == green && red == blue) {
-                    if (red == 0) {
-                        result.setStatus(IEspStatusLight.STATUS_OFF);
-                    } else {
-                        result.setStatus(IEspStatusLight.STATUS_BRIGHT);
-                        result.setWhite(red);
-                    }
-                } else {
-                    result.setRed(red);
-                    result.setGreen(green);
-                    result.setBlue(blue);
-                }
-                break;
-
-            case IEspStatusLight.STATUS_BRIGHT:
-                result.setWhite(colors[0]);
-                break;
+    private void setOnOffListener() {
+        if (isLightVersionNew()) {
+            mOnOffCB.setOnCheckedChangeListener(mActivity);
+            mColorView.setOnClickListener(mActivity);
         }
-        return result;
     }
 
     private void updateLightStatus() {
@@ -406,6 +436,21 @@ public class DeviceLightActivity extends DeviceBaseActivity
                 setLightColor(Color.rgb(lightStatus.getWhite(), lightStatus.getWhite(), lightStatus.getWhite()));
                 mBrightnessBar.setProgress(lightStatus.getWhite() * BRIGHTNESS_MAX / RGB_MAX );
                 break;
+        }
+    }
+
+    private void updateCurrentStatusLight(int color) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        if (red == green && red == blue) {
+            mCurrentStatus.setStatus(IEspStatusLight.STATUS_BRIGHT);
+            mCurrentStatus.setWhite(red);
+        } else {
+            mCurrentStatus.setStatus(IEspStatusLight.STATUS_COLOR);
+            mCurrentStatus.setRed(red);
+            mCurrentStatus.setGreen(green);
+            mCurrentStatus.setBlue(blue);
         }
     }
 

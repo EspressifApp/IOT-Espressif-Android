@@ -15,11 +15,15 @@ public class EspActionGroupEditDB implements IEspActionGroupEditDB
     @Override
     public void doActionGroupCreate(String groupName, String userKey)
     {
-        if (userKey == null)
-        {
+        doActionGroupCreate(groupName, IEspGroup.Type.COMMON.ordinal(), userKey);
+    }
+
+    @Override
+    public void doActionGroupCreate(String groupName, int groupTypeOrdinal, String userKey) {
+        if (userKey == null) {
             userKey = "";
         }
-        mDBManager.insertOrReplace(IEspGroup.ID_NEW, groupName, userKey, 0);
+        mDBManager.insertOrReplace(IEspGroup.ID_NEW, groupName, userKey, 0, groupTypeOrdinal);
     }
 
     @Override

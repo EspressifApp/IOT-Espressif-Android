@@ -12,6 +12,9 @@ import de.greenrobot.dao.internal.DaoConfig;
 import com.espressif.iot.db.greenrobot.daos.UserDB;
 import com.espressif.iot.db.greenrobot.daos.DeviceDB;
 import com.espressif.iot.db.greenrobot.daos.GroupDB;
+import com.espressif.iot.db.greenrobot.daos.GroupLocalDeviceDB;
+import com.espressif.iot.db.greenrobot.daos.GroupCloudDeviceDB;
+import com.espressif.iot.db.greenrobot.daos.GroupRemoveDeviceDB;
 import com.espressif.iot.db.greenrobot.daos.ApDB;
 import com.espressif.iot.db.greenrobot.daos.DownloadIdValueDB;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDB;
@@ -20,6 +23,9 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDB;
 import com.espressif.iot.db.greenrobot.daos.UserDBDao;
 import com.espressif.iot.db.greenrobot.daos.DeviceDBDao;
 import com.espressif.iot.db.greenrobot.daos.GroupDBDao;
+import com.espressif.iot.db.greenrobot.daos.GroupLocalDeviceDBDao;
+import com.espressif.iot.db.greenrobot.daos.GroupCloudDeviceDBDao;
+import com.espressif.iot.db.greenrobot.daos.GroupRemoveDeviceDBDao;
 import com.espressif.iot.db.greenrobot.daos.ApDBDao;
 import com.espressif.iot.db.greenrobot.daos.DownloadIdValueDBDao;
 import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDBDao;
@@ -32,124 +38,138 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDBDao;
  * 
  * @see de.greenrobot.dao.AbstractDaoSession
  */
-public class DaoSession extends AbstractDaoSession
-{
-    
+public class DaoSession extends AbstractDaoSession {
+
     private final DaoConfig userDBDaoConfig;
-    
     private final DaoConfig deviceDBDaoConfig;
-    
     private final DaoConfig groupDBDaoConfig;
-    
+    private final DaoConfig groupLocalDeviceDBDaoConfig;
+    private final DaoConfig groupCloudDeviceDBDaoConfig;
+    private final DaoConfig groupRemoveDeviceDBDaoConfig;
     private final DaoConfig apDBDaoConfig;
-    
     private final DaoConfig downloadIdValueDBDaoConfig;
-    
     private final DaoConfig genericDataDirectoryDBDaoConfig;
-    
     private final DaoConfig genericDataDBDaoConfig;
-    
+
     private final UserDBDao userDBDao;
-    
     private final DeviceDBDao deviceDBDao;
-    
     private final GroupDBDao groupDBDao;
-    
+    private final GroupLocalDeviceDBDao groupLocalDeviceDBDao;
+    private final GroupCloudDeviceDBDao groupCloudDeviceDBDao;
+    private final GroupRemoveDeviceDBDao groupRemoveDeviceDBDao;
     private final ApDBDao apDBDao;
-    
     private final DownloadIdValueDBDao downloadIdValueDBDao;
-    
     private final GenericDataDirectoryDBDao genericDataDirectoryDBDao;
-    
     private final GenericDataDBDao genericDataDBDao;
-    
+
     public DaoSession(SQLiteDatabase db, IdentityScopeType type,
-        Map<Class<? extends AbstractDao<?, ?>>, DaoConfig> daoConfigMap)
-    {
+        Map<Class<? extends AbstractDao<?, ?>>, DaoConfig> daoConfigMap) {
         super(db);
-        
+
         userDBDaoConfig = daoConfigMap.get(UserDBDao.class).clone();
         userDBDaoConfig.initIdentityScope(type);
-        
+
         deviceDBDaoConfig = daoConfigMap.get(DeviceDBDao.class).clone();
         deviceDBDaoConfig.initIdentityScope(type);
-        
+
         groupDBDaoConfig = daoConfigMap.get(GroupDBDao.class).clone();
         groupDBDaoConfig.initIdentityScope(type);
-        
+
+        groupLocalDeviceDBDaoConfig = daoConfigMap.get(GroupLocalDeviceDBDao.class).clone();
+        groupLocalDeviceDBDaoConfig.initIdentityScope(type);
+
+        groupCloudDeviceDBDaoConfig = daoConfigMap.get(GroupCloudDeviceDBDao.class).clone();
+        groupCloudDeviceDBDaoConfig.initIdentityScope(type);
+
+        groupRemoveDeviceDBDaoConfig = daoConfigMap.get(GroupRemoveDeviceDBDao.class).clone();
+        groupRemoveDeviceDBDaoConfig.initIdentityScope(type);
+
         apDBDaoConfig = daoConfigMap.get(ApDBDao.class).clone();
         apDBDaoConfig.initIdentityScope(type);
-        
+
         downloadIdValueDBDaoConfig = daoConfigMap.get(DownloadIdValueDBDao.class).clone();
         downloadIdValueDBDaoConfig.initIdentityScope(type);
-        
+
         genericDataDirectoryDBDaoConfig = daoConfigMap.get(GenericDataDirectoryDBDao.class).clone();
         genericDataDirectoryDBDaoConfig.initIdentityScope(type);
-        
+
         genericDataDBDaoConfig = daoConfigMap.get(GenericDataDBDao.class).clone();
         genericDataDBDaoConfig.initIdentityScope(type);
-        
+
         userDBDao = new UserDBDao(userDBDaoConfig, this);
         deviceDBDao = new DeviceDBDao(deviceDBDaoConfig, this);
         groupDBDao = new GroupDBDao(groupDBDaoConfig, this);
+        groupLocalDeviceDBDao = new GroupLocalDeviceDBDao(groupLocalDeviceDBDaoConfig, this);
+        groupCloudDeviceDBDao = new GroupCloudDeviceDBDao(groupCloudDeviceDBDaoConfig, this);
+        groupRemoveDeviceDBDao = new GroupRemoveDeviceDBDao(groupRemoveDeviceDBDaoConfig, this);
         apDBDao = new ApDBDao(apDBDaoConfig, this);
         downloadIdValueDBDao = new DownloadIdValueDBDao(downloadIdValueDBDaoConfig, this);
         genericDataDirectoryDBDao = new GenericDataDirectoryDBDao(genericDataDirectoryDBDaoConfig, this);
         genericDataDBDao = new GenericDataDBDao(genericDataDBDaoConfig, this);
-        
+
         registerDao(UserDB.class, userDBDao);
         registerDao(DeviceDB.class, deviceDBDao);
         registerDao(GroupDB.class, groupDBDao);
+        registerDao(GroupLocalDeviceDB.class, groupLocalDeviceDBDao);
+        registerDao(GroupCloudDeviceDB.class, groupCloudDeviceDBDao);
+        registerDao(GroupRemoveDeviceDB.class, groupRemoveDeviceDBDao);
         registerDao(ApDB.class, apDBDao);
         registerDao(DownloadIdValueDB.class, downloadIdValueDBDao);
         registerDao(GenericDataDirectoryDB.class, genericDataDirectoryDBDao);
         registerDao(GenericDataDB.class, genericDataDBDao);
     }
-    
-    public void clear()
-    {
+
+    public void clear() {
         userDBDaoConfig.getIdentityScope().clear();
         deviceDBDaoConfig.getIdentityScope().clear();
         groupDBDaoConfig.getIdentityScope().clear();
+        groupLocalDeviceDBDaoConfig.getIdentityScope().clear();
+        groupCloudDeviceDBDaoConfig.getIdentityScope().clear();
+        groupRemoveDeviceDBDaoConfig.getIdentityScope().clear();
         apDBDaoConfig.getIdentityScope().clear();
         downloadIdValueDBDaoConfig.getIdentityScope().clear();
         genericDataDirectoryDBDaoConfig.getIdentityScope().clear();
         genericDataDBDaoConfig.getIdentityScope().clear();
     }
-    
-    public UserDBDao getUserDBDao()
-    {
+
+    public UserDBDao getUserDBDao() {
         return userDBDao;
     }
-    
-    public DeviceDBDao getDeviceDBDao()
-    {
+
+    public DeviceDBDao getDeviceDBDao() {
         return deviceDBDao;
     }
-    
-    public GroupDBDao getGroupDBDao()
-    {
+
+    public GroupDBDao getGroupDBDao() {
         return groupDBDao;
     }
-    
-    public ApDBDao getApDBDao()
-    {
+
+    public GroupLocalDeviceDBDao getGroupLocalDeviceDBDao() {
+        return groupLocalDeviceDBDao;
+    }
+
+    public GroupCloudDeviceDBDao getGroupCloudDeviceDBDao() {
+        return groupCloudDeviceDBDao;
+    }
+
+    public GroupRemoveDeviceDBDao getGroupRemoveDeviceDBDao() {
+        return groupRemoveDeviceDBDao;
+    }
+
+    public ApDBDao getApDBDao() {
         return apDBDao;
     }
-    
-    public DownloadIdValueDBDao getDownloadIdValueDBDao()
-    {
+
+    public DownloadIdValueDBDao getDownloadIdValueDBDao() {
         return downloadIdValueDBDao;
     }
-    
-    public GenericDataDirectoryDBDao getGenericDataDirectoryDBDao()
-    {
+
+    public GenericDataDirectoryDBDao getGenericDataDirectoryDBDao() {
         return genericDataDirectoryDBDao;
     }
-    
-    public GenericDataDBDao getGenericDataDBDao()
-    {
+
+    public GenericDataDBDao getGenericDataDBDao() {
         return genericDataDBDao;
     }
-    
+
 }

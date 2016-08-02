@@ -2,6 +2,7 @@ package com.espressif.iot.type.net;
 
 import java.net.InetAddress;
 
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.object.IEspObject;
 import com.espressif.iot.type.device.EspDeviceType;
 
@@ -50,7 +51,17 @@ public class IOTAddress implements IEspObject, Parcelable
      * the device rom version
      */
     private String mRomVersion;
-    
+
+    /**
+     * the device rssi
+     */
+    private int mRssi = IEspDevice.RSSI_NULL;
+
+    /**
+     * the device info
+     */
+    private String mInfo;
+
     public IOTAddress(String BSSID, InetAddress inetAddress)
     {
         this(BSSID, inetAddress, false);
@@ -143,6 +154,26 @@ public class IOTAddress implements IEspObject, Parcelable
         return mRomVersion;
     }
     
+    public void setRssi(int rssi)
+    {
+        mRssi = rssi;
+    }
+    
+    public int getRssi()
+    {
+        return mRssi;
+    }
+    
+    public void setInfo(String info)
+    {
+        mInfo = info;
+    }
+    
+    public String getInfo()
+    {
+        return mInfo;
+    }
+    
     @Override
     public String toString()
     {
@@ -186,6 +217,8 @@ public class IOTAddress implements IEspObject, Parcelable
         mIsMeshDevice = bools[0];
         mInetAddress = (InetAddress)in.readSerializable();
         mRomVersion = in.readString();
+        mRssi = in.readInt();
+        mInfo = in.readString();
     }
 
     @Override
@@ -203,6 +236,8 @@ public class IOTAddress implements IEspObject, Parcelable
         dest.writeBooleanArray(new boolean[] {mIsMeshDevice});
         dest.writeSerializable(mInetAddress);
         dest.writeString(mRomVersion);
+        dest.writeInt(mRssi);
+        dest.writeString(mInfo);
     }
 
     public static final Parcelable.Creator<IOTAddress> CREATOR = new Creator<IOTAddress>() {

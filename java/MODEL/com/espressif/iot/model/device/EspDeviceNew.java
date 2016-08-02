@@ -258,8 +258,15 @@ public class EspDeviceNew extends EspDevice implements IEspDeviceNew
         long negativeDeviceId)
         throws InterruptedException
     {
+        String deviceName = mDeviceName;
         IEspActionDeviceNewActivateInternet action = new EspActionDeviceNewActivateInternet();
         IEspDevice device = action.doActionDeviceNewActivateInternet(userId, userKey, randomToken, this.mDeviceId);
+        if (!device.getName().equals(mDeviceName))
+        {
+            device.setName(deviceName);
+            IEspUser user = BEspUser.getBuilder().getInstance();
+            user.doActionRename(device, deviceName);
+        }
         return device;
     }
     

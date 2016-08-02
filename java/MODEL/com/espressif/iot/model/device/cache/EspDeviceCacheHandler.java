@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
@@ -198,6 +199,8 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                         deviceInUser.getDeviceState().addStateRenamed();
                     }
                     deviceInUser.copyDeviceRomVersion(serverLocalDevice);
+                    deviceInUser.copyDeviceRssi(serverLocalDevice);
+                    deviceInUser.copyDeviceInfo(serverLocalDevice);
                     __putDeviceInDBList(deviceInUser);
                 }
             }
@@ -302,6 +305,12 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                             + romVersionInternet + " is different");
                         userDevice.setRom_version(romVersionLocal);
                     }
+                    if (localIOTAddress.getRssi() != IEspDevice.RSSI_NULL) {
+                        userDevice.setRssi(localIOTAddress.getRssi());
+                    }
+                    if (!TextUtils.isEmpty(localIOTAddress.getInfo())) {
+                        userDevice.setInfo(localIOTAddress.getInfo());
+                    }
                 }
             }
         }
@@ -368,13 +377,20 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                             + romVersionInternet + " is different");
                         userDevice.setRom_version(romVersionLocal);
                     }
+                    if (localUpgradeSucIOTAddress.getRssi() != IEspDevice.RSSI_NULL) {
+                        userDevice.setRssi(localUpgradeSucIOTAddress.getRssi());
+                    }
+                    if (!TextUtils.isEmpty(localUpgradeSucIOTAddress.getInfo())) {
+                        userDevice.setInfo(localUpgradeSucIOTAddress.getInfo());
+                    }
                     break;
                 }
             }
         }
     }
     
-    private void handleStatemachine(List<IEspDevice> userDeviceList)
+    private void handleStatemachine(List<IEspDevice> userDeviceList, List<IEspDevice> userStaDeviceList,
+        List<IEspDevice> guestDeviceList)
     {
         // poll devices from EspDeviceCache
         List<IEspDevice> stateMachineDeviceList = new ArrayList<IEspDevice>();
@@ -426,6 +442,20 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     if (deviceInUser.isSimilar(stateMachineDevice) && !deviceInUser.equals(stateMachineDevice))
                     {
                         deviceInUser.getDeviceState().clearState();
+                    }
+                }
+                for (IEspDevice deviceInSta : userStaDeviceList)
+                {
+                    if (deviceInSta.isSimilar(stateMachineDevice) && !deviceInSta.equals(stateMachineDevice))
+                    {
+                        deviceInSta.getDeviceState().clearState();
+                    }
+                }
+                for (IEspDevice deviceInGuest : guestDeviceList)
+                {
+                    if (deviceInGuest.isSimilar(stateMachineDevice) && !deviceInGuest.equals(stateMachineDevice))
+                    {
+                        deviceInGuest.getDeviceState().clearState();
                     }
                 }
                 // stop all activating tasks
@@ -516,6 +546,69 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 }
             }
         }
+        for (int i = 0; i < userStaDeviceList.size(); i++)
+        {
+            IEspDevice deviceInSta = userStaDeviceList.get(i);
+            if (EspDeviceState.checkValidWithSpecificStates(deviceInSta.getDeviceState(), EspDeviceState.ACTIVATING))
+            {
+                for (int j = 0; j < stateMachineDeviceList.size(); j++)
+                {
+                    IEspDevice deviceInStateMachine = stateMachineDeviceList.get(j);
+                    if (deviceInSta.isSimilar(deviceInStateMachine))
+                    {
+                        // replace deviceInUser with deviceInStateMachine
+                        userStaDeviceList.remove(i--);
+//                        userStaDeviceList.add(deviceInStateMachine);
+                        // delete the device from deviceInStateMachine
+                        stateMachineDeviceList.remove(j--);
+                        // don't forget to save in db,
+                        deviceInStateMachine.saveInDB();
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < guestDeviceList.size(); i++)
+        {
+            IEspDevice deviceInGuest = guestDeviceList.get(i);
+            if (EspDeviceState.checkValidWithSpecificStates(deviceInGuest.getDeviceState(), EspDeviceState.ACTIVATING))
+            {
+                for (int j = 0; j < stateMachineDeviceList.size(); j++)
+                {
+                    IEspDevice deviceInStateMachine = stateMachineDeviceList.get(j);
+                    if (deviceInGuest.isSimilar(deviceInStateMachine))
+                    {
+                        // replace deviceInUser with deviceInStateMachine
+                        guestDeviceList.remove(i--);
+//                        guestDeviceList.add(deviceInStateMachine);
+                        // delete the device from deviceInStateMachine
+                        stateMachineDeviceList.remove(j--);
+                        // don't forget to save in db,
+                        deviceInStateMachine.saveInDB();
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < userDeviceList.size(); i++)
+        {
+            IEspDevice deviceInUser = userDeviceList.get(i);
+            if (EspDeviceState.checkValidWithSpecificStates(deviceInUser.getDeviceState(), EspDeviceState.ACTIVATING))
+            {
+                for (int j = 0; j < stateMachineDeviceList.size(); j++)
+                {
+                    IEspDevice deviceInStateMachine = stateMachineDeviceList.get(j);
+                    if (deviceInUser.isSimilar(deviceInStateMachine))
+                    {
+                        // replace deviceInUser with deviceInStateMachine
+                        userDeviceList.remove(i--);
+                        userDeviceList.add(deviceInStateMachine);
+                        // delete the device from deviceInStateMachine
+                        stateMachineDeviceList.remove(j--);
+                        // don't forget to save in db,
+                        deviceInStateMachine.saveInDB();
+                    }
+                }
+            }
+        }
         
         // c. handle others (just copy device state, rom version and device name)
         for (IEspDevice stateMachineDevice : stateMachineDeviceList)
@@ -525,6 +618,8 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                 IEspDevice userDevice = userDeviceList.get(userDeviceList.indexOf(stateMachineDevice));
                 userDevice.copyDeviceState(stateMachineDevice);
                 userDevice.copyDeviceRomVersion(stateMachineDevice);
+                userDevice.copyDeviceRssi(stateMachineDevice);
+                userDevice.copyDeviceInfo(stateMachineDevice);
                 userDevice.copyDeviceName(stateMachineDevice);
                 userDevice.copyActivatedTime(stateMachineDevice);
                 if (!stateMachineDevice.getDeviceState().isStateClear())
@@ -532,6 +627,38 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
                     log.error("userDevice: " + userDevice + ",stateMachineDevice: " + stateMachineDevice);
                     // don't forget to save in db
                     userDevice.saveInDB();
+                }
+            }
+            if (userStaDeviceList.contains(stateMachineDevice))
+            {
+                IEspDevice userStaDevice = userStaDeviceList.get(userStaDeviceList.indexOf(stateMachineDevice));
+                userStaDevice.copyDeviceState(stateMachineDevice);
+                userStaDevice.copyDeviceRomVersion(stateMachineDevice);
+                userStaDevice.copyDeviceRssi(stateMachineDevice);
+                userStaDevice.copyDeviceInfo(userStaDevice);
+                userStaDevice.copyDeviceName(stateMachineDevice);
+                userStaDevice.copyActivatedTime(stateMachineDevice);
+                if (!stateMachineDevice.getDeviceState().isStateClear())
+                {
+                    log.error("userStaDevice: " + userStaDevice + ",stateMachineDevice: " + stateMachineDevice);
+                    // don't forget to save in db
+                    userStaDevice.saveInDB();
+                }
+            }
+            if (guestDeviceList.contains(stateMachineDevice))
+            {
+                IEspDevice guestDevice = guestDeviceList.get(guestDeviceList.indexOf(stateMachineDevice));
+                guestDevice.copyDeviceState(stateMachineDevice);
+                guestDevice.copyDeviceRomVersion(stateMachineDevice);
+                guestDevice.copyDeviceRssi(stateMachineDevice);
+                guestDevice.copyDeviceInfo(stateMachineDevice);
+                guestDevice.copyDeviceName(stateMachineDevice);
+                guestDevice.copyActivatedTime(stateMachineDevice);
+                if (!stateMachineDevice.getDeviceState().isStateClear())
+                {
+                    log.error("guestDevice: " + guestDevice + ",stateMachineDevice: " + stateMachineDevice);
+                    // don't forget to save in db
+                    guestDevice.saveInDB();
                 }
             }
         }
@@ -727,20 +854,37 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         }
     }
     
+    private void handleStaGuestDevices(IEspUser user, List<IEspDevice> staDeviceList, List<IEspDevice> guestDeviceList)
+    {
+        for (IEspDevice staDevice : staDeviceList)
+        {
+            String staBssid = staDevice.getBssid();
+            IEspDevice guestDevice = getDeviceByBssid(guestDeviceList, staBssid);
+            if (guestDevice != null)
+            {
+                staDevice.copyDeviceName(guestDevice);
+            }
+            else
+            {
+                staDevice.saveInDB();
+                guestDeviceList.add(staDevice);
+            }
+        }
+    }
+
     @Override
     public synchronized Void handleUninterruptible(boolean isStateMachine)
     {
         IEspUser user = BEspUser.getBuilder().getInstance();
         user.lockUserDeviceLists();
+        user.clearTempStaDeviceList();
         List<IEspDevice> userDeviceList = user.__getOriginDeviceList();
         List<IEspDevice> userStaDeviceList = user.__getOriginStaDeviceList();
-        log.debug(Thread.currentThread().toString() + "##handleUninterruptible(userDeviceList=[" + userDeviceList
-            + "])");
+        List<IEspDevice> userGuestDeviceList = user.getGuestDeviceList();
         if (isStateMachine)
         {
-            handleStatemachine(userDeviceList);
+            handleStatemachine(userDeviceList, userStaDeviceList, userGuestDeviceList);
         }
-        
         else
         {
             boolean isExecuted = handleServerLocal(userDeviceList);
@@ -755,13 +899,15 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         
         // handle device in CLEAR state
         __handleClearList(userDeviceList);
-        
+        __handleClearList(userStaDeviceList);
+        __handleClearList(userGuestDeviceList);
+        // TODO
+//        __handleClearList2(userGuestDeviceList,userStaDeviceList);
         if (!isStateMachine)
         {
             // handle user's sta device list
             handleSta(userDeviceList, userStaDeviceList);
         }
-        
         // clear parent device bssid if it isn't local or internet
         handleUserDevices(userDeviceList);
         
@@ -771,6 +917,7 @@ public class EspDeviceCacheHandler implements IEspSingletonObject, IEspDeviceCac
         List<IEspDevice> allDeviceList = user.getAllDeviceList();
         setAllDevicesRootBssid(allDeviceList);
         
+        handleStaGuestDevices(user, userStaDeviceList, userGuestDeviceList);
         user.unlockUserDeviceLists();
         return null;
     }

@@ -238,6 +238,7 @@ public class EspHttpUtil
                 if (!TextUtils.isEmpty(resultStr))
                 {
                     log.info("executeHttpRequest result str = " + resultStr);
+                    resultStr = unescapeHtml(resultStr);
                     try
                     {
                         result = new JSONObject(resultStr);
@@ -307,6 +308,10 @@ public class EspHttpUtil
         jsonStr = jsonStr.replace("\\/", "/");
 
         return jsonStr;
+    }
+
+    private static String unescapeHtml(String str) {
+        return str.replace("&quot;", "\\\"");
     }
 
     private static final String HEADER_END = "\r\n\r\n";

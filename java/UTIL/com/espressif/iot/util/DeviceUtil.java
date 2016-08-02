@@ -147,10 +147,10 @@ public class DeviceUtil {
                 res = R.drawable.device_soundbox_offline;
                 break;
             case NEW:
+            case ROOT:
+                res = R.drawable.device_home;
                 break;
             case REMOTE:
-                break;
-            case ROOT:
                 break;
         }
 
@@ -183,11 +183,11 @@ public class DeviceUtil {
             case SOUNDBOX:
                 res = isOffline ? R.drawable.device_soundbox_offline : R.drawable.device_soundbox_online;
                 break;
+            case ROOT:
             case NEW:
+                res = R.drawable.device_home;
                 break;
             case REMOTE:
-                break;
-            case ROOT:
                 break;
         }
 

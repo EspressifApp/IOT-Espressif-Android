@@ -14,47 +14,38 @@ import com.espressif.iot.db.greenrobot.daos.GenericDataDirectoryDB;
 /**
  * DAO for table GENERIC_DATA_DIRECTORY_DB.
  */
-public class GenericDataDirectoryDBDao extends AbstractDao<GenericDataDirectoryDB, Long>
-{
-    
+public class GenericDataDirectoryDBDao extends AbstractDao<GenericDataDirectoryDB, Long> {
+
     public static final String TABLENAME = "GENERIC_DATA_DIRECTORY_DB";
-    
+
     /**
      * Properties of entity GenericDataDirectoryDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        
         public final static Property DeviceId = new Property(1, long.class, "deviceId", false, "DEVICE_ID");
-        
-        public final static Property Day_start_timestamp = new Property(2, long.class, "day_start_timestamp", false,
-            "DAY_START_TIMESTAMP");
-        
-        public final static Property Index_timestamp = new Property(3, long.class, "index_timestamp", false,
-            "INDEX_TIMESTAMP");
-        
-        public final static Property Lastest_accessed_timestamp = new Property(4, long.class,
-            "lastest_accessed_timestamp", false, "LASTEST_ACCESSED_TIMESTAMP");
+        public final static Property Day_start_timestamp =
+            new Property(2, long.class, "day_start_timestamp", false, "DAY_START_TIMESTAMP");
+        public final static Property Index_timestamp =
+            new Property(3, long.class, "index_timestamp", false, "INDEX_TIMESTAMP");
+        public final static Property Lastest_accessed_timestamp =
+            new Property(4, long.class, "lastest_accessed_timestamp", false, "LASTEST_ACCESSED_TIMESTAMP");
     };
-    
+
     private DaoSession daoSession;
-    
-    public GenericDataDirectoryDBDao(DaoConfig config)
-    {
+
+    public GenericDataDirectoryDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public GenericDataDirectoryDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public GenericDataDirectoryDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'GENERIC_DATA_DIRECTORY_DB' (" + //
             "'_id' INTEGER PRIMARY KEY ," + // 0: id
@@ -63,23 +54,20 @@ public class GenericDataDirectoryDBDao extends AbstractDao<GenericDataDirectoryD
             "'INDEX_TIMESTAMP' INTEGER NOT NULL ," + // 3: index_timestamp
             "'LASTEST_ACCESSED_TIMESTAMP' INTEGER NOT NULL );"); // 4: lastest_accessed_timestamp
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'GENERIC_DATA_DIRECTORY_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, GenericDataDirectoryDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, GenericDataDirectoryDB entity) {
         stmt.clearBindings();
-        
+
         Long id = entity.getId();
-        if (id != null)
-        {
+        if (id != null) {
             stmt.bindLong(1, id);
         }
         stmt.bindLong(2, entity.getDeviceId());
@@ -87,73 +75,63 @@ public class GenericDataDirectoryDBDao extends AbstractDao<GenericDataDirectoryD
         stmt.bindLong(4, entity.getIndex_timestamp());
         stmt.bindLong(5, entity.getLastest_accessed_timestamp());
     }
-    
+
     @Override
-    protected void attachEntity(GenericDataDirectoryDB entity)
-    {
+    protected void attachEntity(GenericDataDirectoryDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public GenericDataDirectoryDB readEntity(Cursor cursor, int offset)
-    {
+    public GenericDataDirectoryDB readEntity(Cursor cursor, int offset) {
         GenericDataDirectoryDB entity = new GenericDataDirectoryDB( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getLong(offset + 1), // deviceId
             cursor.getLong(offset + 2), // day_start_timestamp
             cursor.getLong(offset + 3), // index_timestamp
             cursor.getLong(offset + 4) // lastest_accessed_timestamp
-            );
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, GenericDataDirectoryDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, GenericDataDirectoryDB entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setDeviceId(cursor.getLong(offset + 1));
         entity.setDay_start_timestamp(cursor.getLong(offset + 2));
         entity.setIndex_timestamp(cursor.getLong(offset + 3));
         entity.setLastest_accessed_timestamp(cursor.getLong(offset + 4));
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(GenericDataDirectoryDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(GenericDataDirectoryDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(GenericDataDirectoryDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(GenericDataDirectoryDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
 }

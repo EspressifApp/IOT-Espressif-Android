@@ -13,6 +13,15 @@ public interface IEspActionGroupEditDB extends IEspActionGroupDB
     void doActionGroupCreate(String groupName, String userKey);
     
     /**
+     * Create group
+     * 
+     * @param groupName
+     * @param groupTypeOrdinal
+     * @param userKey
+     */
+    void doActionGroupCreate(String groupName, int groupTypeOrdinal, String userKey);
+    
+    /**
      * Rename group
      * 
      * @param group

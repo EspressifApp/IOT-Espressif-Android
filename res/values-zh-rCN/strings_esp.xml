@@ -29,7 +29,7 @@
     <string name="esp_main_edit_delete_selected">删除</string>
     <string name="esp_main_edit_delete_sellected_message">是否删除所有选中的设备？</string>
     <string name="esp_main_edit_has_eneditable_device_message">部分设备处于不可删除状态</string>
-    <string name="esp_main_device_activating">Activating&#8230;</string>
+    <string name="esp_main_device_activating">正在激活&#8230;</string>
     <string name="esp_main_device_activate_suc">设备连接至云端成功</string>
     <string name="esp_main_device_activate_failed">设备连接至云端失败</string>
     <string name="esp_main_menu_sort_device">设备排序</string>
@@ -141,7 +141,6 @@
     <string name="esp_settings_device">设备</string>
     <string name="esp_settings_device_auto_refresh">自动刷新设备信息</string>
     <string name="esp_settings_device_auto_configure">自动使设备连接至云端</string>
-    <string name="esp_settings_device_show_mesh_tree">显示设备的组网视图</string>
     <string name="esp_settings_device_show_mesh_tree_summary">如果设备支持组网</string>
     <string name="esp_settings_version">版本</string>
     <string name="esp_settings_version_upgrade">检查升级</string>
@@ -156,6 +155,7 @@
     <string name="esp_settings_wifi_edit">Wifi编辑</string>
     <string name="esp_settings_message">消息</string>
     <string name="esp_settings_esppush">接受推送消息</string>
+    <string name="esp_settings_surprise_msg">已打开组网树形图</string>
 
     <string name="esp_upgrade_apk_downloading">正在下载 %1$d %%</string>
     <string name="esp_upgrade_apk_status_complete">已下载到 手机存储/Espressif/apk/Esp.apk</string>
@@ -376,4 +376,8 @@
     <string name="esp_soundbox_xima_live_title">直播</string>
     <string name="esp_soundbox_xima_search_title">查找</string>
     <string name="esp_soundbox_qingbting_live_title">直播</string>
+
+    <string name="esp_group_icon_select">选择图标</string>
+    <string name="esp_group_input_name">输入一个场景名</string>
+    <string name="esp_group_unnamed">未命名</string>
 </resources>

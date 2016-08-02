@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.adt.tree.IEspDeviceTreeElement;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceRoot;
 import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.type.device.EspDeviceType;
@@ -320,7 +321,8 @@ public abstract class DeviceActivityAbs extends EspActivityAbs implements OnMenu
             .setEnabled(upgradeOnlineEnable);
 
         // EspButton menu
-        if (mIEspDevice.getIsMeshDevice() && mIEspDevice.getDeviceState().isStateLocal()) {
+        if (mIEspDevice.getIsMeshDevice() && mIEspDevice.getDeviceState().isStateLocal()
+            && !(mIEspDevice instanceof IEspDeviceRoot)) {
             menu.add(Menu.NONE, MENU_ID_ESPBUTTON_CONFIGURE, 0, R.string.esp_device_menu_espbutton_configure);
         }
     }

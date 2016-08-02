@@ -141,7 +141,6 @@
     <string name="esp_settings_device">Device</string>
     <string name="esp_settings_device_auto_refresh">Auto refresh device information</string>
     <string name="esp_settings_device_auto_configure">Auto make device connect to cloud</string>
-    <string name="esp_settings_device_show_mesh_tree">Show mesh tree</string>
     <string name="esp_settings_device_show_mesh_tree_summary">If device support mesh</string>
     <string name="esp_settings_version">Version</string>
     <string name="esp_settings_version_upgrade">Version upgrade</string>
@@ -156,6 +155,7 @@
     <string name="esp_settings_wifi_edit">Wifi edit</string>
     <string name="esp_settings_message">Message</string>
     <string name="esp_settings_esppush">Accept message push</string>
+    <string name="esp_settings_surprise_msg">Open mesh tree view</string>
 
     <string name="esp_upgrade_apk_downloading">Downloading %1$d %%</string>
     <string name="esp_upgrade_apk_status_complete">Download complete in PhoneStorage/Espressif/apk/Esp.apk</string>
@@ -378,6 +378,10 @@
     <string name="esp_soundbox_xima_live_title">Live</string>
     <string name="esp_soundbox_xima_search_title">Search</string>
     <string name="esp_soundbox_qingbting_live_title">Live</string>
+
+    <string name="esp_group_icon_select">Select icon</string>
+    <string name="esp_group_input_name">Input group name</string>
+    <string name="esp_group_unnamed">Unnamed</string>
 </resources>
 <!-- 
 &#8230;   =   ...

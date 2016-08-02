@@ -9,6 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/esp_main_search_background"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:paddingBottom="5dip"
         android:paddingLeft="15dip"
         android:paddingRight="15dip"
@@ -18,8 +20,8 @@
             android:id="@+id/search_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:hint="@string/esp_main_search" />
+            android:hint="@string/esp_main_search"
+            android:singleLine="true" />
     </FrameLayout>
 
     <LinearLayout
@@ -27,7 +29,9 @@
         android:layout_height="wrap_content"
         android:background="@color/esp_main_groups_background"
         android:gravity="center"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:paddingLeft="15dip"
+        android:paddingRight="15dip" >
 
         <TextView
             android:id="@+id/group_all"
@@ -60,77 +64,8 @@
         android:layout_weight="1"
         android:background="@color/esp_main_devices_background" />
 
-    <LinearLayout
+    <include
         android:id="@+id/bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:orientation="horizontal"
-        android:visibility="gone" >
-
-        <ImageView
-            android:id="@+id/select_all_device_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:contentDescription="@string/esp_main_bottom_item_all"
-            android:src="@drawable/bottom_all" />
-
-        <Space
-            android:layout_width="0dip"
-            android:layout_height="1dip"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/delete_device_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:contentDescription="@string/esp_main_bottom_item_delete"
-            android:enabled="false"
-            android:src="@drawable/bottom_delete" />
-
-        <Space
-            android:layout_width="0dip"
-            android:layout_height="1dip"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/activate_device_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:contentDescription="@string/esp_main_bottom_item_activate"
-            android:enabled="false"
-            android:src="@drawable/bottom_activate" />
-
-        <Space
-            android:layout_width="0dip"
-            android:layout_height="1dip"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/move_device_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:contentDescription="@string/esp_main_bottom_item_move"
-            android:enabled="false"
-            android:src="@drawable/bottom_move" />
-
-        <Space
-            android:layout_width="0dip"
-            android:layout_height="1dip"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/remove_device_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:contentDescription="@string/esp_main_bottom_item_remove"
-            android:enabled="false"
-            android:src="@drawable/bottom_remove" />
-    </LinearLayout>
+        layout="@layout/main_esp_fragment_bottom_bar" />
 
 </LinearLayout>

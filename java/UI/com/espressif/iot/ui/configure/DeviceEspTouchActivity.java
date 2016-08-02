@@ -180,7 +180,7 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         Menu menu = popupMenu.getMenu();
         menu.add(Menu.NONE, POPUPMENU_ID_GET_SHARE, 0, R.string.esp_esptouch_menu_get_share);
         menu.add(Menu.NONE, POPUPMENU_ID_SOFTAP_CONFIGURE, 0, R.string.esp_esptouch_menu_softap_configure);
-        menu.add(Menu.NONE, POPUPMENU_ID_BROWSER_CONFIGURE, 0, R.string.esp_esptouch_menu_browser_configure);
+//        menu.add(Menu.NONE, POPUPMENU_ID_BROWSER_CONFIGURE, 0, R.string.esp_esptouch_menu_browser_configure);
         popupMenu.setOnMenuItemClickListener(this);
         popupMenu.show();
     }

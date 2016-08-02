@@ -344,10 +344,6 @@ public class EspSceneActivity extends EspActivityAbs implements OnClickListener,
         public void onIntersectsChanged(View moveView, View intersectsView)
         {
             IEspGroup group = intersectsView == null ? null : (IEspGroup)intersectsView.getTag();
-            if (group != null)
-            {
-                System.out.println("group id = " + group.getId());
-            }
             mSceneAdapter.setDeviceSelectedGroup(group);
             mSceneAdapter.notifyDataSetChanged();
         }

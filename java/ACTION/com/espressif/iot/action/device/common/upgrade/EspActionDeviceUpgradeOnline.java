@@ -119,6 +119,15 @@ public class EspActionDeviceUpgradeOnline implements IEspActionDeviceUpgradeOnli
                     device.setParentDeviceBssid(null);
                 }
                 device.setIsMeshDevice(parentBssid != null);
+                // device payload
+                JSONObject devicePayload = deviceJson.optJSONObject("payload");
+                if (devicePayload != null)
+                {
+                    String deviceInfo = devicePayload.optString("info", null);
+                    int deviceRssi = devicePayload.optInt("rssi", IEspDevice.RSSI_NULL);
+                    device.setInfo(deviceInfo);
+                    device.setRssi(deviceRssi);
+                }
                 log.debug(Thread.currentThread().toString() + "##__getCurrentDevice(deviceKey=[" + deviceKey + "]): "
                     + device);
                 return device;

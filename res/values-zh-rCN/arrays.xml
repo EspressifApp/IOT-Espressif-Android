@@ -101,4 +101,14 @@
         <item>K</item>
         <item>L</item>
     </string-array>
+
+    <integer-array name="esp_light_colors">
+        <item>0xffffffff</item>
+        <item>0xffff0000</item>
+        <item>0xffffff00</item>
+        <item>0xff00ff00</item>
+        <item>0xff00ffff</item>
+        <item>0xff0000ff</item>
+        <item>0xffff00ff</item>
+    </integer-array>
 </resources>

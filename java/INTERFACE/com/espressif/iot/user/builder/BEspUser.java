@@ -8,6 +8,14 @@ import com.espressif.iot.user.IEspUser;
 
 public class BEspUser implements IBEspUser
 {
+    private static final long GUEST_USER_ID = -1;
+    
+    private static final String GUEST_USER_KEY = "guest";
+    
+    private static final String GUEST_USER_EMAIL = "guest";
+    
+    private static final String GUEST_USER_NAME = "guest";
+    
     /*
      * Singleton lazy initialization start
      */
@@ -48,6 +56,13 @@ public class BEspUser implements IBEspUser
             instanceSingleton.setUserKey(userDB.getKey());
             instanceSingleton.setUserEmail(userDB.getEmail());
             instanceSingleton.setUserName(userDB.getName());
+        }
+        else
+        {
+            instanceSingleton.setUserId(GUEST_USER_ID);
+            instanceSingleton.setUserKey(GUEST_USER_KEY);
+            instanceSingleton.setUserEmail(GUEST_USER_EMAIL);
+            instanceSingleton.setUserName(GUEST_USER_NAME);
         }
         return instanceSingleton;
     }

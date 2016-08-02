@@ -80,10 +80,12 @@ public class EspActionDevicePostStatusLocal implements IEspActionDevicePostStatu
             IEspStatusLight lightStatus = ((IEspDeviceLight)device).getStatusLight();
             lightStatus.setStatus(status.getStatus());
             lightStatus.setPeriod(status.getPeriod());
-            lightStatus.setRed(status.getRed());
-            lightStatus.setGreen(status.getGreen());
-            lightStatus.setBlue(status.getBlue());
-            lightStatus.setWhite(status.getWhite());
+            if (status.getStatus() != IEspStatusLight.STATUS_ON) {
+                lightStatus.setRed(status.getRed());
+                lightStatus.setGreen(status.getGreen());
+                lightStatus.setBlue(status.getBlue());
+                lightStatus.setWhite(status.getWhite());
+            }
         }
         
         return result;

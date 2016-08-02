@@ -91,6 +91,10 @@ public class EspActionDeviceNewActivateInternet implements IEspActionDeviceNewAc
                 return null;
             }
         }
+        // TODO
+        // oldDeviceName
+        // newDeviceName check
+        // doRenameAction
         IEspCommandDeviceNewActivateInternet command = new EspCommandDeviceNewActivateInternet();
         IEspDevice device = null;
         do

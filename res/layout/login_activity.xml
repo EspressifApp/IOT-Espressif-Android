@@ -40,16 +40,6 @@
         android:layout_marginTop="15dip"
         android:orientation="horizontal" >
 
-        <CheckBox
-            android:id="@+id/login_cb_auto_login"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/esp_checkbox"
-            android:button="@null"
-            android:text="@string/esp_login_auto_login"
-            android:textSize="18sp"
-            android:visibility="gone" />
-
         <Space
             android:layout_width="0dip"
             android:layout_height="1dip"
@@ -65,6 +55,34 @@
             android:textColor="@android:color/white" />
     </LinearLayout>
 
-    <include layout="@layout/login_buttons" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dip"
+        android:orientation="horizontal"
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip" >
+
+        <Button
+            android:id="@+id/login_btn_login"
+            style="@style/YellowButton"
+            android:layout_gravity="left"
+            android:text="@string/esp_login_login" />
+
+        <Button
+            android:id="@+id/login_btn_register"
+            style="@style/BlueButton"
+            android:layout_gravity="right"
+            android:text="@string/esp_login_register" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/login_text_third_party"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="10dip"
+        android:text="@string/esp_login_third_party"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

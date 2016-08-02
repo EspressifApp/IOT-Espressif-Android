@@ -221,7 +221,6 @@ public class SSSActionDeviceUpgradeLocal implements ISSSActionDeviceUpgradeLocal
         try
         {
             int result = httpClient.execute(httpPost).getStatusLine().getStatusCode();
-            System.out.println("result = " + result);
             if (result == HttpStatus.SC_OK)
             {
                 return true;

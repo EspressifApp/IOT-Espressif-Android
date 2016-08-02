@@ -3,7 +3,6 @@ package com.espressif.iot.ui.login;
 import com.espressif.iot.R;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
-import com.espressif.iot.ui.main.EspUIActivity;
 import com.espressif.iot.ui.register.RegisterActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -17,7 +16,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
@@ -29,11 +27,8 @@ public class LoginActivity extends Activity implements OnClickListener
     private EditText mEmailEdt;
     private EditText mPasswordEdt;
     
-    private CheckBox mAutoLoginCB;
-    
     private Button mLoginBtn;
     private Button mRegisterBtn;
-    private Button mQuickUsageBtn;
     private TextView mForgetPwdTV;
     private TextView mThirdPartyLoginTV;
     
@@ -61,12 +56,6 @@ public class LoginActivity extends Activity implements OnClickListener
         mRegisterBtn = (Button)findViewById(R.id.login_btn_register);
         mRegisterBtn.setOnClickListener(this);
         
-        // listen the auto login event
-        mAutoLoginCB = (CheckBox)findViewById(R.id.login_cb_auto_login);
-        
-        mQuickUsageBtn = (Button)findViewById(R.id.login_btn_quick_usage);
-        mQuickUsageBtn.setOnClickListener(this);
-        
         mThirdPartyLoginTV = (TextView)findViewById(R.id.login_text_third_party);
         mThirdPartyLoginTV.setOnClickListener(this);
         
@@ -88,11 +77,6 @@ public class LoginActivity extends Activity implements OnClickListener
         {
             Intent intent = new Intent(this, RegisterActivity.class);
             startActivityForResult(intent, REQUEST_REGISTER);
-        }
-        else if (v == mQuickUsageBtn)
-        {
-            mUser.loadUserDeviceListDB();
-            gotoEspUIActivity();
         }
         else if (v == mThirdPartyLoginTV)
         {
@@ -118,13 +102,6 @@ public class LoginActivity extends Activity implements OnClickListener
                 mPasswordEdt.setText(password);
             }
         }
-    }
-    
-    private void gotoEspUIActivity()
-    {
-        Intent intent = new Intent(this, EspUIActivity.class);
-        startActivity(intent);
-        finish();
     }
     
     private void login()

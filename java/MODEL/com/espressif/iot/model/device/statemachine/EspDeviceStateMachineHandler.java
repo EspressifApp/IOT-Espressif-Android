@@ -30,7 +30,6 @@ import com.espressif.iot.device.statemachine.IEspDeviceStateMachine.Direction;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
-import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
 
 /**
@@ -558,9 +557,9 @@ public class EspDeviceStateMachineHandler implements IEspDeviceStateMachineHandl
                             mDeviceConfigure.setIsMeshDevice(iotAddress.isMeshDevice());
                             // for the moment, we can't see the device's name while activating,
                             // so don't mind the device's name now
-                            String prefix = "ESP_"; // : "ESP_";
-                            String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
-                            mDeviceConfigure.setName(ssid);
+//                            String prefix = "ESP_"; // : "ESP_";
+//                            String ssid = BSSIDUtil.genDeviceNameByBSSID(prefix, bssid);
+//                            mDeviceConfigure.setName(ssid);
                         }
                     }
                     

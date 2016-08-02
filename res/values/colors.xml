@@ -2,9 +2,9 @@
 <resources>
     <color name="esp_actionbar_color">#ff03a9f4</color>
 
-    <color name="esp_main_search_background">#ffcccccc</color>
+    <color name="esp_main_search_background">#fff3f3f3</color>
     <color name="esp_main_groups_background">#fff0f0f2</color>
-    <color name="esp_main_devices_background">#fffafafa</color>
+    <color name="esp_main_devices_background">#ffffffff</color>
     <color name="esp_main_drawer_background">#fff0f0f2</color>
     <color name="esp_main_drawer_right_item_checked">#ff738ffe</color>
     
@@ -28,6 +28,7 @@
     
     <color name="esp_color_view_ring1">#ff5b5a60</color>
     <color name="esp_color_view_ring2">#ff7d8786</color>
+    <color name="esp_color_view_default">#ff7d8786</color>
 
     <color name="esp_device_online">@color/esp_actionbar_color</color>
     <color name="esp_device_offline">#ff999999</color>

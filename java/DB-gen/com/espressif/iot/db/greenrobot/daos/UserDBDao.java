@@ -14,45 +14,36 @@ import com.espressif.iot.db.greenrobot.daos.UserDB;
 /**
  * DAO for table USER_DB.
  */
-public class UserDBDao extends AbstractDao<UserDB, Long>
-{
-    
+public class UserDBDao extends AbstractDao<UserDB, Long> {
+
     public static final String TABLENAME = "USER_DB";
-    
+
     /**
      * Properties of entity UserDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, long.class, "id", true, "_id");
-        
         public final static Property Email = new Property(1, String.class, "email", false, "EMAIL");
-        
         public final static Property Key = new Property(2, String.class, "key", false, "KEY");
-        
         public final static Property Name = new Property(3, String.class, "name", false, "NAME");
-        
         public final static Property IsLastLogin =
             new Property(4, boolean.class, "isLastLogin", false, "IS_LAST_LOGIN");
     };
-    
+
     private DaoSession daoSession;
-    
-    public UserDBDao(DaoConfig config)
-    {
+
+    public UserDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public UserDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public UserDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'USER_DB' (" + //
             "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
@@ -61,18 +52,16 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
             "'NAME' TEXT NOT NULL ," + // 3: name
             "'IS_LAST_LOGIN' INTEGER NOT NULL );"); // 4: isLastLogin
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'USER_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, UserDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, UserDB entity) {
         stmt.clearBindings();
         stmt.bindLong(1, entity.getId());
         stmt.bindString(2, entity.getEmail());
@@ -80,73 +69,63 @@ public class UserDBDao extends AbstractDao<UserDB, Long>
         stmt.bindString(4, entity.getName());
         stmt.bindLong(5, entity.getIsLastLogin() ? 1l : 0l);
     }
-    
+
     @Override
-    protected void attachEntity(UserDB entity)
-    {
+    protected void attachEntity(UserDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public UserDB readEntity(Cursor cursor, int offset)
-    {
+    public UserDB readEntity(Cursor cursor, int offset) {
         UserDB entity = new UserDB( //
             cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // email
             cursor.getString(offset + 2), // key
             cursor.getString(offset + 3), // name
             cursor.getShort(offset + 4) != 0 // isLastLogin
-            );
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, UserDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, UserDB entity, int offset) {
         entity.setId(cursor.getLong(offset + 0));
         entity.setEmail(cursor.getString(offset + 1));
         entity.setKey(cursor.getString(offset + 2));
         entity.setName(cursor.getString(offset + 3));
         entity.setIsLastLogin(cursor.getShort(offset + 4) != 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(UserDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(UserDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(UserDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(UserDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
 }

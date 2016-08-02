@@ -78,6 +78,7 @@ import com.espressif.iot.action.user.EspActionFindAccountInternet;
 import com.espressif.iot.action.user.EspActionGetSmsCaptchaCodeInternet;
 import com.espressif.iot.action.user.EspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.EspActionUserLoginDB;
+import com.espressif.iot.action.user.EspActionUserLoginGuest;
 import com.espressif.iot.action.user.EspActionUserLoginInternet;
 import com.espressif.iot.action.user.EspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.EspActionUserRegisterInternet;
@@ -87,6 +88,7 @@ import com.espressif.iot.action.user.IEspActionFindAccountnternet;
 import com.espressif.iot.action.user.IEspActionGetSmsCaptchaCodeInternet;
 import com.espressif.iot.action.user.IEspActionThirdPartyLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserLoginDB;
+import com.espressif.iot.action.user.IEspActionUserLoginGuest;
 import com.espressif.iot.action.user.IEspActionUserLoginInternet;
 import com.espressif.iot.action.user.IEspActionUserLoginPhoneInternet;
 import com.espressif.iot.action.user.IEspActionUserRegisterInternet;
@@ -137,7 +139,6 @@ import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspStrings;
 import com.espressif.iot.util.RandomUtil;
-import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.TimeUtil;
 
 public class EspUser implements IEspUser
@@ -152,7 +153,9 @@ public class EspUser implements IEspUser
     
     private List<IEspDevice> mDeviceList = new ArrayList<IEspDevice>();
     private final List<IEspDevice> mStaDeviceList = new ArrayList<IEspDevice>();
+    
     private final List<IEspDevice> mTempStaDeviceList = new ArrayList<IEspDevice>();
+    private final List<IEspDevice> mGuestDeviceList = new ArrayList<IEspDevice>();
     private final ReentrantLock mDeviceListsLock = new ReentrantLock();
     
     private volatile IEspActionDeviceEsptouch mActionDeviceEsptouch = null;
@@ -225,9 +228,26 @@ public class EspUser implements IEspUser
     @Override
     public boolean isLogin()
     {
-        return !TextUtils.isEmpty(mUserKey);
+        return mUserId > 0 && !TextUtils.isEmpty(mUserKey);
     }
     
+    @Override
+    public void clearTempStaDeviceList()
+    {
+        lockUserDeviceLists();
+        mTempStaDeviceList.clear();
+        unlockUserDeviceLists();
+    }
+    
+    @Override
+    public List<IEspDevice> getGuestDeviceList()
+    {
+        lockUserDeviceLists();
+        List<IEspDevice> result = mGuestDeviceList;
+        unlockUserDeviceLists();
+        return result;
+    }
+
     @Override
     public List<IEspDevice> getDeviceList()
     {
@@ -412,9 +432,10 @@ public class EspUser implements IEspUser
             group.setId(groupDB.getId());
             group.setName(groupDB.getName());
             group.setState(groupDB.getState());
+            group.setType(groupDB.getType());
             List<String> bssids = new ArrayList<String>();
-            bssids.addAll(dbManager.getDeviceBssids(groupDB.getLocalDeviceBssids()));
-            bssids.addAll(dbManager.getDeviceBssids(groupDB.getCloudDeviceBssids()));
+            bssids.addAll(dbManager.getLocalBssids(groupDB.getId()));
+            bssids.addAll(dbManager.getCloudBssids(groupDB.getId()));
             for (String bssid : bssids)
             {
                 for (IEspDevice device : userDevices)
@@ -545,12 +566,12 @@ public class EspUser implements IEspUser
         action.doActionDeviceSynchronizeDiscoverLocal(isSyn);
     }
     
-    private void __loadUserDeviceList()
+    private void __loadUserDeviceList(long userId, List<IEspDevice> deviceList)
     {
         lockUserDeviceLists();
         IOTUserDBManager iotUserDBManager = IOTUserDBManager.getInstance();
-        List<IDeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(mUserId);
-        mDeviceList.clear();
+        List<IDeviceDB> deviceDBList = iotUserDBManager.getUserDeviceList(userId);
+        deviceList.clear();
         // add device into mDeviceList by deviceDBList
         for (IDeviceDB deviceDB : deviceDBList)
         {
@@ -638,14 +659,14 @@ public class EspUser implements IEspUser
                     throw new IllegalStateException("device: " + device);
                 }
             }
-            mDeviceList.add(device);
+            deviceList.add(device);
         }
         // sort device list
         EspDeviceGenericComparator comparator = new EspDeviceGenericComparator();
-        Collections.sort(mDeviceList, comparator);
+        Collections.sort(deviceList, comparator);
         
         // do rename action or delete action if necessary
-        for (IEspDevice device : mDeviceList)
+        for (IEspDevice device : deviceList)
         {
             IEspDeviceState deviceState = device.getDeviceState();
             if (deviceState.isStateRenamed() && !deviceState.isStateDeleted())
@@ -692,7 +713,8 @@ public class EspUser implements IEspUser
         EspLoginResult result = action.doActionUserLoginInternet(userEmail, userPassword);
         if (result == EspLoginResult.SUC)
         {
-            __loadUserDeviceList();
+            clearUserDeviceLists();
+            __doActionLoginUser();
         }
         return result;
     }
@@ -704,9 +726,42 @@ public class EspUser implements IEspUser
         EspLoginResult result = action.doActionThirdPartyLoginInternet(espPlat);
         if (result == EspLoginResult.SUC)
         {
-            __loadUserDeviceList();
+            clearUserDeviceLists();
+            __doActionLoginUser();
         }
         return result;
+    }
+    
+    private void __doActionLoginUser()
+    {
+        lockUserDeviceLists();
+        __loadUserDeviceList(mUserId, mDeviceList);
+        __loadUserDeviceList(GUEST_USER_ID, mGuestDeviceList);
+        for (int i = mGuestDeviceList.size() - 1; i >= 0; i--)
+        {
+            IEspDevice guestDevice = mGuestDeviceList.get(i);
+            for (IEspDevice device : mDeviceList)
+            {
+                if (guestDevice.isSimilar(device))
+                {
+                    mGuestDeviceList.remove(i);
+                    break;
+                }
+            }
+        }
+        for (int i = mStaDeviceList.size() - 1; i >= 0; i--)
+        {
+            IEspDevice staDevice = mStaDeviceList.get(i);
+            for (IEspDevice device : mDeviceList)
+            {
+                if (staDevice.isSimilar(device))
+                {
+                    mStaDeviceList.remove(i);
+                    break;
+                }
+            }
+        }
+        unlockUserDeviceLists();
     }
     
     @Override
@@ -716,9 +771,29 @@ public class EspUser implements IEspUser
         EspLoginResult result = action.doActionUserLoginPhone(phoneNumber, password);
         if (result == EspLoginResult.SUC)
         {
-            __loadUserDeviceList();
+            __doActionLoginUser();
         }
         return result;
+    }
+
+    @Override
+    public IEspUser doActionUserLoginGuest()
+    {
+        IEspActionUserLoginGuest action = new EspActionUserLoginGuest();
+        IEspUser user = action.doActionUserLoginGuest();
+        saveUserInfoInDB();
+        lockUserDeviceLists();
+        __loadUserDeviceList(mUserId, mGuestDeviceList);
+        for (int i = mGuestDeviceList.size() - 1; i >= 0; i--)
+        {
+            IEspDevice guestDevice = mGuestDeviceList.get(i);
+            if (guestDevice.getDeviceState().isStateDeleted())
+            {
+                mGuestDeviceList.remove(i);
+            }
+        }
+        unlockUserDeviceLists();
+        return user;
     }
     
     @Override
@@ -726,40 +801,49 @@ public class EspUser implements IEspUser
     {
         IEspActionUserLoginDB action = new EspActionUserLoginDB();
         IEspUser result = action.doActionUserLoginDB();
-        SharedPreferences shared =
-            EspApplication.sharedInstance().getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
-        if (shared.getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN))
-        {
-            __loadUserDeviceList();
-        }
+        __doActionLoginUser();
         return result;
     }
-    
+
     @Override
     public void doActionUserLogout()
     {
+        // save guest firstly
+        mUserEmail = GUEST_USER_EMAIL;
+        mUserId = GUEST_USER_ID;
+        mUserKey = GUEST_USER_KEY;
+        mUserName = GUEST_USER_NAME;
+        saveUserInfoInDB();
+        // load guest device list
+        __loadUserDeviceList(mUserId, mGuestDeviceList);
+        // clear user
         mUserEmail = null;
         mUserId = 0;
         mUserKey = null;
         mUserName = null;
         mGroupList.clear();
+        lockUserDeviceLists();
         mDeviceList.clear();
         mStaDeviceList.clear();
         mTempStaDeviceList.clear();
+        unlockUserDeviceLists();
     }
     
     @Override
     public void loadUserDeviceListDB()
     {
-        __loadUserDeviceList();
+        __loadUserDeviceList(mUserId, mDeviceList);
     }
     
     @Override
     public void clearUserDeviceLists()
     {
+        lockUserDeviceLists();
         mDeviceList.clear();
         mStaDeviceList.clear();
         mTempStaDeviceList.clear();
+        mGuestDeviceList.clear();
+        unlockUserDeviceLists();
     }
     
     @Override
@@ -1007,7 +1091,7 @@ public class EspUser implements IEspUser
         // add temp sta device if not exist
         for (IEspDevice tempStaDevice : mTempStaDeviceList)
         {
-            __addOrUpdateStaDeivce(result, tempStaDevice);
+            __addOrUpdateStaDeivce(result, tempStaDevice, mGuestDeviceList);
         }
         unlockUserDeviceLists();
         return result;
@@ -1093,7 +1177,8 @@ public class EspUser implements IEspUser
         return isExist;
     }
     
-    private boolean __addOrUpdateStaDeivce(List<IEspDevice> staDeviceList, IEspDevice newStaDevice)
+    private boolean __addOrUpdateStaDeivce(List<IEspDevice> staDeviceList, IEspDevice newStaDevice,
+        List<IEspDevice> guestDeviceList)
     {
 //        log.debug("__addOrUpdateStaDeivce() staDeviceList:" + staDeviceList + ", newStaDevice:" + newStaDevice);
         boolean isChanged = false;
@@ -1144,6 +1229,21 @@ public class EspUser implements IEspUser
             staDeviceList.add(newStaDevice);
             log.debug("__addOrUpdateStaDeivce() add newStaDevice");
         }
+        // update device name by guest device
+        for (IEspDevice staDevice : staDeviceList)
+        {
+            for(IEspDevice guestDevice : guestDeviceList)
+            {
+                if(staDevice.getBssid().equals(guestDevice.getBssid())){
+                    staDevice.copyDeviceName(guestDevice);
+                    if(staDevice.getRom_version()==null&&guestDevice.getRom_version()!=null)
+                    {
+                        staDevice.copyDeviceRomVersion(guestDevice);
+                    }
+                    // for rssi don't store in db, guest device rssi has no meaning
+                }
+            }
+        }
         return isChanged;
     }
     
@@ -1161,7 +1261,7 @@ public class EspUser implements IEspUser
             iotAddress.setSSID(ssid);
             IEspDevice tempStaDevice = BEspDevice.getInstance().createStaDevice(iotAddress);
             tempStaDevice.setRootDeviceBssid(rootBssid);
-            boolean _isTempStaChanged = __addOrUpdateStaDeivce(mTempStaDeviceList, tempStaDevice);
+            boolean _isTempStaChanged = __addOrUpdateStaDeivce(mTempStaDeviceList, tempStaDevice, mGuestDeviceList);
             isDeviceChanged = isDeviceChanged ? true : _isTempStaChanged;
         }
         if (isDeviceChanged)
@@ -1193,14 +1293,29 @@ public class EspUser implements IEspUser
             boolean isExist = __updateDevice(deviceList, tempStaDevice);
             if (!isExist)
             {
-                __addOrUpdateStaDeivce(staDeviceList, tempStaDevice);
+                __addOrUpdateStaDeivce(staDeviceList, tempStaDevice, mGuestDeviceList);
             }
         }
         result.addAll(deviceList);
         result.addAll(staDeviceList);
 //        result.add(createTestDevice());
+        if (isLogin())
+        {
+            for(IEspDevice guestDevice : mGuestDeviceList)
+            {
+                boolean isExist = false;
+                for(IEspDevice deviceInResult : result) {
+                    if(deviceInResult.isSimilar(guestDevice)){
+                        isExist = true;
+                        break;
+                    }
+                }
+                if(!isExist) {
+                    result.add(guestDevice);
+                }
+            }
+        }
         unlockUserDeviceLists();
-        
         return result;
     }
     
@@ -1494,7 +1609,15 @@ public class EspUser implements IEspUser
         String randomToken = RandomUtil.random40();
         IEspDeviceConfigure deviceConfigure = BEspDevice.getInstance().createConfiguringDevice(device, randomToken);
         String deviceName = device.getName();
+        EspDeviceType deviceType = device.getDeviceType();
+        String romVersion = device.getRom_version();
+        int rssi = device.getRssi();
+        String info = device.getInfo();
         deviceConfigure.setName(deviceName);
+        deviceConfigure.setDeviceType(deviceType);
+        deviceConfigure.setRom_version(romVersion);
+        deviceConfigure.setRssi(rssi);
+        deviceConfigure.setInfo(info);
         deviceConfigure.setUserId(mUserId);
         log.info("addDeviceAsyn() device:" + device + " before stateMachine");
         IEspDeviceStateMachine stateMachine = EspDeviceStateMachine.getInstance();
@@ -1653,6 +1776,14 @@ public class EspUser implements IEspUser
     }
     
     @Override
+    public void doActionGroupCreate(String groupName, int groupType) {
+        IEspActionGroupEditDB action = new EspActionGroupEditDB();
+        action.doActionGroupCreate(groupName, groupType, mUserKey);
+        
+        EspGroupHandler.getInstance().call();
+    }
+    
+    @Override
     public void doActionGroupRename(IEspGroup group, String newName)
     {
         IEspActionGroupEditDB action = new EspActionGroupEditDB();
@@ -1681,7 +1812,6 @@ public class EspUser implements IEspUser
     
     @Override
     public void doActionGroupDeviceMoveInto(List<IEspDevice> devices, IEspGroup group) {
-        // TODO Auto-generated method stub
         IEspActionGroupDeviceDB action = new EspActionGroupDeviceDB();
         for (IEspDevice device : devices) {
             action.doActionMoveDeviceIntoGroupDB(mUserKey, device, group);
@@ -1834,4 +1964,5 @@ public class EspUser implements IEspUser
         IEspActionDeviceTriggerDelete action = new EspActionDeviceTriggerDelete();
         return action.deleteTriggerInternet(device, trigger.getId());
     }
+
 }

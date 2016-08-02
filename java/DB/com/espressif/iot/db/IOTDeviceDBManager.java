@@ -87,6 +87,14 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
         return result;
     }
     
+    private DeviceDB getDeviceByBssid(String bssid)
+    {
+        Query<DeviceDB> query = deviceDao.queryBuilder().where(Properties.Bssid.eq(bssid)).build();
+        DeviceDB result = query.unique();
+        log.debug(Thread.currentThread().toString() + "##getDeviceByBssid(bssid=[" + bssid + "]): " + result);
+        return result;
+    }
+    
     public synchronized void renameDevice(long deviceId, String name)
     {
         DeviceDB device = getDeviceById(deviceId);
@@ -108,6 +116,8 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
     public synchronized long insertActivatingDevice(String key, String bssid, int type, int state, String name,
         String rom_version, String latest_rom_version, long timestamp, long userId)
     {
+        // to support local device save into db, bssid will become unique
+        deleteDevicesByBssid(bssid);
         long deviceId = getNegativeDeviceIdByBssid(bssid);
         if (deviceId >= 0)
         {
@@ -123,11 +133,57 @@ public class IOTDeviceDBManager implements IDeviceDBManager, IEspSingletonObject
         return deviceDao.insertOrReplace(deviceDB);
     }
     
+    private void deleteDevicesByBssid(long newId, String bssid)
+    {
+        if (newId > 0)
+        {
+//            deleteDevicesByBssid(bssid);
+            Query<DeviceDB> query = deviceDao.queryBuilder().where(Properties.Bssid.eq(bssid)).build();
+            List<DeviceDB> deviceList = query.list();
+            for (int i = deviceList.size() - 1; i >= 0; i--)
+            {
+                long deviceId = deviceList.get(i).getId();
+                if (deviceId < 0)
+                {
+                    deviceList.remove(i);
+                }
+            }
+            if (!deviceList.isEmpty())
+            {
+                deviceDao.deleteInTx(deviceList);
+                log.info(Thread.currentThread().toString() + "##deleteDevicesByBssid(newId=" + newId + " bssid="
+                    + bssid + "]):" + deviceList);
+            }
+        }
+        else
+        {
+            Query<DeviceDB> query = deviceDao.queryBuilder().where(Properties.Bssid.eq(bssid)).build();
+            List<DeviceDB> deviceList = query.list();
+            for (int i = deviceList.size() - 1; i >= 0; i--)
+            {
+                long deviceId = deviceList.get(i).getId();
+                if (deviceId > 0)
+                {
+                    deviceList.remove(i);
+                }
+            }
+            if (!deviceList.isEmpty())
+            {
+                deviceDao.deleteInTx(deviceList);
+                log.info(Thread.currentThread().toString() + "##deleteDevicesByBssid(newId=" + newId + " bssid="
+                    + bssid + "]):" + deviceList);
+            }
+        }
+    }
+    
     @Override
     public synchronized void insertOrReplace(long deviceId, String key, String bssid, int type, int state,
         boolean isOwner, String name, String rom_version, String latest_rom_version, long timestamp,
         long activatedTime, long userId)
     {
+        // to support local device save into db, bssid will become unique
+        // but guest can't delete user's device
+        deleteDevicesByBssid(deviceId, bssid);
         DeviceDB deviceDB =
             new DeviceDB(deviceId, key, bssid, type, state, isOwner, name, rom_version, latest_rom_version, timestamp,
                 activatedTime, userId);

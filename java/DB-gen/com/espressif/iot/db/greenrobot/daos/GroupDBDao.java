@@ -14,168 +14,117 @@ import com.espressif.iot.db.greenrobot.daos.GroupDB;
 /**
  * DAO for table GROUP_DB.
  */
-public class GroupDBDao extends AbstractDao<GroupDB, Long>
-{
-    
+public class GroupDBDao extends AbstractDao<GroupDB, Long> {
+
     public static final String TABLENAME = "GROUP_DB";
-    
+
     /**
      * Properties of entity GroupDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, long.class, "id", true, "_id");
-        
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
-        
         public final static Property UserKey = new Property(2, String.class, "userKey", false, "USER_KEY");
-        
         public final static Property State = new Property(3, int.class, "state", false, "STATE");
-        
-        public final static Property LocalDeviceBssids = new Property(4, String.class, "localDeviceBssids", false,
-            "LOCAL_DEVICE_BSSIDS");
-        
-        public final static Property CloudDeviceBssids = new Property(5, String.class, "cloudDeviceBssids", false,
-            "CLOUD_DEVICE_BSSIDS");
-        
-        public final static Property RemoveDeviceBssids = new Property(6, String.class, "removeDeviceBssids", false,
-            "REMOVE_DEVICE_BSSIDS");
+        public final static Property Type = new Property(4, int.class, "type", false, "TYPE");
     };
-    
+
     private DaoSession daoSession;
-    
-    public GroupDBDao(DaoConfig config)
-    {
+
+    public GroupDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public GroupDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public GroupDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'GROUP_DB' (" + //
             "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
             "'NAME' TEXT NOT NULL ," + // 1: name
             "'USER_KEY' TEXT NOT NULL ," + // 2: userKey
             "'STATE' INTEGER NOT NULL ," + // 3: state
-            "'LOCAL_DEVICE_BSSIDS' TEXT," + // 4: localDeviceBssids
-            "'CLOUD_DEVICE_BSSIDS' TEXT," + // 5: cloudDeviceBssids
-            "'REMOVE_DEVICE_BSSIDS' TEXT);"); // 6: removeDeviceBssids
+            "'TYPE' INTEGER NOT NULL );"); // 4: type
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'GROUP_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, GroupDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, GroupDB entity) {
         stmt.clearBindings();
         stmt.bindLong(1, entity.getId());
         stmt.bindString(2, entity.getName());
         stmt.bindString(3, entity.getUserKey());
         stmt.bindLong(4, entity.getState());
-        
-        String localDeviceBssids = entity.getLocalDeviceBssids();
-        if (localDeviceBssids != null)
-        {
-            stmt.bindString(5, localDeviceBssids);
-        }
-        
-        String cloudDeviceBssids = entity.getCloudDeviceBssids();
-        if (cloudDeviceBssids != null)
-        {
-            stmt.bindString(6, cloudDeviceBssids);
-        }
-        
-        String removeDeviceBssids = entity.getRemoveDeviceBssids();
-        if (removeDeviceBssids != null)
-        {
-            stmt.bindString(7, removeDeviceBssids);
-        }
+        stmt.bindLong(5, entity.getType());
     }
-    
+
     @Override
-    protected void attachEntity(GroupDB entity)
-    {
+    protected void attachEntity(GroupDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public GroupDB readEntity(Cursor cursor, int offset)
-    {
+    public GroupDB readEntity(Cursor cursor, int offset) {
         GroupDB entity = new GroupDB( //
             cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // name
             cursor.getString(offset + 2), // userKey
             cursor.getInt(offset + 3), // state
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // localDeviceBssids
-            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // cloudDeviceBssids
-            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6) // removeDeviceBssids
-            );
+            cursor.getInt(offset + 4) // type
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, GroupDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, GroupDB entity, int offset) {
         entity.setId(cursor.getLong(offset + 0));
         entity.setName(cursor.getString(offset + 1));
         entity.setUserKey(cursor.getString(offset + 2));
         entity.setState(cursor.getInt(offset + 3));
-        entity.setLocalDeviceBssids(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setCloudDeviceBssids(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setRemoveDeviceBssids(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setType(cursor.getInt(offset + 4));
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(GroupDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(GroupDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(GroupDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(GroupDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
 }

@@ -42,7 +42,6 @@ public class EspScrollLayout extends LinearLayout {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        System.out.println("onLayout()");
         super.onLayout(changed, l, t, r, b);
 
         int width = getWidth();

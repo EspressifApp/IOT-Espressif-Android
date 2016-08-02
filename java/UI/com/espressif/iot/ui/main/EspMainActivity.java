@@ -97,8 +97,11 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
 
         boolean autoLogin = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE)
             .getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN);
+        
         if (autoLogin) {
             mUser.doActionUserLoginDB();
+        } else {
+            mUser.doActionUserLoginGuest();
         }
         if (mUser.isLogin()) {
             if (mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_ESPPUSH, EspDefaults.ESPPUSH_ON)) {
@@ -231,6 +234,7 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
             EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
             EspGroupHandler.getInstance().finish();
             EspProxyServerImpl.getInstance().stop();
+            mUser.clearUserDeviceLists();
 
             return null;
         }

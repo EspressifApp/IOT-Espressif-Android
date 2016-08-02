@@ -13,6 +13,8 @@ import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceConfigure;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.state.EspDeviceState;
+import com.espressif.iot.user.IEspUser;
+import com.espressif.iot.user.builder.BEspUser;
 
 public class EspDeviceConfigure extends EspDevice implements IEspDeviceConfigure
 {
@@ -56,8 +58,16 @@ public class EspDeviceConfigure extends EspDevice implements IEspDeviceConfigure
     @Override
     public IEspDevice doActionDeviceConfigureActivateInternet(long userId, String userKey, String randomToken)
     {
+        String deviceName = mDeviceName;
         IEspActionDeviceConfigureActivateInternet action = new EspActionDeviceConfigureActivateInternet();
-        return action.doActionDeviceConfigureActivateInternet(userId, userKey, randomToken);
+        IEspDevice newDevice = action.doActionDeviceConfigureActivateInternet(userId, userKey, randomToken);
+        if (newDevice != null && !newDevice.getName().equals(deviceName))
+        {
+            newDevice.setName(deviceName);
+            IEspUser user = BEspUser.getBuilder().getInstance();
+            user.doActionRename(newDevice, deviceName);
+        }
+        return newDevice;
     }
     
     @Override

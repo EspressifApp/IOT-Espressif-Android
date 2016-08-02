@@ -14,125 +14,106 @@ import com.espressif.iot.db.greenrobot.daos.DownloadIdValueDB;
 /**
  * DAO for table DOWNLOAD_ID_VALUE_DB.
  */
-public class DownloadIdValueDBDao extends AbstractDao<DownloadIdValueDB, Long>
-{
-    
+public class DownloadIdValueDBDao extends AbstractDao<DownloadIdValueDB, Long> {
+
     public static final String TABLENAME = "DOWNLOAD_ID_VALUE_DB";
-    
+
     /**
      * Properties of entity DownloadIdValueDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        
         public final static Property IdValue = new Property(1, long.class, "idValue", false, "ID_VALUE");
     };
-    
+
     private DaoSession daoSession;
-    
-    public DownloadIdValueDBDao(DaoConfig config)
-    {
+
+    public DownloadIdValueDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public DownloadIdValueDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public DownloadIdValueDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'DOWNLOAD_ID_VALUE_DB' (" + //
             "'_id' INTEGER PRIMARY KEY ," + // 0: id
             "'ID_VALUE' INTEGER NOT NULL UNIQUE );"); // 1: idValue
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'DOWNLOAD_ID_VALUE_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, DownloadIdValueDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, DownloadIdValueDB entity) {
         stmt.clearBindings();
-        
+
         Long id = entity.getId();
-        if (id != null)
-        {
+        if (id != null) {
             stmt.bindLong(1, id);
         }
         stmt.bindLong(2, entity.getIdValue());
     }
-    
+
     @Override
-    protected void attachEntity(DownloadIdValueDB entity)
-    {
+    protected void attachEntity(DownloadIdValueDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public DownloadIdValueDB readEntity(Cursor cursor, int offset)
-    {
+    public DownloadIdValueDB readEntity(Cursor cursor, int offset) {
         DownloadIdValueDB entity = new DownloadIdValueDB( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getLong(offset + 1) // idValue
-            );
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, DownloadIdValueDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, DownloadIdValueDB entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setIdValue(cursor.getLong(offset + 1));
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(DownloadIdValueDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(DownloadIdValueDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(DownloadIdValueDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(DownloadIdValueDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
 }

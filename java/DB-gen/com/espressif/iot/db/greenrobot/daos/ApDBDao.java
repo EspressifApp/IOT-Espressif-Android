@@ -14,51 +14,40 @@ import com.espressif.iot.db.greenrobot.daos.ApDB;
 /**
  * DAO for table AP_DB.
  */
-public class ApDBDao extends AbstractDao<ApDB, Long>
-{
-    
+public class ApDBDao extends AbstractDao<ApDB, Long> {
+
     public static final String TABLENAME = "AP_DB";
-    
+
     /**
      * Properties of entity ApDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        
         public final static Property Bssid = new Property(1, String.class, "bssid", false, "BSSID");
-        
         public final static Property Ssid = new Property(2, String.class, "ssid", false, "SSID");
-        
         public final static Property Password = new Property(3, String.class, "password", false, "PASSWORD");
-        
-        public final static Property IsLastSelected = new Property(4, boolean.class, "isLastSelected", false,
-            "IS_LAST_SELECTED");
-        
-        public final static Property ConfiguredFailedCount = new Property(5, int.class, "configuredFailedCount", false,
-            "CONFIGURED_FAILED_COUNT");
-        
-        public final static Property DeviceBssids = new Property(6, String.class, "deviceBssids", false,
-            "DEVICE_BSSIDS");
+        public final static Property IsLastSelected =
+            new Property(4, boolean.class, "isLastSelected", false, "IS_LAST_SELECTED");
+        public final static Property ConfiguredFailedCount =
+            new Property(5, int.class, "configuredFailedCount", false, "CONFIGURED_FAILED_COUNT");
+        public final static Property DeviceBssids =
+            new Property(6, String.class, "deviceBssids", false, "DEVICE_BSSIDS");
     };
-    
+
     private DaoSession daoSession;
-    
-    public ApDBDao(DaoConfig config)
-    {
+
+    public ApDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public ApDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public ApDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'AP_DB' (" + //
             "'_id' INTEGER PRIMARY KEY ," + // 0: id
@@ -69,23 +58,20 @@ public class ApDBDao extends AbstractDao<ApDB, Long>
             "'CONFIGURED_FAILED_COUNT' INTEGER NOT NULL ," + // 5: configuredFailedCount
             "'DEVICE_BSSIDS' TEXT NOT NULL );"); // 6: deviceBssids
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'AP_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, ApDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, ApDB entity) {
         stmt.clearBindings();
-        
+
         Long id = entity.getId();
-        if (id != null)
-        {
+        if (id != null) {
             stmt.bindLong(1, id);
         }
         stmt.bindString(2, entity.getBssid());
@@ -95,25 +81,22 @@ public class ApDBDao extends AbstractDao<ApDB, Long>
         stmt.bindLong(6, entity.getConfiguredFailedCount());
         stmt.bindString(7, entity.getDeviceBssids());
     }
-    
+
     @Override
-    protected void attachEntity(ApDB entity)
-    {
+    protected void attachEntity(ApDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public ApDB readEntity(Cursor cursor, int offset)
-    {
+    public ApDB readEntity(Cursor cursor, int offset) {
         ApDB entity = new ApDB( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // bssid
@@ -122,14 +105,13 @@ public class ApDBDao extends AbstractDao<ApDB, Long>
             cursor.getShort(offset + 4) != 0, // isLastSelected
             cursor.getInt(offset + 5), // configuredFailedCount
             cursor.getString(offset + 6) // deviceBssids
-            );
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, ApDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, ApDB entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setBssid(cursor.getString(offset + 1));
         entity.setSsid(cursor.getString(offset + 2));
@@ -138,34 +120,28 @@ public class ApDBDao extends AbstractDao<ApDB, Long>
         entity.setConfiguredFailedCount(cursor.getInt(offset + 5));
         entity.setDeviceBssids(cursor.getString(offset + 6));
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(ApDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(ApDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(ApDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(ApDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
 }

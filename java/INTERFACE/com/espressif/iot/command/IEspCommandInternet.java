@@ -49,6 +49,12 @@ public interface IEspCommandInternet extends IEspCommand
     
     static final String L = "l";
     
+    static final String Payload = "payload";
+    
+    static final String Info = "info";
+    
+    static final String Rssi = "rssi";
+    
     static final String Name = "name";
     
     static final String Scope = "scope";

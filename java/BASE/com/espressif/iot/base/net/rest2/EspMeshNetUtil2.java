@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.user.IEspUser;
@@ -165,12 +166,14 @@ public class EspMeshNetUtil2
         static class CREATOR
         {
             static MeshDevice createInstance(String bssid, InetAddress rootInetAddress, String parentBssid,
-                EspDeviceType deviceTypeEnum, int childrenCount, String romVersion)
+                EspDeviceType deviceTypeEnum, int childrenCount, String romVersion, int rssi, String info)
             {
                 IOTAddress iotAddress = new IOTAddress(bssid, rootInetAddress, true);
                 iotAddress.setParentBssid(parentBssid);
                 iotAddress.setEspDeviceTypeEnum(deviceTypeEnum);
                 iotAddress.setRomVersion(romVersion);
+                iotAddress.setRssi(rssi);
+                iotAddress.setInfo(info);
                 MeshDevice meshDevice = new MeshDevice(iotAddress, childrenCount);
                 return meshDevice;
             }
@@ -238,6 +241,8 @@ public class EspMeshNetUtil2
             int currentCount = jsonResult.getInt("num") - 1;
             // parse rom version
             String romVersion = jsonResult.isNull("ver") ? null : jsonResult.getString("ver");
+            int rssi = jsonResult.optInt("rssi", IEspDevice.RSSI_NULL);
+            String info = jsonResult.optString("info", null);
             // build current device
             currentDevice =
                 MeshDevice.CREATOR.createInstance(deviceBssid,
@@ -245,7 +250,9 @@ public class EspMeshNetUtil2
                     currentParentBssid,
                     currentDeviceType,
                     currentCount,
-                    romVersion);
+                    romVersion,
+                    rssi,
+                    info);
             // parse children device
             JSONArray jsonArrayChildren = jsonResult.getJSONArray("children");
             for (int i = 0; i < jsonArrayChildren.length(); ++i)
@@ -263,6 +270,8 @@ public class EspMeshNetUtil2
                 int childCount = jsonChild.getInt("num");
                 // parse rom version
                 String childRomVersion = jsonChild.isNull("ver") ? null : jsonChild.getString("ver");
+                int childRssi = jsonChild.optInt("rssi", IEspDevice.RSSI_NULL);
+                String childInfo = jsonChild.optString("info", null);
                 // build child device
                 MeshDevice childDevice =
                     MeshDevice.CREATOR.createInstance(childBssid,
@@ -270,7 +279,9 @@ public class EspMeshNetUtil2
                         currentBssid,
                         childDeviceType,
                         childCount,
-                        childRomVersion);
+                        childRomVersion,
+                        childRssi,
+                        childInfo);
                 // add child device into current device's child list
                 currentDevice.addChild(childDevice);
             }

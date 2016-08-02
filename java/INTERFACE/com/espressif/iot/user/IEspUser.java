@@ -33,6 +33,14 @@ public interface IEspUser extends IEspSingletonObject
     
     final String[] MESH_DEVICE_SSID_PREFIX = {"espressif_"};
     
+    public static final long GUEST_USER_ID = -1;
+    
+    public static final String GUEST_USER_KEY = "guest";
+    
+    public static final String GUEST_USER_EMAIL = "guest";
+    
+    public static final String GUEST_USER_NAME = "guest";
+    
     /**
      * when the device is configured just now, the softap will be scanned, but it should be ignored
      */
@@ -94,7 +102,24 @@ public interface IEspUser extends IEspSingletonObject
      */
     String getUserName();
     
+    /**
+     * Check whether the user has login
+     * 
+     * @return whether the user has login
+     */
     boolean isLogin();
+    
+    /**
+     * Clear temp sta device list
+     */
+    void clearTempStaDeviceList();
+    
+    /**
+     * Get the guest's device list
+     * 
+     * @return the guest's device list
+     */
+    List<IEspDevice> getGuestDeviceList();
     
     /**
      * Get the devices of this user
@@ -277,6 +302,13 @@ public interface IEspUser extends IEspSingletonObject
      * @return @see IEspUser
      */
     IEspUser doActionUserLoginDB();
+    
+    /**
+     * auto login according to local db by guest
+     * 
+     * @return @see IEspUser
+     */
+    IEspUser doActionUserLoginGuest();
     
     /**
      * Logout. Clear the user info
@@ -654,6 +686,14 @@ public interface IEspUser extends IEspSingletonObject
      * @param groupName
      */
     void doActionGroupCreate(String groupName);
+    
+    /**
+     * Create a new group
+     * 
+     * @param groupName
+     * @param groupType
+     */
+    void doActionGroupCreate(String groupName, int groupType);
     
     /**
      * Rename a group

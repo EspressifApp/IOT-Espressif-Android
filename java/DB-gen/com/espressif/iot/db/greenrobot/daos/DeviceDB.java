@@ -12,61 +12,45 @@ import com.espressif.iot.object.db.IDeviceDB;
 /**
  * Entity mapped to table DEVICE_DB.
  */
-public class DeviceDB implements IDeviceDB
-{
-    
+public class DeviceDB implements IDeviceDB {
+
     private long id;
-    
     /** Not-null value. */
     private String key;
-    
     /** Not-null value. */
     private String bssid;
-    
     private int type;
-    
     private int state;
-    
     private boolean isOwner;
-    
     /** Not-null value. */
     private String name;
-    
     private String rom_version;
-    
     private String latest_rom_version;
-    
     private long timestamp;
-    
     private long activatedTime;
-    
     private long userId;
-    
+
     /** Used to resolve relations */
     private transient DaoSession daoSession;
-    
+
     /** Used for active entity operations. */
     private transient DeviceDBDao myDao;
-    
+
     private UserDB userDB;
-    
     private Long userDB__resolvedKey;
-    
+
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
-    
-    public DeviceDB()
-    {
+
+    public DeviceDB() {
     }
-    
-    public DeviceDB(long id)
-    {
+
+    public DeviceDB(long id) {
         this.id = id;
     }
-    
+
     public DeviceDB(long id, String key, String bssid, int type, int state, boolean isOwner, String name,
-        String rom_version, String latest_rom_version, long timestamp, long activatedTime, long userId)
-    {
+        String rom_version, String latest_rom_version, long timestamp, long activatedTime, long userId) {
         this.id = id;
         this.key = key;
         this.bssid = bssid;
@@ -80,206 +64,168 @@ public class DeviceDB implements IDeviceDB
         this.activatedTime = activatedTime;
         this.userId = userId;
     }
-    
+
     /** called by internal mechanisms, do not call yourself. */
-    public void __setDaoSession(DaoSession daoSession)
-    {
+    public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getDeviceDBDao() : null;
     }
-    
-    public long getId()
-    {
+
+    public long getId() {
         return id;
     }
-    
-    public void setId(long id)
-    {
+
+    public void setId(long id) {
         this.id = id;
     }
-    
+
     /** Not-null value. */
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setKey(String key)
-    {
+    public void setKey(String key) {
         this.key = key;
     }
-    
+
     /** Not-null value. */
-    public String getBssid()
-    {
+    public String getBssid() {
         return bssid;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setBssid(String bssid)
-    {
+    public void setBssid(String bssid) {
         this.bssid = bssid;
     }
-    
-    public int getType()
-    {
+
+    public int getType() {
         return type;
     }
-    
-    public void setType(int type)
-    {
+
+    public void setType(int type) {
         this.type = type;
     }
-    
-    public int getState()
-    {
+
+    public int getState() {
         return state;
     }
-    
-    public void setState(int state)
-    {
+
+    public void setState(int state) {
         this.state = state;
     }
-    
-    public boolean getIsOwner()
-    {
+
+    public boolean getIsOwner() {
         return isOwner;
     }
-    
-    public void setIsOwner(boolean isOwner)
-    {
+
+    public void setIsOwner(boolean isOwner) {
         this.isOwner = isOwner;
     }
-    
+
     /** Not-null value. */
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
-    
-    public String getRom_version()
-    {
+
+    public String getRom_version() {
         return rom_version;
     }
-    
-    public void setRom_version(String rom_version)
-    {
+
+    public void setRom_version(String rom_version) {
         this.rom_version = rom_version;
     }
-    
-    public String getLatest_rom_version()
-    {
+
+    public String getLatest_rom_version() {
         return latest_rom_version;
     }
-    
-    public void setLatest_rom_version(String latest_rom_version)
-    {
+
+    public void setLatest_rom_version(String latest_rom_version) {
         this.latest_rom_version = latest_rom_version;
     }
-    
-    public long getTimestamp()
-    {
+
+    public long getTimestamp() {
         return timestamp;
     }
-    
-    public void setTimestamp(long timestamp)
-    {
+
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
-    
-    public long getActivatedTime()
-    {
+
+    public long getActivatedTime() {
         return activatedTime;
     }
-    
-    public void setActivatedTime(long activatedTime)
-    {
+
+    public void setActivatedTime(long activatedTime) {
         this.activatedTime = activatedTime;
     }
-    
-    public long getUserId()
-    {
+
+    public long getUserId() {
         return userId;
     }
-    
-    public void setUserId(long userId)
-    {
+
+    public void setUserId(long userId) {
         this.userId = userId;
     }
-    
+
     /** To-one relationship, resolved on first access. */
-    public UserDB getUserDB()
-    {
+    public UserDB getUserDB() {
         long __key = this.userId;
-        if (userDB__resolvedKey == null || !userDB__resolvedKey.equals(__key))
-        {
-            if (daoSession == null)
-            {
+        if (userDB__resolvedKey == null || !userDB__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             UserDBDao targetDao = daoSession.getUserDBDao();
             UserDB userDBNew = targetDao.load(__key);
-            synchronized (this)
-            {
+            synchronized (this) {
                 userDB = userDBNew;
                 userDB__resolvedKey = __key;
             }
         }
         return userDB;
     }
-    
-    public void setUserDB(UserDB userDB)
-    {
-        if (userDB == null)
-        {
+
+    public void setUserDB(UserDB userDB) {
+        if (userDB == null) {
             throw new DaoException("To-one property 'userId' has not-null constraint; cannot set to-one to null");
         }
-        synchronized (this)
-        {
+        synchronized (this) {
             this.userDB = userDB;
             userId = userDB.getId();
             userDB__resolvedKey = userId;
         }
     }
-    
+
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
-    public void delete()
-    {
-        if (myDao == null)
-        {
+    public void delete() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.delete(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
-    public void update()
-    {
-        if (myDao == null)
-        {
+    public void update() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
-    public void refresh()
-    {
-        if (myDao == null)
-        {
+    public void refresh() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.refresh(this);
     }
-    
+
     // KEEP METHODS - put your custom methods here
     // KEEP METHODS END
-    
+
 }

@@ -47,7 +47,7 @@ import com.espressif.iot.util.EspDefaults;
 public class SettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener
 {
     private final Logger log = Logger.getLogger(getClass());
-    
+
     /**
      * The default update log URL
      */
@@ -60,53 +60,55 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
      * The path for AssetManager
      */
     private static final String VERSION_LOG_PATH = "html/%locale/update.html";
-    
+
     private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
     private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
-    private static final String KEY_SHOW_MESH_TREE = "device_show_mesh_tree";
     private static final String KEY_LIGHT_TWINKLE_MODE = "device_light_twinkle_mode";
-    
+
     private static final String KEY_VERSION_CATEGORY = "version_category";
     private static final String KEY_VERSION_NAME = "version_name";
     private static final String KEY_VERSION_UPGRADE = "version_upgrade";
     private static final String KEY_VERSION_LOG = "version_log";
-    
+
     private static final String KEY_STORE_LOG = "store_log";
     private static final String KEY_READ_LOG = "read_log";
     private static final String KEY_CLEAR_LOG = "clear_log";
-    
+
     private static final String KEY_WIFI_EDIT = "wifi_edit";
-    
+
     private static final String KEY_MESSAGE_ESPPUSH = "message_esppush";
-    
+
     private ListPreference mAutoRefreshDevicePre;
     private ListPreference mAutoConfigureDevicePre;
-    private CheckBoxPreference mShowMeshTreePre;
     private Preference mLightTwinkleModePre;
-    
+
     private PreferenceCategory mVersionCategory;
     private Preference mVersionNamePre;
     private Preference mVersionUpgradePre;
     private Preference mVersionLogPre;
-    
+
     private CheckBoxPreference mStoreLogPre;
     private Preference mReadLogPre;
     private Preference mClearLogPre;
-    
+
     private Preference mWifiEditPre;
-    
+
     private CheckBoxPreference mEspPushPre;
-    
+
     private IEspUser mUser;
-    
+
     private UpgradeApkTask mUpgradeApkTask;
-    
+
     private AlertDialog mLogDialog;
     private List<String> mLogList;
     private ArrayAdapter<String> mLogAdapter;
-    
+
     private SharedPreferences mShared;
-    
+
+    private boolean mShowMeshTree;
+    private long mSurpriseClickTime;
+    private int mSurpriseClickCount;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -124,11 +126,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAutoRefreshDevicePre.setValue(autoRefreshTime);
         mAutoRefreshDevicePre.setSummary(mAutoRefreshDevicePre.getEntry());
         mAutoRefreshDevicePre.setOnPreferenceChangeListener(this);
-        mShowMeshTreePre = (CheckBoxPreference)findPreference(KEY_SHOW_MESH_TREE);
-        boolean showMeshTree =
-            mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
-        mShowMeshTreePre.setChecked(showMeshTree);
-        mShowMeshTreePre.setOnPreferenceChangeListener(this);
         mLightTwinkleModePre = findPreference(KEY_LIGHT_TWINKLE_MODE);
         
         mAutoConfigureDevicePre = (ListPreference)findPreference(KEY_AUTO_CONFIGURE_DEVICE);
@@ -172,6 +169,8 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mEspPushPre.setChecked(espPushOnOff);
         mEspPushPre.setOnPreferenceChangeListener(this);
         mEspPushPre.setEnabled(mUser.isLogin());
+
+        mShowMeshTree = mShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
     }
     
     @Override
@@ -217,7 +216,12 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             startActivity(new Intent(getActivity(), LightTwinkleActivity.class));
             return true;
         }
-        
+        else if (preference == mVersionNamePre) {
+            if (!mShowMeshTree) {
+                somethingHappen();
+            }
+        }
+
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
     
@@ -238,12 +242,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
             mAutoConfigureDevicePre.setValue(value);
             mAutoConfigureDevicePre.setSummary(mAutoConfigureDevicePre.getEntry());
             mShared.edit().putInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, Integer.parseInt(value)).apply();
-            return true;
-        }
-        else if (preference == mShowMeshTreePre)
-        {
-            boolean showMeshTree = (Boolean)newValue;
-            mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, showMeshTree).apply();
             return true;
         }
         else if (preference == mStoreLogPre)
@@ -442,7 +440,23 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         
         return result;
     }
-    
+
+    private void somethingHappen() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - mSurpriseClickTime < 300) {
+            mSurpriseClickCount++;
+            if (mSurpriseClickCount > 5) {
+                mSurpriseClickCount = 1;
+                mShared.edit().putBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, true).apply();
+                mShowMeshTree = true;
+                Toast.makeText(getActivity(), R.string.esp_settings_surprise_msg, Toast.LENGTH_LONG).show();
+            }
+        } else {
+            mSurpriseClickCount = 1;
+        }
+        mSurpriseClickTime = currentTime;
+    }
+
     //******** About Debug *********//
     private void readDebugLog()
     {

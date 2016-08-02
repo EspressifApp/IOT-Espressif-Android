@@ -1,5 +1,7 @@
 package com.espressif.iot.type.device.status;
 
+import android.graphics.Color;
+
 public class EspStatusLight implements IEspStatusLight, Cloneable
 {
     private int mCWhite;
@@ -12,7 +14,7 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
     
     private int mPeriod;
     
-    private int mStatus;
+    private int mStatus = STATUS_NULL;
     
     @Override
     public int getRed()
@@ -136,5 +138,33 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
     @Override
     public void setStatus(int status) {
         mStatus = status;
+    }
+
+    @Override
+    public int getCurrentColor() {
+        boolean isColorStatus = true;
+        switch (mStatus) {
+            case STATUS_OFF:
+                return Color.BLACK;
+            case STATUS_ON:
+                if (mRed == mGreen && mRed == mBlue && mRed == 0) {
+                    isColorStatus = false;
+                }
+                break;
+            case STATUS_COLOR:
+                isColorStatus = true;
+                break;
+            case STATUS_BRIGHT:
+                isColorStatus = false;
+                break;
+        }
+        
+        int color;
+        if (isColorStatus) {
+            color = Color.rgb(mRed, mGreen, mBlue);
+        } else {
+            color = Color.rgb(mWhite, mWhite, mWhite);
+        }
+        return color;
     }
 }

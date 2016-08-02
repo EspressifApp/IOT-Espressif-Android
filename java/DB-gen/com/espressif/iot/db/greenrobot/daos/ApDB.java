@@ -12,48 +12,38 @@ import com.espressif.iot.object.db.IApDB;
 /**
  * Entity mapped to table AP_DB.
  */
-public class ApDB implements IApDB
-{
-    
+public class ApDB implements IApDB {
+
     private Long id;
-    
     /** Not-null value. */
     private String bssid;
-    
     /** Not-null value. */
     private String ssid;
-    
     /** Not-null value. */
     private String password;
-    
     private boolean isLastSelected;
-    
     private int configuredFailedCount;
-    
     /** Not-null value. */
     private String deviceBssids;
-    
+
     /** Used to resolve relations */
     private transient DaoSession daoSession;
-    
+
     /** Used for active entity operations. */
     private transient ApDBDao myDao;
-    
+
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
-    
-    public ApDB()
-    {
+
+    public ApDB() {
     }
-    
-    public ApDB(Long id)
-    {
+
+    public ApDB(Long id) {
         this.id = id;
     }
-    
+
     public ApDB(Long id, String bssid, String ssid, String password, boolean isLastSelected, int configuredFailedCount,
-        String deviceBssids)
-    {
+        String deviceBssids) {
         this.id = id;
         this.bssid = bssid;
         this.ssid = ssid;
@@ -62,123 +52,102 @@ public class ApDB implements IApDB
         this.configuredFailedCount = configuredFailedCount;
         this.deviceBssids = deviceBssids;
     }
-    
+
     /** called by internal mechanisms, do not call yourself. */
-    public void __setDaoSession(DaoSession daoSession)
-    {
+    public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getApDBDao() : null;
     }
-    
-    public Long getId()
-    {
+
+    public Long getId() {
         return id;
     }
-    
-    public void setId(Long id)
-    {
+
+    public void setId(Long id) {
         this.id = id;
     }
-    
+
     /** Not-null value. */
-    public String getBssid()
-    {
+    public String getBssid() {
         return bssid;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setBssid(String bssid)
-    {
+    public void setBssid(String bssid) {
         this.bssid = bssid;
     }
-    
+
     /** Not-null value. */
-    public String getSsid()
-    {
+    public String getSsid() {
         return ssid;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setSsid(String ssid)
-    {
+    public void setSsid(String ssid) {
         this.ssid = ssid;
     }
-    
+
     /** Not-null value. */
-    public String getPassword()
-    {
+    public String getPassword() {
         return password;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         this.password = password;
     }
-    
-    public boolean getIsLastSelected()
-    {
+
+    public boolean getIsLastSelected() {
         return isLastSelected;
     }
-    
-    public void setIsLastSelected(boolean isLastSelected)
-    {
+
+    public void setIsLastSelected(boolean isLastSelected) {
         this.isLastSelected = isLastSelected;
     }
-    
-    public int getConfiguredFailedCount()
-    {
+
+    public int getConfiguredFailedCount() {
         return configuredFailedCount;
     }
-    
-    public void setConfiguredFailedCount(int configuredFailedCount)
-    {
+
+    public void setConfiguredFailedCount(int configuredFailedCount) {
         this.configuredFailedCount = configuredFailedCount;
     }
-    
+
     /** Not-null value. */
-    public String getDeviceBssids()
-    {
+    public String getDeviceBssids() {
         return deviceBssids;
     }
-    
+
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setDeviceBssids(String deviceBssids)
-    {
+    public void setDeviceBssids(String deviceBssids) {
         this.deviceBssids = deviceBssids;
     }
-    
+
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
-    public void delete()
-    {
-        if (myDao == null)
-        {
+    public void delete() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.delete(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
-    public void update()
-    {
-        if (myDao == null)
-        {
+    public void update() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
     }
-    
+
     /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
-    public void refresh()
-    {
-        if (myDao == null)
-        {
+    public void refresh() {
+        if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.refresh(this);
     }
-    
+
     // KEEP METHODS - put your custom methods here
     // KEEP METHODS END
-    
+
 }

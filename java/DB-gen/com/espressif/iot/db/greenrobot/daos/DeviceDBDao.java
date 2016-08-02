@@ -19,62 +19,46 @@ import com.espressif.iot.db.greenrobot.daos.DeviceDB;
 /**
  * DAO for table DEVICE_DB.
  */
-public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
-{
-    
+public class DeviceDBDao extends AbstractDao<DeviceDB, Long> {
+
     public static final String TABLENAME = "DEVICE_DB";
-    
+
     /**
      * Properties of entity DeviceDB.<br/>
      * Can be used for QueryBuilder and for referencing column names.
      */
-    public static class Properties
-    {
+    public static class Properties {
         public final static Property Id = new Property(0, long.class, "id", true, "_id");
-        
         public final static Property Key = new Property(1, String.class, "key", false, "KEY");
-        
         public final static Property Bssid = new Property(2, String.class, "bssid", false, "BSSID");
-        
         public final static Property Type = new Property(3, int.class, "type", false, "TYPE");
-        
         public final static Property State = new Property(4, int.class, "state", false, "STATE");
-        
         public final static Property IsOwner = new Property(5, boolean.class, "isOwner", false, "IS_OWNER");
-        
         public final static Property Name = new Property(6, String.class, "name", false, "NAME");
-        
         public final static Property Rom_version = new Property(7, String.class, "rom_version", false, "ROM_VERSION");
-        
-        public final static Property Latest_rom_version = new Property(8, String.class, "latest_rom_version", false,
-            "LATEST_ROM_VERSION");
-        
+        public final static Property Latest_rom_version =
+            new Property(8, String.class, "latest_rom_version", false, "LATEST_ROM_VERSION");
         public final static Property Timestamp = new Property(9, long.class, "timestamp", false, "TIMESTAMP");
-        
-        public final static Property ActivatedTime = new Property(10, long.class, "activatedTime", false,
-            "ACTIVATED_TIME");
-        
+        public final static Property ActivatedTime =
+            new Property(10, long.class, "activatedTime", false, "ACTIVATED_TIME");
         public final static Property UserId = new Property(11, long.class, "userId", false, "USER_ID");
     };
-    
+
     private DaoSession daoSession;
-    
+
     private Query<DeviceDB> userDB_DevicesQuery;
-    
-    public DeviceDBDao(DaoConfig config)
-    {
+
+    public DeviceDBDao(DaoConfig config) {
         super(config);
     }
-    
-    public DeviceDBDao(DaoConfig config, DaoSession daoSession)
-    {
+
+    public DeviceDBDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
         this.daoSession = daoSession;
     }
-    
+
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists)
-    {
+    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists ? "IF NOT EXISTS " : "";
         db.execSQL("CREATE TABLE " + constraint + "'DEVICE_DB' (" + //
             "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
@@ -90,18 +74,16 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
             "'ACTIVATED_TIME' INTEGER NOT NULL ," + // 10: activatedTime
             "'USER_ID' INTEGER NOT NULL );"); // 11: userId
     }
-    
+
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists)
-    {
+    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "'DEVICE_DB'";
         db.execSQL(sql);
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, DeviceDB entity)
-    {
+    protected void bindValues(SQLiteStatement stmt, DeviceDB entity) {
         stmt.clearBindings();
         stmt.bindLong(1, entity.getId());
         stmt.bindString(2, entity.getKey());
@@ -110,41 +92,36 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         stmt.bindLong(5, entity.getState());
         stmt.bindLong(6, entity.getIsOwner() ? 1l : 0l);
         stmt.bindString(7, entity.getName());
-        
+
         String rom_version = entity.getRom_version();
-        if (rom_version != null)
-        {
+        if (rom_version != null) {
             stmt.bindString(8, rom_version);
         }
-        
+
         String latest_rom_version = entity.getLatest_rom_version();
-        if (latest_rom_version != null)
-        {
+        if (latest_rom_version != null) {
             stmt.bindString(9, latest_rom_version);
         }
         stmt.bindLong(10, entity.getTimestamp());
         stmt.bindLong(11, entity.getActivatedTime());
         stmt.bindLong(12, entity.getUserId());
     }
-    
+
     @Override
-    protected void attachEntity(DeviceDB entity)
-    {
+    protected void attachEntity(DeviceDB entity) {
         super.attachEntity(entity);
         entity.__setDaoSession(daoSession);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long readKey(Cursor cursor, int offset)
-    {
+    public Long readKey(Cursor cursor, int offset) {
         return cursor.getLong(offset + 0);
     }
-    
+
     /** @inheritdoc */
     @Override
-    public DeviceDB readEntity(Cursor cursor, int offset)
-    {
+    public DeviceDB readEntity(Cursor cursor, int offset) {
         DeviceDB entity = new DeviceDB( //
             cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // key
@@ -158,14 +135,13 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
             cursor.getLong(offset + 9), // timestamp
             cursor.getLong(offset + 10), // activatedTime
             cursor.getLong(offset + 11) // userId
-            );
+        );
         return entity;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public void readEntity(Cursor cursor, DeviceDB entity, int offset)
-    {
+    public void readEntity(Cursor cursor, DeviceDB entity, int offset) {
         entity.setId(cursor.getLong(offset + 0));
         entity.setKey(cursor.getString(offset + 1));
         entity.setBssid(cursor.getString(offset + 2));
@@ -179,43 +155,34 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         entity.setActivatedTime(cursor.getLong(offset + 10));
         entity.setUserId(cursor.getLong(offset + 11));
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected Long updateKeyAfterInsert(DeviceDB entity, long rowId)
-    {
+    protected Long updateKeyAfterInsert(DeviceDB entity, long rowId) {
         entity.setId(rowId);
         return rowId;
     }
-    
+
     /** @inheritdoc */
     @Override
-    public Long getKey(DeviceDB entity)
-    {
-        if (entity != null)
-        {
+    public Long getKey(DeviceDB entity) {
+        if (entity != null) {
             return entity.getId();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     /** @inheritdoc */
     @Override
-    protected boolean isEntityUpdateable()
-    {
+    protected boolean isEntityUpdateable() {
         return true;
     }
-    
+
     /** Internal query to resolve the "devices" to-many relationship of UserDB. */
-    public List<DeviceDB> _queryUserDB_Devices(long userId)
-    {
-        synchronized (this)
-        {
-            if (userDB_DevicesQuery == null)
-            {
+    public List<DeviceDB> _queryUserDB_Devices(long userId) {
+        synchronized (this) {
+            if (userDB_DevicesQuery == null) {
                 QueryBuilder<DeviceDB> queryBuilder = queryBuilder();
                 queryBuilder.where(Properties.UserId.eq(null));
                 queryBuilder.orderRaw("TIMESTAMP ASC");
@@ -226,13 +193,11 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         query.setParameter(0, userId);
         return query.list();
     }
-    
+
     private String selectDeep;
-    
-    protected String getSelectDeep()
-    {
-        if (selectDeep == null)
-        {
+
+    protected String getSelectDeep() {
+        if (selectDeep == null) {
             StringBuilder builder = new StringBuilder("SELECT ");
             SqlUtils.appendColumns(builder, "T", getAllColumns());
             builder.append(',');
@@ -244,104 +209,81 @@ public class DeviceDBDao extends AbstractDao<DeviceDB, Long>
         }
         return selectDeep;
     }
-    
-    protected DeviceDB loadCurrentDeep(Cursor cursor, boolean lock)
-    {
+
+    protected DeviceDB loadCurrentDeep(Cursor cursor, boolean lock) {
         DeviceDB entity = loadCurrent(cursor, 0, lock);
         int offset = getAllColumns().length;
-        
+
         UserDB userDB = loadCurrentOther(daoSession.getUserDBDao(), cursor, offset);
-        if (userDB != null)
-        {
+        if (userDB != null) {
             entity.setUserDB(userDB);
         }
-        
+
         return entity;
     }
-    
-    public DeviceDB loadDeep(Long key)
-    {
+
+    public DeviceDB loadDeep(Long key) {
         assertSinglePk();
-        if (key == null)
-        {
+        if (key == null) {
             return null;
         }
-        
+
         StringBuilder builder = new StringBuilder(getSelectDeep());
         builder.append("WHERE ");
         SqlUtils.appendColumnsEqValue(builder, "T", getPkColumns());
         String sql = builder.toString();
-        
+
         String[] keyArray = new String[] {key.toString()};
         Cursor cursor = db.rawQuery(sql, keyArray);
-        
-        try
-        {
+
+        try {
             boolean available = cursor.moveToFirst();
-            if (!available)
-            {
+            if (!available) {
                 return null;
-            }
-            else if (!cursor.isLast())
-            {
+            } else if (!cursor.isLast()) {
                 throw new IllegalStateException("Expected unique result, but count was " + cursor.getCount());
             }
             return loadCurrentDeep(cursor, true);
-        }
-        finally
-        {
+        } finally {
             cursor.close();
         }
     }
-    
+
     /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
-    public List<DeviceDB> loadAllDeepFromCursor(Cursor cursor)
-    {
+    public List<DeviceDB> loadAllDeepFromCursor(Cursor cursor) {
         int count = cursor.getCount();
         List<DeviceDB> list = new ArrayList<DeviceDB>(count);
-        
-        if (cursor.moveToFirst())
-        {
-            if (identityScope != null)
-            {
+
+        if (cursor.moveToFirst()) {
+            if (identityScope != null) {
                 identityScope.lock();
                 identityScope.reserveRoom(count);
             }
-            try
-            {
-                do
-                {
+            try {
+                do {
                     list.add(loadCurrentDeep(cursor, false));
                 } while (cursor.moveToNext());
-            }
-            finally
-            {
-                if (identityScope != null)
-                {
+            } finally {
+                if (identityScope != null) {
                     identityScope.unlock();
                 }
             }
         }
         return list;
     }
-    
-    protected List<DeviceDB> loadDeepAllAndCloseCursor(Cursor cursor)
-    {
-        try
-        {
+
+    protected List<DeviceDB> loadDeepAllAndCloseCursor(Cursor cursor) {
+        try {
             return loadAllDeepFromCursor(cursor);
-        }
-        finally
-        {
+        } finally {
             cursor.close();
         }
     }
-    
+
     /** A raw-style query where you can pass any WHERE clause and arguments. */
-    public List<DeviceDB> queryDeep(String where, String... selectionArg)
-    {
+    public List<DeviceDB> queryDeep(String where, String... selectionArg) {
         Cursor cursor = db.rawQuery(getSelectDeep() + where, selectionArg);
         return loadDeepAllAndCloseCursor(cursor);
     }
-    
+
 }

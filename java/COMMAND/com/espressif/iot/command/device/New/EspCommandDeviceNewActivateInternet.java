@@ -180,6 +180,16 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                     device.setParentDeviceBssid(null);
                 }
                 device.setIsMeshDevice(parentBssid != null);
+                
+                // device payload
+                JSONObject devicePayload = deviceJson.optJSONObject(Payload);
+                if (devicePayload != null)
+                {
+                    String deviceInfo = devicePayload.optString(Info, null);
+                    int deviceRssi = devicePayload.optInt(Rssi, IEspDevice.RSSI_NULL);
+                    device.setInfo(deviceInfo);
+                    device.setRssi(deviceRssi);
+                }
 
                 log.debug(Thread.currentThread().toString() + "##doCommandNewActivateInternet(userId=[" + userId
                     + "],userKey=[" + userKey + "],randomToken=[" + randomToken + "]): " + device);

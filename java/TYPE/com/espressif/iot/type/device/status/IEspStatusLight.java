@@ -3,6 +3,7 @@ package com.espressif.iot.type.device.status;
 import com.espressif.iot.type.device.IEspDeviceStatus;
 
 public interface IEspStatusLight extends IEspDeviceStatus {
+    public static final int STATUS_NULL = -1;
     public static final int STATUS_OFF = 0;
     public static final int STATUS_ON = 1;
     public static final int STATUS_COLOR = 2;
@@ -126,4 +127,11 @@ public interface IEspStatusLight extends IEspDeviceStatus {
      * @return One of {@link #STATUS_OFF}, {@link #STATUS_ON}, {@link #STATUS_COLOR} or {@link #STATUS_BRIGHT}.
      */
     int getStatus();
+
+    /**
+     * Get current color of the light
+     * 
+     * @return
+     */
+    int getCurrentColor();
 }

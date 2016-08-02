@@ -18,11 +18,6 @@
             android:key="device_auto_configure"
             android:title="@string/esp_settings_device_auto_configure" />
 
-        <CheckBoxPreference
-            android:key="device_show_mesh_tree"
-            android:summary="@string/esp_settings_device_show_mesh_tree_summary"
-            android:title="@string/esp_settings_device_show_mesh_tree" />
-
         <Preference
             android:key="device_light_twinkle_mode"
             android:title="@string/esp_device_light_twinkle_mode" />

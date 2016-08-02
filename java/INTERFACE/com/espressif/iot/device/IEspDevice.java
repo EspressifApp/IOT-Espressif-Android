@@ -218,6 +218,35 @@ public interface IEspDevice extends IEspObject
      */
     String getRootDeviceBssid();
     
+    /**
+     * The value means can't get rssi vale of the device
+     */
+    public static final int RSSI_NULL = 1;
+    
+    /**
+     * Set device rssi
+     */
+    void setRssi(int rssi);
+    
+    /**
+     * 
+     * @return rssi of the device
+     */
+    int getRssi();
+    
+    /**
+     * Set device info
+     * 
+     * @param info
+     */
+    void setInfo(String info);
+    
+    /**
+     * 
+     * @return device info
+     */
+    String getInfo();
+    
     /*
      * refreshed means the device on Server maybe dirty, so ignore Server info about the device until refreshed is
      * cleared
@@ -350,6 +379,13 @@ public interface IEspDevice extends IEspObject
     void copyDeviceRomVersion(IEspDevice deivce);
     
     /**
+     * Copy the device rssi
+     * 
+     * @param device another
+     */
+    void copyDeviceRssi(IEspDevice device);
+    
+    /**
      * Copy the device name from another device
      * 
      * @param device another device
@@ -389,6 +425,13 @@ public interface IEspDevice extends IEspObject
      * @param device
      */
     void copyActivatedTime(IEspDevice device);
+    
+    /**
+     * Copy the device info from another device
+     * 
+     * @param device
+     */
+    void copyDeviceInfo(IEspDevice device);
     
     /**
      * Get the device's device tree element list

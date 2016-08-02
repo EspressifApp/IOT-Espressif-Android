@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.command.group.IEspCommandGroup;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.group.IEspGroup;
@@ -21,6 +22,8 @@ import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.MeshUtil;
 import com.espressif.iot.util.TimeUtil;
+
+import android.text.TextUtils;
 
 public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSynchronizeInternet
 {
@@ -171,11 +174,24 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
             {
                 JSONObject groupJSON = groupsJsonArray.getJSONObject(gi);
                 
-                long groupId = groupJSON.getLong(Id);
-                String groupName = groupJSON.getString(Name);
                 IEspGroup espGroup = BEspGroup.getInstance().alloc();
+                // Set group id
+                long groupId = groupJSON.getLong(Id);
                 espGroup.setId(groupId);
+                // Set group name
+                String groupName = groupJSON.getString(Name);
                 espGroup.setName(groupName);
+                // Parser group desc
+                String desc = groupJSON.getString(IEspCommandGroup.KEY_GROUP_DESC);
+                if (!TextUtils.isEmpty(desc)) {
+                    try {
+                        JSONObject descJSON = new JSONObject(desc);
+                        int groupType = descJSON.optInt(IEspCommandGroup.KEY_GROUP_TYPE);
+                        espGroup.setType(groupType);
+                    } catch (JSONException je) {
+                        je.printStackTrace();
+                    }
+                }
                 groupList.add(espGroup);
                 
                 JSONArray devicesJsonArray = groupJSON.getJSONArray(Devices);
@@ -284,6 +300,16 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     }
                     device.setIsMeshDevice(parentBssid != null);
                     
+                    // device payload
+                    JSONObject devicePayload = deviceJsonObject.optJSONObject(Payload);
+                    if (devicePayload != null)
+                    {
+                        String deviceInfo = devicePayload.optString(Info, null);
+                        int deviceRssi = devicePayload.optInt(Rssi, IEspDevice.RSSI_NULL);
+                        device.setInfo(deviceInfo);
+                        device.setRssi(deviceRssi);
+                    }
+
                     espGroup.addDevice(device);
                     if (!deviceList.contains(device))
                     {

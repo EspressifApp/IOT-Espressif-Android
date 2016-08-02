@@ -173,8 +173,14 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 String userKey = user.getUserKey();
                 String randomToken = deviceNew.getKey();
                 long negativeDeviceId = deviceNew.getId();
+                String deviceName = deviceNew.getName();
                 IEspDevice result =
                     deviceNew.doActionDeviceNewActivateInternet(userId, userKey, randomToken, negativeDeviceId);
+                if (!result.getName().equals(deviceName))
+                {
+                    result.setName(deviceName);
+                    user.doActionRename(result, deviceName);
+                }
                 IOTApDBManager apDBManager = IOTApDBManager.getInstance();
                 if (result != null)
                 {
@@ -300,10 +306,19 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
             public Boolean call()
                 throws Exception
             {
-                // do delete internet command
-                IEspActionDeviceDeleteInternet command = new EspActionDeviceDeleteInternet();
-                String deviceKey = device.getKey();
-                boolean result = command.doActionDeviceDeleteInternet(deviceKey);
+                boolean result = false;
+                if(device.isActivated())
+                {
+                    // do delete internet command
+                    IEspActionDeviceDeleteInternet command = new EspActionDeviceDeleteInternet();
+                    String deviceKey = device.getKey();
+                    result = command.doActionDeviceDeleteInternet(deviceKey);
+                }
+                else
+                {
+                    // when device isn't activated, it will never fail
+                    result = true;
+                }
                 if (result)
                 {
                     transformState(device, Direction.SUC, NotifyType.STATE_MACHINE_BACKSTATE);
@@ -336,11 +351,22 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 throws Exception
             {
                 log.error("__rename: " + device.getName());
-                // do rename device internet command
-                IEspActionDeviceRenameInternet command = new EspActionDeviceRenameInternet();
-                String deviceKey = device.getKey();
-                String deviceName = device.getName();
-                boolean result = command.doActionDeviceRenameInternet(deviceKey, deviceName);
+                boolean result = false;
+                if(device.isActivated())
+                {
+                    // do rename device internet command
+                    IEspActionDeviceRenameInternet command = new EspActionDeviceRenameInternet();
+                    String deviceKey = device.getKey();
+                    String deviceName = device.getName();
+                    result = command.doActionDeviceRenameInternet(deviceKey, deviceName);
+                }
+                else
+                {
+//                    device.saveInDB();
+                    // when device isn't activated, it will never fail
+                    result = true;
+                }
+                
                 if (result)
                 {
                     transformState(device, Direction.SUC, NotifyType.STATE_MACHINE_BACKSTATE);
@@ -375,9 +401,13 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 IEspActionDeviceUpgradeOnline action = new EspActionDeviceUpgradeOnline();
                 String deviceKey = device.getKey();
                 String latestRomVersion = device.getLatest_rom_version();
+                int rssi = device.getRssi();
+                String info = device.getInfo();
                 IEspDevice result = action.doUpgradeOnline(deviceKey, latestRomVersion);
                 if (result != null)
                 {
+                    result.setRssi(rssi);
+                    result.setInfo(info);
                     // don't discard the rename state and __isDeviceRefreshed
                     if (device.getDeviceState().isStateRenamed())
                     {
@@ -419,6 +449,8 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 String bssid = device.getBssid();
                 String deviceKey = device.getKey();
                 String latestRomVersion = device.getLatest_rom_version();
+                int rssi = device.getRssi();
+                String info = device.getInfo();
                 boolean isMeshDevice = device.getIsMeshDevice();
                 boolean isSuc;
                 IOTAddress iotAddressResult = null;
@@ -454,6 +486,8 @@ public class EspDeviceStateMachine implements IEspDeviceStateMachine, IEspSingle
                 {
                     log.debug(Thread.currentThread().toString() + "##__upgradeLocal(device=[" + device + "]): suc");
                     device.setRom_version(latestRomVersion);
+                    device.setRssi(rssi);
+                    device.setInfo(info);
                     device.setInetAddress(iotAddressResult.getInetAddress());
                     device.setIsMeshDevice(iotAddressResult.isMeshDevice());
                     device.setParentDeviceBssid(iotAddressResult.getParentBssid());

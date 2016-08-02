@@ -6,11 +6,23 @@
     android:orientation="horizontal"
     android:padding="5dip" >
 
-    <ImageView
-        android:id="@+id/device_icon"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleType="centerInside" />
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:id="@+id/device_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerInside" />
+
+        <ImageView
+            android:id="@+id/device_icon_cover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerInside"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <RelativeLayout
         android:layout_width="0dip"
@@ -35,6 +47,13 @@
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/device_status_img1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerInside"
+        android:src="@drawable/device_rssi" />
 
     <TextView
         android:id="@+id/device_status_text1"

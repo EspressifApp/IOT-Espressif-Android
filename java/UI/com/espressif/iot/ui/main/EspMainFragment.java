@@ -12,12 +12,21 @@ import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
+import com.espressif.iot.device.IEspDeviceLight;
+import com.espressif.iot.device.array.IEspDeviceArray;
+import com.espressif.iot.device.builder.BEspDevice;
+import com.espressif.iot.device.builder.BEspDeviceRoot;
+import com.espressif.iot.esppush.task.DeviceStatusTask;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.device.sort.DeviceSortor;
 import com.espressif.iot.model.device.sort.DeviceSortor.DeviceSortType;
 import com.espressif.iot.model.thread.FinishThread;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
+import com.espressif.iot.type.device.status.IEspStatusLight;
+import com.espressif.iot.ui.device.light.LightUtils;
+import com.espressif.iot.ui.group.EspGroupEditActivity;
+import com.espressif.iot.ui.widget.view.ColorView;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.DeviceUtil;
@@ -49,6 +58,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -67,6 +78,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -74,8 +86,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EspMainFragment extends Fragment implements OnSharedPreferenceChangeListener, OnClickListener,
-    OnItemClickListener, OnItemLongClickListener, OnRefreshListener<ListView>, OnLongClickListener {
+public class EspMainFragment extends Fragment
+    implements OnSharedPreferenceChangeListener, OnClickListener, OnItemClickListener, OnItemLongClickListener,
+    OnRefreshListener<ListView>, OnLongClickListener, OnCheckedChangeListener {
     private static final Logger log = Logger.getLogger(EspMainFragment.class);
 
     private EspMainActivity mActivity;
@@ -107,6 +120,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
     private static final int PUPUP_ID_DEVICE_MORE = 0x23;
 
     private final static int REQUEST_DEVICE = 0x11;
+    private final static int REQUEST_GROUP_CREATE = 0x12;
 
     /**
      * Whether the device refresh task is running
@@ -138,12 +152,21 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
     private ImageView mMoveDeviceBtn;
     private ImageView mRemoveDeviceBtn;
 
+    private RecyclerView mRecyclerView;
+    private ColorAdapter mColorAdapter;
+    private List<Integer> mColorList;
+    private CheckBox mDevicesSwitch;
+
     private EditText mSearchET;
 
     private boolean mOnStartRefreshMark = false;
 
     private static final int SORT_POSITION_DEVICE_NAME = 0;
     private static final int SORT_POSITION_ACTIVATE_TIME = 1;
+
+    private boolean mShowMesh;
+
+    private DeviceStatusTask mLightTask;
 
     @Override
     public void onAttach(Activity activity) {
@@ -154,6 +177,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
 
         mSettingsShared = activity.getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mSettingsShared.registerOnSharedPreferenceChangeListener(this);
+        mShowMesh = mSettingsShared.getBoolean(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE, EspDefaults.SHOW_MESH_TREE);
 
         mNewDevicesShared =
             activity.getSharedPreferences(EspStrings.Key.NAME_NEW_ACTIVATED_DEVICES, Context.MODE_PRIVATE);
@@ -214,6 +238,16 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
         mRemoveDeviceBtn.setOnClickListener(this);
         mRemoveDeviceBtn.setOnLongClickListener(this);
         mRemoveDeviceBtn.setEnabled(false);
+
+        mRecyclerView = (RecyclerView)view.findViewById(R.id.recycler_view);
+        LinearLayoutManager llm = new LinearLayoutManager(mActivity);
+        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mRecyclerView.setLayoutManager(llm);
+        mColorList = getColorList();
+        mColorAdapter = new ColorAdapter();
+        mRecyclerView.setAdapter(mColorAdapter);
+        mDevicesSwitch = (CheckBox)view.findViewById(R.id.device_array_switch);
+        mDevicesSwitch.setOnCheckedChangeListener(this);
 
         mRefreshing = false;
         mRefreshHandler = new RefreshHandler(this);
@@ -311,6 +345,10 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             } else if (resultCode == RESULT_SCAN) {
                 refresh();
             }
+        } else if (requestCode == REQUEST_GROUP_CREATE) {
+            if (resultCode == Activity.RESULT_OK) {
+                updateGroupList();
+            }
         }
     }
 
@@ -327,6 +365,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
                     sendAutoRefreshMessage(autoTime);
                 }
             } else if (key.equals(EspStrings.Key.SETTINGS_KEY_SHOW_MESH_TREE)) {
+                mShowMesh = mSettingsShared.getBoolean(key, EspDefaults.SHOW_MESH_TREE);
                 updateDeviceList();
             }
         } else if (sharedPreferences == mNewDevicesShared) {
@@ -353,7 +392,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
         } else if (v == mActivateDeviceBtn) {
             activateDevices(mDeviceAdapter.getCheckedDeviceList());
         } else if (v == mAddGroupView) {
-            showCreateGroupDialog();
+            startActivityForResult(new Intent(mActivity, EspGroupEditActivity.class), REQUEST_GROUP_CREATE);
         } else if (v == mAllDeviceBtn) {
             if (mDeviceAdapter.getCheckedCount() == mDeviceAdapter.getCount()) {
                 mDeviceAdapter.clearCheckedDevices();
@@ -417,7 +456,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             return true;
         } else if (parent == mDeviceListView.getRefreshableView()) {
             IEspDevice device = (IEspDevice)view.getTag();
-            if (!isDeviceEditable(device) || !mUser.isLogin()) {
+            if (!isDeviceEditable(device)) {
                 setDeviceListCheckMode(true);
                 return true;
             }
@@ -425,11 +464,12 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             PopupMenu deviceMenu = new PopupMenu(mActivity, view);
             deviceMenu.setOnMenuItemClickListener(new OnDevicePopupMenuItemClickListener(device));
             Menu menu = deviceMenu.getMenu();
-            if (device.isActivated()) {
-                menu.add(Menu.NONE, POPUP_ID_DEVICE_RENAME, 0, R.string.esp_main_device_menu_rename);
+            menu.add(Menu.NONE, POPUP_ID_DEVICE_RENAME, 0, R.string.esp_main_device_menu_rename);
+            if (mUser.isLogin()) {
                 menu.add(Menu.NONE, POPUP_ID_DEVICE_DELETE, 0, R.string.esp_main_device_menu_delete);
-            } else {
-                menu.add(Menu.NONE, POPUP_ID_DEVICE_ACTIVATE, 0, R.string.esp_main_device_menu_activate);
+                if (!device.isActivated()) {
+                    menu.add(Menu.NONE, POPUP_ID_DEVICE_ACTIVATE, 0, R.string.esp_main_device_menu_activate);
+                }
             }
             menu.add(Menu.NONE, PUPUP_ID_DEVICE_MORE, 0, R.string.esp_main_device_menu_more);
             deviceMenu.show();
@@ -492,19 +532,15 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             text.setText(group.getName());
             Drawable d;
             if (group == mSelectedGroup) {
-                d = getResources().getDrawable(R.drawable.group_general_selected);
+                d = getResources().getDrawable(group.getType().getIconResSelected());
             } else {
-                d = getResources().getDrawable(R.drawable.group_general_normal);
+                d = getResources().getDrawable(group.getType().getIconResNormal());
             }
             text.setCompoundDrawablesWithIntrinsicBounds(null, d, null, null);
 
             return view;
         }
 
-    }
-
-    private void showCreateGroupDialog() {
-        showEditGroupDialog(null);
     }
 
     private void showEditGroupDialog(final IEspGroup scene) {
@@ -575,11 +611,8 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
                     mUser.doActionGroupDelete(group);
 
                     if (mSelectedGroup == group) {
-                        mSelectedGroup = null;
-
-                        updateDeviceList();
+                        onGroupSelectChange(null);
                     }
-
                     updateGroupList();
                 }
             })
@@ -759,8 +792,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
                             }
                         }
                         if (usableFilter) {
-                            if (!state.isStateLocal() && !state.isStateInternet())
-                            {
+                            if (!state.isStateLocal() && !state.isStateInternet()) {
                                 continue;
                             }
                         }
@@ -770,6 +802,11 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
                 }
 
                 new DeviceSortor().sort(deviceList, mSortType);
+
+                if (mShowMesh) {
+                    IEspDevice rootDevice = BEspDeviceRoot.getBuilder().getVirtualMeshRoot();
+                    deviceList.add(0, rootDevice);
+                }
 
                 if (mRefreshHandler != null) {
                     mRefreshHandler.post(new Runnable() {
@@ -921,8 +958,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         IEspDeviceState state = device.getDeviceState();
-        if (state.isStateUpgradingInternet() || state.isStateUpgradingLocal()
-            || state.isStateActivating()) {
+        if (state.isStateUpgradingInternet() || state.isStateUpgradingLocal() || state.isStateActivating()) {
             return false;
         }
 
@@ -1059,6 +1095,12 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
 
         public ActivateDevicesTask(List<IEspDevice> devices) {
             mDevices = devices;
+            for (int i = mDevices.size() - 1; i >= 0; i--) {
+                IEspDevice device = mDevices.get(i);
+                if (device.getDeviceType() == EspDeviceType.ROOT) {
+                    mDevices.remove(i);
+                }
+            }
         }
 
         @Override
@@ -1205,10 +1247,21 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             int iconRes = DeviceUtil.getDeviceIconRes(device);
             icon.setImageResource(iconRes);
 
+            ImageView iconCover = (ImageView)view.findViewById(R.id.device_icon_cover);
+            if (device.getDeviceType() == EspDeviceType.LIGHT) {
+                iconCover.setVisibility(View.VISIBLE);
+                iconCover.setImageResource(R.drawable.device_light_cover);
+            } else {
+                iconCover.setVisibility(View.GONE);
+                iconCover.setImageDrawable(null);
+            }
+
             TextView name = (TextView)view.findViewById(R.id.device_name);
             name.setText(device.getName());
             TextView version = (TextView)view.findViewById(R.id.device_version);
-            version.setText(device.getRom_version());
+            String verStr = device.getRom_version();
+            version.setText(verStr);
+            version.setVisibility(TextUtils.isEmpty(verStr) ? View.GONE : View.VISIBLE);
             if (deviceState.isStateOffline()) {
                 name.setTextColor(mOfflineColor);
                 version.setTextColor(mOfflineColor);
@@ -1216,6 +1269,7 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
                 name.setTextColor(mOnlineColor);
                 version.setTextColor(mOnlineColor);
             }
+            checkLight(device, icon, iconCover, name, version);
 
             TextView status = (TextView)view.findViewById(R.id.device_status_text1);
             if (device.isActivated()) {
@@ -1242,7 +1296,52 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             checked.setChecked(mCheckedDeviceList.contains(device));
             checked.setOnCheckedChangeListener(new OnCheckedChangedListener(device));
 
+            ImageView rssi = (ImageView)view.findViewById(R.id.device_status_img1);
+            int rssiValue = device.getRssi();
+            if (rssiValue == IEspDevice.RSSI_NULL) {
+                rssi.setVisibility(View.GONE);
+            } else {
+                rssi.setVisibility(View.VISIBLE);
+                rssi.getDrawable().setLevel(getRssiLevel(rssiValue));
+            }
+
             return view;
+        }
+
+        private int getRssiLevel(int rssi) {
+            if (rssi >= -65) {
+                return 3;
+            } else if (rssi < -65 && rssi >= -75) {
+                return 2;
+            } else if (rssi < -75 && rssi >= -85) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        private void checkLight(IEspDevice device, ImageView icon, ImageView iconCover, TextView name,
+            TextView version) {
+            if (device instanceof IEspDeviceLight) {
+                IEspStatusLight statusLight = ((IEspDeviceLight)device).getStatusLight();
+                IEspDeviceState state = device.getDeviceState();
+                if (state.isStateOffline()) {
+                    icon.setBackgroundColor(Color.TRANSPARENT);
+                    iconCover.setVisibility(View.GONE);
+                } else {
+                    iconCover.setVisibility(View.VISIBLE);
+                    if (statusLight.getStatus() != IEspStatusLight.STATUS_NULL) {
+                        int color = statusLight.getCurrentColor();
+                        name.setTextColor(color);
+                        version.setTextColor(color);
+                        icon.setBackgroundColor(color);
+                    } else {
+                        icon.setBackgroundColor(Color.TRANSPARENT);
+                        name.setTextColor(mOnlineColor);
+                        version.setTextColor(mOnlineColor);
+                    }
+                }
+            }
         }
 
         public void setCheckMode(boolean check) {
@@ -1365,7 +1464,16 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
             }
 
             switch (msg.what) {
-
+                case MSG_AUTO_REFRESH:
+                    if (fragment.mActivityVisible) {
+                        fragment.refresh();
+                    }
+                    Long autoTime = (Long)msg.obj;
+                    fragment.sendAutoRefreshMessage(autoTime);
+                    break;
+                case MSG_UPDATE_TEMPDEVICE:
+                    fragment.updateDeviceList();
+                    break;
             }
         }
     }
@@ -1424,4 +1532,160 @@ public class EspMainFragment extends Fragment implements OnSharedPreferenceChang
         }
 
     };
+
+    private class VH extends RecyclerView.ViewHolder {
+        ColorView colorView;
+
+        int color;
+
+        public VH(View itemView) {
+            super(itemView);
+
+            colorView = (ColorView)itemView.findViewById(R.id.color_view);
+            colorView.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    executeLightTask(IEspStatusLight.STATUS_COLOR, color);
+                }
+            });
+            colorView.setOnLongClickListener(new View.OnLongClickListener() {
+
+                @Override
+                public boolean onLongClick(View v) {
+                    IEspDeviceArray deviceArray = generateSelectedDeviceArray();
+                    if (deviceArray != null) {
+                        EspDeviceType type = deviceArray.getDeviceType();
+                        List<IEspDevice> devices = deviceArray.getDeviceList();
+                        String[] keys = new String[devices.size()];
+                        for (int i = 0; i < devices.size(); i++) {
+                            keys[i] = devices.get(i).getKey();
+                        }
+
+                        Intent intent = DeviceUtil.getDeviceIntent(mActivity, deviceArray);
+                        intent.putExtra(EspStrings.Key.DEVICE_KEY_TYPE, type.toString());
+                        intent.putExtra(EspStrings.Key.DEVICE_KEY_KEY_ARRAY, keys);
+                        intent.putExtra(EspStrings.Key.DEVICE_KEY_SHOW_CHILDREN, false);
+                        mActivity.startActivity(intent);
+                    }
+                    return true;
+                }
+            });
+        }
+
+    }
+
+    private class ColorAdapter extends RecyclerView.Adapter<VH> {
+
+        @Override
+        public int getItemCount() {
+            return mColorList.size();
+        }
+
+        @Override
+        public void onBindViewHolder(VH holder, int position) {
+            int color = mColorList.get(position);
+            holder.color = color;
+            holder.colorView.setColor(color);
+        }
+
+        @Override
+        public VH onCreateViewHolder(ViewGroup arg0, int arg1) {
+            View view = View.inflate(mActivity, R.layout.main_bottom_color_item, null);
+            VH vh = new VH(view);
+            return vh;
+        }
+
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView == mDevicesSwitch) {
+            int status = isChecked ? IEspStatusLight.STATUS_ON : IEspStatusLight.STATUS_OFF;
+            executeLightTask(status);
+        }
+    }
+
+    private List<Integer> getColorList() {
+        int[] colorArray = mActivity.getResources().getIntArray(R.array.esp_light_colors);
+        List<Integer> result = new ArrayList<Integer>();
+        for (int color : colorArray) {
+            result.add(color);
+        }
+        return result;
+    }
+
+    private IEspDeviceArray generateSelectedDeviceArray() {
+        List<IEspDevice> devices = mDeviceAdapter.getCheckedDeviceList();
+        IEspDeviceArray mLightArray = null;
+        IEspDeviceArray mPlugArray = null;
+        for (IEspDevice device : devices) {
+            IEspDeviceState state = device.getDeviceState();
+            EspDeviceType type = device.getDeviceType();
+            if (state.isStateLocal() || state.isStateInternet()) {
+                if (type == EspDeviceType.LIGHT) {
+                    if (mLightArray == null) {
+                        mLightArray = BEspDevice.createDeviceArray(EspDeviceType.LIGHT);
+                    }
+                    mLightArray.addDevice(device);
+                } else if (type == EspDeviceType.PLUG) {
+                    if (mPlugArray == null) {
+                    }
+                }
+            }
+        }
+
+        return mLightArray;
+    }
+
+    private void executeLightTask(int status, int... colors) {
+        IEspDeviceArray lightArray = generateSelectedDeviceArray();
+        if (lightArray == null) {
+            return;
+        }
+
+        IEspStatusLight statusLight = null;
+        switch (status) {
+            case IEspStatusLight.STATUS_OFF:
+            case IEspStatusLight.STATUS_ON:
+                statusLight = LightUtils.generateStatus(status);
+                break;
+            case IEspStatusLight.STATUS_COLOR:
+            case IEspStatusLight.STATUS_BRIGHT:
+                int c = colors[0];
+                statusLight = LightUtils.generateStatus(status, Color.red(c), Color.green(c), Color.blue(c));
+                break;
+        }
+
+        if (mLightTask != null) {
+            mLightTask.cancel(true);
+        }
+        mLightTask = new DeviceStatusTask(lightArray);
+        mLightTask.execute(statusLight);
+        List<IEspDevice> lights = lightArray.getDeviceList();
+        updateLightStatus(lights, statusLight);
+    }
+
+    private void updateLightStatus(List<IEspDevice> lights, IEspStatusLight newStatus) {
+        for (IEspDevice device : lights) {
+            IEspDeviceLight light = (IEspDeviceLight)device;
+            IEspStatusLight currentStatus = light.getStatusLight();
+            int status = newStatus.getStatus();
+            currentStatus.setStatus(status);
+            switch (status) {
+                case IEspStatusLight.STATUS_OFF:
+                case IEspStatusLight.STATUS_ON:
+                    break;
+                case IEspStatusLight.STATUS_COLOR:
+                    currentStatus.setRed(newStatus.getRed());
+                    currentStatus.setGreen(newStatus.getGreen());
+                    currentStatus.setBlue(newStatus.getBlue());
+                    break;
+                case IEspStatusLight.STATUS_BRIGHT:
+                    currentStatus.setWhite(newStatus.getWhite());
+                    break;
+            }
+        }
+        updateDeviceList();
+    }
 }

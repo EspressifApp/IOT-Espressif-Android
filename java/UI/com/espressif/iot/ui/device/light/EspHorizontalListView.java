@@ -117,23 +117,27 @@ public class EspHorizontalListView extends HorizontalListView {
         @Override
         public void onScrollStateChanged(ScrollState scrollState) {
             if (scrollState == OnScrollStateChangedListener.ScrollState.SCROLL_STATE_IDLE) {
-                mHandler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        int nearestCenterDis = getNearestCenterDistance();
-                        if (nearestCenterDis != 0) {
-                            scrollBy(nearestCenterDis);
-                        } else {
-                            if (mTouched && mOnItemViewSelectedListener != null) {
-                                mOnItemViewSelectedListener.onItemViewSelected(getCenterView());
-                            }
-                        }
-                    }
-                });
+                adjustChildrenLocation();
             }
         }
     };
+
+    public void adjustChildrenLocation() {
+        mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                int nearestCenterDis = getNearestCenterDistance();
+                if (nearestCenterDis != 0) {
+                    scrollBy(nearestCenterDis);
+                } else {
+                    if (mTouched && mOnItemViewSelectedListener != null) {
+                        mOnItemViewSelectedListener.onItemViewSelected(getCenterView());
+                    }
+                }
+            }
+        });
+    }
 
     public static abstract class InfiniteAdapter extends BaseAdapter {
         @Override

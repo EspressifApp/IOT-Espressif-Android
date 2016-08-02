@@ -15,6 +15,7 @@ import com.espressif.iot.object.IEspSingletonObject;
 import com.espressif.iot.object.db.IDeviceDB;
 import com.espressif.iot.object.db.IUserDB;
 import com.espressif.iot.object.db.IUserDBManager;
+import com.espressif.iot.user.IEspUser;
 
 import de.greenrobot.dao.query.Query;
 
@@ -89,8 +90,7 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
         return result;
     }
     
-    @Override
-    public List<IDeviceDB> getUserDeviceList(long userId)
+    private List<IDeviceDB> __getUserDeviceList(long userId)
     {
         Query<UserDB> query = userDao.queryBuilder().where(Properties.Id.eq(userId)).build();
         UserDB user = query.unique();
@@ -111,5 +111,24 @@ public class IOTUserDBManager implements IUserDBManager, IEspSingletonObject
         {
             return Collections.emptyList();
         }
+    }
+    
+    @Override
+    public List<IDeviceDB> getUserDeviceList(long userId)
+    {
+        List<IDeviceDB> deviceList = new ArrayList<IDeviceDB>();
+//        if (userId > 0)
+//        {
+//            List<IDeviceDB> userDeviceList = __getUserDeviceList(userId);
+//            deviceList.addAll(userDeviceList);
+//            List<IDeviceDB> guestDeviceList = __getUserDeviceList(IEspUser.GUEST_USER_ID);
+//            deviceList.addAll(guestDeviceList);
+//        }
+//        else
+//        {
+            List<IDeviceDB> userDeviceList = __getUserDeviceList(userId);
+            deviceList.addAll(userDeviceList);
+//        }
+        return deviceList;
     }
 }
