@@ -38,7 +38,6 @@ import com.espressif.iot.log.LogConfigurator;
 import com.espressif.iot.log.ReadLogTask;
 import com.espressif.iot.type.upgrade.EspUpgradeApkResult;
 import com.espressif.iot.ui.configure.WifiConfigureActivity;
-import com.espressif.iot.ui.device.light.LightTwinkleActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -63,7 +62,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
 
     private static final String KEY_AUTO_REFRESH_DEVICE = "device_auto_refresh";
     private static final String KEY_AUTO_CONFIGURE_DEVICE = "device_auto_configure";
-    private static final String KEY_LIGHT_TWINKLE_MODE = "device_light_twinkle_mode";
 
     private static final String KEY_VERSION_CATEGORY = "version_category";
     private static final String KEY_VERSION_NAME = "version_name";
@@ -80,7 +78,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
 
     private ListPreference mAutoRefreshDevicePre;
     private ListPreference mAutoConfigureDevicePre;
-    private Preference mLightTwinkleModePre;
 
     private PreferenceCategory mVersionCategory;
     private Preference mVersionNamePre;
@@ -126,7 +123,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         mAutoRefreshDevicePre.setValue(autoRefreshTime);
         mAutoRefreshDevicePre.setSummary(mAutoRefreshDevicePre.getEntry());
         mAutoRefreshDevicePre.setOnPreferenceChangeListener(this);
-        mLightTwinkleModePre = findPreference(KEY_LIGHT_TWINKLE_MODE);
         
         mAutoConfigureDevicePre = (ListPreference)findPreference(KEY_AUTO_CONFIGURE_DEVICE);
         String autoConfigureValue =
@@ -210,10 +206,6 @@ public class SettingsFragment extends PreferenceFragment implements OnPreference
         else if (preference == mWifiEditPre)
         {
             startActivity(new Intent(getActivity(), WifiConfigureActivity.class));
-            return true;
-        }
-        else if (preference == mLightTwinkleModePre) {
-            startActivity(new Intent(getActivity(), LightTwinkleActivity.class));
             return true;
         }
         else if (preference == mVersionNamePre) {

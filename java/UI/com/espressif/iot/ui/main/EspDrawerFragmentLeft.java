@@ -214,10 +214,6 @@ public class EspDrawerFragmentLeft extends EspDrawerFragmentBase {
         actionBar.setTitle(R.string.app_name);
     }
 
-    private ActionBar getActionBar() {
-        return getActivity().getActionBar();
-    }
-
     public void checkLoginStatus() {
         if (mUser.isLogin()) {
             mAccountView.setText(mUser.getUserName());

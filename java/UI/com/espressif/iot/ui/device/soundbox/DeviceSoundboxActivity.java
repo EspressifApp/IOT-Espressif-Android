@@ -36,7 +36,6 @@ public class DeviceSoundboxActivity extends DeviceActivityAbs
     private Spinner mPlatSpinner;
     private static final String[] PLATFORMS = new String[] {"Ximalaya", "Qingting"};
     private PlatformXimaFragment mXimaFm;
-    private PlatformQingtingFragment mQtFm;
     private PlatformBaseFragment mCurrentFm;
 
     @Override
@@ -51,13 +50,9 @@ public class DeviceSoundboxActivity extends DeviceActivityAbs
             public void run() {
                 mXimaFm = new PlatformXimaFragment();
                 mXimaFm.setSoundbox(mSoundbox);
-                mQtFm = new PlatformQingtingFragment();
-                mQtFm.setSoundbox(mSoundbox);
 
                 getFragmentManager().beginTransaction()
                     .add(R.id.container, mXimaFm, mXimaFm.getFragmentTag())
-                    .add(R.id.container, mQtFm, mQtFm.getFragmentTag())
-                    .hide(mQtFm)
                     .show(mXimaFm)
                     .commit();
                 mCurrentFm = mXimaFm;
@@ -142,21 +137,14 @@ public class DeviceSoundboxActivity extends DeviceActivityAbs
         switch (position) {
             case 0:
                 showFm = mXimaFm;
-                hideFm = mQtFm;
                 break;
             case 1:
-                showFm = mQtFm;
                 hideFm = mXimaFm;
                 break;
         }
 
         getFragmentManager().beginTransaction().show(showFm).hide(hideFm).commit();
         mCurrentFm = showFm;
-        if (showFm == mQtFm) {
-            if (!mQtFm.isQingtingAccessable()) {
-                mQtFm.authorization();
-            }
-        }
     }
 
     @Override

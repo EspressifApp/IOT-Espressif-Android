@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.espressif.iot.R;
 import com.espressif.iot.base.api.EspBaseApiUtil;
 import com.espressif.iot.base.net.proxy.EspProxyServerImpl;
+import com.espressif.iot.base.net.udp.UdpServer;
 import com.espressif.iot.db.EspGroupDBManager;
 import com.espressif.iot.esppush.EspPushUtils;
 import com.espressif.iot.model.device.cache.EspDeviceCache;
@@ -76,8 +77,8 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
         FragmentManager fm = getFragmentManager();
         DrawerLayout dl = (DrawerLayout)findViewById(R.id.drawer_layout);
 
-        mDrawerFragmentLeft = (EspDrawerFragmentLeft)fm.findFragmentById(R.id.navigation_drawer);
-        mDrawerFragmentLeft.setUp(R.id.navigation_drawer, dl);
+        mDrawerFragmentLeft = (EspDrawerFragmentLeft)fm.findFragmentById(R.id.navigation_drawer_left);
+        mDrawerFragmentLeft.setUp(R.id.navigation_drawer_left, dl);
         mDrawerFragmentLeft.checkLoginStatus();
 
         mDrawerFragmentRight = (EspDrawerFragmentRight)fm.findFragmentById(R.id.navigation_drawer_right);
@@ -94,6 +95,8 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
         EspDeviceCache.getInstance().clear();
         // Call group handler
         mEspGroupHandler.call();
+        // Start UDP server
+        UdpServer.INSTANCE.open();
 
         boolean autoLogin = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE)
             .getBoolean(EspStrings.Key.KEY_AUTO_LOGIN, EspDefaults.AUTO_LOGIN);
@@ -234,7 +237,9 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
             EspDeviceStateMachineHandler.getInstance().cancelAllTasks();
             EspGroupHandler.getInstance().finish();
             EspProxyServerImpl.getInstance().stop();
+            UdpServer.INSTANCE.close();
             mUser.clearUserDeviceLists();
+            EspUpgradeHelper.INSTANCE.clear();
 
             return null;
         }
@@ -269,6 +274,7 @@ public class EspMainActivity extends Activity implements NavigationDrawerCallbac
         mUser.doActionUserLogout();
         mSettingsShared.edit().putBoolean(EspStrings.Key.KEY_AUTO_LOGIN, false).apply();
         EspPushUtils.stopPushService(this);
+        EspUpgradeHelper.INSTANCE.clear();
 
         mDrawerFragmentLeft.checkLoginStatus();
         mMainFragment.updateGroupList();

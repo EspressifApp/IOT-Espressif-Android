@@ -155,7 +155,7 @@ public class DeviceHumitureActivity extends DeviceChartActivityAbs
                     Toast.LENGTH_LONG).show();
             }
             
-            mPullRereshScorllView.onRefreshComplete();
+            mRefreshLayout.setRefreshing(false);
             mRefreshing = false;
             
             if (mDialog != null)

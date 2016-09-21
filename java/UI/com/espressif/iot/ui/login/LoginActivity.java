@@ -13,29 +13,31 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 import android.widget.EditText;
 
-public class LoginActivity extends Activity implements OnClickListener
-{
+public class LoginActivity extends Activity implements OnClickListener, OnEditorActionListener {
     private IEspUser mUser;
-    
+
     private EditText mEmailEdt;
     private EditText mPasswordEdt;
-    
+
     private Button mLoginBtn;
     private Button mRegisterBtn;
     private TextView mForgetPwdTV;
     private TextView mThirdPartyLoginTV;
-    
+
     private final static int REQUEST_REGISTER = 1;
-    
+
     private LoginThirdPartyDialog mThirdPartyLoginDialog;
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,11 +46,12 @@ public class LoginActivity extends Activity implements OnClickListener
         setContentView(R.layout.login_activity);
         init();
     }
-    
+
     private void init()
     {
         mEmailEdt = (EditText)findViewById(R.id.login_edt_account);
         mPasswordEdt = (EditText)findViewById(R.id.login_edt_password);
+        mPasswordEdt.setOnEditorActionListener(this);
         
         mLoginBtn = (Button)findViewById(R.id.login_btn_login);
         mLoginBtn.setOnClickListener(this);
@@ -87,7 +90,19 @@ public class LoginActivity extends Activity implements OnClickListener
             startActivity(new Intent(this, ResetUserPasswordActivity.class));
         }
     }
-    
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (v == mPasswordEdt) {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                login();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {

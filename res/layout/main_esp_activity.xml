@@ -17,7 +17,7 @@
         android:layout_height="match_parent" />
 
     <fragment
-        android:id="@+id/navigation_drawer"
+        android:id="@+id/navigation_drawer_left"
         android:name="com.espressif.iot.ui.main.EspDrawerFragmentLeft"
         android:layout_width="@dimen/esp_main_drawer_width"
         android:layout_height="match_parent"

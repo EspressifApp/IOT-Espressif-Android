@@ -16,8 +16,8 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@android:color/white" />
 
-    <com.handmark.pulltorefresh.library.PullToRefreshScrollView
-        android:id="@+id/pull_to_refresh_scrollview"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true" >
@@ -27,6 +27,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical" />
-    </com.handmark.pulltorefresh.library.PullToRefreshScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>

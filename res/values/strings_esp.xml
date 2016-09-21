@@ -20,6 +20,7 @@
     <string name="esp_main_bottom_item_delete">Delete selected devices</string>
     <string name="esp_main_bottom_item_move">Move selected devices into direct Group</string>
     <string name="esp_main_bottom_item_remove">Remove selected devices from the Group</string>
+    <string name="esp_main_bottom_item_upgrade">Upgrade device version</string>
     <string name="esp_main_device_move_dialog_title">Move devices into</string>
     <string name="esp_main_not_login_msg">You are not logged in, some function will be limited.</string>
     <string name="esp_main_network_enable_msg">No available network</string>
@@ -37,7 +38,15 @@
     <string name="esp_main_sort_by_name">Device name</string>
     <string name="esp_main_sort_by_activate">Activated time</string>
     <string name="esp_main_all_type">All types</string>
+    <string name="esp_main_type_plug">Plug</string>
+    <string name="esp_main_type_plugs">Plugs</string>
+    <string name="esp_main_type_humiture">Humiture</string>
+    <string name="esp_main_type_flammable">Flammable Gas</string>
+    <string name="esp_main_type_light">Light</string>
+    <string name="esp_main_type_voltage">Voltage</string>
+    <string name="esp_main_type_soundbox">Soundbox</string>
     <string name="esp_main_only_show_usable_device">Only show usable devices</string>
+    <string name="esp_main_waiting_for_upgrading">Waiting for upgrading</string>
 
     <string name="esp_login_account">Enter Email</string>
     <string name="esp_login_password">Enter Password</string>
@@ -103,33 +112,12 @@
 
     <string name="esp_activity_bottom_item_more_overflow">More</string>
 
-    <string name="esp_ui_title">IOT Espressif</string>
-    <string name="esp_ui_menu_edit">Edit</string>
-    <string name="esp_ui_menu_scene">Scene</string>
-    <string name="esp_ui_menu_add_device">Add device</string>
     <string name="esp_ui_status_upgrading_local">Upgrading local&#8230;</string>
     <string name="esp_ui_status_upgrading_online">Upgrading cloud&#8230;</string>
     <string name="esp_ui_status_offline">Offline</string>
     <string name="esp_ui_status_activating">Activating&#8230;</string>
     <string name="esp_ui_status_local">Local</string>
     <string name="esp_ui_status_online">Cloud</string>
-    <string name="esp_ui_delete_message">Do you want to delete this device?</string>
-    <string name="esp_ui_edit_select_all">Select all</string>
-    <string name="esp_ui_edit_delete_selected">Delete</string>
-    <string name="esp_ui_edit_delete_sellected_message">Do you want to delete all selected devices?</string>
-    <string name="esp_ui_edit_has_eneditable_device_message">Some devices can\'t delete</string>
-    <string name="esp_ui_edit_forbidden_toast">This device can\'t edit now</string>
-    <string name="esp_ui_exit_message">\nDo you want to exit?\n</string>
-    <string name="esp_ui_exiting">Exiting&#8230;</string>
-    <string name="esp_ui_network_enable_msg">No available network</string>
-    <string name="esp_ui_device_activate_suc">Make device connect to cloud successfully</string>
-    <string name="esp_ui_device_activate_failed">Make device connect to cloud failed</string>
-    <string name="esp_ui_device_popupmenu_rename">Rename</string>
-    <string name="esp_ui_device_popupmenu_delete">Delete</string>
-    <string name="esp_ui_device_all_visible">All visible</string>
-    <string name="esp_ui_device_usable_visible">Usable visible</string>
-    <string name="esp_ui_device_sort_by">Sort by</string>
-    <string name="esp_ui_not_login_msg">You are not logged in, some function will be limited.</string>
 
     <string name="esp_settings">Settings</string>
     <string name="esp_settings_account">Account</string>
@@ -256,8 +244,6 @@
     <string name="esp_device_light_brightness">Brightness</string>
     <string name="esp_device_light_on">On</string>
     <string name="esp_device_light_off">Off</string>
-    <string name="esp_device_light_twinkle_progress_close">Closing&#8230;</string>
-    <string name="esp_device_light_twinkle_mode">Light Twinkle mode</string>
 
     <string name="esp_device_remote_address_hint">Please input address</string>
     <string name="esp_device_remote_command_hint">Please input command</string>

@@ -15,10 +15,10 @@
         <TextView
             android:id="@+id/drawer_item_account"
             style="@style/MainDrawerItem"
-            android:layout_height="70dip"
+            android:layout_height="50dip"
             android:drawableLeft="@drawable/drawer_left_account"
             android:text="@string/esp_main_drawer_item_account"
-            android:textSize="23sp" />
+            android:textSize="17sp" />
 
         <TextView
             android:id="@+id/drawer_item_login"

@@ -14,15 +14,11 @@ import com.espressif.iot.type.net.IOTAddress;
 import com.espressif.iot.type.net.WifiCipherType;
 import com.espressif.iot.ui.device.DeviceActivityAbs;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.widget.adapter.SoftAPAdapter;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
 import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,31 +26,34 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceSoftAPConfigureActivity extends EspActivityAbs
-    implements OnItemClickListener, OnRefreshListener<ListView>, OnSharedPreferenceChangeListener
-{
+    implements OnSharedPreferenceChangeListener, OnRefreshListener {
     private IEspUser mUser;
     
-    private PullToRefreshListView mSoftApListView;
+    private SwipeRefreshLayout mRefreshLayout;
+    private RecyclerView mSoftApListView;
     private List<IEspDeviceNew> mSoftApList;
-    private BaseAdapter mSoftApAdapter;
+    private SoftApAdapter mSoftApAdapter;
     
     private Handler mHandler;
     
@@ -76,25 +75,30 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        
+
         setContentView(R.layout.device_configure_activity);
-        
+
         mUser = BEspUser.getBuilder().getInstance();
         mShared = getSharedPreferences(EspStrings.Key.SETTINGS_NAME, Context.MODE_PRIVATE);
         mShared.registerOnSharedPreferenceChangeListener(this);
         mAutoConfigureValue =
             mShared.getInt(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_CONFIGURE, EspDefaults.AUTO_CONFIGRUE_RSSI);
+
+        mRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.refresh_layout);
+        mRefreshLayout.setColorSchemeResources(R.color.esp_actionbar_color);
+        mRefreshLayout.setOnRefreshListener(this);
+
+        mSoftApListView = (RecyclerView)findViewById(R.id.softap_list);
+        LinearLayoutManager llm = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         
-        mSoftApListView = (PullToRefreshListView)findViewById(R.id.softap_list);
-        mSoftApListView.setOnItemClickListener(this);
+        mSoftApListView.setLayoutManager(llm);
         mSoftApList = new Vector<IEspDeviceNew>();
-        mSoftApAdapter = new SoftApAdapter(this, mSoftApList);
+        mSoftApAdapter = new SoftApAdapter(this);
         mSoftApListView.setAdapter(mSoftApAdapter);
-        mSoftApListView.setOnRefreshListener(this);
-        
+
         mShowConfigureDialog = false;
         mHandler = new ListHandler(this);
-        
+
         setTitle(R.string.esp_configure_title);
     }
     
@@ -138,7 +142,7 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
         mSoftApList.addAll(mUser.scanSoftapDeviceList());
         sortDeviceByRssi(mSoftApList);
         mSoftApAdapter.notifyDataSetChanged();
-        mSoftApListView.onRefreshComplete();
+        mRefreshLayout.setRefreshing(false);
         
         if (mAutoConfigureValue < 0 && mSoftApList.size() > 0)
         {
@@ -276,8 +280,7 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
     }
     
     @Override
-    public void onRefresh(PullToRefreshBase<ListView> view)
-    {
+    public void onRefresh() {
         sendRefreshMessage();
     }
     
@@ -339,75 +342,113 @@ public class DeviceSoftAPConfigureActivity extends EspActivityAbs
         }
     }
     
-    private class SoftApAdapter extends SoftAPAdapter
-    {
-        public SoftApAdapter(Activity activity, List<IEspDeviceNew> softApList)
-        {
-            super(activity, softApList);
+    private class Holder extends RecyclerView.ViewHolder {
+        IEspDeviceNew softAp;
+
+        TextView deviceName;
+        ImageView deviceIcon;
+        TextView deviceRssi;
+        ImageView meshIcon;
+        TextView content;
+
+        public Holder(View itemView) {
+            super(itemView);
+
+            deviceName = (TextView)itemView.findViewById(R.id.device_name);
+            deviceIcon = (ImageView)itemView.findViewById(R.id.device_icon);
+            deviceIcon.setImageResource(R.drawable.esp_wifi_signal);
+            deviceRssi = (TextView)itemView.findViewById(R.id.device_status_text);
+            meshIcon = (ImageView)itemView.findViewById(R.id.device_status1);
+            content = (TextView)itemView.findViewById(R.id.content_text);
+
+            itemView.setOnClickListener(new OnItemClickListener());
+        }
+
+        private class OnItemClickListener implements View.OnClickListener {
+
+            @Override
+            public void onClick(View v) {
+                if (!EspBaseApiUtil.isWifiEnabled()) {
+                    Toast.makeText(v.getContext(), R.string.esp_configure_wifi_hint, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                IEspDeviceNew device = softAp;
+
+                PopupMenu popMenu = new PopupMenu(v.getContext(), v);
+                Menu menu = popMenu.getMenu();
+                if (mUser.isLogin()) {
+                    menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
+                }
+                menu.add(Menu.NONE, POPMENU_ID_DIRECT_CONNECT, 0, R.string.esp_configure_direct_connect);
+                popMenu.setOnMenuItemClickListener(new SoftAPPopMenuItemClickListener(device));
+                popMenu.show();
+            }
+
+        }
+    }
+
+    private class SoftApAdapter extends RecyclerView.Adapter<Holder> {
+        private Activity mActivity;
+        private LayoutInflater mInflater;
+
+        public SoftApAdapter(Activity activity) {
+            mActivity = activity;
+            mInflater = mActivity.getLayoutInflater();
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            View view = super.getView(position, convertView, parent);
-            
-            IEspDeviceNew deviceNew = (IEspDeviceNew)view.getTag();
-            
-            TextView deviceNameTV = (TextView)view.findViewById(R.id.device_name);
-            String displayText = deviceNew.getSsid();
+        public int getItemCount() {
+            return mSoftApList.size();
+        }
+
+        @Override
+        public void onBindViewHolder(Holder holder, int position) {
+            IEspDeviceNew softAp = mSoftApList.get(position);
+            holder.softAp = softAp;
+
+            String displayText = softAp.getSsid();
             // check whether the device is configured
             List<IEspDevice> deviceList = BEspUser.getBuilder().getInstance().getDeviceList();
-            for (IEspDevice deviceInList : deviceList)
-            {
+            for (IEspDevice deviceInList : deviceList) {
                 // when device activating fail, it will be stored in local db and be activating state,
                 // at this situation, we don't let the displayText change to device name
-                if (deviceInList.getDeviceState().isStateActivating())
-                {
+                if (deviceInList.getDeviceState().isStateActivating()) {
                     continue;
                 }
-                if (deviceNew.getBssid().equals(deviceInList.getBssid()))
-                {
+                if (softAp.getBssid().equals(deviceInList.getBssid())) {
                     displayText = deviceInList.getName();
                     break;
                 }
             }
-            deviceNameTV.setText(displayText);
-            
-            TextView contentTV = (TextView)view.findViewById(R.id.content_text);
-            if (isConfigured(deviceNew.getBssid()))
-            {
-                contentTV.setText("Configured");
+            holder.deviceName.setText(displayText);
+
+            holder.deviceIcon.getDrawable().setLevel(WifiManager.calculateSignalLevel(softAp.getRssi(), 5));
+
+            holder.deviceRssi.setText("RSSI: " + softAp.getRssi());
+
+            boolean isMesh = softAp.getIsMeshDevice();
+            if (isMesh) {
+                holder.meshIcon.setBackgroundResource(R.drawable.esp_icon_mesh);
+            } else {
+                holder.meshIcon.setBackgroundResource(0);
             }
-            else
-            {
-                contentTV.setText("");
+
+            if (isConfigured(softAp.getBssid())) {
+                holder.content.setText("Configured");
+            } else {
+                holder.content.setText("");
             }
-            
-            return view;
         }
+
+        @Override
+        public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = mInflater.inflate(R.layout.device_layout, parent, false);
+            Holder holder = new Holder(view);
+            return holder;
+        }
+
     }
-    
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-    {
-        if (!EspBaseApiUtil.isWifiEnabled())
-        {
-            Toast.makeText(this, R.string.esp_configure_wifi_hint, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        IEspDeviceNew device = (IEspDeviceNew)view.getTag();
-        
-        PopupMenu popMenu = new PopupMenu(this, view);
-        Menu menu = popMenu.getMenu();
-        if (mUser.isLogin())
-        {
-            menu.add(Menu.NONE, POPMENU_ID_ACTIVATE, 0, R.string.esp_configure_activate);
-        }
-        menu.add(Menu.NONE, POPMENU_ID_DIRECT_CONNECT, 0, R.string.esp_configure_direct_connect);
-        popMenu.setOnMenuItemClickListener(new SoftAPPopMenuItemClickListener(device));
-        popMenu.show();
-    }
-    
+
     private class SoftAPPopMenuItemClickListener implements OnMenuItemClickListener
     {
         private IEspDeviceNew mPopDevice;

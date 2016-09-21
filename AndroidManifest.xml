@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="21"
-    android:versionName="v1.2.1" >
+    android:versionCode="22"
+    android:versionName="v1.2.2" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -67,9 +67,6 @@
             android:name="com.espressif.iot.ui.group.EspGroupEditActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.espressif.iot.ui.main.EspUIActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="com.google.zxing.qrcode.ui.ShareCaptureActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullScreen" />
@@ -85,11 +82,6 @@
         <activity
             android:name="com.espressif.iot.ui.device.DevicePlugActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.device.DeviceLightActivityOld"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity
             android:name="com.espressif.iot.ui.device.light.DeviceLightActivity"
             android:screenOrientation="portrait"
@@ -165,22 +157,13 @@
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
-            android:name="com.espressif.iot.ui.scene.EspSceneActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="com.espressif.iot.ui.configure.EspButtonConfigureActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.espressif.iot.ui.configure.DeviceBrowserConfigureActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="com.espressif.iot.ui.device.trigger.DeviceTriggerActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.espressif.iot.ui.device.light.LightTwinkleActivity"
             android:screenOrientation="portrait" />
 
         <service android:name="com.espressif.iot.esppush.EspPushService" />

@@ -76,7 +76,15 @@ public class WelcomeActivity extends Activity
             mHandler.sendEmptyMessage(MSG_LOGIN);
         }
     }
-    
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        mHandler.removeMessages(MSG_LOGIN);
+        mHandler.removeMessages(MSG_SHOW_PAGER);
+    }
+
     private void initPagerItem()
     {
         for (int i = 0; i < 3; i++)

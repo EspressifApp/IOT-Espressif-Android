@@ -7,11 +7,11 @@ import com.espressif.iot.action.device.common.upgrade.EspDeviceUpgradeParser;
 import com.espressif.iot.action.device.common.upgrade.IEspDeviceUpgradeInfo;
 import com.espressif.iot.command.device.IEspCommandLight;
 import com.espressif.iot.device.IEspDeviceLight;
-import com.espressif.iot.esppush.task.DeviceStatusTask;
 import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.ui.configure.EspButtonCustomKeySettingsActivity;
 import com.espressif.iot.ui.device.DeviceBaseActivity;
+import com.espressif.iot.ui.task.DeviceStatusTask;
 import com.espressif.iot.ui.widget.view.ColorView;
 import com.espressif.iot.ui.widget.view.EspRefreshableLayout;
 import com.espressif.iot.ui.widget.view.EspRefreshableLayout.OnRefreshListener;
@@ -136,6 +136,7 @@ public class DeviceLightActivity extends DeviceBaseActivity
         mBrightnessBar.setProgress(BRIGHTNESS_TRANSPARENT_PROGRESS);
         mBrightnessBar.setOnSeekBarChangeListener(this);
 
+        updateOnColor(mLight.getStatusLight());
         if (!isDeviceArray() && isDeviceCompatibility()) {
             executeGetTaks();
         }
@@ -327,19 +328,8 @@ public class DeviceLightActivity extends DeviceBaseActivity
                         updateLightStatus();
                         updateCurrentStatusLight(mLight.getStatusLight());
                     }
-
+                    updateOnColor(mLight.getStatusLight());
                     int status = mLight.getStatusLight().getStatus();
-                    if (status == IEspStatusLight.STATUS_OFF) {
-                        int red = mLight.getStatusLight().getRed();
-                        int green = mLight.getStatusLight().getGreen();
-                        int blue = mLight.getStatusLight().getBlue();
-                        if (red == green && red == blue && red == 0) {
-                            int white = mLight.getStatusLight().getWhite();
-                            mOnColor = Color.rgb(white, white, white);
-                        } else {
-                            mOnColor = Color.rgb(red, green, blue);
-                        }
-                    }
                     mOnOffCB.setChecked(status != IEspStatusLight.STATUS_OFF);
                     setOnOffListener();
                 }
@@ -435,6 +425,29 @@ public class DeviceLightActivity extends DeviceBaseActivity
                 mOnOffCB.setChecked(true);
                 setLightColor(Color.rgb(lightStatus.getWhite(), lightStatus.getWhite(), lightStatus.getWhite()));
                 mBrightnessBar.setProgress(lightStatus.getWhite() * BRIGHTNESS_MAX / RGB_MAX );
+                break;
+        }
+    }
+
+    private void updateOnColor(IEspStatusLight statusLight) {
+        int status = statusLight.getStatus();
+        int red = statusLight.getRed();
+        int green = statusLight.getGreen();
+        int blue = statusLight.getBlue();
+        int white = statusLight.getWhite();
+        switch (status) {
+            case IEspStatusLight.STATUS_OFF:
+                if (red == green && red == blue && red == 0) {
+                    mOnColor = Color.rgb(white, white, white);
+                } else {
+                    mOnColor = Color.rgb(red, green, blue);
+                }
+                break;
+            case IEspStatusLight.STATUS_COLOR:
+                mOnColor = Color.rgb(red, green, blue);
+                break;
+            case IEspStatusLight.STATUS_BRIGHT:
+                mOnColor = Color.rgb(white, white, white);
                 break;
         }
     }

@@ -151,7 +151,8 @@ public class EspDrawerFragmentRight extends EspDrawerFragmentBase {
             EspDeviceType[] values = EspDeviceType.values();
             mTypes.add(null);
             for (EspDeviceType type : values) {
-                if (type != EspDeviceType.NEW && type != EspDeviceType.ROOT && type != EspDeviceType.REMOTE) {
+                if (type != EspDeviceType.NEW && type != EspDeviceType.ROOT && type != EspDeviceType.REMOTE
+                    && type != EspDeviceType.FLAMMABLE && type != EspDeviceType.VOLTAGE) {
                     mTypes.add(type);
                 }
             }
@@ -193,9 +194,9 @@ public class EspDrawerFragmentRight extends EspDrawerFragmentBase {
 
             if (type == null) {
                 text.setText(R.string.esp_main_all_type);
-                icon.setImageResource(R.drawable.device_home);
+                icon.setImageResource(R.drawable.device_filter_icon_all);
             } else {
-                text.setText(type.toString());
+                text.setText(DeviceUtil.getDeviceTypeNameRes(type));
                 icon.setImageResource(DeviceUtil.getDeviceIconRes(type));
             }
 

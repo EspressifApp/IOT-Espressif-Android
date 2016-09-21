@@ -8,7 +8,7 @@ package com.espressif.iot.command.device;
  */
 public interface IEspCommandLight extends IEspCommandDevice
 {
-    public static final String PROTOCOL_NEW_VERSION = "b1.1.5t45772(o)";
+    public static final String PROTOCOL_NEW_VERSION = "b1.3.0t45772(o)";
 
     public static final String KEY_STATUS = "status";
     public static final String KEY_PERIOD = "period";

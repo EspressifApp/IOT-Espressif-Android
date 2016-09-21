@@ -20,7 +20,7 @@ import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.net.HeaderPair;
 
-class EspCommandLightOldProtocol implements IEspCommandLight, IEspCommandLocal, IEspCommandInternet {
+public class EspCommandLightOldProtocol implements IEspCommandLight, IEspCommandLocal, IEspCommandInternet {
     private final static Logger log = Logger.getLogger(EspCommandLightOldProtocol.class);
 
     private static final String KEY_RESPONSE = "response";

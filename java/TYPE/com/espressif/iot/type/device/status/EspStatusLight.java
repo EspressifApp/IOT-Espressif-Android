@@ -83,8 +83,8 @@ public class EspStatusLight implements IEspStatusLight, Cloneable
     
     @Override
     public String toString() {
-        return "EspStatusLight: (mRed=[" + mRed + "],mGreen=[" + mGreen + "],mBlue=[" + mBlue + "],mWhite=[" + mWhite
-            + "],mPeriod=[" + mPeriod + "])";
+        return "EspStatusLight: (mStatus=[" + mStatus + "],mRed=[" + mRed + "],mGreen=[" + mGreen + "],mBlue=[" + mBlue
+            + "],mWhite=[" + mWhite + "],mPeriod=[" + mPeriod + "])";
     }
     
     @Override

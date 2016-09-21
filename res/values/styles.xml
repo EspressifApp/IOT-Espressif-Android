@@ -89,10 +89,10 @@
 
     <style name="MainDrawerItem">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">60dip</item>
+        <item name="android:layout_height">40dip</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:textSize">21sp</item>
-        <item name="android:layout_margin">5dip</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:padding">5dip</item>
         <item name="android:drawablePadding">15dip</item>
         <item name="android:background">@drawable/esp_activity_icon_background</item>
     </style>

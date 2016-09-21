@@ -17,10 +17,6 @@
             android:entryValues="@array/esp_settings_auto_config_device_values"
             android:key="device_auto_configure"
             android:title="@string/esp_settings_device_auto_configure" />
-
-        <Preference
-            android:key="device_light_twinkle_mode"
-            android:title="@string/esp_device_light_twinkle_mode" />
     </com.espressif.iot.ui.widget.preference.EspPreferenceCategory>
 
     <!-- About EspPush -->

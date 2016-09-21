@@ -21,6 +21,7 @@
     <string name="esp_main_bottom_item_move">将设备移到指定组</string>
     <string name="esp_main_bottom_item_remove">将设备移出所在组</string>
     <string name="esp_main_device_move_dialog_title">将设备移入</string>
+    <string name="esp_main_bottom_item_upgrade">升级设备到最新版本</string>
     <string name="esp_main_not_login_msg">您尚未登录，部分功能将受限</string>
     <string name="esp_main_network_enable_msg">没有可用网络</string>
     <string name="esp_main_exit_message">\n是否退出应用？\n</string>
@@ -37,7 +38,15 @@
     <string name="esp_main_sort_by_name">设备名</string>
     <string name="esp_main_sort_by_activate">激活时间</string>
     <string name="esp_main_all_type">全部类型</string>
+    <string name="esp_main_type_plug">开关</string>
+    <string name="esp_main_type_plugs">插排</string>
+    <string name="esp_main_type_humiture">温湿度计</string>
+    <string name="esp_main_type_flammable">气体警报器</string>
+    <string name="esp_main_type_light">灯</string>
+    <string name="esp_main_type_voltage">电压计</string>
+    <string name="esp_main_type_soundbox">音箱</string>
     <string name="esp_main_only_show_usable_device">只显示可用设备</string>
+    <string name="esp_main_waiting_for_upgrading">等待升级中</string>
 
     <string name="esp_login_account">输入邮箱</string>
     <string name="esp_login_password">输入密码</string>
@@ -103,33 +112,12 @@
 
     <string name="esp_activity_bottom_item_more_overflow">更多</string>
 
-    <string name="esp_ui_title">IOT Espressif</string>
-    <string name="esp_ui_menu_edit">编辑</string>
-    <string name="esp_ui_menu_scene">场景</string>
-    <string name="esp_ui_menu_add_device">添加设备</string>
     <string name="esp_ui_status_upgrading_local">本地升级中&#8230;</string>
     <string name="esp_ui_status_upgrading_online">云端升级中&#8230;</string>
     <string name="esp_ui_status_offline">离线</string>
     <string name="esp_ui_status_activating">激活中&#8230;</string>
     <string name="esp_ui_status_local">本地</string>
     <string name="esp_ui_status_online">云端</string>
-    <string name="esp_ui_delete_message">是否删除该设备？</string>
-    <string name="esp_ui_edit_select_all">全选</string>
-    <string name="esp_ui_edit_delete_selected">删除</string>
-    <string name="esp_ui_edit_delete_sellected_message">是否删除所有选中的设备？</string>
-    <string name="esp_ui_edit_has_eneditable_device_message">部分设备处于不可删除状态</string>
-    <string name="esp_ui_edit_forbidden_toast">此设备暂时不可编辑</string>
-    <string name="esp_ui_exit_message">\n是否退出应用？\n</string>
-    <string name="esp_ui_exiting">正在退出&#8230;</string>
-    <string name="esp_ui_network_enable_msg">没有可用网络</string>
-    <string name="esp_ui_device_activate_suc">设备连接至云端成功</string>
-    <string name="esp_ui_device_activate_failed">设备连接至云端失败</string>
-    <string name="esp_ui_device_popupmenu_rename">重命名</string>
-    <string name="esp_ui_device_popupmenu_delete">删除</string>
-    <string name="esp_ui_device_all_visible">所有设备可见</string>
-    <string name="esp_ui_device_usable_visible">可用设备可见</string>
-    <string name="esp_ui_device_sort_by">选择排序</string>
-    <string name="esp_ui_not_login_msg">您尚未登录，部分功能将受限</string>
 
     <string name="esp_settings">设置</string>
     <string name="esp_settings_account">账号</string>
@@ -256,8 +244,6 @@
     <string name="esp_device_light_brightness">亮度</string>
     <string name="esp_device_light_on">打开</string>
     <string name="esp_device_light_off">关闭</string>
-     <string name="esp_device_light_twinkle_progress_close">正在关闭&#8230;</string>
-     <string name="esp_device_light_twinkle_mode">灯闪模式</string>
 
     <string name="esp_device_remote_address_hint">请输入地址</string>
     <string name="esp_device_remote_command_hint">请输入命令</string>

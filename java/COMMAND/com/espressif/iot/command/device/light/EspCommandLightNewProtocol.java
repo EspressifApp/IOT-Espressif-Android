@@ -21,7 +21,7 @@ import com.espressif.iot.type.device.status.EspStatusLight;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.type.net.HeaderPair;
 
-class EspCommandLightNewProtocol implements IEspCommandLight, IEspCommandLocal, IEspCommandInternet {
+public class EspCommandLightNewProtocol implements IEspCommandLight, IEspCommandLocal, IEspCommandInternet {
     private Logger log = Logger.getLogger(EspCommandLightNewProtocol.class);
 
     /*
@@ -78,6 +78,7 @@ class EspCommandLightNewProtocol implements IEspCommandLight, IEspCommandLocal, 
             } else {
                 respJSON = EspBaseApiUtil.PostForJson(url, deviceBssid, postJSON);
             }
+            log.info("localPost " + respJSON);
             return (respJSON != null);
         } else {
             // no response is available, so we treat it suc, when fail socket will be disconnected

@@ -40,7 +40,6 @@ import com.espressif.iot.esptouch.IEsptouchListener;
 import com.espressif.iot.esptouch.IEsptouchResult;
 import com.espressif.iot.object.db.IApDB;
 import com.espressif.iot.ui.main.EspActivityAbs;
-import com.espressif.iot.ui.main.EspUIActivity;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
@@ -74,7 +73,6 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     
     private static final int POPUPMENU_ID_GET_SHARE = 1;
     private static final int POPUPMENU_ID_SOFTAP_CONFIGURE = 2;
-    private static final int POPUPMENU_ID_BROWSER_CONFIGURE = 3;
     
     private List<String> mEsptouchDeviceBssidList = new ArrayList<String>();
     private AtomicInteger mEsptouchDeivceRegisterCount = new AtomicInteger();
@@ -82,7 +80,6 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
     private List<String> mRegisteredDeviceNameList = new ArrayList<String>();
     
     private static final int REQUEST_SOFTAP_CONFIGURE = 10;
-    private static final int REQUEST_BROWSER_CONFIGURE = 11;
     private static final int REQUEST_GET_SHARED = 12;
     
     @Override
@@ -221,10 +218,6 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
             case POPUPMENU_ID_SOFTAP_CONFIGURE:
                 startActivityForResult(new Intent(this, DeviceSoftAPConfigureActivity.class), REQUEST_SOFTAP_CONFIGURE);
                 return true;
-            case POPUPMENU_ID_BROWSER_CONFIGURE:
-                startActivityForResult(new Intent(this, DeviceBrowserConfigureActivity.class),
-                    REQUEST_BROWSER_CONFIGURE);
-                return true;
         }
         return false;
     }
@@ -235,12 +228,6 @@ public class DeviceEspTouchActivity extends EspActivityAbs implements OnCheckedC
         switch (requestCode) {
             case REQUEST_SOFTAP_CONFIGURE:
                 if (resultCode == RESULT_OK) {
-                    finish();
-                }
-                break;
-            case REQUEST_BROWSER_CONFIGURE:
-                if (resultCode == RESULT_OK) {
-                    setResult(EspUIActivity.RESULT_SCAN);
                     finish();
                 }
                 break;

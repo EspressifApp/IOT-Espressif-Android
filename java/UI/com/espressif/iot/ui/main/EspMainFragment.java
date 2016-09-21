@@ -11,12 +11,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.log4j.Logger;
 
 import com.espressif.iot.R;
+import com.espressif.iot.base.net.udp.UdpServer;
+import com.espressif.iot.base.net.udp.UdpServer.OnLightTwinkleListener;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.IEspDeviceLight;
 import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
 import com.espressif.iot.device.builder.BEspDeviceRoot;
-import com.espressif.iot.esppush.task.DeviceStatusTask;
 import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.model.device.sort.DeviceSortor;
 import com.espressif.iot.model.device.sort.DeviceSortor.DeviceSortType;
@@ -26,17 +27,13 @@ import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.device.status.IEspStatusLight;
 import com.espressif.iot.ui.device.light.LightUtils;
 import com.espressif.iot.ui.group.EspGroupEditActivity;
+import com.espressif.iot.ui.task.DeviceStatusTask;
 import com.espressif.iot.ui.widget.view.ColorView;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.DeviceUtil;
 import com.espressif.iot.util.EspDefaults;
 import com.espressif.iot.util.EspStrings;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
-import com.meetme.android.horizontallistview.HorizontalListView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -58,6 +55,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -86,15 +85,14 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EspMainFragment extends Fragment
-    implements OnSharedPreferenceChangeListener, OnClickListener, OnItemClickListener, OnItemLongClickListener,
-    OnRefreshListener<ListView>, OnLongClickListener, OnCheckedChangeListener {
+public class EspMainFragment extends Fragment implements OnSharedPreferenceChangeListener, OnClickListener,
+    OnItemClickListener, OnItemLongClickListener, OnLongClickListener, OnCheckedChangeListener, OnRefreshListener {
     private static final Logger log = Logger.getLogger(EspMainFragment.class);
 
     private EspMainActivity mActivity;
     private IEspUser mUser;
 
-    private HorizontalListView mGroupListView;
+    private RecyclerView mGroupListView;
     private List<IEspGroup> mGroupList;
     private GroupAdapter mGroupAdapter;
     private TextView mAllGroupView;
@@ -108,7 +106,8 @@ public class EspMainFragment extends Fragment
     private EspDeviceType mFilterDeviceType;
     private boolean mFilterDeviceUsable;
 
-    private PullToRefreshListView mDeviceListView;
+    private SwipeRefreshLayout mDeviceRefreshLayout;
+    private ListView mDeviceListView;
     private DeviceAdapter mDeviceAdapter;
     private List<IEspDevice> mAllDeviceList;
     private LinkedBlockingQueue<Object> mDevicesUpdateMsgQueue;
@@ -117,10 +116,14 @@ public class EspMainFragment extends Fragment
     private static final int POPUP_ID_DEVICE_RENAME = 0x20;
     private static final int POPUP_ID_DEVICE_DELETE = 0x21;
     private static final int POPUP_ID_DEVICE_ACTIVATE = 0x22;
-    private static final int PUPUP_ID_DEVICE_MORE = 0x23;
+    private static final int POPUP_ID_DEVICE_MORE = 0x30;
 
     private final static int REQUEST_DEVICE = 0x11;
     private final static int REQUEST_GROUP_CREATE = 0x12;
+
+    public static final int RESULT_SCAN = 0x10;
+    public static final int RESULT_UPGRADE_LOCAL = 0x11;
+    public static final int RESULT_UPGRADE_INTERNET = 0x12;
 
     /**
      * Whether the device refresh task is running
@@ -129,6 +132,8 @@ public class EspMainFragment extends Fragment
     private Handler mRefreshHandler;
     private static final int MSG_AUTO_REFRESH = 0;
     private static final int MSG_UPDATE_TEMPDEVICE = 1;
+    private static final int MSG_TWINKLE = 2;
+    private static final int MSG_LAYOUT_REFRESH = 3;
 
     private SharedPreferences mSettingsShared;
 
@@ -143,14 +148,13 @@ public class EspMainFragment extends Fragment
     private boolean mIsDevicesUpdatedNecessary = false;
     private boolean mIsDevicesPullRefreshUpdated = false;
 
-    public static final int RESULT_SCAN = 0x10;
-
     private View mBottomBar;
     private ImageView mAllDeviceBtn;
     private ImageView mActivateDeviceBtn;
     private ImageView mDeleteDeviceBtn;
     private ImageView mMoveDeviceBtn;
     private ImageView mRemoveDeviceBtn;
+    private ImageView mUpgradeDeviceBtn;
 
     private RecyclerView mRecyclerView;
     private ColorAdapter mColorAdapter;
@@ -168,6 +172,8 @@ public class EspMainFragment extends Fragment
 
     private DeviceStatusTask mLightTask;
 
+    private EspUpgradeHelper mEspUpgradeHelper;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -183,6 +189,8 @@ public class EspMainFragment extends Fragment
             activity.getSharedPreferences(EspStrings.Key.NAME_NEW_ACTIVATED_DEVICES, Context.MODE_PRIVATE);
         mNewDevicesShared.registerOnSharedPreferenceChangeListener(this);
         mNewDevicesSet = mUser.getNewActivatedDevices();
+
+        mEspUpgradeHelper = EspUpgradeHelper.INSTANCE;
     }
 
     @Override
@@ -192,29 +200,31 @@ public class EspMainFragment extends Fragment
         mSearchET = (EditText)view.findViewById(R.id.search_view);
         mSearchET.addTextChangedListener(mSearchWatcher);
 
-        mGroupListView = (HorizontalListView)view.findViewById(R.id.group_list);
+        mGroupListView = (RecyclerView)view.findViewById(R.id.group_list);
+        LinearLayoutManager groupllm = new LinearLayoutManager(mActivity, RecyclerView.HORIZONTAL, false);
+        mGroupListView.setLayoutManager(groupllm);
         mUser.loadGroupDB();
         mGroupList = mUser.getGroupList();
         mGroupAdapter = new GroupAdapter();
         mGroupListView.setAdapter(mGroupAdapter);
-        mGroupListView.setOnItemClickListener(this);
-        mGroupListView.setOnItemLongClickListener(this);
 
         mAllGroupView = (TextView)view.findViewById(R.id.group_all);
         mAllGroupView.setOnClickListener(this);
         mAddGroupView = view.findViewById(R.id.group_add);
         mAddGroupView.setOnClickListener(this);
 
-        mDeviceListView = (PullToRefreshListView)view.findViewById(R.id.devices_list);
+        mDeviceRefreshLayout = (SwipeRefreshLayout)view.findViewById(R.id.devices_refresh_layout);
+        mDeviceRefreshLayout.setColorSchemeResources(R.color.esp_actionbar_color);
+        mDeviceRefreshLayout.setOnRefreshListener(this);
+        mDeviceListView = (ListView)view.findViewById(R.id.devices_list);
         mAllDeviceList = new ArrayList<IEspDevice>();
         mDeviceAdapter = new DeviceAdapter(mAllDeviceList);
         mDeviceListView.setAdapter(mDeviceAdapter);
         mDevicesUpdateMsgQueue = new LinkedBlockingQueue<Object>();
         mUpdateDeviceThread = new UpdateDeviceThread();
         mUpdateDeviceThread.start();
-        mDeviceListView.setOnRefreshListener(this);
         mDeviceListView.setOnItemClickListener(this);
-        mDeviceListView.getRefreshableView().setOnItemLongClickListener(this);
+        mDeviceListView.setOnItemLongClickListener(this);
 
         mSortType = DeviceSortType.DEVICE_NAME;
 
@@ -238,6 +248,10 @@ public class EspMainFragment extends Fragment
         mRemoveDeviceBtn.setOnClickListener(this);
         mRemoveDeviceBtn.setOnLongClickListener(this);
         mRemoveDeviceBtn.setEnabled(false);
+        mUpgradeDeviceBtn = (ImageView)view.findViewById(R.id.upgrade_device_btn);
+        mUpgradeDeviceBtn.setOnClickListener(this);
+        mUpgradeDeviceBtn.setOnLongClickListener(this);
+        mUpgradeDeviceBtn.setEnabled(false);
 
         mRecyclerView = (RecyclerView)view.findViewById(R.id.recycler_view);
         LinearLayoutManager llm = new LinearLayoutManager(mActivity);
@@ -251,9 +265,10 @@ public class EspMainFragment extends Fragment
 
         mRefreshing = false;
         mRefreshHandler = new RefreshHandler(this);
-        mActivity.getActionBar().setDisplayShowCustomEnabled(true);
-        mActivity.getActionBar().setCustomView(R.layout.widget_progressbar);
-        refresh();
+        mRefreshHandler.sendEmptyMessage(MSG_LAYOUT_REFRESH);
+        // mActivity.getActionBar().setDisplayShowCustomEnabled(true);
+        // mActivity.getActionBar().setCustomView(R.layout.widget_progressbar);
+        // refresh();
 
         // Get auto refresh settings data
         long autoRefreshTime = mSettingsShared.getLong(EspStrings.Key.SETTINGS_KEY_DEVICE_AUTO_REFRESH,
@@ -271,6 +286,8 @@ public class EspMainFragment extends Fragment
         deviceFilter.addAction(EspStrings.Action.DEVICES_ARRIVE_STATEMACHINE);
         mBroadcastManager.registerReceiver(mDeviceReceiver, deviceFilter);
 
+        UdpServer.INSTANCE.registerOnLightTwinkleListener(mLightTwinkleListener);
+
         return view;
     }
 
@@ -281,8 +298,12 @@ public class EspMainFragment extends Fragment
         mBroadcastManager.unregisterReceiver(mGroupReceiver);
         mBroadcastManager.unregisterReceiver(mDeviceReceiver);
 
+        UdpServer.INSTANCE.unRegisterOnLightTwinkleListener(mLightTwinkleListener);
+
         mRefreshHandler.removeMessages(MSG_AUTO_REFRESH);
         mRefreshHandler.removeMessages(MSG_UPDATE_TEMPDEVICE);
+        mRefreshHandler.removeMessages(MSG_TWINKLE);
+        mRefreshHandler.removeMessages(MSG_LAYOUT_REFRESH);
     }
 
     @Override
@@ -300,7 +321,7 @@ public class EspMainFragment extends Fragment
         // when the UI is showed, show the newest device list need the follow two sentences
         updateDeviceList();
         if (mIsDevicesUpdatedNecessary) {
-            mDeviceListView.onRefreshComplete();
+            mDeviceRefreshLayout.setRefreshing(false);
             mRefreshing = false;
             mIsDevicesUpdatedNecessary = false;
             mIsDevicesPullRefreshUpdated = false;
@@ -308,6 +329,7 @@ public class EspMainFragment extends Fragment
 
         if (mOnStartRefreshMark) {
             mOnStartRefreshMark = false;
+            mDeviceRefreshLayout.setRefreshing(true);
             refresh();
         }
     }
@@ -377,10 +399,8 @@ public class EspMainFragment extends Fragment
     }
 
     @Override
-    public void onRefresh(PullToRefreshBase<ListView> refreshView) {
-        if (refreshView == mDeviceListView) {
-            refresh();
-        }
+    public void onRefresh() {
+        refresh();
     }
 
     @Override
@@ -409,6 +429,9 @@ public class EspMainFragment extends Fragment
             if (mSelectedGroup != null && mDeviceAdapter.getCheckedCount() > 0) {
                 showRemoveDeviceFromGroupDialog();
             }
+        } else if (v == mUpgradeDeviceBtn) {
+            upgradeDevice(mDeviceAdapter.getCheckedDeviceList());
+            setDeviceListCheckMode(false);
         }
     }
 
@@ -417,7 +440,7 @@ public class EspMainFragment extends Fragment
     @Override
     public boolean onLongClick(View v) {
         if (v == mAllDeviceBtn || v == mDeleteDeviceBtn || v == mActivateDeviceBtn || v == mMoveDeviceBtn
-            || v == mRemoveDeviceBtn) {
+            || v == mRemoveDeviceBtn || v == mUpgradeDeviceBtn) {
             if (mBottomToast != null) {
                 mBottomToast.cancel();
             }
@@ -431,31 +454,16 @@ public class EspMainFragment extends Fragment
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == mGroupListView) {
-            IEspGroup group = (IEspGroup)view.getTag();
-            if (mSelectedGroup != group) {
-                onGroupSelectChange(group);
-            }
-        } else if (parent == mDeviceListView.getRefreshableView()) {
-            IEspDevice device = (IEspDevice)view.getTag();
+        if (parent == mDeviceListView) {
+            IEspDevice device = ((DeviceHolder)view.getTag()).device;
             gotoUseDevice(device);
         }
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == mGroupListView) {
-            IEspGroup group = (IEspGroup)view.getTag();
-            PopupMenu groupMenu = new PopupMenu(mActivity, view);
-            Menu menu = groupMenu.getMenu();
-            menu.add(Menu.NONE, POPMENU_ID_GROUP_RENAME, 0, R.string.esp_main_group_menu_rename);
-            menu.add(Menu.NONE, POPMENU_ID_GROUP_DELETE, 0, R.string.esp_main_group_menu_delete);
-            groupMenu.setOnMenuItemClickListener(new OnGroupPopupMenuItemClickListener(group));
-            groupMenu.show();
-
-            return true;
-        } else if (parent == mDeviceListView.getRefreshableView()) {
-            IEspDevice device = (IEspDevice)view.getTag();
+        if (parent == mDeviceListView) {
+            IEspDevice device = ((DeviceHolder)view.getTag()).device;
             if (!isDeviceEditable(device)) {
                 setDeviceListCheckMode(true);
                 return true;
@@ -471,7 +479,7 @@ public class EspMainFragment extends Fragment
                     menu.add(Menu.NONE, POPUP_ID_DEVICE_ACTIVATE, 0, R.string.esp_main_device_menu_activate);
                 }
             }
-            menu.add(Menu.NONE, PUPUP_ID_DEVICE_MORE, 0, R.string.esp_main_device_menu_more);
+            menu.add(Menu.NONE, POPUP_ID_DEVICE_MORE, 0, R.string.esp_main_device_menu_more);
             deviceMenu.show();
 
             return true;
@@ -499,51 +507,86 @@ public class EspMainFragment extends Fragment
         }
     };
 
-    private class GroupAdapter extends BaseAdapter {
+    private class GroupHolder extends RecyclerView.ViewHolder {
+        IEspGroup group;
+        View view;
+        TextView text;
+
+        public GroupHolder(View itemView) {
+            super(itemView);
+
+            view = itemView;
+            text = (TextView)itemView.findViewById(R.id.group_text);
+
+            itemView.setOnClickListener(new OnItemClickListener());
+            itemView.setOnLongClickListener(new OnItemLongClickListener());
+        }
+
+        private class OnItemClickListener implements View.OnClickListener {
+
+            @Override
+            public void onClick(View v) {
+                if (mSelectedGroup != group) {
+                    onGroupSelectChange(group);
+                }
+            }
+
+        }
+
+        private class OnItemLongClickListener implements View.OnLongClickListener {
+
+            @Override
+            public boolean onLongClick(View v) {
+                PopupMenu groupMenu = new PopupMenu(mActivity, v);
+                Menu menu = groupMenu.getMenu();
+                menu.add(Menu.NONE, POPMENU_ID_GROUP_RENAME, 0, R.string.esp_main_group_menu_rename);
+                menu.add(Menu.NONE, POPMENU_ID_GROUP_DELETE, 0, R.string.esp_main_group_menu_delete);
+                groupMenu.setOnMenuItemClickListener(new OnGroupPopupMenuItemClickListener(group));
+                groupMenu.show();
+
+                return true;
+            }
+
+        }
+    }
+
+    private class GroupAdapter extends RecyclerView.Adapter<GroupHolder> {
+
+        private LayoutInflater mInflater;
+
+        public GroupAdapter() {
+            mInflater = mActivity.getLayoutInflater();
+        }
 
         @Override
-        public int getCount() {
+        public int getItemCount() {
             return mGroupList.size();
         }
 
         @Override
-        public IEspGroup getItem(int position) {
-            return mGroupList.get(position);
+        public GroupHolder onCreateViewHolder(ViewGroup group, int viewType) {
+            View view = mInflater.inflate(R.layout.main_group_item, group, false);
+            GroupHolder holder = new GroupHolder(view);
+            return holder;
         }
 
         @Override
-        public long getItemId(int position) {
-            return mGroupList.get(position).getId();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view;
-            if (convertView == null) {
-                view = View.inflate(mActivity, R.layout.main_group_item, null);
-            } else {
-                view = convertView;
-            }
-
+        public void onBindViewHolder(GroupHolder holder, int position) {
             IEspGroup group = mGroupList.get(position);
-            view.setTag(group);
+            holder.group = group;
 
-            TextView text = (TextView)view.findViewById(R.id.group_text);
-            text.setText(group.getName());
-            Drawable d;
+            holder.text.setText(group.getName());
+            Drawable d = getResources().getDrawable(group.getType().getIconRes());
+            holder.text.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
             if (group == mSelectedGroup) {
-                d = getResources().getDrawable(group.getType().getIconResSelected());
+                holder.view.setBackgroundResource(R.drawable.esp_activity_icon_background_pressed);
             } else {
-                d = getResources().getDrawable(group.getType().getIconResNormal());
+                holder.view.setBackgroundResource(0);
             }
-            text.setCompoundDrawablesWithIntrinsicBounds(null, d, null, null);
-
-            return view;
         }
-
     }
 
-    private void showEditGroupDialog(final IEspGroup scene) {
+    private void showEditGroupDialog(final IEspGroup group) {
         View view = View.inflate(mActivity, R.layout.edit_dialog, null);
         final EditText edittext = (EditText)view.findViewById(R.id.edit);
         edittext.setHint(R.string.esp_scene_edit_hint);
@@ -551,13 +594,13 @@ public class EspMainFragment extends Fragment
         textview.setVisibility(View.GONE);
         textview.setText(R.string.esp_scene_duplicate_scene_msg);
         final AlertDialog dialog = new AlertDialog.Builder(mActivity).setView(view)
-            .setTitle(scene == null ? getString(R.string.esp_scene_create) : scene.getName())
+            .setTitle(group == null ? getString(R.string.esp_scene_create) : group.getName())
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String groupName = edittext.getText().toString();
-                    editGroup(scene, groupName);
+                    editGroup(group, groupName);
                 }
             })
             .show();
@@ -727,13 +770,11 @@ public class EspMainFragment extends Fragment
 
     private void onGroupSelectChange(IEspGroup group) {
         mSelectedGroup = group;
-        Drawable d;
         if (group == null) {
-            d = getResources().getDrawable(R.drawable.group_all_selected);
+            mAllGroupView.setBackgroundResource(R.drawable.esp_activity_icon_background_pressed);
         } else {
-            d = getResources().getDrawable(R.drawable.group_all_normal);
+            mAllGroupView.setBackgroundResource(0);
         }
-        mAllGroupView.setCompoundDrawablesWithIntrinsicBounds(null, d, null, null);
         mGroupAdapter.notifyDataSetChanged();
         updateDeviceList();
         mDeviceAdapter.clearCheckedDevices();
@@ -918,7 +959,7 @@ public class EspMainFragment extends Fragment
 
                     @Override
                     public void run() {
-                        mDeviceListView.onRefreshComplete();
+                        mDeviceRefreshLayout.setRefreshing(false);
                     }
                 }, 3000);
 
@@ -937,6 +978,11 @@ public class EspMainFragment extends Fragment
     private boolean gotoUseDevice(IEspDevice device) {
         IEspDeviceState state = device.getDeviceState();
         if (state.isStateUpgradingInternet() || state.isStateUpgradingLocal()) {
+            return false;
+        }
+
+        List<IEspDevice> upgradingDevices = mEspUpgradeHelper.getUpgradingDevices();
+        if (upgradingDevices.contains(device)) {
             return false;
         }
 
@@ -984,7 +1030,7 @@ public class EspMainFragment extends Fragment
                 case POPUP_ID_DEVICE_ACTIVATE:
                     activateDevice(mDevice);
                     return true;
-                case PUPUP_ID_DEVICE_MORE:
+                case POPUP_ID_DEVICE_MORE:
                     setDeviceListCheckMode(true);
                     return true;
             }
@@ -1165,8 +1211,15 @@ public class EspMainFragment extends Fragment
             mHasEneditableDevice = false;
             mDevices = new HashSet<IEspDevice>();
             for (IEspDevice device : mCheckedDevices) {
-                if (device.isActivated() && isDeviceEditable(device)) {
-                    mDevices.add(device);
+                if (isDeviceEditable(device)) {
+                    if (device.isActivated()) {
+                        mDevices.add(device);
+                    } else if (device.getDeviceState().isStateOffline()) {
+                        // The device is not activated, and it is offline, permit delete
+                        mDevices.add(device);
+                    } else {
+                        mHasEneditableDevice = true;
+                    }
                 } else {
                     mHasEneditableDevice = true;
                 }
@@ -1191,6 +1244,63 @@ public class EspMainFragment extends Fragment
         }
     }
 
+    private void upgradeDevice(List<IEspDevice> devices) {
+        for (int i = devices.size() - 1; i >= 0; i--) {
+            IEspDevice device = devices.get(i);
+            IEspDeviceState state = device.getDeviceState();
+            if (!state.isStateLocal() && !state.isStateInternet()) {
+                devices.remove(i);
+                continue;
+            }
+            if (device.getDeviceType() == EspDeviceType.ROOT) {
+                devices.remove(i);
+                continue;
+            }
+
+            switch (mUser.getDeviceUpgradeTypeResult(device)) {
+                case SUPPORT_LOCAL_ONLY:
+                    if (!state.isStateLocal()) {
+                        devices.remove(i);
+                        continue;
+                    }
+                    break;
+                case SUPPORT_ONLINE_ONLY:
+                    if (!state.isStateInternet()) {
+                        devices.remove(i);
+                        continue;
+                    }
+                    break;
+                case SUPPORT_ONLINE_LOCAL:
+                    break;
+
+                case CURRENT_ROM_INVALID:
+                case CURRENT_ROM_IS_NEWEST:
+                case DEVICE_TYPE_INCONSISTENT:
+                case LATEST_ROM_INVALID:
+                case NOT_SUPPORT_UPGRADE:
+                    devices.remove(i);
+                    continue;
+            }
+        }
+
+        log.debug("upgrade devices size = " + devices.size());
+        mEspUpgradeHelper.addDevices(devices);
+        mEspUpgradeHelper.checkUpgradingDevices();
+        mDeviceAdapter.notifyDataSetChanged();
+    }
+
+    private class DeviceHolder {
+        IEspDevice device;
+        ImageView icon;
+        ImageView iconCover;
+        TextView name;
+        TextView version;
+        TextView status;
+        TextView newActivate;
+        CheckBox checked;
+        ImageView rssi;
+    }
+
     private class DeviceAdapter extends BaseAdapter {
         private List<IEspDevice> mDeviceList;
 
@@ -1201,6 +1311,8 @@ public class EspMainFragment extends Fragment
 
         private boolean mCheckMode;
         private List<IEspDevice> mCheckedDeviceList;
+
+        private String[] mTwinkleBssids;
 
         public DeviceAdapter(List<IEspDevice> deviceList) {
             mDeviceList = deviceList;
@@ -1232,77 +1344,106 @@ public class EspMainFragment extends Fragment
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view;
+            DeviceHolder holder;
             if (convertView == null) {
                 view = mInflater.inflate(R.layout.main_device_item, parent, false);
+
+                holder = new DeviceHolder();
+                holder.icon = (ImageView)view.findViewById(R.id.device_icon);
+                holder.iconCover = (ImageView)view.findViewById(R.id.device_icon_cover);
+                holder.name = (TextView)view.findViewById(R.id.device_name);
+                holder.version = (TextView)view.findViewById(R.id.device_version);
+                holder.status = (TextView)view.findViewById(R.id.device_status_text1);
+                holder.newActivate = (TextView)view.findViewById(R.id.device_status_text2);
+                holder.checked = (CheckBox)view.findViewById(R.id.device_checked);
+                holder.rssi = (ImageView)view.findViewById(R.id.device_status_img1);
+
+                view.setTag(holder);
             } else {
                 view = convertView;
+                holder = (DeviceHolder)view.getTag();
             }
 
             IEspDevice device = getItem(position);
-            view.setTag(device);
+            holder.device = device;
 
             IEspDeviceState deviceState = device.getDeviceState();
 
-            ImageView icon = (ImageView)view.findViewById(R.id.device_icon);
             int iconRes = DeviceUtil.getDeviceIconRes(device);
-            icon.setImageResource(iconRes);
+            holder.icon.setImageResource(iconRes);
 
-            ImageView iconCover = (ImageView)view.findViewById(R.id.device_icon_cover);
             if (device.getDeviceType() == EspDeviceType.LIGHT) {
-                iconCover.setVisibility(View.VISIBLE);
-                iconCover.setImageResource(R.drawable.device_light_cover);
+                holder.iconCover.setVisibility(View.VISIBLE);
+                holder.iconCover.setImageResource(R.drawable.device_light_cover);
             } else {
-                iconCover.setVisibility(View.GONE);
-                iconCover.setImageDrawable(null);
+                holder.iconCover.setVisibility(View.GONE);
+                holder.iconCover.setImageDrawable(null);
             }
 
-            TextView name = (TextView)view.findViewById(R.id.device_name);
-            name.setText(device.getName());
-            TextView version = (TextView)view.findViewById(R.id.device_version);
+            holder.name.setText(device.getName());
             String verStr = device.getRom_version();
-            version.setText(verStr);
-            version.setVisibility(TextUtils.isEmpty(verStr) ? View.GONE : View.VISIBLE);
-            if (deviceState.isStateOffline()) {
-                name.setTextColor(mOfflineColor);
-                version.setTextColor(mOfflineColor);
-            } else {
-                name.setTextColor(mOnlineColor);
-                version.setTextColor(mOnlineColor);
-            }
-            checkLight(device, icon, iconCover, name, version);
+            holder.version.setText(verStr);
 
-            TextView status = (TextView)view.findViewById(R.id.device_status_text1);
+            holder.version.setVisibility(TextUtils.isEmpty(verStr) ? View.GONE : View.VISIBLE);
+            if (deviceState.isStateOffline()) {
+                holder.name.setTextColor(mOfflineColor);
+                holder.version.setTextColor(mOfflineColor);
+            } else {
+                holder.name.setTextColor(mOnlineColor);
+                holder.version.setTextColor(mOnlineColor);
+            }
+            checkLight(holder);
+
+            holder.status.setText("");
             if (device.isActivated()) {
                 if (deviceState.isStateInternet()) {
-                    status.setBackgroundResource(R.drawable.device_status_cloud_on);
+                    holder.status.setBackgroundResource(R.drawable.device_status_cloud_on);
                 } else {
-                    status.setBackgroundResource(R.drawable.device_status_cloud_off);
+                    holder.status.setBackgroundResource(R.drawable.device_status_cloud_off);
                 }
             } else {
-                status.setBackgroundDrawable(null);
+                holder.status.setBackgroundResource(0);
             }
             if (deviceState.isStateUpgradingInternet() || deviceState.isStateUpgradingLocal()) {
-                status.setBackgroundResource(R.drawable.device_status_upgrading);
+                holder.status.setBackgroundResource(R.drawable.device_status_upgrading);
+            } else {
+                List<IEspDevice> upgradingDevices = mEspUpgradeHelper.getUpgradingDevices();
+                if (upgradingDevices.contains(device)) {
+                    holder.status.setBackgroundResource(0);
+                    holder.status.setText(R.string.esp_main_waiting_for_upgrading);
+                }
             }
 
-            TextView newActivate = (TextView)view.findViewById(R.id.device_status_text2);
-            newActivate.setTextColor(Color.RED);
-            newActivate.setText("NEW");
+            holder.newActivate.setTextColor(Color.RED);
+            holder.newActivate.setText("NEW");
             boolean isNewActivate = mNewDevicesSet.contains(device.getKey());
-            newActivate.setVisibility(isNewActivate ? View.VISIBLE : View.GONE);
+            holder.newActivate.setVisibility(isNewActivate ? View.VISIBLE : View.GONE);
 
-            CheckBox checked = (CheckBox)view.findViewById(R.id.device_checked);
-            checked.setVisibility(mCheckMode ? View.VISIBLE : View.GONE);
-            checked.setChecked(mCheckedDeviceList.contains(device));
-            checked.setOnCheckedChangeListener(new OnCheckedChangedListener(device));
+            holder.checked.setVisibility(mCheckMode ? View.VISIBLE : View.GONE);
+            holder.checked.setChecked(mCheckedDeviceList.contains(device));
+            holder.checked.setOnCheckedChangeListener(new OnCheckedChangedListener(device));
 
-            ImageView rssi = (ImageView)view.findViewById(R.id.device_status_img1);
             int rssiValue = device.getRssi();
             if (rssiValue == IEspDevice.RSSI_NULL) {
-                rssi.setVisibility(View.GONE);
+                holder.rssi.setVisibility(View.GONE);
             } else {
-                rssi.setVisibility(View.VISIBLE);
-                rssi.getDrawable().setLevel(getRssiLevel(rssiValue));
+                holder.rssi.setVisibility(View.VISIBLE);
+                holder.rssi.getDrawable().setLevel(getRssiLevel(rssiValue));
+            }
+
+            boolean twinkle = false;
+            if (mTwinkleBssids != null) {
+                for (String bssid : mTwinkleBssids) {
+                    if (bssid.equals(device.getBssid())) {
+                        twinkle = true;
+                        break;
+                    }
+                }
+            }
+            if (twinkle) {
+                view.setBackgroundColor(Color.RED);
+            } else {
+                view.setBackgroundResource(0);
             }
 
             return view;
@@ -1320,27 +1461,24 @@ public class EspMainFragment extends Fragment
             }
         }
 
-        private void checkLight(IEspDevice device, ImageView icon, ImageView iconCover, TextView name,
-            TextView version) {
-            if (device instanceof IEspDeviceLight) {
-                IEspStatusLight statusLight = ((IEspDeviceLight)device).getStatusLight();
-                IEspDeviceState state = device.getDeviceState();
+        private void checkLight(DeviceHolder holder) {
+            if (holder.device instanceof IEspDeviceLight) {
+                IEspStatusLight statusLight = ((IEspDeviceLight)holder.device).getStatusLight();
+                IEspDeviceState state = holder.device.getDeviceState();
                 if (state.isStateOffline()) {
-                    icon.setBackgroundColor(Color.TRANSPARENT);
-                    iconCover.setVisibility(View.GONE);
+                    holder.icon.setBackgroundColor(Color.TRANSPARENT);
+                    holder.iconCover.setVisibility(View.GONE);
                 } else {
-                    iconCover.setVisibility(View.VISIBLE);
+                    holder.iconCover.setVisibility(View.VISIBLE);
                     if (statusLight.getStatus() != IEspStatusLight.STATUS_NULL) {
                         int color = statusLight.getCurrentColor();
-                        name.setTextColor(color);
-                        version.setTextColor(color);
-                        icon.setBackgroundColor(color);
+                        holder.icon.setBackgroundColor(color);
                     } else {
-                        icon.setBackgroundColor(Color.TRANSPARENT);
-                        name.setTextColor(mOnlineColor);
-                        version.setTextColor(mOnlineColor);
+                        holder.icon.setBackgroundColor(Color.TRANSPARENT);
                     }
                 }
+            } else {
+                holder.icon.setBackgroundColor(Color.TRANSPARENT);
             }
         }
 
@@ -1384,14 +1522,6 @@ public class EspMainFragment extends Fragment
             return result;
         }
 
-        public void addCheckDevice(IEspDevice device) {
-            if (mCheckMode && mDeviceList.contains(device) && !mCheckedDeviceList.contains(device)) {
-                mCheckedDeviceList.add(device);
-                notifyDataSetChanged();
-                onDeviceCheckedChanged();
-            }
-        }
-
         public void removeCheckDevice(IEspDevice device) {
             if (!mCheckedDeviceList.contains(device)) {
                 mCheckedDeviceList.remove(device);
@@ -1416,6 +1546,18 @@ public class EspMainFragment extends Fragment
                 onDeviceCheckedChanged();
             }
         }
+
+        public void clearTwinkleBssids() {
+            mTwinkleBssids = null;
+            notifyDataSetChanged();
+        }
+
+        public void twinkle(String[] bssids) {
+            mTwinkleBssids = bssids;
+            notifyDataSetChanged();
+            mRefreshHandler.removeMessages(MSG_TWINKLE);
+            mRefreshHandler.sendEmptyMessageDelayed(MSG_TWINKLE, 1000);
+        }
     }
 
     private void onDeviceCheckedChanged() {
@@ -1424,6 +1566,7 @@ public class EspMainFragment extends Fragment
             mDeleteDeviceBtn.setEnabled(false);
             mRemoveDeviceBtn.setEnabled(false);
             mMoveDeviceBtn.setEnabled(false);
+            mUpgradeDeviceBtn.setEnabled(false);
         } else {
             List<IEspDevice> checkedDevices = mDeviceAdapter.getCheckedDeviceList();
             boolean hasUnactivatedDevice = false;
@@ -1437,12 +1580,13 @@ public class EspMainFragment extends Fragment
             mDeleteDeviceBtn.setEnabled(true);
             mRemoveDeviceBtn.setEnabled(mSelectedGroup != null);
             mMoveDeviceBtn.setEnabled(true);
+            mUpgradeDeviceBtn.setEnabled(true);
         }
     }
 
     private void setDeviceListCheckMode(boolean checkMode) {
         mBottomBar.setVisibility(checkMode ? View.VISIBLE : View.GONE);
-        mDeviceListView.setMode(checkMode ? Mode.DISABLED : Mode.PULL_FROM_START);
+        mDeviceRefreshLayout.setEnabled(checkMode ? false : true);
         if (!checkMode) {
             mDeviceAdapter.clearCheckedDevices();
         }
@@ -1471,8 +1615,15 @@ public class EspMainFragment extends Fragment
                     Long autoTime = (Long)msg.obj;
                     fragment.sendAutoRefreshMessage(autoTime);
                     break;
+                case MSG_LAYOUT_REFRESH:
+                    fragment.mDeviceRefreshLayout.setRefreshing(true);
+                    fragment.refresh();
+                    break;
                 case MSG_UPDATE_TEMPDEVICE:
                     fragment.updateDeviceList();
+                    break;
+                case MSG_TWINKLE:
+                    fragment.mDeviceAdapter.clearTwinkleBssids();
                     break;
             }
         }
@@ -1491,8 +1642,6 @@ public class EspMainFragment extends Fragment
 
                 return;
             }
-
-            mActivity.getActionBar().setDisplayShowCustomEnabled(false);
 
             // for EspDeviceStateMachine check the state valid before and after device's state transformation
             // so when the user is using device, we don't like to make the state changed by pull refresh before
@@ -1518,7 +1667,7 @@ public class EspMainFragment extends Fragment
                 mUser.doActionDevicesUpdated(false);
 
                 updateDeviceList();
-                mDeviceListView.onRefreshComplete();
+                mDeviceRefreshLayout.setRefreshing(false);
 
                 mRefreshing = false;
 
@@ -1527,18 +1676,19 @@ public class EspMainFragment extends Fragment
                 log.debug("Receive Broadcast DEVICES_ARRIVE_STATEMACHINE");
                 mUser.doActionDevicesUpdated(true);
                 updateDeviceList();
+                mEspUpgradeHelper.checkUpgradingDevices();
                 mDeviceAdapter.notifyDataSetChanged();
             }
         }
 
     };
 
-    private class VH extends RecyclerView.ViewHolder {
+    private class ColorHolder extends RecyclerView.ViewHolder {
         ColorView colorView;
 
         int color;
 
-        public VH(View itemView) {
+        public ColorHolder(View itemView) {
             super(itemView);
 
             colorView = (ColorView)itemView.findViewById(R.id.color_view);
@@ -1575,7 +1725,7 @@ public class EspMainFragment extends Fragment
 
     }
 
-    private class ColorAdapter extends RecyclerView.Adapter<VH> {
+    private class ColorAdapter extends RecyclerView.Adapter<ColorHolder> {
 
         @Override
         public int getItemCount() {
@@ -1583,16 +1733,16 @@ public class EspMainFragment extends Fragment
         }
 
         @Override
-        public void onBindViewHolder(VH holder, int position) {
+        public void onBindViewHolder(ColorHolder holder, int position) {
             int color = mColorList.get(position);
             holder.color = color;
             holder.colorView.setColor(color);
         }
 
         @Override
-        public VH onCreateViewHolder(ViewGroup arg0, int arg1) {
+        public ColorHolder onCreateViewHolder(ViewGroup arg0, int arg1) {
             View view = View.inflate(mActivity, R.layout.main_bottom_color_item, null);
-            VH vh = new VH(view);
+            ColorHolder vh = new ColorHolder(view);
             return vh;
         }
 
@@ -1688,4 +1838,35 @@ public class EspMainFragment extends Fragment
         }
         updateDeviceList();
     }
+
+    private OnLightTwinkleListener mLightTwinkleListener = new OnLightTwinkleListener() {
+
+        @Override
+        public void onTwinkle(final String[] bssids) {
+            boolean twinkle = false;
+            ListView listView = mDeviceListView;
+            for (int i = 0; i < mAllDeviceList.size(); i++) {
+                IEspDevice device = mAllDeviceList.get(i);
+                for (String bssid : bssids) {
+                    if (device.getBssid().equals(bssid)) {
+                        twinkle = true;
+                        listView.setSelection(i);
+                        break;
+                    }
+                }
+                if (twinkle) {
+                    break;
+                }
+            }
+            if (twinkle) {
+                mRefreshHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mDeviceAdapter.twinkle(bssids);
+                    }
+                });
+            }
+        }
+    };
 }

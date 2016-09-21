@@ -8,7 +8,6 @@ import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.device.array.IEspDeviceArray;
 import com.espressif.iot.device.builder.BEspDevice;
-import com.espressif.iot.esppush.task.GenerateShareKeyTask;
 import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.IEspDeviceState;
 import com.espressif.iot.type.net.IOTAddress;
@@ -16,7 +15,9 @@ import com.espressif.iot.type.upgrade.EspUpgradeDeviceTypeResult;
 import com.espressif.iot.ui.configure.EspButtonConfigureActivity;
 import com.espressif.iot.ui.device.timer.DeviceTimersActivity;
 import com.espressif.iot.ui.device.trigger.DeviceTriggerActivity;
+import com.espressif.iot.ui.main.EspUpgradeHelper;
 import com.espressif.iot.ui.settings.SettingsActivity;
+import com.espressif.iot.ui.task.GenerateShareKeyTask;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.EspStrings;
@@ -37,6 +38,7 @@ public abstract class DeviceBaseActivity extends Activity {
 
     protected IEspDevice mDevice;
     protected IEspUser mUser;
+    protected EspUpgradeHelper mEspUpgradeHelper;
 
     protected static final int MENU_ID_SHARE_DEVICE = 0x1000;
     protected static final int MENU_ID_DEVICE_TIMERS = 0x1001;
@@ -53,6 +55,7 @@ public abstract class DeviceBaseActivity extends Activity {
 
         Intent intent = getIntent();
         mUser = BEspUser.getBuilder().getInstance();
+        mEspUpgradeHelper = EspUpgradeHelper.INSTANCE;
         mDevice = getDevice(intent);
 
         checkDeviceCompatibility();
@@ -160,11 +163,13 @@ public abstract class DeviceBaseActivity extends Activity {
                 startActivity(timerIntent);
                 return true;
             case MENU_ID_UPGRADE_LOCAL:
-                mUser.doActionUpgradeLocal(mDevice);
+                mEspUpgradeHelper.addDevice(mDevice, EspUpgradeHelper.UpgradeDevice.UPGRADE_TYPE_LOCAL);
+                mEspUpgradeHelper.checkUpgradingDevices();
                 finish();
                 return true;
             case MENU_ID_UPGRADE_ONLINE:
-                mUser.doActionUpgradeInternet(mDevice);
+                mEspUpgradeHelper.addDevice(mDevice, EspUpgradeHelper.UpgradeDevice.UPGRADE_TYPE_INTERNET);
+                mEspUpgradeHelper.checkUpgradingDevices();
                 finish();
                 return true;
             case MENU_ID_ESPBUTTON_CONFIGURE:
@@ -294,12 +299,14 @@ public abstract class DeviceBaseActivity extends Activity {
                     switch (which) {
                         case DialogInterface.BUTTON_POSITIVE: // upgrade local
                             log.debug("Click upgrade device hint dialog local button");
-                            mUser.doActionUpgradeLocal(mDevice);
+                            mEspUpgradeHelper.addDevice(mDevice, EspUpgradeHelper.UpgradeDevice.UPGRADE_TYPE_LOCAL);
+                            mEspUpgradeHelper.checkUpgradingDevices();
                             finish();
                             break;
                         case DialogInterface.BUTTON_NEUTRAL: // upgrade online
                             log.debug("Click upgrade device hint dialog online button");
-                            mUser.doActionUpgradeInternet(mDevice);
+                            mEspUpgradeHelper.addDevice(mDevice, EspUpgradeHelper.UpgradeDevice.UPGRADE_TYPE_INTERNET);
+                            mEspUpgradeHelper.checkUpgradingDevices();
                             finish();
                             break;
                     }

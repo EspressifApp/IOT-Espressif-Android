@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.espressif.iot.R;
 import com.espressif.iot.device.IEspDevice;
 import com.espressif.iot.type.device.IEspDeviceState;
+import com.espressif.iot.util.DeviceUtil;
 
 public class DeviceAdapter extends BaseAdapter
 {
@@ -70,7 +71,7 @@ public class DeviceAdapter extends BaseAdapter
 
         // Set icon
         ImageView iconIV = (ImageView)convertView.findViewById(R.id.device_icon);
-        iconIV.setBackgroundResource(R.drawable.esp_device_icon_general);
+        iconIV.setBackgroundResource(DeviceUtil.getDeviceIconRes(device.getDeviceType()));
 
         // Set device name
         TextView nameTV = (TextView)convertView.findViewById(R.id.device_name);

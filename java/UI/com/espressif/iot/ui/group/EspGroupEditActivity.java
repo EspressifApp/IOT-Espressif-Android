@@ -1,6 +1,9 @@
 package com.espressif.iot.ui.group;
 
+import java.util.List;
+
 import com.espressif.iot.R;
+import com.espressif.iot.group.IEspGroup;
 import com.espressif.iot.group.IEspGroup.Type;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
@@ -103,10 +106,11 @@ public class EspGroupEditActivity extends Activity implements OnClickListener {
         public void onBindViewHolder(VH holder, int position) {
             Type type = mTypes[position];
             holder.type = type;
+            holder.icon.setImageResource(type.getIconRes());
             if (type == mSelectedType) {
-                holder.icon.setImageResource(type.getIconResSelected());
+                holder.icon.setBackgroundResource(R.drawable.group_type_bg_selected);
             } else {
-                holder.icon.setImageResource(type.getIconResNormal());
+                holder.icon.setBackgroundResource(R.drawable.group_type_bg);
             }
         }
 
@@ -156,11 +160,32 @@ public class EspGroupEditActivity extends Activity implements OnClickListener {
     };
 
     private void createGroup(String groupName, int num) {
-        for (int i = 1; i <= num; i++) {
+        List<IEspGroup> userGroupList = mUser.getGroupList();
+        int suffixes = 2;
+        for (int i = 0; i < num; i++) {
             String newName = groupName;
-            if (i > 1) {
-                newName += i;
+            if (i > 0) {
+                newName += suffixes;
             }
+
+            while (true) {
+                boolean hasSameName = false;
+                for (IEspGroup group : userGroupList) {
+                    if (group.getName().equals(newName)) {
+                        hasSameName = true;
+                        break;
+                    }
+                }
+
+                if (hasSameName) {
+                    newName = groupName + suffixes++;
+                    continue;
+                } else {
+                    suffixes++;
+                    break;
+                }
+            }
+
             mUser.doActionGroupCreate(newName, mSelectedType.ordinal());
         }
     }

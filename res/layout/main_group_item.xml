@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:gravity="center"
-        android:maxWidth="70dip"
         android:singleLine="true" />
 
 </LinearLayout>

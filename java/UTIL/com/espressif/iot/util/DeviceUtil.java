@@ -129,26 +129,26 @@ public class DeviceUtil {
                 res = R.drawable.device_flammable_offline;
                 break;
             case HUMITURE:
-                res = R.drawable.device_humiture_offline;
+                res = R.drawable.device_filter_icon_humiture;
                 break;
             case VOLTAGE:
                 res = R.drawable.device_voltage_offline;
                 break;
             case LIGHT:
-                res = R.drawable.device_light_offline;
+                res = R.drawable.device_filter_icon_light;
                 break;
             case PLUG:
-                res = R.drawable.device_plug_offline;
+                res = R.drawable.device_filter_icon_plug;
                 break;
             case PLUGS:
-                res = R.drawable.device_plugs_offline;
+                res = R.drawable.device_filter_icon_plugs;
                 break;
             case SOUNDBOX:
-                res = R.drawable.device_soundbox_offline;
+                res = R.drawable.device_filter_icon_soundbox;
                 break;
             case NEW:
             case ROOT:
-                res = R.drawable.device_home;
+                res = R.drawable.device_filter_icon_all;
                 break;
             case REMOTE:
                 break;
@@ -192,5 +192,40 @@ public class DeviceUtil {
         }
 
         return res;
+    }
+
+    public static int getDeviceTypeNameRes(EspDeviceType type) {
+        int result = 0;
+        switch (type) {
+            case ROOT:
+                break;
+            case NEW:
+                break;
+            case REMOTE:
+                break;
+            case FLAMMABLE:
+                result = R.string.esp_main_type_flammable;
+                break;
+            case HUMITURE:
+                result = R.string.esp_main_type_humiture;
+                break;
+            case LIGHT:
+                result = R.string.esp_main_type_light;
+                break;
+            case PLUG:
+                result = R.string.esp_main_type_plug;
+                break;
+            case PLUGS:
+                result = R.string.esp_main_type_plugs;
+                break;
+            case SOUNDBOX:
+                result = R.string.esp_main_type_soundbox;
+                break;
+            case VOLTAGE:
+                result = R.string.esp_main_type_voltage;
+                break;
+        }
+
+        return result;
     }
 }

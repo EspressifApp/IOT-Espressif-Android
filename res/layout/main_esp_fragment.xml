@@ -38,14 +38,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dip"
-            android:drawableTop="@drawable/group_all_selected"
+            android:padding="2dip"
+            android:drawableLeft="@drawable/group_all"
+            android:background="@drawable/esp_activity_icon_background_pressed"
             android:gravity="center"
             android:text="@string/esp_main_all" />
 
-        <com.meetme.android.horizontallistview.HorizontalListView
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/group_list"
             android:layout_width="0dip"
-            android:layout_height="70dip"
+            android:layout_height="35dip"
             android:layout_weight="1" />
 
         <TextView
@@ -53,16 +55,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dip"
-            android:drawableTop="@drawable/group_add"
+            android:padding="2dip"
+            android:drawableLeft="@drawable/group_add"
             android:text="@string/esp_main_add" />
     </LinearLayout>
 
-    <com.handmark.pulltorefresh.library.PullToRefreshListView
-        android:id="@+id/devices_list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/devices_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="0dip"
-        android:layout_weight="1"
-        android:background="@color/esp_main_devices_background" />
+        android:layout_weight="1" >
+
+        <ListView
+            android:id="@+id/devices_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/esp_main_devices_background" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <include
         android:id="@+id/bottom_bar"

@@ -3,22 +3,20 @@ package com.espressif.iot.ui.device;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.espressif.iot.R;
 import com.espressif.iot.ui.achartengine.EspChartFactory;
 import com.espressif.iot.util.TimeUtil;
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 
-public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implements OnRefreshListener<ScrollView>
+public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implements OnRefreshListener
 {
     protected static final int MENU_ID_SELECT_DATE = 0x2000;
     
@@ -30,7 +28,7 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     private boolean mChartViewDrawn;
 
     protected TextView mDateTV;
-    protected PullToRefreshScrollView mPullRereshScorllView;
+    protected SwipeRefreshLayout mRefreshLayout;
     protected LinearLayout mChartViewContainer;
     
     protected EspChartFactory mChartFactory;
@@ -53,17 +51,18 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     protected View initControlView()
     {
         View view = View.inflate(this, R.layout.device_activity_chartview, null);
-        
+
         mDateTV = (TextView)view.findViewById(R.id.date_text);
-        
-        mPullRereshScorllView = (PullToRefreshScrollView)view.findViewById(R.id.pull_to_refresh_scrollview);
-        mPullRereshScorllView.setOnRefreshListener(this);
-        
+
+        mRefreshLayout = (SwipeRefreshLayout)view.findViewById(R.id.refresh_layout);
+        mRefreshLayout.setColorSchemeResources(R.color.esp_actionbar_color);
+        mRefreshLayout.setOnRefreshListener(this);
+
         mChartViewContainer = (LinearLayout)view.findViewById(R.id.chartview_container);
         mChartFactory = new EspChartFactory(this);
-        
+
         mPager.setInterceptTouchEvent(false);
-        
+
         return view;
     }
     
@@ -121,7 +120,7 @@ public abstract class DeviceChartActivityAbs extends DeviceActivityAbs implement
     abstract protected void refresh(long time);
     
     @Override
-    public void onRefresh(PullToRefreshBase<ScrollView> arg0)
+    public void onRefresh()
     {
         refresh(mSelectTime);
     }

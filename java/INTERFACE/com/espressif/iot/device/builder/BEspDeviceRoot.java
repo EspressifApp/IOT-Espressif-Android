@@ -46,6 +46,7 @@ public class BEspDeviceRoot implements IBEspDeviceRoot
         virtualMeshRoot.setIsMeshDevice(true);
         virtualMeshRoot.setId(Long.MIN_VALUE + 2);
         virtualMeshRoot.setName("Mesh Root");
+        virtualMeshRoot.setBssid("MeshRoot");
     }
     
     private static class InstanceHolder

@@ -14,30 +14,24 @@ public interface IEspGroup extends IEspObject {
     }
 
     public static enum Type {
-        COMMON(R.drawable.group_type_common_normal, R.drawable.group_type_common_selected),
-        BEDROOM(R.drawable.group_type_bedroom_normal, R.drawable.group_type_bedroom_selected),
-        LIVINGROOM(R.drawable.group_type_livingroom_normal, R.drawable.group_type_livingroom_selected),
-        KITCHEN(R.drawable.group_type_kitchen_normal, R.drawable.group_type_kitchen_selected),
-        SHOP(R.drawable.group_type_shop_normal, R.drawable.group_type_shop_selected),
-        BAR(R.drawable.group_type_bar_normal, R.drawable.group_type_bar_selected),
-        FACTORY(R.drawable.group_type_factory_normal, R.drawable.group_type_factory_selected),
-        PARKING(R.drawable.group_type_parking_normal, R.drawable.group_type_parking_selected),
-        WC(R.drawable.group_type_wc_normal, R.drawable.group_type_wc_selected);
+        COMMON(R.drawable.group_type_common),
+        FACTORY(R.drawable.group_type_factory),
+        KITCHEN(R.drawable.group_type_kitchen),
+        LIBRARY(R.drawable.group_type_library),
+        OFFICE(R.drawable.group_type_office),
+        SCHOOL(R.drawable.group_type_school),
+        SHOP(R.drawable.group_type_shop),
+        WC(R.drawable.group_type_wc),
+        ZOO(R.drawable.group_type_zoo);
 
-        private int mIconResNoraml;
-        private int mIconResSelected;
+        private int mIconRes;
 
-        private Type(int iconResNormal, int iconResSelected) {
-            mIconResNoraml = iconResNormal;
-            mIconResSelected = iconResSelected;
+        private Type(int iconRes) {
+            mIconRes = iconRes;
         }
 
-        public int getIconResNormal() {
-            return mIconResNoraml;
-        }
-
-        public int getIconResSelected() {
-            return mIconResSelected;
+        public int getIconRes() {
+            return mIconRes;
         }
     }
 

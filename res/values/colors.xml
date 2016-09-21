@@ -3,8 +3,8 @@
     <color name="esp_actionbar_color">#ff03a9f4</color>
 
     <color name="esp_main_search_background">#fff3f3f3</color>
-    <color name="esp_main_groups_background">#fff0f0f2</color>
-    <color name="esp_main_devices_background">#ffffffff</color>
+    <color name="esp_main_groups_background">#fff3f3f3</color>
+    <color name="esp_main_devices_background">#fff3f3f3</color>
     <color name="esp_main_drawer_background">#fff0f0f2</color>
     <color name="esp_main_drawer_right_item_checked">#ff738ffe</color>
     

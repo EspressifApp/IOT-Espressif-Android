@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import android.util.Log;
 
 import com.espressif.iot.base.api.EspBaseApiUtil;
+import com.espressif.iot.base.application.EspApplication;
+import com.espressif.iot.base.net.udp.LightUdpClient;
 import com.espressif.iot.command.device.common.EspCommandDeviceDiscoverLocal;
 import com.espressif.iot.command.device.common.EspCommandDeviceSynchronizeInternet;
 import com.espressif.iot.command.device.common.IEspCommandDeviceDiscoverLocal;
@@ -325,6 +327,7 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
             @Override
             public void run()
             {
+                broadcastPhoneAddress();
                 __doActionDeviceSynchronizeInterentDiscoverLocal(userKey, true, true);
             }
             
@@ -346,11 +349,20 @@ public class EspActionDeviceSynchronizeInterentDiscoverLocal implements
                 @Override
                 public void run()
                 {
+                    broadcastPhoneAddress();
                     __doActionDeviceSynchronizeInterentDiscoverLocal(null, false, true);
                 }
                 
             });
         }
+    }
+    
+    private void broadcastPhoneAddress() {
+        LightUdpClient client = new LightUdpClient(EspApplication.sharedInstance());
+        for (int i = 0; i < 3; i++) {
+            client.notifyAddress();
+        }
+        client.close();
     }
     
     @Override
