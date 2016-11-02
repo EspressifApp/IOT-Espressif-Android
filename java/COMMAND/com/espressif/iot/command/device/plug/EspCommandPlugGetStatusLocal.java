@@ -38,7 +38,12 @@ public class EspCommandPlugGetStatusLocal implements IEspCommandPlugGetStatusLoc
         }
         try
         {
-            JSONObject responseJson = jo.getJSONObject(Response);
+            JSONObject responseJson;
+            if (!jo.isNull(Response)) {
+                responseJson = jo.getJSONObject(Response);
+            } else {
+                responseJson = jo.getJSONObject("response");
+            }
             int on = responseJson.getInt(Status);
             IEspStatusPlug status = new EspStatusPlug();
             status.setIsOn(on == 1);
