@@ -116,6 +116,8 @@ public class LoginActivity extends Activity implements OnClickListener, OnEditor
                 mEmailEdt.setText(email);
                 mPasswordEdt.setText(password);
             }
+        } else {
+            mThirdPartyLoginDialog.onActivityResult(requestCode, resultCode, data);
         }
     }
     
