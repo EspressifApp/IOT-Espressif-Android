@@ -12,6 +12,7 @@ import com.espressif.iot.type.device.EspDeviceType;
 import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.DeviceUtil;
 import com.espressif.iot.util.MeshUtil;
 import com.espressif.iot.util.TimeUtil;
 
@@ -113,9 +114,8 @@ public class EspCommandDeviceNewActivateInternet implements IEspCommandDeviceNew
                 }
                 JSONObject key = jsonObjectResult.getJSONObject(Key);
                 String token = key.getString(Token);
-                boolean is_owner_key = false;
-                if (Integer.parseInt(key.getString(IsOwnerKey)) == 1)
-                    is_owner_key = true;
+                String isOwnerStr = key.getString(IsOwnerKey);
+                boolean is_owner_key = DeviceUtil.parseIsOwnerKey(isOwnerStr);
                 long id = Long.parseLong(key.getString("device_id"));
                 // deviceJson
                 JSONObject deviceJson = jsonObjectResult.getJSONObject(Device);

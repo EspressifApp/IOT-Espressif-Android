@@ -1,38 +1,33 @@
 package com.espressif.iot.ui.login;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.espressif.iot.R;
+import com.espressif.iot.logintool.EspLoginSDK;
+import com.espressif.iot.logintool.Platform;
+import com.espressif.iot.logintool.Platform.PlatformListener;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.type.user.EspThirdPartyLoginPlat;
 import com.espressif.iot.ui.widget.dialog.NoBgDialog;
 import com.espressif.iot.user.IEspUser;
 import com.espressif.iot.user.builder.BEspUser;
-import com.tencent.tauth.IUiListener;
-import com.tencent.tauth.Tencent;
-import com.tencent.tauth.UiError;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-public class LoginThirdPartyDialog implements OnClickListener {
+public class LoginThirdPartyDialog implements OnClickListener, PlatformListener {
     private final Logger log = Logger.getLogger(getClass());
-
-    private static final String APP_ID = "1104658257";
-
-    private Tencent mTencent;
 
     private Context mContext;
 
     private TextView mQQTV;
+    private Platform mQQPlat;
 
     private NoBgDialog mThirdPartyLoginSelectDialog;
     private ProgressDialog mThirdPartyEnteringDialog;
@@ -48,8 +43,24 @@ public class LoginThirdPartyDialog implements OnClickListener {
     public LoginThirdPartyDialog(Context context) {
         mContext = context;
 
-        mTencent = Tencent.createInstance(APP_ID, mContext);
+        initPlatforms();
 
+        initWidgets();
+    }
+
+    private void initPlatforms() {
+        List<Platform> platforms = EspLoginSDK.getInstance().getPlatforms();
+        for (Platform p : platforms) {
+            switch (p.getType()) {
+                case QQ:
+                    mQQPlat = p;
+                    mQQPlat.setPlatformListener(this);
+                    break;
+            }
+        }
+    }
+
+    private void initWidgets() {
         View content = View.inflate(mContext, R.layout.third_party_login_dialog, null);
         mQQTV = (TextView)content.findViewById(R.id.qq_login);
         mQQTV.setOnClickListener(this);
@@ -82,7 +93,7 @@ public class LoginThirdPartyDialog implements OnClickListener {
 
         switch (v.getId()) {
             case R.id.qq_login:
-                mTencent.login((Activity)mContext, "all", mQQListener);
+                mQQPlat.authorize();
                 break;
         }
     }
@@ -109,39 +120,30 @@ public class LoginThirdPartyDialog implements OnClickListener {
         }.execute();
     }
 
-    private IUiListener mQQListener = new IUiListener() {
-
-        @Override
-        public void onError(UiError error) {
-            log.warn("qq error" + error.errorMessage);
-        }
-
-        @Override
-        public void onComplete(Object jsonObj) {
-            log.info("qq complete = " + jsonObj.toString());
-            JSONObject json = (JSONObject)jsonObj;
-            try {
-                final String token = json.getString("access_token");
-                final String openId = json.getString("openid");
-                final String state = "qq";
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        thirdPartyLogin(state, token, openId);
-                    }
-                });
-            } catch (JSONException e) {
-                e.printStackTrace();
+    @Override
+    public void onComplete(Platform platform) {
+        log.info(platform.getType() + " onComplete");
+        mThirdPartyEnteringDialog.dismiss();
+        final String token = platform.getAcessToken();
+        final String openId = platform.getOpenId();
+        final String state = platform.getState();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                thirdPartyLogin(state, token, openId);
             }
-        }
+        });
+    }
 
-        @Override
-        public void onCancel() {
-            log.debug("qq cancel");
-        }
-    };
+    @Override
+    public void onError(Platform platform, String errorMsg) {
+        log.warn(platform.getType() + " onError: " +  errorMsg);
+        mThirdPartyEnteringDialog.dismiss();
+    }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Tencent.onActivityResultData(requestCode, resultCode, data, mQQListener);
+    @Override
+    public void onCancel(Platform platform) {
+        log.debug(platform.getType() + " onCancel");
+        mThirdPartyEnteringDialog.dismiss();
     }
 }

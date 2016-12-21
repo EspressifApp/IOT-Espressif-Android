@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.espressif.iot"
-    android:versionCode="23"
-    android:versionName="v1.2.3" >
+    android:versionCode="24"
+    android:versionName="v1.2.4" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -29,6 +29,7 @@
         android:icon="@drawable/app_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <!-- for ximalaya -->
         <meta-data
             android:name="app_key"
             android:value="0fd77116440852e40a07266f4e4a62c0" />
@@ -136,6 +137,9 @@
             android:name="com.espressif.iot.ui.configure.DeviceEspTouchActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name="com.espressif.iot.logintool.EspLoginHelpActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
             android:name="com.tencent.tauth.AuthActivity"
             android:launchMode="singleTask"
             android:noHistory="true" >
@@ -152,12 +156,6 @@
             android:name="com.tencent.connect.common.AssistActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="behind"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <!-- WeChat callback : must register with [your APP package].wxapi.WXEntryActivity -->
-        <activity
-            android:name="com.espressif.iot.wxapi.WXEntryActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name="com.espressif.iot.ui.configure.EspButtonConfigureActivity"

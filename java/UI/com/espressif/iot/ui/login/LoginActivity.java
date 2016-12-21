@@ -1,6 +1,7 @@
 package com.espressif.iot.ui.login;
 
 import com.espressif.iot.R;
+import com.espressif.iot.logintool.EspLoginSDK;
 import com.espressif.iot.type.user.EspLoginResult;
 import com.espressif.iot.ui.login.LoginThirdPartyDialog.OnLoginListener;
 import com.espressif.iot.ui.register.RegisterActivity;
@@ -42,51 +43,50 @@ public class LoginActivity extends Activity implements OnClickListener, OnEditor
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        EspLoginSDK.init(this);
         mUser = BEspUser.getBuilder().getInstance();
         setContentView(R.layout.login_activity);
         init();
     }
 
-    private void init()
-    {
+    private void init() {
         mEmailEdt = (EditText)findViewById(R.id.login_edt_account);
         mPasswordEdt = (EditText)findViewById(R.id.login_edt_password);
         mPasswordEdt.setOnEditorActionListener(this);
-        
+
         mLoginBtn = (Button)findViewById(R.id.login_btn_login);
         mLoginBtn.setOnClickListener(this);
-        
+
         mRegisterBtn = (Button)findViewById(R.id.login_btn_register);
         mRegisterBtn.setOnClickListener(this);
-        
+
         mThirdPartyLoginTV = (TextView)findViewById(R.id.login_text_third_party);
         mThirdPartyLoginTV.setOnClickListener(this);
-        
+
         mForgetPwdTV = (TextView)findViewById(R.id.forget_password_text);
         mForgetPwdTV.setOnClickListener(this);
-        
+
         mThirdPartyLoginDialog = new LoginThirdPartyDialog(this);
         mThirdPartyLoginDialog.setOnLoginListener(mThirdPartyLoginListener);
     }
-    
+
     @Override
-    public void onClick(View v)
-    {
-        if (v == mLoginBtn)
-        {
+    protected void onDestroy() {
+        super.onDestroy();
+
+        EspLoginSDK.release();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mLoginBtn) {
             login();
-        }
-        else if (v == mRegisterBtn)
-        {
+        } else if (v == mRegisterBtn) {
             Intent intent = new Intent(this, RegisterActivity.class);
             startActivityForResult(intent, REQUEST_REGISTER);
-        }
-        else if (v == mThirdPartyLoginTV)
-        {
+        } else if (v == mThirdPartyLoginTV) {
             mThirdPartyLoginDialog.show();
-        }
-        else if (v == mForgetPwdTV)
-        {
+        } else if (v == mForgetPwdTV) {
             startActivity(new Intent(this, ResetUserPasswordActivity.class));
         }
     }
@@ -104,83 +104,65 @@ public class LoginActivity extends Activity implements OnClickListener, OnEditor
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == REQUEST_REGISTER)
-        {
-            if (resultCode == RESULT_OK)
-            {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_REGISTER) {
+            if (resultCode == RESULT_OK) {
                 // Register completed, set the new account email and password
                 String email = data.getStringExtra(EspStrings.Key.REGISTER_NAME_EMAIL);
                 String password = data.getStringExtra(EspStrings.Key.REGISTER_NAME_PASSWORD);
                 mEmailEdt.setText(email);
                 mPasswordEdt.setText(password);
             }
-        } else {
-            mThirdPartyLoginDialog.onActivityResult(requestCode, resultCode, data);
         }
     }
-    
-    private void login()
-    {
+
+    private void login() {
         final String account = mEmailEdt.getText().toString();
         final int accountType = AccountUtil.getAccountType(account);
-        if (accountType == AccountUtil.TYPE_NONE)
-        {
+        if (accountType == AccountUtil.TYPE_NONE) {
             // Account id is illegal
             Toast.makeText(this, R.string.esp_login_email_hint, Toast.LENGTH_SHORT).show();
             return;
         }
         final String password = mPasswordEdt.getText().toString();
-        if (TextUtils.isEmpty(password))
-        {
+        if (TextUtils.isEmpty(password)) {
             // The password can't be empty
             Toast.makeText(this, R.string.esp_login_password_hint, Toast.LENGTH_SHORT).show();
             return;
         }
-        new LoginTask(this)
-        {
+        new LoginTask(this) {
             @Override
-            public EspLoginResult doLogin()
-            {
-                if (accountType == AccountUtil.TYPE_EMAIL)
-                {
+            public EspLoginResult doLogin() {
+                if (accountType == AccountUtil.TYPE_EMAIL) {
                     // Login with Email
                     return mUser.doActionUserLoginInternet(account, password);
-                }
-                else if (accountType == AccountUtil.TYPE_PHONE)
-                {
+                } else if (accountType == AccountUtil.TYPE_PHONE) {
                     // Login with Phone number
                     return mUser.doActionUserLoginPhone(account, password);
                 }
-                
+
                 return null;
             }
-            
+
             @Override
-            public void loginResult(EspLoginResult result)
-            {
-                if (result == EspLoginResult.SUC)
-                {
+            public void loginResult(EspLoginResult result) {
+                if (result == EspLoginResult.SUC) {
                     loginSuccess();
                 }
             }
         }.execute();
     }
-    
-    private OnLoginListener mThirdPartyLoginListener = new OnLoginListener()
-    {
-        
+
+    private OnLoginListener mThirdPartyLoginListener = new OnLoginListener() {
+
         @Override
-        public void onLoginComplete(EspLoginResult result)
-        {
-            if (result == EspLoginResult.SUC)
-            {
+        public void onLoginComplete(EspLoginResult result) {
+            if (result == EspLoginResult.SUC) {
                 loginSuccess();
             }
         }
     };
-    
+
     private void loginSuccess() {
         setResult(RESULT_OK);
         finish();

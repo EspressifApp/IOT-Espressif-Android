@@ -228,4 +228,31 @@ public class DeviceUtil {
 
         return result;
     }
+
+    /**
+     * Check the string is owner key or not
+     * 
+     * @param isOwnerStr the string from JSON
+     * @return is owner key or not
+     */
+    public static boolean parseIsOwnerKey(String isOwnerStr) {
+        log.debug("DeviceUtil parseIsOwnerKey isOwnerStr = " + isOwnerStr);
+        boolean isOwnerKey = false;
+
+        boolean ownerStrIsNumber = false;
+        try {
+            if (Integer.parseInt(isOwnerStr) == 1) {
+                isOwnerKey = true;
+            }
+            ownerStrIsNumber = true;
+        } catch (Exception e) {
+        }
+        if (!ownerStrIsNumber) {
+            if (Boolean.valueOf(isOwnerStr)) {
+                isOwnerKey = true;
+            }
+        }
+
+        return isOwnerKey;
+    }
 }

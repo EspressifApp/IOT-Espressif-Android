@@ -20,6 +20,7 @@ import com.espressif.iot.type.device.state.EspDeviceState;
 import com.espressif.iot.type.net.HeaderPair;
 import com.espressif.iot.user.builder.BEspUser;
 import com.espressif.iot.util.BSSIDUtil;
+import com.espressif.iot.util.DeviceUtil;
 import com.espressif.iot.util.MeshUtil;
 import com.espressif.iot.util.TimeUtil;
 
@@ -236,11 +237,8 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                     JSONObject keyJsonObject = deviceJsonObject.getJSONObject(Key);
                     
                     // isOwner
-                    boolean isOwner = false;
-                    if (Integer.parseInt(keyJsonObject.getString(Is_Owner_Key)) == 1)
-                    {
-                        isOwner = true;
-                    }
+                    String isOwnerStr = keyJsonObject.getString(Is_Owner_Key);
+                    boolean isOwner = DeviceUtil.parseIsOwnerKey(isOwnerStr);
                     
                     // deviceKey
                     String deviceKey = keyJsonObject.getString(Token);
