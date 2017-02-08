@@ -38,7 +38,8 @@ public enum UdpServer {
 
     public synchronized void open() {
         if (mSocket != null) {
-            throw new IllegalStateException("The UPD server is running");
+            sLog.debug("open() The UPD server is running");
+            release();
         }
 
         mCloseMark = false;
@@ -70,14 +71,16 @@ public enum UdpServer {
     public synchronized void close() {
         sLog.debug("UDP server close");
         mCloseMark = true;
+        release();
+    }
 
+    private void release() {
         if (mSocket != null) {
             mSocket.close();
             mSocket = null;
         }
 
         if (mReceiveThread != null) {
-            mReceiveThread.setRun(false);
             mReceiveThread.finish();
             mReceiveThread = null;
         }
@@ -88,8 +91,10 @@ public enum UdpServer {
 
         private volatile boolean mRun = true;
 
-        public void setRun(boolean run) {
-            mRun = run;
+        @Override
+        public void finish() {
+            mRun = false;
+            super.finish();
         }
 
         @Override

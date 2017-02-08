@@ -195,7 +195,10 @@ public class EspCommandDeviceSynchronizeInternet implements IEspCommandDeviceSyn
                 }
                 groupList.add(espGroup);
                 
-                JSONArray devicesJsonArray = groupJSON.getJSONArray(Devices);
+                JSONArray devicesJsonArray = groupJSON.optJSONArray(Devices);
+                if (devicesJsonArray == null) {
+                    continue;
+                }
                 for (int i = 0; i < devicesJsonArray.length(); i++)
                 {
                     JSONObject deviceJsonObject = devicesJsonArray.getJSONObject(i);
